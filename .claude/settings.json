@@ -6,21 +6,29 @@
       "Bash(aws logs start-query:*)",
       "Bash(aws logs get-query-results:*)",
       "Bash(aws cloudformation describe-stacks:*)",
-      "Bash(aws grafana list-workspaces:*)",
-      "Bash(aws grafana describe-workspace:*)",
-      "Bash(aws grafana list-workspace-service-accounts:*)",
       "Bash(pnpm typecheck)",
       "Bash(pnpm lint:*)",
       "Bash(pnpm lint)",
       "Bash(pnpm format:check)",
       "Bash(pnpm test)",
       "Bash(pnpm test:*)",
-      "Bash(pnpm generate:api)",
-      "Bash(npx jest:*)",
-      "Bash(poetry run pytest:*)",
-      "Bash(poetry run black:*)",
-      "Bash(poetry run ruff:*)",
-      "Bash(poetry run pyright:*)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm build)",
+      "Bash(pnpm gen:api)",
+      "Bash(ruff check:*)",
+      "Bash(ruff format:*)",
+      "Bash(pytest:*)",
+      "Bash(alembic upgrade:*)",
+      "Bash(alembic current:*)",
+      "Bash(alembic history:*)",
+      "Bash(docker compose ps:*)",
+      "Bash(docker compose logs:*)",
+      "Bash(docker compose exec:*)",
+      "Bash(docker compose up:*)",
+      "Bash(docker compose down:*)",
+      "Bash(docker compose build:*)",
+      "Bash(docker compose restart:*)",
+      "Bash(curl http://localhost:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
@@ -30,6 +38,8 @@
       "Bash(git stash list:*)",
       "Bash(git remote -v)",
       "Bash(git rev-parse:*)",
+      "Bash(git for-each-ref:*)",
+      "Bash(git worktree list:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr diff:*)",
@@ -40,47 +50,18 @@
       "Bash(gh run list:*)",
       "Bash(gh repo view:*)",
       "Bash(gh api:*)",
-      "Bash(echodev recall:*)",
-      "Bash(echodev list:*)",
-      "Bash(echodev show:*)",
-      "Bash(echodev graph:*)",
       "Bash(node --version)",
       "Bash(python --version)",
-      "Bash(poetry --version)",
       "Bash(pnpm --version)",
       "Bash(wc:*)",
       "Bash(ls:*)",
       "Bash(pwd)"
     ],
     "deny": [
-      "Bash(git push origin main:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
       "Bash(git reset --hard:*)",
       "Bash(rm -rf:*)"
-    ]
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "test -d .echodev && command -v echodev >/dev/null 2>&1 && echodev recall --from-stdin --quiet --format text || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "test -d .echodev && command -v echodev >/dev/null 2>&1 && git rev-parse HEAD >/dev/null 2>&1 && echodev extract HEAD --kind commit --llm auto || true"
-          }
-        ]
-      }
     ]
   }
 }
