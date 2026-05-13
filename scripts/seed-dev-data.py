@@ -13,9 +13,15 @@ import asyncio
 import sys
 from pathlib import Path
 
-# Make `backend/app` importable when run from repo root
+# Make `app.*` importable in both layouts:
+# - From repo root: <repo>/backend/app/ ← add <repo>/backend
+# - From inside the backend container: /app/app/... ← /app is already cwd,
+#   but PYTHONPATH may not include it, so add it explicitly
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "backend"))
+for candidate in (ROOT / "backend", Path("/app")):
+    if (candidate / "app" / "core" / "config.py").exists():
+        sys.path.insert(0, str(candidate))
+        break
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.ids import UUID4Generator  # noqa: E402

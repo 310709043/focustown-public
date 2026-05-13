@@ -14,6 +14,10 @@ dependencies = [
   "redis>=5.0",
   "python-jose[cryptography]>=3.3",
   "passlib[bcrypt]>=1.7.4",
+  # passlib's bcrypt backend has a startup probe that hashes a >72-byte
+  # secret; bcrypt 4.1+ enforces the 72-byte limit strictly, breaking the
+  # probe. Pin to <4.1 until passlib publishes a fix (or migrate to pwdlib).
+  "bcrypt<4.1",
   "python-multipart>=0.0.12",
   "apscheduler>=3.10",
   "httpx>=0.27",

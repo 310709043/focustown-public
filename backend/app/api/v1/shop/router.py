@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import asdict
+
 from fastapi import APIRouter
 
 from app.api.v1.shop.schemas import ShopItemResponse
@@ -15,4 +17,5 @@ async def list_items(db: DbDep, category: str | None = None) -> list[ShopItemRes
     items = (
         await repo.list_by_category(category) if category else await repo.list_all()
     )
-    return [ShopItemResponse(**i.__dict__) for i in items]
+    # ShopItemRecord is a slots=True dataclass → no __dict__; use asdict().
+    return [ShopItemResponse(**asdict(i)) for i in items]
