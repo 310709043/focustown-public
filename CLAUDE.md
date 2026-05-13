@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Focus Town — Pomodoro-based social focus app. Pixel-city UI, live leaderboards, partner matching, shared focus rooms with realtime chat. Frontend = Next.js 15 (App Router). Backend = FastAPI + SQLAlchemy 2 async. Postgres + Redis. The original 1318-line single-file UI prototype lives at `reference.html` and is the source of truth for visual/interaction design.
+Focus Town — Pomodoro-based social focus app. Pixel-city UI, live leaderboards, partner matching, shared focus rooms with realtime chat. Frontend = Next.js 15 (App Router). Backend = FastAPI + SQLAlchemy 2 async. Postgres + Redis. The original 1318-line single-file UI prototype was the source of visual/interaction design; it has been removed from the working tree but is preserved in git history at `82880df:reference.html` (recover with `git show 82880df:reference.html > reference.html`).
 
 ## Common commands
 
