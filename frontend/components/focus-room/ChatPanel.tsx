@@ -13,7 +13,10 @@ export function ChatPanel({ roomId, myUserId }: { roomId: string; myUserId: stri
   const realtime = useRealtime((msg) => {
     if (msg.type !== "chat" || msg.room_id !== roomId) return;
     if (msg.from === myUserId) return; // we already optimistic-rendered
-    setMsgs((prev) => [...prev, { from: "them", text: msg.text, ts: nowStr() }]);
+    // WsMessage's "chat" variant carries a string text, but the union widens
+    // it via the index-signature fallback — narrow explicitly here.
+    const text = typeof msg.text === "string" ? msg.text : String(msg.text ?? "");
+    setMsgs((prev) => [...prev, { from: "them", text, ts: nowStr() }]);
   });
 
   useEffect(() => {

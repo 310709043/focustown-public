@@ -1,50 +1,270 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/state/authStore";
+import { Logo } from "@/components/scene/Logo";
+import { Airplane } from "@/components/scene/Airplane";
+
+/* Pre-computed sprinkle of pixel stars; deterministic so SSR + client match. */
+function generateStars(count: number, seed = 7) {
+  const out: { top: number; left: number; size: number; dur: number; delay: number }[] = [];
+  let h = seed * 2654435761;
+  for (let i = 0; i < count; i++) {
+    h = (h * 16807) % 2147483647;
+    const r = (h / 2147483647 + 1) / 2;
+    h = (h * 16807) % 2147483647;
+    const r2 = (h / 2147483647 + 1) / 2;
+    out.push({
+      top: r * 60,
+      left: r2 * 100,
+      size: r > 0.85 ? 2 : 1,
+      dur: 1.5 + r * 3.5,
+      delay: r2 * 5,
+    });
+  }
+  return out;
+}
 
 export default function SplashPage() {
+  const router = useRouter();
+  const { signIn, loading, error } = useAuthStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const stars = useMemo(() => generateStars(120), []);
+  const [phase, setPhase] = useState<"night" | "dawn">("night");
+
+  // Cycle splash between night/dawn every 16s for visible weather change.
+  useEffect(() => {
+    const id = setInterval(
+      () => setPhase((p) => (p === "night" ? "dawn" : "night")),
+      16_000,
+    );
+    return () => clearInterval(id);
+  }, []);
+
+  const onSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await signIn(email, password);
+      router.push("/town");
+    } catch {
+      /* error in store */
+    }
+  };
+
   return (
     <main
-      className="absolute inset-0 flex flex-col items-center justify-center text-center"
+      className="absolute inset-0 overflow-hidden"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 40%,#1a0a6e 0%,#09023a 45%,#030111 100%)",
+          phase === "night"
+            ? "radial-gradient(ellipse at 50% 35%, #1a0a6e 0%, #09023a 45%, #030111 100%)"
+            : "linear-gradient(180deg, #0d0428 0%, #4c1d95 25%, #9d174d 55%, #ea580c 80%, #fcd34d 100%)",
+        transition: "background 5s ease",
       }}
     >
-      <div className="relative animate-fadeUp flex flex-col items-center gap-3">
+      {/* twinkling stars (fade out at dawn) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ opacity: phase === "night" ? 1 : 0.15, transition: "opacity 4s" }}
+      >
+        {stars.map((s, i) => (
+          <span
+            key={i}
+            className="absolute rounded-full bg-white animate-twinkle"
+            style={
+              {
+                width: s.size,
+                height: s.size,
+                top: `${s.top}%`,
+                left: `${s.left}%`,
+                ["--d" as string]: `${s.dur}s`,
+                ["--dl" as string]: `-${s.delay}s`,
+              } as React.CSSProperties
+            }
+          />
+        ))}
+      </div>
+
+      {/* drifting cloud (always visible, brighter at dawn) */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: "12%",
+          left: 0,
+          right: 0,
+          height: 60,
+          opacity: phase === "night" ? 0.25 : 0.6,
+          transition: "opacity 4s",
+        }}
+      >
         <div
-          className="w-[74px] h-[74px] rounded-full animate-moonPulse"
+          className="absolute"
           style={{
-            background: "radial-gradient(circle at 33% 28%,#fff9c4,#fef3c7,#fcd34d)",
+            top: 0,
+            left: "20%",
+            width: 140,
+            height: 28,
+            background:
+              "linear-gradient(90deg, rgba(255,255,255,0.5), rgba(252,211,77,0.3))",
+            borderRadius: 50,
+            filter: "blur(6px)",
+            animation: "carDrive 60s linear infinite",
           }}
         />
         <div
-          className="font-pixel tracking-[3px] leading-loose"
+          className="absolute"
           style={{
-            color: "var(--a2)",
-            textShadow: "0 0 14px var(--a1), 0 0 35px var(--a3)",
-            fontSize: "clamp(10px,2.6vw,14px)",
+            top: 12,
+            left: "55%",
+            width: 100,
+            height: 20,
+            background:
+              "linear-gradient(90deg, rgba(196,181,253,0.5), rgba(167,139,250,0.3))",
+            borderRadius: 50,
+            filter: "blur(5px)",
+            animation: "carDrive 80s linear infinite",
+          }}
+        />
+      </div>
+
+      {/* moon during night, sun during dawn */}
+      <div
+        className="absolute top-[10%] right-[12%] z-[2]"
+        style={{ opacity: phase === "night" ? 1 : 0, transition: "opacity 3s" }}
+      >
+        <div
+          className="w-20 h-20 rounded-full animate-moonPulse"
+          style={{
+            background: "radial-gradient(circle at 33% 28%, #fff9c4, #fef3c7, #fcd34d)",
+          }}
+        />
+      </div>
+      <div
+        className="absolute top-[16%] right-[18%] z-[2]"
+        style={{ opacity: phase === "night" ? 0 : 1, transition: "opacity 3s" }}
+      >
+        <div
+          className="w-24 h-24 rounded-full"
+          style={{
+            background: "radial-gradient(circle at 40% 38%, #fff7ed, #fed7aa, #fb923c)",
+            boxShadow: "0 0 60px rgba(251,146,60,0.7), 0 0 120px rgba(251,146,60,0.3)",
+          }}
+        />
+      </div>
+
+      {/* airplanes */}
+      <Airplane intervalSeconds={22} />
+      <Airplane intervalSeconds={31} delaySeconds={-12} topPercent={26} />
+
+      {/* foreground content */}
+      <div className="relative z-[5] h-full flex flex-col items-center justify-center px-6 gap-7 animate-fadeUp">
+        <div className="flex flex-col items-center gap-3">
+          <Logo scale={3} />
+          <div
+            className="font-pixel"
+            style={{
+              fontSize: 24,
+              color: "var(--a2)",
+              letterSpacing: 4,
+              textShadow:
+                "0 0 14px var(--a1), 0 0 32px var(--a3), 0 0 60px var(--a4)",
+            }}
+          >
+            ✦ FOCUS TOWN ✦
+          </div>
+          <div
+            className="font-japan"
+            style={{
+              fontSize: 16,
+              color: "var(--muted)",
+              letterSpacing: 6,
+            }}
+          >
+            找你的人・找你的專注
+          </div>
+        </div>
+
+        <form
+          onSubmit={onSignIn}
+          className="bg-card border border-border2 rounded-lg p-6 w-full max-w-sm flex flex-col gap-3 pixel-edge"
+          style={{
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 0 32px rgba(124,58,237,0.25)",
           }}
         >
-          ✦ FOCUS TOWN ✦
+          <input
+            type="email"
+            required
+            placeholder="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3.5 py-3 outline-none focus:border-accent-1 font-japan"
+            style={{ fontSize: 14 }}
+          />
+          <input
+            type="password"
+            required
+            minLength={8}
+            placeholder="密碼 (至少 8 字)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3.5 py-3 outline-none focus:border-accent-1 font-japan"
+            style={{ fontSize: 14 }}
+          />
+          {error ? (
+            <div
+              style={{ fontSize: 12, color: "var(--coral)", textShadow: "0 0 6px var(--coral)" }}
+            >
+              ✗ {error}
+            </div>
+          ) : null}
+          <button
+            type="submit"
+            disabled={loading}
+            className="pixel-btn"
+            style={{ fontSize: 12, padding: "12px 16px", letterSpacing: 3 }}
+          >
+            {loading ? "正在進城..." : "✦ 進入小鎮 ▶"}
+          </button>
+          <div className="flex items-center gap-2 my-1">
+            <div className="flex-1 h-px bg-border" />
+            <span style={{ fontSize: 11, color: "var(--muted)" }}>or</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+          <Link
+            href="/signup"
+            className="text-center font-japan border border-border rounded-md py-2.5 hover:border-accent-1 hover:text-accent-1 text-muted transition-colors"
+            style={{ fontSize: 13 }}
+          >
+            → 新帳號註冊
+          </Link>
+        </form>
+
+        <div className="flex gap-3" style={{ fontSize: 26 }}>
+          {[
+            { e: "🐱", d: "0s" },
+            { e: "🦊", d: "0.3s" },
+            { e: "🌸", d: "0.6s" },
+            { e: "🐸", d: "0.1s" },
+            { e: "🦋", d: "0.4s" },
+          ].map((c, i) => (
+            <span
+              key={i}
+              className="animate-gifBounce"
+              style={
+                {
+                  ["--gif-dur" as string]: `${1.9 + i * 0.15}s`,
+                  ["--gif-delay" as string]: c.d,
+                } as React.CSSProperties
+              }
+            >
+              {c.e}
+            </span>
+          ))}
         </div>
-        <div className="text-[12px] text-muted tracking-widest">找你的人・找你的專注</div>
-        <div className="flex gap-3 mt-1 text-[20px]">
-          <span>🐱</span>
-          <span>🦊</span>
-          <span>🌸</span>
-          <span>🐸</span>
-          <span>🦋</span>
-        </div>
-        <Link
-          href="/signin"
-          className="font-pixel text-[8px] tracking-widest border-2 border-accent-1 text-accent-1 px-7 py-3 rounded mt-2 hover:border-accent-2 hover:text-accent-2"
-        >
-          ENTER TOWN ▶
-        </Link>
-        <Link href="/signup" className="text-[10px] text-muted hover:text-accent-2">
-          還沒有帳號？立即註冊
-        </Link>
       </div>
     </main>
   );
