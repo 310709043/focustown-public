@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-
 from fastapi import APIRouter
 
 from app.api.v1.shop.schemas import (
@@ -35,9 +33,18 @@ def _item_to_response(
     item: ShopItemRecord,
     prices: list[ShopItemPriceResponse],
 ) -> ShopItemResponse:
-    payload = asdict(item)
-    payload["prices"] = prices
-    return ShopItemResponse(**payload)
+    # Explicit field-by-field mapping so internal-only ShopItemRecord
+    # fields (e.g. `render_meta`) cannot leak into the wire shape.
+    return ShopItemResponse(
+        id=item.id,
+        category=item.category,
+        icon=item.icon,
+        name=item.name,
+        description=item.description,
+        price_cents=item.price_cents,
+        featured=item.featured,
+        prices=prices,
+    )
 
 
 @router.get("", response_model=list[ShopItemResponse])
