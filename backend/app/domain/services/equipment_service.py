@@ -8,7 +8,7 @@ from app.domain.models import User
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.shop_repo import IShopRepo
 from app.domain.repositories.user_item_repo import IUserItemRepo
-from app.domain.repositories.user_repo import IUserRepo
+from app.domain.repositories.user_repo import IUserWriter
 from app.domain.services.presence_service import STREET_CHANNEL
 
 
@@ -37,7 +37,7 @@ class EquipmentService:
 
     SOLID:
     - S: only concerned with equipping; doesn't touch wallet, doesn't render
-    - D: depends on Protocols (`IUserRepo`, `IUserItemRepo`, `IShopRepo`,
+    - D: depends on Protocols (`IUserWriter`, `IUserItemRepo`, `IShopRepo`,
       `IRealtimePublisher`), not on adapters
 
     Broadcast goes to the global ``street`` channel with
@@ -49,7 +49,7 @@ class EquipmentService:
     def __init__(
         self,
         *,
-        users: IUserRepo,
+        users: IUserWriter,
         user_items: IUserItemRepo,
         shop: IShopRepo,
         publisher: IRealtimePublisher,

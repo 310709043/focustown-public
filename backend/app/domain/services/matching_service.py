@@ -7,21 +7,21 @@ from app.domain.events import MatchAccepted, MatchProposed
 from app.domain.models import Match, MatchStatus
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
 from app.domain.repositories.match_repo import IMatchRepo
-from app.domain.repositories.user_repo import IUserRepo
+from app.domain.repositories.user_repo import IUserReader
 from app.domain.services.strategies.compatibility import ICompatibilityStrategy
 
 
 class MatchingService:
     """Coordinates compatibility scoring and match lifecycle.
 
-    DIP: depends on IUserRepo / IMatchRepo / IFocusSessionRepo Protocols and on
+    DIP: depends on IUserReader / IMatchRepo / IFocusSessionRepo Protocols and on
     a pluggable ICompatibilityStrategy. The HTTP router wires concrete impls.
     """
 
     def __init__(
         self,
         *,
-        users: IUserRepo,
+        users: IUserReader,
         matches: IMatchRepo,
         sessions: IFocusSessionRepo,
         strategy: ICompatibilityStrategy,
