@@ -18,8 +18,10 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(
           type={visible ? "text" : "password"}
           {...rest}
           className={clsx(
-            framed &&
-              "w-full bg-[rgba(12,5,35,.9)] border border-border rounded text-[12px] px-3 py-2 pr-10 outline-none focus:border-accent-1",
+            // Pixel-shell when framed (default); pr-10 reserves space for
+            // the show/hide toggle. The `pixel-input` class already sets
+            // font, focus glow, and direction-aware stroke.
+            framed && "pixel-input pr-10",
             className,
           )}
           autoComplete={rest.autoComplete ?? "current-password"}

@@ -66,7 +66,7 @@ export default function SignUpPage() {
       <form
         data-testid="signup-form"
         onSubmit={onSubmit}
-        className="bg-card border border-border rounded-lg p-6 w-full max-w-sm flex flex-col gap-3"
+        className="pixel-panel p-6 w-full max-w-sm flex flex-col gap-3"
       >
         <h1
           className="font-pixel text-[10px] tracking-widest text-center mb-2"
@@ -81,7 +81,7 @@ export default function SignUpPage() {
             placeholder="顯示名稱"
             value={form.displayName}
             onChange={(e) => update("displayName", e.target.value)}
-            className="w-full bg-[rgba(12,5,35,.9)] border border-border rounded text-[12px] px-3 py-2 outline-none focus:border-accent-1"
+            className="pixel-input"
             autoComplete="nickname"
           />
           {errors.displayName ? (
@@ -96,7 +96,7 @@ export default function SignUpPage() {
             placeholder="email"
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
-            className="w-full bg-[rgba(12,5,35,.9)] border border-border rounded text-[12px] px-3 py-2 outline-none focus:border-accent-1"
+            className="pixel-input"
             autoComplete="email"
           />
           {errors.email ? (
@@ -164,7 +164,8 @@ export default function SignUpPage() {
           data-testid="signup-submit"
           type="submit"
           disabled={loading || !form.termsAccepted}
-          className="font-pixel text-[8px] border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="pixel-btn disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ fontSize: 12, padding: "10px 16px", letterSpacing: 2 }}
         >
           {loading ? "註冊中..." : "註冊 ▶"}
         </button>
