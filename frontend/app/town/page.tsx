@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { presenceApi, roomApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
+import { presenceApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import { useSceneStore } from "@/lib/state/sceneStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
 import { useWalletStore } from "@/lib/state/walletStore";
-import { findCharacter } from "@/lib/data/characters";
 import { useRealtime } from "@/lib/ws/useRealtime";
 import { useRealtimeMatch } from "@/lib/ws/useRealtimeMatch";
 import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionCompleted";
@@ -20,7 +17,6 @@ import { StarsLayer } from "@/components/scene/StarsLayer";
 import { Moon } from "@/components/scene/Moon";
 import { WeatherBadge } from "@/components/scene/WeatherBadge";
 import { TownClock } from "@/components/scene/TownClock";
-import { Logo } from "@/components/scene/Logo";
 import { Airplane } from "@/components/scene/Airplane";
 import { Buildings } from "@/components/scene/Buildings";
 import { Billboard } from "@/components/scene/Billboard";
@@ -29,6 +25,8 @@ import { CarsLane } from "@/components/scene/CarsLane";
 import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
 import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
+import { TownNavbar } from "@/components/chrome/TownNavbar";
+import { TickerBar } from "@/components/chrome/TickerBar";
 import { SCENES } from "@/lib/data/scenes";
 
 import { TimerPanel } from "@/components/panels/TimerPanel";
@@ -36,17 +34,13 @@ import { MusicPanel } from "@/components/panels/MusicPanel";
 import { MatchModal } from "@/components/modals/MatchModal";
 import { BigFocusCTA } from "@/components/town/BigFocusCTA";
 import { MatchCTA } from "@/components/town/MatchCTA";
-import { CoinBadge } from "@/components/town/CoinBadge";
 
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
 
 export default function TownPage() {
-  const router = useRouter();
-  const { user, hydrate, signOut } = useAuthStore();
+  const { user, hydrate } = useAuthStore();
   const advanceScene = useSceneStore((s) => s.advance);
-  const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
   const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
-  const ownedItemsCount = useUserItemsStore((s) => Object.keys(s.byShopItemId).length);
   const [matchOpen, setMatchOpen] = useState(false);
 
   useEffect(() => {
@@ -159,115 +153,13 @@ export default function TownPage() {
     // TODO Wave 4: surface a "session complete" toast.
   });
 
-  const myChar = findCharacter(user?.character_key);
   const currentScene = useSceneStore((s) => s.current);
   const sceneHasStars = SCENES[currentScene].stars > 0;
   const sceneIsWet = currentScene === "rain" || currentScene === "storm";
 
   return (
     <main className="absolute inset-0 flex flex-col overflow-hidden">
-      {/* ═══ LAYER 1: navbar — logo left, T-coin leftmost in right cluster ═══ */}
-      <nav
-        className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between px-5 z-10"
-        style={{ height: 56 }}
-      >
-        <div className="flex items-center gap-3">
-          <Logo scale={1.4} />
-        </div>
-        <div className="flex gap-2 items-center">
-          <CoinBadge />
-          <span
-            className="rounded-md px-2.5 py-2 flex items-center gap-1.5"
-            style={{
-              background: "rgba(52,211,153,0.06)",
-              border: "1px solid rgba(52,211,153,0.35)",
-              fontSize: 12,
-              color: "var(--teal)",
-              fontFamily: "VT323, monospace",
-              letterSpacing: 0.6,
-              textShadow: "0 0 6px rgba(52,211,153,0.4)",
-            }}
-            title="目前街上的人數"
-          >
-            <span style={{ fontSize: 13 }}>👥</span>
-            <span>在線 {onlineCount}</span>
-          </span>
-          <span
-            className="border border-border2 rounded-md px-3 py-2 flex items-center gap-1.5"
-            style={{
-              background: "rgba(167,139,250,0.08)",
-              fontSize: 13,
-              color: "var(--a2)",
-            }}
-          >
-            <span style={{ fontSize: 15 }}>{myChar?.emoji ?? "👤"}</span>
-            <span className="font-japan">{myChar?.name ?? user?.display_name ?? "..."}</span>
-          </span>
-          <Link
-            href="/awards"
-            className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-amber hover:text-amber transition-colors"
-            style={{ fontSize: 13 }}
-          >
-            🏆 大賞區
-          </Link>
-          <button
-            className="font-japan rounded-md px-3 py-2 transition-colors flex items-center gap-1.5"
-            style={{
-              fontSize: 13,
-              background:
-                "linear-gradient(180deg, rgba(252,211,77,0.16), rgba(252,211,77,0.06))",
-              border: "1px solid var(--amber)",
-              color: "var(--amber)",
-              textShadow: "0 0 8px rgba(252,211,77,0.35)",
-              boxShadow:
-                "0 0 12px rgba(252,211,77,0.18), inset 0 0 8px rgba(252,211,77,0.08)",
-            }}
-            onClick={async () => {
-              try {
-                const room = await roomApi.getMine();
-                // typed-routes doesn't know about /town/room/[id]; safe cast.
-                router.push(`/town/room/${room.id}` as Parameters<typeof router.push>[0]);
-              } catch {
-                /* hydration retry on next click; surfaced via roomStore. */
-              }
-            }}
-            title="進入我的房間"
-          >
-            🏠 我的房間
-          </button>
-          <Link
-            href="/shop"
-            className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-pink hover:text-pink transition-colors flex items-center gap-1.5"
-            style={{ fontSize: 13 }}
-          >
-            🛒 道具
-            <span
-              style={{
-                fontSize: 10,
-                color: "var(--amber)",
-                background: "rgba(252,211,77,0.12)",
-                border: "1px solid rgba(252,211,77,0.4)",
-                padding: "1px 5px",
-                borderRadius: 99,
-                fontFamily: "VT323, monospace",
-                letterSpacing: 0.5,
-              }}
-            >
-              🔓 {ownedItemsCount}
-            </span>
-          </Link>
-          <button
-            className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-coral hover:text-coral transition-colors"
-            style={{ fontSize: 13 }}
-            onClick={() => {
-              signOut();
-              router.push("/");
-            }}
-          >
-            登出
-          </button>
-        </div>
-      </nav>
+      <TownNavbar />
 
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
            z-order: sky → stars → shooting stars → moon → planes → skyline →
@@ -322,6 +214,9 @@ export default function TownPage() {
         >
           <MusicPanel />
         </div>
+
+        {/* news ticker — drifts above the bottom HUD */}
+        <TickerBar />
 
         {/* bottom-center: match CTA */}
         <MatchCTA onClick={() => setMatchOpen(true)} />

@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 
 const WD = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const MN = [
-  "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC",
-];
+const MN = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 export function TownClock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -19,14 +17,22 @@ export function TownClock() {
   const hh = String(now.getHours()).padStart(2, "0");
   const mm = String(now.getMinutes()).padStart(2, "0");
   return (
-    <div className="absolute top-[10px] right-[12px] text-right z-[6] bg-glass border border-border rounded px-2.5 py-1 backdrop-blur-md">
+    <div
+      className="pixel-panel absolute top-[12px] right-[14px] text-right z-[6] px-3 py-1.5"
+      title="小鎮時間"
+    >
       <div
-        className="font-mono text-[18px] leading-none tracking-wider"
-        style={{ color: "var(--a2)", textShadow: "0 0 8px var(--a1)" }}
+        className="font-mono leading-none tracking-widest flex items-center justify-end"
+        style={{ fontSize: 22, color: "var(--a2)", textShadow: "0 0 10px var(--a1)" }}
       >
-        {hh}:{mm}
+        <span>{hh}</span>
+        <span className="animate-blink mx-[1px]">:</span>
+        <span>{mm}</span>
       </div>
-      <div className="text-[9px] text-muted mt-px tracking-wider">
+      <div
+        className="font-pixel-en mt-1"
+        style={{ fontSize: 9, color: "var(--dir-ink-mute)", letterSpacing: 2 }}
+      >
         {WD[now.getDay()]} · {MN[now.getMonth()]} {now.getDate()}
       </div>
     </div>

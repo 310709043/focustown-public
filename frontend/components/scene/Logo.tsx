@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { PixelWord } from "@/components/pixel/PixelWord";
 
 type Props = {
   scale?: number;
@@ -8,25 +8,19 @@ type Props = {
   className?: string;
 };
 
-const BASE_HEIGHT = 40;
+// `scale=1` legacy = 40px square PNG. The pixel wordmark is 7 rows tall
+// at scale=1, so we multiply by ~3 to land in a similar visual weight.
+const PIXEL_SCALE_MULTIPLIER = 3;
 
 export function Logo({ scale = 1, glow = true, className }: Props) {
-  const size = Math.round(BASE_HEIGHT * scale);
+  const pixelScale = Math.max(2, Math.round(scale * PIXEL_SCALE_MULTIPLIER));
   return (
-    <Image
-      src="/logo.png"
-      alt="Focus Town"
-      width={size}
-      height={size}
-      priority
+    <PixelWord
+      text="FocusTown"
+      color="var(--a2)"
+      glow={glow ? "var(--a3)" : null}
+      scale={pixelScale}
       className={className}
-      style={{
-        height: size,
-        width: "auto",
-        filter: glow
-          ? "drop-shadow(0 0 6px var(--a1)) drop-shadow(0 0 12px var(--a3))"
-          : "none",
-      }}
     />
   );
 }
