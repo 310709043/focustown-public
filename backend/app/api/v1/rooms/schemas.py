@@ -5,6 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.api.v1.tracks.schemas import TrackResponse
+
 RoomTheme = Literal["dawn", "day", "dusk", "night", "rain", "snow", "storm"]
 RoomVisibility = Literal["public", "invite_only"]
 
@@ -66,3 +68,18 @@ class MoveRoomItemRequest(BaseModel):
 
     x: int = Field(..., ge=0, le=100)
     y: int = Field(..., ge=0, le=100)
+
+
+class AddRoomTrackRequest(BaseModel):
+    track_id: str = Field(min_length=1, max_length=36)
+
+
+class RoomTrackResponse(BaseModel):
+    """Playlist entry — joins the join row with the embedded track metadata
+    so the client doesn't need a follow-up round-trip per row."""
+
+    id: str
+    room_id: str
+    track_id: str
+    position: int
+    track: TrackResponse

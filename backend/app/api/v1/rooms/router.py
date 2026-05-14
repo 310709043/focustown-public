@@ -4,23 +4,33 @@ from fastapi import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.rooms.schemas import (
+    AddRoomTrackRequest,
     MoveRoomItemRequest,
     PlaceRoomItemRequest,
     RoomItemResponse,
     RoomResponse,
+    RoomTrackResponse,
     UpdateRoomRequest,
 )
+from app.api.v1.tracks.schemas import TrackResponse
 from app.core.deps import CurrentUserId, DbDep, IdGenDep
 from app.core.exceptions import BusinessError
 from app.core.ids import IIdGenerator
 from app.core.sentinels import UNSET
 from app.domain.models.room import Room
 from app.domain.models.room_item import RoomItem
+from app.domain.repositories.track_repo import TrackRecord
 from app.domain.services.room_decoration_service import RoomDecorationService
 from app.domain.services.room_service import RoomService
+from app.domain.services.room_track_service import (
+    RoomTrackEntry,
+    RoomTrackService,
+)
 from app.infrastructure.db.repositories import (
     SqlRoomItemRepo,
     SqlRoomRepo,
+    SqlRoomTrackRepo,
+    SqlTrackRepo,
     SqlUserItemRepo,
     SqlUserRepo,
 )
@@ -57,6 +67,40 @@ def _decoration_service(
         item_writer=room_items,
         user_items_reader=SqlUserItemRepo(db),
         id_gen=id_gen,
+    )
+
+
+def _room_track_service(db: AsyncSession, id_gen: IIdGenerator) -> RoomTrackService:
+    return RoomTrackService(
+        rooms=SqlRoomRepo(db),
+        room_tracks=SqlRoomTrackRepo(db),
+        tracks=SqlTrackRepo(db),
+        ids=id_gen,
+    )
+
+
+def _track_to_response(t: TrackRecord) -> TrackResponse:
+    return TrackResponse(
+        id=t.id,
+        title=t.title,
+        artist=t.artist,
+        mood=t.mood,
+        duration_ms=t.duration_ms,
+        content_type=t.content_type,
+        file_size_bytes=t.file_size_bytes,
+        license=t.license,
+        uploaded_by_user_id=t.uploaded_by_user_id,
+        created_at=t.created_at,
+    )
+
+
+def _room_track_entry_to_response(entry: RoomTrackEntry) -> RoomTrackResponse:
+    return RoomTrackResponse(
+        id=entry.room_track.id,
+        room_id=entry.room_track.room_id,
+        track_id=entry.room_track.track_id,
+        position=entry.room_track.position,
+        track=_track_to_response(entry.track),
     )
 
 
@@ -211,3 +255,53 @@ async def list_room_items(
     svc = _decoration_service(db, id_gen)
     items = await svc.list_for_room(room_id=room_id, requester_user_id=user_id)
     return [_to_item_response(it) for it in items]
+
+
+# ── Per-room playlist (Phase 7) ─────────────────────────────────────────────
+# Owner-scoped: visitor reads land in Phase 8 under /rooms/{id}/tracks.
+
+
+@me_room_router.get("/tracks", response_model=list[RoomTrackResponse])
+async def list_my_room_tracks(
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+) -> list[RoomTrackResponse]:
+    svc = _room_track_service(db, id_gen)
+    entries = await svc.list_for_user(user_id=user_id)
+    return [_room_track_entry_to_response(e) for e in entries]
+
+
+@me_room_router.post("/tracks", response_model=RoomTrackResponse, status_code=201)
+async def add_my_room_track(
+    payload: AddRoomTrackRequest,
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+) -> RoomTrackResponse:
+    svc = _room_track_service(db, id_gen)
+    row = await svc.add_for_user(user_id=user_id, track_id=payload.track_id)
+    # Hydrate with track metadata so the client doesn't have to refetch.
+    track = await SqlTrackRepo(db).get(row.track_id)
+    if track is None:  # pragma: no cover — service just validated existence
+        raise BusinessError("track_disappeared_after_add")
+    return RoomTrackResponse(
+        id=row.id,
+        room_id=row.room_id,
+        track_id=row.track_id,
+        position=row.position,
+        track=_track_to_response(track),
+    )
+
+
+@me_room_router.delete("/tracks/{track_id}", status_code=204)
+async def remove_my_room_track(
+    track_id: str,
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+) -> None:
+    if not track_id or len(track_id) > 36:
+        raise BusinessError("invalid_track_id")
+    svc = _room_track_service(db, id_gen)
+    await svc.remove_for_user(user_id=user_id, track_id=track_id)
