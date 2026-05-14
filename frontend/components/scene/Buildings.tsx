@@ -21,25 +21,51 @@ type Building = {
 };
 
 const BUILDINGS: Building[] = [
-  { height: 138, width: 48, sign: "CAFE",  signColor: "var(--pink)",   hasAc: true },
-  { height: 92,  width: 36 },
-  { height: 166, width: 54, sign: "HOTEL", signColor: "var(--amber)",  hasAc: true },
-  { height: 112, width: 40, hasAc: true },
-  { height: 188, width: 62, sign: "NEON",  signColor: "var(--teal)",   hasAc: true },
-  { height: 102, width: 38 },
-  { height: 150, width: 52, sign: "CODE",  signColor: "var(--blue)",   hasAc: true },
-  { height: 84,  width: 32 },
-  { height: 172, width: 58, sign: "STORE", signColor: "var(--coral)",  hasAc: true },
-  { height: 124, width: 44, hasAc: true },
-  { height: 96,  width: 38 },
-  { height: 158, width: 54, sign: "PIXEL", signColor: "var(--pink)",   hasAc: true },
-  { height: 78,  width: 30 },
-  { height: 142, width: 48, hasAc: true },
-  { height: 108, width: 40, sign: "INK",   signColor: "var(--amber)" },
-  { height: 168, width: 56, sign: "STUDY", signColor: "var(--teal)",   hasAc: true },
-  { height: 88,  width: 34 },
-  { height: 130, width: 46, hasAc: true },
-  { height: 152, width: 52, sign: "CAFE",  signColor: "var(--pink)",   hasAc: true },
+  { height: 138, width: 42, sign: "CAFE",  signColor: "var(--pink)",   hasAc: true },
+  { height: 92,  width: 30 },
+  { height: 166, width: 46, sign: "HOTEL", signColor: "var(--amber)",  hasAc: true },
+  { height: 112, width: 34, hasAc: true },
+  { height: 188, width: 54, sign: "NEON",  signColor: "var(--teal)",   hasAc: true },
+  { height: 102, width: 32 },
+  { height: 150, width: 44, sign: "CODE",  signColor: "var(--blue)",   hasAc: true },
+  { height: 84,  width: 28 },
+  { height: 172, width: 50, sign: "STORE", signColor: "var(--coral)",  hasAc: true },
+  { height: 124, width: 38, hasAc: true },
+  { height: 96,  width: 32 },
+  { height: 158, width: 46, sign: "PIXEL", signColor: "var(--pink)",   hasAc: true },
+  { height: 78,  width: 26 },
+  { height: 142, width: 42, hasAc: true },
+  { height: 108, width: 34, sign: "INK",   signColor: "var(--amber)" },
+  { height: 168, width: 48, sign: "STUDY", signColor: "var(--teal)",   hasAc: true },
+  { height: 88,  width: 30 },
+  { height: 130, width: 40, hasAc: true },
+  { height: 118, width: 36, sign: "JAZZ",  signColor: "var(--blue)",   hasAc: true },
+  { height: 96,  width: 30 },
+  { height: 152, width: 44, sign: "RAMEN", signColor: "var(--coral)",  hasAc: true },
+  { height: 82,  width: 28 },
+  { height: 144, width: 42, sign: "MOON",  signColor: "var(--a2)",     hasAc: true },
+  { height: 106, width: 34 },
+  { height: 162, width: 48, sign: "PUB",   signColor: "var(--amber)",  hasAc: true },
+  { height: 90,  width: 30 },
+  { height: 134, width: 40, hasAc: true },
+  { height: 152, width: 46, sign: "CAFE",  signColor: "var(--pink)",   hasAc: true },
+];
+
+// Parallax back row: dim silhouettes sitting deeper into the scene. Taller
+// average height but darker tint + lower opacity sells the depth.
+const BUILDINGS_BACK: Pick<Building, "height" | "width">[] = [
+  { height: 116, width: 56 },
+  { height: 188, width: 70 },
+  { height: 142, width: 52 },
+  { height: 204, width: 80 },
+  { height: 134, width: 50 },
+  { height: 168, width: 64 },
+  { height: 124, width: 48 },
+  { height: 196, width: 74 },
+  { height: 156, width: 58 },
+  { height: 128, width: 54 },
+  { height: 178, width: 66 },
+  { height: 138, width: 52 },
 ];
 
 const SCENE_BACKGROUND: Record<string, [string, string, string]> = {
@@ -107,11 +133,60 @@ export function Buildings() {
   }, [scene, litRatio, winColors]);
 
   return (
-    <div
-      className="absolute left-0 right-0 flex items-end px-1.5 z-[3] pointer-events-none"
-      style={{ bottom: 156 }}
-    >
-      {layout.map((b, i) => (
+    <>
+      {/* parallax back row — silhouettes, lower opacity, no signs */}
+      <div
+        className="absolute left-0 right-0 flex items-end justify-around px-4 z-[2] pointer-events-none"
+        style={{ bottom: 156, opacity: 0.6 }}
+        aria-hidden
+      >
+        {BUILDINGS_BACK.map((b, i) => {
+          const bg = bgColors[i % 3];
+          return (
+            <div
+              key={`back-${i}`}
+              className="relative shrink-0 pixel-edge"
+              style={{
+                height: b.height,
+                width: b.width,
+                background: bg,
+                filter: "brightness(0.55) saturate(0.7) blur(0.4px)",
+                borderTop: `1px solid ${bgColors[(i + 1) % 3]}`,
+                transition: "background 4s",
+              }}
+            >
+              {/* a few dim windows so the silhouette doesn't look dead */}
+              {Array.from({ length: Math.floor(b.height / 18) }).map((_, r) => (
+                <span
+                  key={r}
+                  style={{
+                    position: "absolute",
+                    top: 14 + r * 18,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 4,
+                    height: 5,
+                    background:
+                      r % 3 === 0 ? winColors[(i + r) % winColors.length] : "transparent",
+                    opacity: r % 3 === 0 ? 0.35 : 0,
+                    boxShadow:
+                      r % 3 === 0
+                        ? `0 0 3px ${winColors[(i + r) % winColors.length]}`
+                        : "none",
+                  }}
+                />
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* front row — full detail */}
+      <div
+        className="absolute left-0 right-0 flex items-end justify-around px-1.5 z-[3] pointer-events-none"
+        style={{ bottom: 156 }}
+      >
+        {layout.map((b, i) => (
         <div
           key={i}
           className="relative shrink-0 mx-[2px] pixel-edge"
@@ -256,6 +331,7 @@ export function Buildings() {
           ) : null}
         </div>
       ))}
-    </div>
+      </div>
+    </>
   );
 }
