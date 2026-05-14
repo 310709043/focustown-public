@@ -13,6 +13,7 @@ from app.core.deps import _event_bus
 from app.core.exceptions import FocusTownError
 from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
+from app.core.middleware import SecurityHeadersMiddleware
 from app.domain.services.coin_award_service import (
     CoinAwardService,
     _WalletServiceAcquired,
@@ -87,6 +88,10 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+    )
+    app.add_middleware(
+        SecurityHeadersMiddleware,
+        enable_hsts=settings.app_env == "production",
     )
 
     @app.exception_handler(FocusTownError)

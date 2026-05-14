@@ -14,6 +14,10 @@ class User:
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    terms_accepted_at: datetime | None = None
+    terms_version: str | None = None
+    marketing_opt_in: bool = False
+    marketing_opt_in_at: datetime | None = None
 
     def public_name(self) -> str:
         return self.display_name or self.email.split("@", 1)[0]

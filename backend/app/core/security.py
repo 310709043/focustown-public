@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -7,9 +8,15 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from app.core.config import Settings
-from app.core.exceptions import AuthError
+from app.core.exceptions import AuthError, ValidationError
 
 _pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_MAX_LENGTH = 128
+_PASSWORD_PATTERN = re.compile(
+    rf"^(?=.*[A-Za-z])(?=.*\d).{{{PASSWORD_MIN_LENGTH},{PASSWORD_MAX_LENGTH}}}$"
+)
 
 
 def hash_password(plain: str) -> str:
@@ -18,6 +25,15 @@ def hash_password(plain: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return _pwd_ctx.verify(plain, hashed)
+
+
+def validate_password_strength(password: str) -> None:
+    """8-128 chars, must contain at least one letter and one digit.
+
+    Raises ValidationError (422) so the API surfaces a clean message.
+    """
+    if not _PASSWORD_PATTERN.match(password):
+        raise ValidationError("password_must_contain_letter_and_digit")
 
 
 def create_token(

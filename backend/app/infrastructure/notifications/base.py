@@ -1,8 +1,10 @@
+"""Re-export of the notification port for backwards-compatible imports.
+
+The Protocol lives in `app.domain.notifications` so domain services can
+depend on it without breaking the layered import direction.
+"""
 from __future__ import annotations
 
-from typing import Protocol
+from app.domain.notifications import INotificationService
 
-
-class INotificationService(Protocol):
-    async def send_email(self, *, to: str, subject: str, body: str) -> None: ...
-    async def send_push(self, *, user_id: str, title: str, body: str) -> None: ...
+__all__ = ["INotificationService"]

@@ -44,6 +44,10 @@ extend-exclude = ["alembic/versions"]
 select = ["E", "F", "I", "B", "UP", "N", "ASYNC", "S", "RUF"]
 ignore = ["S101"]
 
+[tool.ruff.lint.per-file-ignores]
+# Tests legitimately use hardcoded fixture passwords/tokens and unused unpacks.
+"tests/**/*.py" = ["S105", "S106", "S107", "RUF059"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

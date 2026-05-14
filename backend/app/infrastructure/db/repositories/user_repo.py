@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,6 +21,10 @@ def _to_domain(row: UserORM) -> User:
         is_active=row.is_active,
         created_at=row.created_at,
         updated_at=row.updated_at,
+        terms_accepted_at=row.terms_accepted_at,
+        terms_version=row.terms_version,
+        marketing_opt_in=row.marketing_opt_in,
+        marketing_opt_in_at=row.marketing_opt_in_at,
     )
 
 
@@ -28,6 +34,11 @@ class SqlUserRepo(IUserRepo):
 
     async def get_by_id(self, user_id: str) -> User | None:
         row = await self._s.get(UserORM, user_id)
+        return _to_domain(row) if row else None
+
+    async def get_by_email(self, email: str) -> User | None:
+        stmt = select(UserORM).where(UserORM.email == email.lower())
+        row = (await self._s.execute(stmt)).scalar_one_or_none()
         return _to_domain(row) if row else None
 
     async def get_credentials_by_email(self, email: str) -> UserCredentials | None:
@@ -44,6 +55,10 @@ class SqlUserRepo(IUserRepo):
         email: str,
         password_hash: str,
         display_name: str,
+        terms_accepted_at: datetime | None = None,
+        terms_version: str | None = None,
+        marketing_opt_in: bool = False,
+        marketing_opt_in_at: datetime | None = None,
     ) -> User:
         existing = await self.get_credentials_by_email(email)
         if existing is not None:
@@ -54,6 +69,10 @@ class SqlUserRepo(IUserRepo):
             password_hash=password_hash,
             display_name=display_name,
             is_active=True,
+            terms_accepted_at=terms_accepted_at,
+            terms_version=terms_version,
+            marketing_opt_in=marketing_opt_in,
+            marketing_opt_in_at=marketing_opt_in_at,
         )
         self._s.add(row)
         await self._s.flush()
@@ -78,6 +97,13 @@ class SqlUserRepo(IUserRepo):
             row.role_label = role_label
         await self._s.flush()
         return _to_domain(row)
+
+    async def update_password_hash(self, *, user_id: str, password_hash: str) -> None:
+        row = await self._s.get(UserORM, user_id)
+        if row is None:
+            raise NotFoundError("user_not_found")
+        row.password_hash = password_hash
+        await self._s.flush()
 
     async def list_recent(self, *, limit: int) -> list[User]:
         stmt = select(UserORM).order_by(UserORM.created_at.desc()).limit(limit)

@@ -11,6 +11,7 @@ export type User = {
   display_name: string;
   character_key: string | null;
   role_label: string | null;
+  marketing_opt_in?: boolean;
 };
 
 export type Tokens = {
