@@ -54,6 +54,7 @@ export function SplashGate() {
   return (
     <div
       aria-hidden
+      data-testid="splash"
       style={{
         position: "fixed",
         inset: 0,

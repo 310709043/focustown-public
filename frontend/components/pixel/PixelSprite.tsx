@@ -28,12 +28,16 @@ export function PixelSprite({
   const { w, h } = useMemo(() => spriteSize(sprite), [sprite]);
   const url = useMemo(() => spriteToDataURL(sprite, palette), [sprite, palette]);
 
+  // The data URL differs between SSR (placeholder) and CSR (real canvas
+  // output) — that's by design. Tell React this is intentional so it
+  // doesn't tear down the subtree as a hydration mismatch.
   return (
     <span
       role={title ? "img" : undefined}
       aria-label={title}
       title={title}
       className={className}
+      suppressHydrationWarning
       style={{
         display: "inline-block",
         width: w * scale,

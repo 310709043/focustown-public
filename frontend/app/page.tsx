@@ -176,6 +176,7 @@ export default function SplashPage() {
         </div>
 
         <form
+          data-testid="signin-form"
           onSubmit={onSignIn}
           className="bg-card border border-border2 rounded-lg p-6 w-full max-w-sm flex flex-col gap-3 pixel-edge"
           style={{
@@ -184,6 +185,7 @@ export default function SplashPage() {
           }}
         >
           <input
+            data-testid="signin-email"
             type="email"
             required
             placeholder="email"
@@ -193,6 +195,7 @@ export default function SplashPage() {
             style={{ fontSize: 14 }}
           />
           <input
+            data-testid="signin-password"
             type="password"
             required
             minLength={8}
@@ -204,6 +207,7 @@ export default function SplashPage() {
           />
           {error ? (
             <div
+              data-testid="signin-error"
               role="alert"
               className="font-japan"
               style={{
@@ -223,6 +227,7 @@ export default function SplashPage() {
             </div>
           ) : null}
           <button
+            data-testid="signin-submit"
             type="submit"
             disabled={loading}
             className="pixel-btn"
@@ -236,6 +241,7 @@ export default function SplashPage() {
             <div className="flex-1 h-px bg-border" />
           </div>
           <Link
+            data-testid="signup-link"
             href="/signup"
             className="text-center font-japan border border-border rounded-md py-2.5 hover:border-accent-1 hover:text-accent-1 text-muted transition-colors"
             style={{ fontSize: 13 }}

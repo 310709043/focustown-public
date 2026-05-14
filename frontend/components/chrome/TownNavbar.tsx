@@ -24,6 +24,7 @@ export function TownNavbar() {
 
   return (
     <nav
+      data-testid="town-navbar"
       className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between px-5 z-10"
       style={{ height: 56 }}
     >
@@ -36,6 +37,7 @@ export function TownNavbar() {
         <TopStatusPill />
 
         <Link
+          data-testid="nav-awards"
           href="/awards"
           className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-amber hover:text-amber transition-colors"
           style={{ fontSize: 13 }}
@@ -44,6 +46,7 @@ export function TownNavbar() {
         </Link>
 
         <button
+          data-testid="nav-room"
           className="font-japan rounded-md px-3 py-2 transition-colors flex items-center gap-1.5"
           style={{
             fontSize: 13,
@@ -69,6 +72,7 @@ export function TownNavbar() {
         </button>
 
         <Link
+          data-testid="nav-shop"
           href="/shop"
           className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-pink hover:text-pink transition-colors flex items-center gap-1.5"
           style={{ fontSize: 13 }}
@@ -91,6 +95,7 @@ export function TownNavbar() {
         </Link>
 
         <button
+          data-testid="nav-logout"
           className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-coral hover:text-coral transition-colors"
           style={{ fontSize: 13 }}
           onClick={() => {

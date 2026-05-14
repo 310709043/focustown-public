@@ -19,11 +19,18 @@ export function Airplane({
   intervalSeconds = 22,
   delaySeconds = 0,
 }: Props) {
-  const [top, setTop] = useState<number>(() => topPercent ?? 12 + Math.random() * 22);
+  // Start with a stable, deterministic value so SSR + CSR initial renders
+  // agree. The client randomises in the effect below, which never runs on
+  // the server. This avoids hydration mismatches that would otherwise fire
+  // on every page load (Math.random() returns different values per call).
+  const initialTop = topPercent ?? 20;
+  const [top, setTop] = useState<number>(initialTop);
 
-  // Reroll vertical offset each loop for variety.
+  // Reroll vertical offset each loop for variety. First reroll happens on
+  // mount so the random plane heights still kick in immediately.
   useEffect(() => {
     if (topPercent !== undefined) return;
+    setTop(8 + Math.random() * 24);
     const id = setInterval(
       () => setTop(8 + Math.random() * 24),
       intervalSeconds * 1000,

@@ -104,9 +104,15 @@ export function MusicPanel() {
         <div className="font-pixel-en text-[10px]" style={{ color: "var(--dir-ink-mute)", letterSpacing: 1 }}>
           ♪ MUSIC{source === "room" ? " · ROOM" : " · LOFI"}
         </div>
+        {/* Deterministic EQ silhouette (seeded by bar index) so SSR/CSR
+            agree on bar heights and we don't trigger a hydration mismatch.
+            The bars don't animate in this revision; that's intentional —
+            a future tier can drive heights from <audio> analyser data. */}
         <div className="flex items-end gap-0.5 h-4">
           {Array.from({ length: 14 }).map((_, i) => {
-            const h = 3 + Math.random() * 13;
+            // Cheap deterministic 0..1 derived from index; same on server + client.
+            const seed = ((i * 31 + 7) % 13) / 13;
+            const h = 3 + seed * 13;
             return (
               <span
                 key={i}

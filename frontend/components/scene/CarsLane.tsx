@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
 import { useAuthStore } from "@/lib/state/authStore";
@@ -124,7 +125,9 @@ function Car({
 }
 
 export function CarsLane() {
-  const users = usePresenceStore((s) => Object.values(s.byId));
+  // Same SSR-snapshot caveat as Pedestrians: useShallow keeps the array
+  // reference stable across reads when nothing changed.
+  const users = usePresenceStore(useShallow((s) => Object.values(s.byId)));
   const selfId = useAuthStore((s) => s.user?.id ?? null);
 
   return (

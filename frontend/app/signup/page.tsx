@@ -64,6 +64,7 @@ export default function SignUpPage() {
       }}
     >
       <form
+        data-testid="signup-form"
         onSubmit={onSubmit}
         className="bg-card border border-border rounded-lg p-6 w-full max-w-sm flex flex-col gap-3"
       >
@@ -76,6 +77,7 @@ export default function SignUpPage() {
 
         <div>
           <input
+            data-testid="signup-name"
             placeholder="顯示名稱"
             value={form.displayName}
             onChange={(e) => update("displayName", e.target.value)}
@@ -89,6 +91,7 @@ export default function SignUpPage() {
 
         <div>
           <input
+            data-testid="signup-email"
             type="email"
             placeholder="email"
             value={form.email}
@@ -103,6 +106,7 @@ export default function SignUpPage() {
 
         <div>
           <PasswordInput
+            data-testid="signup-password"
             placeholder="密碼 (8+ 字, 含英文與數字)"
             value={form.password}
             onChange={(e) => update("password", e.target.value)}
@@ -114,6 +118,7 @@ export default function SignUpPage() {
         </div>
 
         <Checkbox
+          data-testid="signup-terms"
           checked={form.termsAccepted}
           onChange={(e) => update("termsAccepted", e.target.checked)}
           error={errors.termsAccepted}
@@ -149,9 +154,14 @@ export default function SignUpPage() {
           label="我願意接收電子報、產品更新與優惠通知（可隨時取消）"
         />
 
-        {error ? <div className="text-[11px] text-coral">{error}</div> : null}
+        {error ? (
+          <div data-testid="signup-error" className="text-[11px] text-coral">
+            {error}
+          </div>
+        ) : null}
 
         <button
+          data-testid="signup-submit"
           type="submit"
           disabled={loading || !form.termsAccepted}
           className="font-pixel text-[8px] border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50 disabled:cursor-not-allowed"

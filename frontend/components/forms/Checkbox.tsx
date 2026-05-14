@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import clsx from "clsx";
 
 type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> & {
@@ -12,7 +12,11 @@ export const Checkbox = forwardRef<HTMLInputElement, Props>(function Checkbox(
   { label, error, className, id, ...rest },
   ref,
 ) {
-  const inputId = id ?? `cb-${rest.name ?? Math.random().toString(36).slice(2, 8)}`;
+  // React's useId hands out SSR+CSR-stable identifiers, so the label's
+  // htmlFor and the input's id match on both sides. Falling back to
+  // Math.random() (as the previous implementation did) breaks hydration.
+  const reactId = useId();
+  const inputId = id ?? `cb-${rest.name ?? reactId}`;
   return (
     <label
       htmlFor={inputId}

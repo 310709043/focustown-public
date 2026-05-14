@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
 import { statusByCode, type StatusCode } from "@/lib/data/statuses";
@@ -24,26 +25,31 @@ const POSITIONS = [4, 13, 22, 32, 42, 52, 62, 72, 82, 91];
 
 const pickPos = () => POSITIONS[Math.floor(Math.random() * POSITIONS.length)];
 
-const fallbackCharacter = (userId: string): CharacterDef => {
+// Deterministic hash → integer (stable across SSR + CSR + reorders).
+const hashUserId = (userId: string): number => {
   let hash = 0;
   for (let i = 0; i < userId.length; i++) {
     hash = (hash * 31 + userId.charCodeAt(i)) | 0;
   }
-  return CHARACTERS[Math.abs(hash) % CHARACTERS.length];
+  return Math.abs(hash);
 };
+
+const fallbackCharacter = (userId: string): CharacterDef =>
+  CHARACTERS[hashUserId(userId) % CHARACTERS.length];
 
 // Stable per-user walker variant. The variant index never changes for a
 // given user.id, so list reorders from WS deltas don't reshuffle walkers.
-const walkerIndexFor = (userId: string): number => {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = (hash * 31 + userId.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash) % WALKERS.length;
-};
+const walkerIndexFor = (userId: string): number =>
+  hashUserId(userId) % WALKERS.length;
+
+// Deterministic seed position based on user.id; same on SSR + CSR.
+const seedPos = (userId: string): number =>
+  POSITIONS[hashUserId(userId) % POSITIONS.length];
 
 function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
-  const [x, setX] = useState<number>(() => pickPos());
+  // Initial position must be deterministic (SSR/CSR agreement). We
+  // randomise via the interval below — that's client-only.
+  const [x, setX] = useState<number>(() => seedPos(user.id));
 
   useEffect(() => {
     const id = setInterval(
@@ -145,7 +151,11 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 }
 
 export function Pedestrians() {
-  const users = usePresenceStore((s) => Object.values(s.byId));
+  // `Object.values` would return a fresh array on every store read and
+  // break Zustand's SSR snapshot caching ("getServerSnapshot infinite
+  // loop"). useShallow gives us a stable reference until the underlying
+  // map changes element-wise.
+  const users = usePresenceStore(useShallow((s) => Object.values(s.byId)));
   const selfId = useAuthStore((s) => s.user?.id ?? null);
 
   return (
