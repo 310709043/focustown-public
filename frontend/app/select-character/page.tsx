@@ -29,7 +29,7 @@ export default function SelectCharacterPage() {
   // local-only (no backend columns yet) — they exist so the V2 UI matches the
   // approved design, and will plug into a profile schema upgrade later.
   const [displayName, setDisplayName] = useState("");
-  const [age, setAge] = useState<string>("");
+  const [age, setAge] = useState<number>(25);
   const [specialty, setSpecialty] = useState("");
   const [interests, setInterests] = useState("");
 
@@ -75,18 +75,7 @@ export default function SelectCharacterPage() {
       }}
     >
       <div className="flex items-center gap-3 self-center">
-        <Logo scale={1.2} />
-        <div
-          className="font-pixel"
-          style={{
-            fontSize: 18,
-            color: "var(--a2)",
-            letterSpacing: 3,
-            textShadow: "0 0 14px var(--a1), 0 0 28px var(--a3)",
-          }}
-        >
-          選擇你的角色
-        </div>
+        <Logo scale={1.6} />
       </div>
       <div
         className="text-center"
@@ -110,14 +99,31 @@ export default function SelectCharacterPage() {
           />
         </Field>
         <Field label="年齡">
-          <input
-            value={age}
-            onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
-            placeholder="—"
-            inputMode="numeric"
-            className="w-full bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3 py-2 outline-none focus:border-accent-1 font-mono"
-            style={{ fontSize: 16 }}
-          />
+          <div className="flex items-center gap-3 bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3 py-2.5">
+            <input
+              type="range"
+              min={13}
+              max={80}
+              step={1}
+              value={age}
+              onChange={(e) => setAge(Number(e.target.value))}
+              aria-label="年齡"
+              className="age-slider flex-1"
+            />
+            <span
+              className="font-pixel tabular-nums"
+              style={{
+                fontSize: 16,
+                minWidth: 32,
+                textAlign: "right",
+                color: "var(--a2)",
+                textShadow: "0 0 8px var(--a1), 0 0 16px var(--a3)",
+                letterSpacing: 1,
+              }}
+            >
+              {age}
+            </span>
+          </div>
         </Field>
         <Field label="專長">
           <input

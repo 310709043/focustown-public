@@ -162,19 +162,7 @@ export default function SplashPage() {
       {/* foreground content */}
       <div className="relative z-[5] h-full flex flex-col items-center justify-center px-6 gap-7 animate-fadeUp">
         <div className="flex flex-col items-center gap-3">
-          <Logo scale={3} />
-          <div
-            className="font-pixel"
-            style={{
-              fontSize: 24,
-              color: "var(--a2)",
-              letterSpacing: 4,
-              textShadow:
-                "0 0 14px var(--a1), 0 0 32px var(--a3), 0 0 60px var(--a4)",
-            }}
-          >
-            ✦ FOCUS TOWN ✦
-          </div>
+          <Logo scale={4} />
           <div
             className="font-japan"
             style={{
@@ -216,9 +204,22 @@ export default function SplashPage() {
           />
           {error ? (
             <div
-              style={{ fontSize: 12, color: "var(--coral)", textShadow: "0 0 6px var(--coral)" }}
+              role="alert"
+              className="font-japan"
+              style={{
+                fontSize: 14,
+                color: "#fecaca",
+                background: "rgba(220,38,38,0.18)",
+                border: "1px solid rgba(248,113,113,0.6)",
+                borderRadius: 6,
+                padding: "10px 12px",
+                lineHeight: 1.4,
+                textShadow: "0 0 6px rgba(248,113,113,0.8)",
+                boxShadow: "0 0 18px rgba(220,38,38,0.25)",
+              }}
             >
-              ✗ {error}
+              <span style={{ fontSize: 16, marginRight: 6 }}>✗</span>
+              {error}
             </div>
           ) : null}
           <button

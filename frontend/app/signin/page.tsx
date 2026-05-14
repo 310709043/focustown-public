@@ -53,7 +53,26 @@ export default function SignInPage() {
           onChange={(e) => setPassword(e.target.value)}
           className="bg-[rgba(12,5,35,.9)] border border-border rounded text-[12px] px-3 py-2 outline-none focus:border-accent-1"
         />
-        {error ? <div className="text-[11px] text-coral">{error}</div> : null}
+        {error ? (
+          <div
+            role="alert"
+            className="font-japan"
+            style={{
+              fontSize: 14,
+              color: "#fecaca",
+              background: "rgba(220,38,38,0.18)",
+              border: "1px solid rgba(248,113,113,0.6)",
+              borderRadius: 6,
+              padding: "10px 12px",
+              lineHeight: 1.4,
+              textShadow: "0 0 6px rgba(248,113,113,0.8)",
+              boxShadow: "0 0 18px rgba(220,38,38,0.25)",
+            }}
+          >
+            <span style={{ fontSize: 16, marginRight: 6 }}>✗</span>
+            {error}
+          </div>
+        ) : null}
         <button
           type="submit"
           disabled={loading}

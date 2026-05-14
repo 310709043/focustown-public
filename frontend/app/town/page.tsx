@@ -56,17 +56,6 @@ export default function TownPage() {
       >
         <div className="flex items-center gap-3">
           <Logo scale={1.4} />
-          <div
-            className="font-pixel"
-            style={{
-              fontSize: 12,
-              color: "var(--a2)",
-              letterSpacing: 2,
-              textShadow: "0 0 10px var(--a1), 0 0 22px var(--a3)",
-            }}
-          >
-            FOCUS TOWN
-          </div>
         </div>
         <div className="flex gap-2 items-center">
           <span
