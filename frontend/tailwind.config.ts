@@ -70,6 +70,9 @@ const config: Config = {
         pedWalk:     "pedWalk .9s ease-in-out infinite",
         ringRotate:  "ringRotate 6s linear infinite",
         gifBounce:   "gifBounce var(--gif-dur, 1.6s) ease-in-out var(--gif-delay, 0s) infinite",
+        userPop:     "userPop .42s cubic-bezier(.34,1.56,.64,1) both",
+        selfHalo:    "selfHalo 1.8s ease-in-out infinite",
+        coinPop:     "coinPop .9s ease-out forwards",
       },
       keyframes: {
         tw: {

@@ -36,3 +36,7 @@ class SqlShopRepo(IShopRepo):
             .order_by(ShopItemORM.featured.desc(), ShopItemORM.name)
         )
         return [_to_record(r) for r in (await self._s.execute(stmt)).scalars().all()]
+
+    async def get_by_id(self, item_id: str) -> ShopItemRecord | None:
+        row = await self._s.get(ShopItemORM, item_id)
+        return _to_record(row) if row else None

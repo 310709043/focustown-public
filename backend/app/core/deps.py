@@ -11,10 +11,13 @@ from app.core.config import Settings, get_settings
 from app.core.events import EventBus
 from app.core.exceptions import AuthError
 from app.core.ids import IIdGenerator, UUID4Generator
+from app.domain.repositories.presence import IPresenceTracker
 from app.infrastructure.auth.providers.base import AuthProvider
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
+from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.session import get_session_factory
 from app.infrastructure.messaging.ws_manager import WSManager
+from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
@@ -78,6 +81,13 @@ def get_ws_manager() -> WSManager:
 
 
 WSManagerDep = Annotated[WSManager, Depends(get_ws_manager)]
+
+
+def get_presence_tracker(clock: ClockDep) -> IPresenceTracker:
+    return RedisPresenceTracker(get_redis(), clock)
+
+
+PresenceTrackerDep = Annotated[IPresenceTracker, Depends(get_presence_tracker)]
 
 
 async def get_current_user_id(

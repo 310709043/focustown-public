@@ -1,17 +1,30 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.core.clock import SystemClock
 from app.core.config import get_settings
+from app.core.deps import _event_bus
 from app.core.exceptions import FocusTownError
+from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
-from app.infrastructure.cache.redis_client import close_redis, init_redis
-from app.infrastructure.db.session import dispose_engine
+from app.domain.services.coin_award_service import (
+    CoinAwardService,
+    _WalletServiceAcquired,
+)
+from app.domain.services.wallet_service import WalletService
+from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
+from app.infrastructure.db.repositories import (
+    SqlWalletRepo,
+    SqlWalletTransactionRepo,
+)
+from app.infrastructure.db.session import dispose_engine, get_session_factory
+from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 log = get_logger(__name__)
 
@@ -22,6 +35,35 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging(debug=settings.app_debug)
     log.info("startup", env=settings.app_env)
     await init_redis(settings.redis_url)
+
+    # Register domain event subscribers once. Each event handler opens its
+    # own short-lived DB session (we deliberately avoid the broken
+    # per-request __init__ subscribe pattern that AchievementService uses).
+    factory = get_session_factory(settings.database_url)
+    clock = SystemClock()
+    ids = UUID4Generator()
+
+    def _wallet_acquire() -> _WalletServiceAcquired:
+        session = factory()
+        publisher = RedisPubSubPublisher(get_redis())
+        wallet_service = WalletService(
+            wallets=SqlWalletRepo(session),
+            transactions=SqlWalletTransactionRepo(session),
+            publisher=publisher,
+            ids=ids,
+            clock=clock,
+        )
+        return _WalletServiceAcquired(
+            wallet_service=wallet_service,
+            commit=session.commit,
+            rollback=session.rollback,
+            close=session.close,
+        )
+
+    coin_award = CoinAwardService(factory=_wallet_acquire)
+    coin_award.register(_event_bus)
+    log.info("subscribers_registered")
+
     try:
         yield
     finally:

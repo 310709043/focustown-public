@@ -83,3 +83,10 @@ class SqlUserRepo(IUserRepo):
         stmt = select(UserORM).order_by(UserORM.created_at.desc()).limit(limit)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
+
+    async def get_many_by_ids(self, user_ids: list[str]) -> list[User]:
+        if not user_ids:
+            return []
+        stmt = select(UserORM).where(UserORM.id.in_(user_ids))
+        rows = (await self._s.execute(stmt)).scalars().all()
+        return [_to_domain(r) for r in rows]

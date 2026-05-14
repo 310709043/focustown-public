@@ -1,4 +1,4 @@
-"""Seed development data: achievements, shop items.
+"""Seed development data: achievements, shop items + multi-currency prices.
 
 Run inside the backend container:
     docker compose exec backend python /app/../scripts/seed-dev-data.py
@@ -27,6 +27,7 @@ from app.core.config import get_settings  # noqa: E402
 from app.core.ids import UUID4Generator  # noqa: E402
 from app.infrastructure.db.models.achievement import AchievementORM  # noqa: E402
 from app.infrastructure.db.models.shop_item import ShopItemORM  # noqa: E402
+from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM  # noqa: E402
 from app.infrastructure.db.session import get_session_factory  # noqa: E402
 
 ACHIEVEMENTS = [
@@ -38,22 +39,25 @@ ACHIEVEMENTS = [
     {"code": "midnight_20", "icon": "🌙", "title": "夜貓族", "description": "午夜後專注 20 次"},
 ]
 
+# Phase 2 economy: prices are denominated in T (Town Coin), expressed as
+# centiT (cT) = the integer "minor" unit. 100 cT = 1 T. 1 T is earned per
+# 30 minutes of focused work, so 50 cT (0.5 T) is one 15-minute Pomodoro.
 SHOP_ITEMS = [
     # cars
-    {"category": "car", "icon": "🚗", "name": "霓虹跑車", "description": "紫色霓虹燈特效，限定色款", "price_cents": 4900, "featured": True},
-    {"category": "car", "icon": "🚕", "name": "復古計程車", "description": "懷舊黃色像素風格", "price_cents": 3900, "featured": False},
-    {"category": "car", "icon": "🏎️", "name": "F1 賽車", "description": "超速紅色，帶尾翼特效", "price_cents": 5900, "featured": False},
-    {"category": "car", "icon": "🚌", "name": "星空巴士", "description": "載著整個小鎮的夢", "price_cents": 4900, "featured": False},
+    {"category": "car", "icon": "🚗", "name": "霓虹跑車", "description": "紫色霓虹燈特效，限定色款", "price_cT": 80, "price_cents": 4900, "featured": True},
+    {"category": "car", "icon": "🚕", "name": "復古計程車", "description": "懷舊黃色像素風格", "price_cT": 50, "price_cents": 3900, "featured": False},
+    {"category": "car", "icon": "🏎️", "name": "F1 賽車", "description": "超速紅色，帶尾翼特效", "price_cT": 120, "price_cents": 5900, "featured": False},
+    {"category": "car", "icon": "🚌", "name": "星空巴士", "description": "載著整個小鎮的夢", "price_cT": 80, "price_cents": 4900, "featured": False},
     # scenes
-    {"category": "scene", "icon": "🌃", "name": "台灣夜市", "description": "霓虹燈、臭豆腐攤、人潮", "price_cents": 7900, "featured": True},
-    {"category": "scene", "icon": "🌸", "name": "京都春季", "description": "櫻花飄落、石板路", "price_cents": 7900, "featured": False},
-    {"category": "scene", "icon": "🌊", "name": "海邊日落", "description": "浪聲、橘紅天空", "price_cents": 6900, "featured": False},
-    {"category": "scene", "icon": "☁️", "name": "雲端城市", "description": "在雲上面的魔法小鎮", "price_cents": 8900, "featured": False},
+    {"category": "scene", "icon": "🌃", "name": "台灣夜市", "description": "霓虹燈、臭豆腐攤、人潮", "price_cT": 200, "price_cents": 7900, "featured": True},
+    {"category": "scene", "icon": "🌸", "name": "京都春季", "description": "櫻花飄落、石板路", "price_cT": 200, "price_cents": 7900, "featured": False},
+    {"category": "scene", "icon": "🌊", "name": "海邊日落", "description": "浪聲、橘紅天空", "price_cT": 150, "price_cents": 6900, "featured": False},
+    {"category": "scene", "icon": "☁️", "name": "雲端城市", "description": "在雲上面的魔法小鎮", "price_cT": 300, "price_cents": 8900, "featured": False},
     # effects
-    {"category": "effect", "icon": "✨", "name": "配對光環", "description": "配對成功時的星光特效", "price_cents": 3900, "featured": False},
-    {"category": "effect", "icon": "🏆", "name": "大賞徽章框", "description": "大賞區專屬金框顯示", "price_cents": 2900, "featured": False},
-    {"category": "effect", "icon": "🎁", "name": "禮物盒", "description": "送給你的配對對象", "price_cents": 9900, "featured": True},
-    {"category": "effect", "icon": "💫", "name": "完成爆炸", "description": "番茄完成時的煙火特效", "price_cents": 4900, "featured": False},
+    {"category": "effect", "icon": "✨", "name": "配對光環", "description": "配對成功時的星光特效", "price_cT": 40, "price_cents": 3900, "featured": False},
+    {"category": "effect", "icon": "🏆", "name": "大賞徽章框", "description": "大賞區專屬金框顯示", "price_cT": 30, "price_cents": 2900, "featured": False},
+    {"category": "effect", "icon": "🎁", "name": "禮物盒", "description": "送給你的配對對象", "price_cT": 250, "price_cents": 9900, "featured": True},
+    {"category": "effect", "icon": "💫", "name": "完成爆炸", "description": "番茄完成時的煙火特效", "price_cT": 80, "price_cents": 4900, "featured": False},
 ]
 
 
@@ -70,13 +74,33 @@ async def main() -> None:
             )
             if existing.scalar_one_or_none() is None:
                 db.add(AchievementORM(id=ids.new_id(), **a))
-        # shop items (don't dedupe — running twice will duplicate; gate by env)
-        count_existing = (
-            await db.execute(_select(ShopItemORM))
-        ).scalars().all()
+
+        # Shop items + prices: only seed on first run (idempotent by row count).
+        count_existing = (await db.execute(_select(ShopItemORM))).scalars().all()
         if not count_existing:
             for s in SHOP_ITEMS:
-                db.add(ShopItemORM(id=ids.new_id(), **s))
+                item_id = ids.new_id()
+                db.add(
+                    ShopItemORM(
+                        id=item_id,
+                        category=s["category"],
+                        icon=s["icon"],
+                        name=s["name"],
+                        description=s["description"],
+                        price_cents=s["price_cents"],
+                        featured=s["featured"],
+                    )
+                )
+                # T price: every catalog item is purchasable with T coins.
+                db.add(
+                    ShopItemPriceORM(
+                        id=ids.new_id(),
+                        shop_item_id=item_id,
+                        currency_code="T",
+                        amount_minor=s["price_cT"],
+                        active=True,
+                    )
+                )
         await db.commit()
     print("✓ Seed complete")
 

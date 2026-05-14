@@ -30,4 +30,10 @@ class EventBus:
             try:
                 await handler(event)
             except Exception:
-                log.exception("event_handler_failed", event=type(event).__name__)
+                # NB: cannot name the kwarg "event" — structlog uses that
+                # key for the message itself, so collision raises TypeError
+                # and silently swallows the underlying error.
+                log.exception(
+                    "event_handler_failed",
+                    event_type=type(event).__name__,
+                )

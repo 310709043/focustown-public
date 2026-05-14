@@ -36,3 +36,13 @@ class ValidationError(FocusTownError):
 class RateLimitedError(FocusTownError):
     status_code = 429
     code = "rate_limited"
+
+
+class InsufficientFundsError(FocusTownError):
+    status_code = 402
+    code = "insufficient_funds"
+
+
+class BusinessError(FocusTownError):
+    status_code = 400
+    code = "business_error"

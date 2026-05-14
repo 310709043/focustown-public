@@ -291,3 +291,26 @@ body {
     0 0 20px var(--a3),
     0 0 0 2px var(--a2);
 }
+
+/* Presence (Phase 1): new user materializes on the street with a subtle
+   over-shoot. Pairs with React mount — applied once via `animate-userPop`. */
+@keyframes userPop {
+  0%   { transform: translateY(4px) scale(0.7); opacity: 0;   filter: brightness(2.4); }
+  60%  { transform: translateY(-1px) scale(1.08); opacity: 1; filter: brightness(1.6); }
+  100% { transform: translateY(0) scale(1);     opacity: 1;   filter: brightness(1);   }
+}
+
+/* The current user's amber halo — readable across the bustle so you always
+   know which pedestrian is you. Pulse runs forever, slowly. */
+@keyframes selfHalo {
+  0%, 100% { box-shadow: 0 0 0 1px var(--amber), 0 0 6px rgba(252, 211, 77, 0.55), 0 0 12px rgba(252, 211, 77, 0.25); }
+  50%      { box-shadow: 0 0 0 1px var(--amber), 0 0 10px rgba(252, 211, 77, 0.85), 0 0 22px rgba(252, 211, 77, 0.45); }
+}
+
+/* Purchase confirmation — one-shot amber burst on the buy button. The card
+   replays it by remounting the celebration element with a fresh key. */
+@keyframes coinPop {
+  0%   { transform: scale(0.6) translateY(8px); opacity: 0;   filter: brightness(2.4); }
+  50%  { transform: scale(1.15) translateY(-2px); opacity: 1; filter: brightness(1.5); }
+  100% { transform: scale(1) translateY(-14px);   opacity: 0; filter: brightness(1);   }
+}
