@@ -11,11 +11,12 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from app.core.clock import IClock
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import IdempotencyViolationError, NotFoundError
 from app.core.ids import IIdGenerator
 from app.core.sentinels import UNSET, UnsetType
 from app.domain.models import User
 from app.domain.models.room import Room, RoomVisibility
+from app.domain.models.room_item import RoomItem
 from app.domain.notifications import INotificationService
 from app.domain.repositories.leaderboard_snapshot_repo import (
     ILeaderboardSnapshotRepo,
@@ -30,10 +31,14 @@ from app.domain.repositories.presence import (
     PresenceEntry,
     PresenceState,
 )
-from app.domain.models.room_item import RoomItem
 from app.domain.repositories.room_item_repo import IRoomItemRepo
 from app.domain.repositories.room_repo import IRoomRepo, RoomAlreadyExistsError
+from app.domain.repositories.room_track_repo import (
+    IRoomTrackRepo,
+    RoomTrackRecord,
+)
 from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
+from app.domain.repositories.track_repo import ITrackRepo, TrackRecord
 from app.domain.repositories.user_item_repo import IUserItemRepo, UserItem
 from app.domain.repositories.user_repo import IUserRepo, UserCredentials
 from app.infrastructure.auth.providers.base import AuthProvider, Principal, TokenPair
@@ -575,3 +580,103 @@ class FakeLeaderboardSnapshotRepo(ILeaderboardSnapshotRepo):
             self.rows[key] = e
             inserted += 1
         return inserted
+
+
+@dataclass
+class FakeTrackRepo(ITrackRepo):
+    """In-memory ITrackRepo. Only ``list`` and ``get`` are exercised by
+    RoomTrackService; ``insert`` is supported so tests can preload tracks
+    via either ``.tracks`` dict or ``await repo.insert(...)``."""
+
+    tracks: dict[str, TrackRecord] = field(default_factory=dict)
+
+    async def list(self, *, mood: str | None = None) -> list[TrackRecord]:
+        rows = list(self.tracks.values())
+        if mood is not None:
+            rows = [t for t in rows if t.mood == mood]
+        return rows
+
+    async def get(self, track_id: str) -> TrackRecord | None:
+        return self.tracks.get(track_id)
+
+    async def count_by_uploader(self, user_id: str) -> int:
+        return sum(1 for t in self.tracks.values() if t.uploaded_by_user_id == user_id)
+
+    async def insert(
+        self,
+        *,
+        track_id: str,
+        title: str,
+        artist: str | None,
+        mood: str,
+        duration_ms: int | None,
+        file_key: str,
+        content_type: str,
+        file_size_bytes: int,
+        license: str | None,
+        uploaded_by_user_id: str,
+    ) -> TrackRecord:
+        now = datetime.now(UTC)
+        record = TrackRecord(
+            id=track_id,
+            title=title,
+            artist=artist,
+            mood=mood,
+            duration_ms=duration_ms,
+            file_key=file_key,
+            content_type=content_type,
+            file_size_bytes=file_size_bytes,
+            license=license,
+            uploaded_by_user_id=uploaded_by_user_id,
+            created_at=now,
+            updated_at=now,
+        )
+        self.tracks[track_id] = record
+        return record
+
+    async def delete(self, *, track_id: str, user_id: str) -> None:
+        self.tracks.pop(track_id, None)
+
+
+@dataclass
+class FakeRoomTrackRepo(IRoomTrackRepo):
+    """In-memory IRoomTrackRepo. Honors the UNIQUE (room_id, track_id)
+    constraint by raising ``IdempotencyViolationError`` so unit tests
+    catch the same conflict path the SQL adapter takes (LSP-aligned with
+    ``SqlRoomTrackRepo.add``)."""
+
+    rows: list[RoomTrackRecord] = field(default_factory=list)
+
+    async def list_by_room(self, room_id: str) -> list[RoomTrackRecord]:
+        return sorted(
+            (r for r in self.rows if r.room_id == room_id),
+            key=lambda r: r.position,
+        )
+
+    async def max_position(self, room_id: str) -> int | None:
+        positions = [r.position for r in self.rows if r.room_id == room_id]
+        return max(positions) if positions else None
+
+    async def add(
+        self,
+        *,
+        item_id: str,
+        room_id: str,
+        track_id: str,
+        position: int,
+    ) -> RoomTrackRecord:
+        if any(r.room_id == room_id and r.track_id == track_id for r in self.rows):
+            raise IdempotencyViolationError("room_track_already_exists")
+        record = RoomTrackRecord(
+            id=item_id, room_id=room_id, track_id=track_id, position=position
+        )
+        self.rows.append(record)
+        return record
+
+    async def remove(self, *, room_id: str, track_id: str) -> bool:
+        before = len(self.rows)
+        self.rows = [
+            r for r in self.rows
+            if not (r.room_id == room_id and r.track_id == track_id)
+        ]
+        return len(self.rows) < before

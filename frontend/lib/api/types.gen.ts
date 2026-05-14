@@ -214,3 +214,15 @@ export type Track = {
   uploaded_by_user_id: string;
   created_at: string;
 };
+
+export type AddRoomTrackRequest = {
+  track_id: string;
+};
+
+export type RoomTrack = {
+  id: string;
+  room_id: string;
+  track_id: string;
+  position: number;
+  track: Track;
+};

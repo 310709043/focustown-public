@@ -15,6 +15,7 @@ import type {
   Room,
   RoomItem,
   RoomTheme,
+  RoomTrack,
   ShopItem,
   StreetUser,
   Track,
@@ -285,5 +286,21 @@ export const tracksApi = {
    *  unauthenticated by design; tokens aren't needed for playback. */
   streamUrl(id: string) {
     return `${config.apiBaseUrl}/api/v1/tracks/${id}/stream`;
+  },
+};
+
+// ── per-room playlist (Phase 7) ────────────────────────
+export const roomTracksApi = {
+  list() {
+    return apiFetch<RoomTrack[]>("/api/v1/me/room/tracks", { method: "GET" });
+  },
+  add(track_id: string) {
+    return apiFetch<RoomTrack>("/api/v1/me/room/tracks", {
+      method: "POST",
+      body: JSON.stringify({ track_id }),
+    });
+  },
+  remove(track_id: string) {
+    return apiFetch<void>(`/api/v1/me/room/tracks/${track_id}`, { method: "DELETE" });
   },
 };
