@@ -1,5 +1,6 @@
 from app.infrastructure.db.models.achievement import AchievementORM, UserAchievementORM
 from app.infrastructure.db.models.focus_session import FocusSessionORM
+from app.infrastructure.db.models.leaderboard_snapshot import LeaderboardSnapshotORM
 from app.infrastructure.db.models.match import MatchORM
 from app.infrastructure.db.models.note import NoteORM
 from app.infrastructure.db.models.password_reset_token import PasswordResetTokenORM
@@ -15,6 +16,7 @@ from app.infrastructure.db.models.wallet_transaction import WalletTransactionORM
 __all__ = [
     "AchievementORM",
     "FocusSessionORM",
+    "LeaderboardSnapshotORM",
     "MatchORM",
     "NoteORM",
     "PasswordResetTokenORM",

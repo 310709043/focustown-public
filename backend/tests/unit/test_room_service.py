@@ -5,130 +5,10 @@ from datetime import UTC, datetime
 import pytest
 
 from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
-from app.core.sentinels import UnsetType
 from app.domain.models import User
-from app.domain.models.room import Room, RoomVisibility
-from app.domain.repositories.room_repo import IRoomRepo, RoomAlreadyExistsError
-from app.domain.repositories.user_repo import IUserRepo
+from app.domain.models.room import Room
 from app.domain.services.room_service import RoomService
-
-# ── Fakes ───────────────────────────────────────────────────────────────────
-
-
-class FakeUserRepo(IUserRepo):
-    def __init__(self, users: list[User]) -> None:
-        self._by_id = {u.id: u for u in users}
-
-    async def get_by_id(self, user_id: str) -> User | None:
-        return self._by_id.get(user_id)
-
-    async def get_by_email(self, email: str) -> User | None:
-        return None
-
-    async def get_credentials_by_email(self, email: str):
-        return None
-
-    async def create(self, **kwargs) -> User:
-        raise NotImplementedError
-
-    async def update_profile(self, **kwargs) -> User:
-        raise NotImplementedError
-
-    async def update_password_hash(self, *, user_id: str, password_hash: str) -> None:
-        raise NotImplementedError
-
-    async def list_recent(self, *, limit: int) -> list[User]:
-        return list(self._by_id.values())[:limit]
-
-    async def get_many_by_ids(self, user_ids: list[str]) -> list[User]:
-        return [self._by_id[u] for u in user_ids if u in self._by_id]
-
-    async def update_equipment(self, **kwargs) -> User:
-        raise NotImplementedError
-
-
-class FakeRoomRepo(IRoomRepo):
-    """In-memory IRoomRepo. ``raise_on_create_for`` lets a test simulate the
-    concurrent lazy-create race: the first ``create`` for that owner will
-    raise ``RoomAlreadyExistsError`` even though no row exists, mirroring
-    what the SQL impl does when a parallel transaction wins the UNIQUE
-    constraint."""
-
-    def __init__(self) -> None:
-        self.rows: dict[str, Room] = {}
-        self.raise_on_create_for: set[str] = set()
-        # After the simulated race fires, another row should appear so
-        # ``service`` can re-read. ``preseed_after_race`` simulates that.
-        self.preseed_after_race: dict[str, Room] = {}
-
-    async def get_by_owner(self, owner_user_id: str) -> Room | None:
-        for r in self.rows.values():
-            if r.owner_user_id == owner_user_id:
-                return r
-        return None
-
-    async def get_by_id(self, room_id: str) -> Room | None:
-        return self.rows.get(room_id)
-
-    async def create(
-        self,
-        *,
-        room_id: str,
-        owner_user_id: str,
-        name: str,
-        theme: str,
-        visibility: RoomVisibility = "public",
-        max_visitors: int = 5,
-    ) -> Room:
-        if owner_user_id in self.raise_on_create_for:
-            self.raise_on_create_for.discard(owner_user_id)
-            if owner_user_id in self.preseed_after_race:
-                pre = self.preseed_after_race.pop(owner_user_id)
-                self.rows[pre.id] = pre
-            raise RoomAlreadyExistsError("uq_rooms_owner_user_id")
-        # Honor the UNIQUE in fake form so we can also assert it on the
-        # non-simulated path.
-        if any(r.owner_user_id == owner_user_id for r in self.rows.values()):
-            raise RoomAlreadyExistsError("uq_rooms_owner_user_id")
-        now = datetime.now(UTC)
-        room = Room(
-            id=room_id,
-            owner_user_id=owner_user_id,
-            name=name,
-            theme=theme,
-            visibility=visibility,
-            max_visitors=max_visitors,
-            created_at=now,
-            updated_at=now,
-        )
-        self.rows[room_id] = room
-        return room
-
-    async def update(
-        self,
-        *,
-        room_id: str,
-        name: str | UnsetType,
-        theme: str | UnsetType,
-    ) -> Room:
-        row = self.rows.get(room_id)
-        if row is None:
-            raise NotFoundError("room_not_found")
-        if isinstance(name, str):
-            row.name = name
-        if isinstance(theme, str):
-            row.theme = theme
-        row.updated_at = datetime.now(UTC)
-        return row
-
-
-class FakeIdGen:
-    def __init__(self, ids: list[str]) -> None:
-        self._ids = iter(ids)
-
-    def new_id(self) -> str:
-        return next(self._ids)
-
+from tests.unit.fakes import FakeIdGen, FakeRoomRepo, FakeUserRepo
 
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -156,13 +36,14 @@ def _make_service(
 ) -> tuple[RoomService, FakeRoomRepo, FakeUserRepo]:
     user_list = users or [_make_user()]
     room_repo = rooms or FakeRoomRepo()
-    id_gen = FakeIdGen(ids or ["room-alice-1"])
+    id_gen = FakeIdGen(seq=iter(ids or ["room-alice-1"]))
+    user_repo = FakeUserRepo.from_users(user_list)
     svc = RoomService(
         rooms=room_repo,
-        users=FakeUserRepo(user_list),
+        users=user_repo,
         id_gen=id_gen,
     )
-    return svc, room_repo, svc.users  # type: ignore[return-value]
+    return svc, room_repo, user_repo
 
 
 # ── Tests ───────────────────────────────────────────────────────────────────

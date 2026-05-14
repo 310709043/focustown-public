@@ -6,6 +6,10 @@ from datetime import datetime, time, timedelta
 from app.core.clock import IClock
 from app.domain.models import User
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
+from app.domain.repositories.leaderboard_snapshot_repo import (
+    ILeaderboardSnapshotRepo,
+    LeaderboardSnapshotRecord,
+)
 from app.domain.repositories.user_repo import IUserReader
 
 
@@ -44,3 +48,22 @@ class LeaderboardService:
     async def yesterday_window(self) -> tuple[datetime, datetime]:
         end = self._day_start(self._clock.now())
         return end - timedelta(days=1), end
+
+    async def write_snapshot_for_yesterday(
+        self,
+        *,
+        snapshots: ILeaderboardSnapshotRepo,
+        limit: int = 100,
+    ) -> int:
+        start, _end = await self.yesterday_window()
+        rows = await self._sessions.daily_leaderboard(day_start=start, limit=limit)
+        records = [
+            LeaderboardSnapshotRecord(
+                snapshot_date=start.date(),
+                user_id=user_id,
+                completed_count=count,
+                rank=idx + 1,
+            )
+            for idx, (user_id, count) in enumerate(rows)
+        ]
+        return await snapshots.upsert_day(snapshot_date=start.date(), entries=records)

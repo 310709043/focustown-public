@@ -12,6 +12,9 @@ Naming convention: a Protocol ``IFooRepo`` in domain maps to a class
 
 from app.infrastructure.db.repositories.achievement_repo import SqlAchievementRepo
 from app.infrastructure.db.repositories.focus_session_repo import SqlFocusSessionRepo
+from app.infrastructure.db.repositories.leaderboard_snapshot_repo import (
+    SqlLeaderboardSnapshotRepo,
+)
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 from app.infrastructure.db.repositories.note_repo import SqlNoteRepo
 from app.infrastructure.db.repositories.password_reset_token_repo import (
@@ -31,6 +34,7 @@ from app.infrastructure.db.repositories.wallet_transaction_repo import (
 __all__ = [
     "SqlAchievementRepo",
     "SqlFocusSessionRepo",
+    "SqlLeaderboardSnapshotRepo",
     "SqlMatchRepo",
     "SqlNoteRepo",
     "SqlPasswordResetTokenRepo",
