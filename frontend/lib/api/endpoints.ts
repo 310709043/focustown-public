@@ -18,7 +18,14 @@ import type {
 
 // ── auth ───────────────────────────────────────────────
 export const authApi = {
-  async signUp(input: { email: string; password: string; display_name: string }) {
+  async signUp(input: {
+    email: string;
+    password: string;
+    display_name: string;
+    terms_accepted: boolean;
+    terms_version: string;
+    marketing_opt_in: boolean;
+  }) {
     const res = await apiFetch<AuthResponse>("/api/v1/auth/signup", {
       method: "POST",
       body: input,
@@ -38,6 +45,20 @@ export const authApi = {
   },
   async me() {
     return apiFetch<User>("/api/v1/auth/me", { method: "GET" });
+  },
+  async forgotPassword(input: { email: string }) {
+    return apiFetch<{ ok: boolean }>("/api/v1/auth/forgot-password", {
+      method: "POST",
+      body: input,
+      auth: false,
+    });
+  },
+  async resetPassword(input: { token: string; newPassword: string }) {
+    return apiFetch<{ ok: boolean }>("/api/v1/auth/reset-password", {
+      method: "POST",
+      body: { token: input.token, new_password: input.newPassword },
+      auth: false,
+    });
   },
   signOut() {
     tokenStore.clear();

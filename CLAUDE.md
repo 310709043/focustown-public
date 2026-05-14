@@ -127,6 +127,21 @@ To deliver a message to a user from anywhere (e.g. from `MatchingService`), publ
 
 `backend/app/worker.py` is a separate container in `docker-compose.yml`. It runs `APSchedulerAdapter` jobs (60-second abandoned-session sweep at MVP). Long-running cron logic belongs here, **not** in FastAPI `BackgroundTasks` (which die with the request). To add a job, define a coroutine in `worker.py` and call `scheduler.schedule_interval(...)` or `schedule_cron(...)`.
 
+### Consent, password reset, and rate limiting
+
+`/signup` records consent (`terms_accepted_at`, `terms_version`, `marketing_opt_in`); the frontend sends `terms_version` from `frontend/lib/config/legal.ts:LEGAL.termsVersion` and the backend rejects on mismatch. Bump that constant whenever the legal pages change materially.
+
+Password reset flow:
+
+1. `/forgot-password` → `PasswordResetService.request_reset` generates a `secrets.token_urlsafe(32)` raw token, stores only `sha256(token)` in `password_reset_tokens`, invalidates any prior active token for the user, then dispatches via `INotificationService.send_email`. Endpoint always returns `{ok: true}` to prevent email enumeration.
+2. `/reset-password` → service validates token (active, not expired, not consumed), enforces `validate_password_strength`, updates `users.password_hash`, marks token consumed (single-use).
+
+`INotificationService` lives in `app/domain/notifications.py` (not `infrastructure/`) so domain services depend only on the port. To switch from `LogNotifier` to `SESNotifier`, change `get_notifier()` in `core/deps.py` — no service-layer changes.
+
+Auth endpoints are rate-limited via `IRateLimiter` (Redis-backed in prod, `MemoryRateLimiter` for tests). Limits live in `api/v1/auth/router.py`; tune them there. The 429 response is wrapped in the standard `FocusTownError` envelope.
+
+`SecurityHeadersMiddleware` (`core/middleware/security_headers.py`) adds `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` to every API response; HSTS only fires when `APP_ENV=production`. The frontend CSP lives in `frontend/next.config.mjs` and reads `NEXT_PUBLIC_API_BASE_URL` to whitelist the backend in `connect-src`.
+
 ### Frontend: feature-scoped state + transport seams
 
 - **State**: per-feature Zustand stores in `frontend/lib/state/` (`authStore`, `timerStore`, `sceneStore`, `matchStore`). Don't add one mega-store.

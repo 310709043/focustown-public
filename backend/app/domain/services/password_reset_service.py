@@ -1,0 +1,131 @@
+from __future__ import annotations
+
+import hashlib
+import secrets
+from datetime import timedelta
+
+from app.core.clock import IClock
+from app.core.exceptions import ValidationError
+from app.core.ids import IIdGenerator
+from app.core.security import hash_password, validate_password_strength
+from app.domain.notifications import INotificationService
+from app.domain.repositories.password_reset_token_repo import IPasswordResetTokenRepo
+from app.domain.repositories.user_repo import IUserRepo
+
+_CONTROL_CHARS = "".join(chr(c) for c in range(0x20)) + "\x7f"
+
+
+def _hash_token(raw: str) -> str:
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _sanitize_for_email(value: str) -> str:
+    """Strip control characters so user-controlled values cannot inject CRLF.
+
+    Defence-in-depth: schema-level pattern on `display_name` already blocks
+    these, but the service should not assume an upstream validator ran.
+    """
+    return "".join(ch for ch in value if ch not in _CONTROL_CHARS)
+
+
+class PasswordResetService:
+    """Issue and consume single-use password reset tokens.
+
+    Depends only on Protocols — swap LogNotifier for SESNotifier without
+    touching this class. Token TTL is configurable; defaults to 1 hour.
+
+    Security properties:
+      - Raw tokens are never stored; only their SHA-256 hash.
+      - request_reset is silent on unknown email (anti-enumeration).
+      - Prior active tokens for a user are invalidated on new request.
+      - reset_password is single-use and marks the token consumed.
+    """
+
+    def __init__(
+        self,
+        *,
+        users: IUserRepo,
+        tokens: IPasswordResetTokenRepo,
+        notifier: INotificationService,
+        clock: IClock,
+        ids: IIdGenerator,
+        token_ttl: timedelta = timedelta(hours=1),
+        reset_url_base: str = "http://localhost:3000/reset-password",
+    ) -> None:
+        self._users = users
+        self._tokens = tokens
+        self._notifier = notifier
+        self._clock = clock
+        self._ids = ids
+        self._token_ttl = token_ttl
+        self._reset_url_base = reset_url_base
+
+    async def request_reset(
+        self,
+        *,
+        email: str,
+        requested_ip: str | None = None,
+    ) -> None:
+        normalized = email.strip().lower()
+        user = await self._users.get_by_email(normalized)
+        if user is None:
+            return  # silent — caller responds 200 regardless
+
+        now = self._clock.now()
+        await self._tokens.invalidate_active_for_user(user.id, at=now)
+
+        raw_token = secrets.token_urlsafe(32)
+        token_id = self._ids.new_id()
+        await self._tokens.create(
+            token_id=token_id,
+            user_id=user.id,
+            token_hash=_hash_token(raw_token),
+            expires_at=now + self._token_ttl,
+            requested_ip=requested_ip,
+        )
+
+        reset_link = f"{self._reset_url_base}?token={raw_token}"
+        ttl_minutes = int(self._token_ttl.total_seconds() // 60)
+        safe_name = _sanitize_for_email(user.public_name())
+        # Chinese punctuation is intentional in the user-facing email body.
+        body = (
+            f"您好 {safe_name},\n\n"
+            f"我們收到了重設密碼的請求。請點擊以下連結重設密碼:\n"
+            f"{reset_link}\n\n"
+            f"此連結將於 {ttl_minutes} 分鐘後失效。\n"
+            f"若您並未提出此請求, 請忽略本郵件。\n"
+        )
+        await self._notifier.send_email(
+            to=user.email,
+            subject="Focus Town — 重設您的密碼",
+            body=body,
+        )
+
+    async def reset_password(
+        self,
+        *,
+        raw_token: str,
+        new_password: str,
+    ) -> None:
+        # Service-level length floor (matches schema floor). If the issuer's
+        # token_urlsafe length ever shrinks below this in the future, every
+        # token will be rejected — surfaces the misconfig immediately rather
+        # than silently weakening the brute-force surface.
+        if len(raw_token) < 32:
+            raise ValidationError("invalid_or_expired_reset_token")
+        token_hash = _hash_token(raw_token)
+        record = await self._tokens.find_active_by_hash(token_hash)
+        if record is None:
+            raise ValidationError("invalid_or_expired_reset_token")
+
+        now = self._clock.now()
+        if record.consumed_at is not None or record.expires_at <= now:
+            raise ValidationError("invalid_or_expired_reset_token")
+
+        validate_password_strength(new_password)
+
+        await self._users.update_password_hash(
+            user_id=record.user_id,
+            password_hash=hash_password(new_password),
+        )
+        await self._tokens.mark_consumed(record.id, at=now)

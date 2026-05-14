@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from app.core.logging import get_logger
-from app.infrastructure.notifications.base import INotificationService
+from app.domain.notifications import INotificationService
 
 log = get_logger(__name__)
 

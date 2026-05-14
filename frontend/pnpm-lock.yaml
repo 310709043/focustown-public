@@ -20,6 +20,9 @@ importers:
       react-dom:
         specifier: 19.0.0-rc-66855b96-20241106
         version: 19.0.0-rc-66855b96-20241106(react@19.0.0-rc-66855b96-20241106)
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
       zustand:
         specifier: ^5.0.1
         version: 5.0.13(@types/react@18.3.28)(react@19.0.0-rc-66855b96-20241106)
@@ -2336,6 +2339,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zustand@5.0.13:
     resolution: {integrity: sha512-efI2tVaVQPqtOh114loML/Z80Y4NP3yc+Ff0fYiZJPauNeWZeIp/bRFD7I9bfmCOYBh/PHxlglQ9+wvlwnPikQ==}
@@ -4819,6 +4825,8 @@ snapshots:
   yargs-parser@21.1.1: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@3.25.76: {}
 
   zustand@5.0.13(@types/react@18.3.28)(react@19.0.0-rc-66855b96-20241106):
     optionalDependencies:
