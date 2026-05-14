@@ -27,6 +27,9 @@ import { Billboard } from "@/components/scene/Billboard";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
 import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
+import { ShootingStars } from "@/components/pixel/ShootingStars";
+import { RainOverlay } from "@/components/pixel/RainOverlay";
+import { SCENES } from "@/lib/data/scenes";
 
 import { TimerPanel } from "@/components/panels/TimerPanel";
 import { MusicPanel } from "@/components/panels/MusicPanel";
@@ -157,6 +160,9 @@ export default function TownPage() {
   });
 
   const myChar = findCharacter(user?.character_key);
+  const currentScene = useSceneStore((s) => s.current);
+  const sceneHasStars = SCENES[currentScene].stars > 0;
+  const sceneIsWet = currentScene === "rain" || currentScene === "storm";
 
   return (
     <main className="absolute inset-0 flex flex-col overflow-hidden">
@@ -263,10 +269,14 @@ export default function TownPage() {
         </div>
       </nav>
 
-      {/* ═══ SCENE (full-bleed, no bottom panel row) ═══ */}
+      {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
+           z-order: sky → stars → shooting stars → moon → planes → skyline →
+           ground crowd → rain overlay → floating UI panels. Rain covers the
+           skyline but stays below the HUD (z-[9]) so panels remain legible. */}
       <div className="flex-1 relative overflow-hidden">
         <Sky />
         <StarsLayer />
+        {sceneHasStars ? <ShootingStars /> : null}
         <Moon />
 
         {/* two airplanes with offset cycles so the sky always has movement */}
@@ -286,6 +296,15 @@ export default function TownPage() {
 
         {/* top-center: leaderboard "city window" */}
         <LeaderboardWindow />
+
+        {/* wet-scene atmosphere — only mounts for rain/storm so we don't
+            spin a rAF loop on sunny days. */}
+        {sceneIsWet ? (
+          <RainOverlay
+            color={currentScene === "storm" ? "#88a8d8" : "#00f5d4"}
+            density={currentScene === "storm" ? 1.2 : 1}
+          />
+        ) : null}
 
         {/* bottom-left: BigFocusCTA stacked above TimerPanel */}
         <div
