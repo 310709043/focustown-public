@@ -89,6 +89,8 @@ class FakeUserRepo(IUserRepo):
             character_key=None,
             role_label=None,
             is_active=True,
+            equipped_vehicle_item_id=None,
+            equipped_avatar_item_id=None,
             created_at=now,
             updated_at=now,
             terms_accepted_at=terms_accepted_at,

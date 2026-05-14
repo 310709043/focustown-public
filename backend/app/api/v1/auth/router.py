@@ -14,6 +14,7 @@ from app.api.v1.auth.schemas import (
     SignUpRequest,
     TokensResponse,
     UserResponse,
+    VehicleViewBrief,
 )
 from app.core.deps import (
     AuthProviderDep,
@@ -29,13 +30,20 @@ from app.core.deps import (
 from app.core.exceptions import AuthError, NotFoundError, RateLimitedError, ValidationError
 from app.core.security import hash_password, validate_password_strength, verify_password
 from app.domain.models import User
+from app.domain.services.equipment_service import VehicleRenderMeta
 from app.domain.services.password_reset_service import PasswordResetService
-from app.infrastructure.db.repositories import SqlPasswordResetTokenRepo, SqlUserRepo
+from app.infrastructure.db.repositories import (
+    SqlPasswordResetTokenRepo,
+    SqlShopRepo,
+    SqlUserRepo,
+)
 
 router = APIRouter()
 
 
-def _user_dto(u: User) -> UserResponse:
+def _user_dto(
+    u: User, equipped_vehicle: VehicleRenderMeta | None = None
+) -> UserResponse:
     return UserResponse(
         id=u.id,
         email=u.email,
@@ -43,6 +51,16 @@ def _user_dto(u: User) -> UserResponse:
         character_key=u.character_key,
         role_label=u.role_label,
         marketing_opt_in=u.marketing_opt_in,
+        equipped_vehicle_item_id=u.equipped_vehicle_item_id,
+        equipped_vehicle=(
+            VehicleViewBrief(
+                icon=equipped_vehicle.icon,
+                body_color=equipped_vehicle.body_color,
+                roof_color=equipped_vehicle.roof_color,
+            )
+            if equipped_vehicle is not None
+            else None
+        ),
     )
 
 
@@ -168,7 +186,15 @@ async def me(user_id: CurrentUserId, db: DbDep) -> UserResponse:
     user = await repo.get_by_id(user_id)
     if user is None:
         raise NotFoundError("user_not_found")
-    return _user_dto(user)
+    vehicle: VehicleRenderMeta | None = None
+    if user.equipped_vehicle_item_id:
+        metas = await SqlShopRepo(db).get_render_metas(
+            [user.equipped_vehicle_item_id]
+        )
+        vehicle = VehicleRenderMeta.from_json(
+            metas.get(user.equipped_vehicle_item_id)
+        )
+    return _user_dto(user, vehicle)
 
 
 @router.post("/forgot-password", response_model=OkResponse)

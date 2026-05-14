@@ -2,6 +2,7 @@ import { apiFetch, tokenStore } from "./client";
 import type {
   Achievement,
   AuthResponse,
+  EquipmentResponse,
   FocusSession,
   FocusSessionMode,
   LeaderboardEntry,
@@ -183,6 +184,17 @@ export const purchaseApi = {
     return apiFetch<PurchaseResponse>(`/api/v1/shop/items/${itemId}/purchase`, {
       method: "POST",
       body: { currency_code: currencyCode },
+    });
+  },
+};
+
+// ── equipment ──────────────────────────────────────────
+export const equipmentApi = {
+  /** Equip a car the user owns. Pass ``null`` to unequip. */
+  setVehicle(vehicleItemId: string | null) {
+    return apiFetch<EquipmentResponse>("/api/v1/me/equipment", {
+      method: "PUT",
+      body: { vehicle_item_id: vehicleItemId },
     });
   },
 };

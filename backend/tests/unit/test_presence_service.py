@@ -110,8 +110,36 @@ class FakeUserRepo(IUserRepo):
     async def get_many_by_ids(self, user_ids: list[str]) -> list[User]:
         return [self._by_id[uid] for uid in user_ids if uid in self._by_id]
 
+    async def update_equipment(self, **kwargs) -> User:
+        raise NotImplementedError
 
-def _make_user(user_id: str, *, character_key: str = "kai", active: bool = True) -> User:
+
+class FakeShopRepo:
+    """Subset of IShopRepo needed by PresenceService.list_street."""
+
+    def __init__(self, render_metas: dict[str, dict[str, Any] | None] | None = None):
+        self._metas = render_metas or {}
+
+    async def list_all(self):
+        return []
+
+    async def list_by_category(self, category):
+        return []
+
+    async def get_by_id(self, item_id):
+        return None
+
+    async def get_render_metas(self, item_ids):
+        return {i: self._metas.get(i) for i in item_ids}
+
+
+def _make_user(
+    user_id: str,
+    *,
+    character_key: str = "kai",
+    active: bool = True,
+    equipped_vehicle_item_id: str | None = None,
+) -> User:
     return User(
         id=user_id,
         email=f"{user_id}@example.com",
@@ -119,6 +147,8 @@ def _make_user(user_id: str, *, character_key: str = "kai", active: bool = True)
         character_key=character_key,
         role_label=None,
         is_active=active,
+        equipped_vehicle_item_id=equipped_vehicle_item_id,
+        equipped_avatar_item_id=None,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -203,7 +233,7 @@ async def test_set_state_in_room_hides_from_street_list():
     await svc.connect("u2")
     await svc.set_state("u2", "in_room")
 
-    on_street = await svc.list_street(users, cap=10)
+    on_street = await svc.list_street(users, FakeShopRepo(), cap=10)
     assert [u.id for u in on_street] == ["u1"]
 
 
@@ -217,7 +247,7 @@ async def test_list_street_hydrates_users_and_applies_cap():
     for i in range(5):
         await svc.connect(f"u{i}")
 
-    result = await svc.list_street(users, cap=3)
+    result = await svc.list_street(users, FakeShopRepo(), cap=3)
     assert len(result) == 3
     assert all(isinstance(u, StreetUser) for u in result)
     assert {u.character_key for u in result} == {"kai"}
@@ -235,7 +265,7 @@ async def test_list_street_skips_inactive_users():
     for uid in ("u1", "u2", "u3"):
         await svc.connect(uid)
 
-    result = await svc.list_street(users, cap=10)
+    result = await svc.list_street(users, FakeShopRepo(), cap=10)
     assert sorted(u.id for u in result) == ["u1", "u3"]
 
 
@@ -248,7 +278,7 @@ async def test_list_street_status_reflects_tracker_state():
 
     await svc.connect("u1")
     await svc.set_status("u1", "create")
-    result = await svc.list_street(users, cap=10)
+    result = await svc.list_street(users, FakeShopRepo(), cap=10)
     assert result[0].status == "create"
 
 
@@ -259,5 +289,34 @@ async def test_list_street_empty_when_nobody_online():
     svc = PresenceService(tracker, pub)
     users = FakeUserRepo([_make_user("u1")])
 
-    result = await svc.list_street(users, cap=10)
+    result = await svc.list_street(users, FakeShopRepo(), cap=10)
     assert result == []
+
+
+@pytest.mark.asyncio
+async def test_list_street_hydrates_vehicle_render_meta():
+    tracker = InMemoryPresenceTracker()
+    pub = RecordingPublisher()
+    svc = PresenceService(tracker, pub)
+    users = FakeUserRepo(
+        [
+            _make_user("u1", equipped_vehicle_item_id="car1"),
+            _make_user("u2"),  # no vehicle equipped
+        ]
+    )
+    shop = FakeShopRepo(
+        render_metas={
+            "car1": {"icon": "🚕", "body_color": "#ff0000", "roof_color": "#990000"},
+        }
+    )
+
+    await svc.connect("u1")
+    await svc.connect("u2")
+
+    result = await svc.list_street(users, shop, cap=10)
+    by_id = {u.id: u for u in result}
+
+    assert by_id["u1"].vehicle is not None
+    assert by_id["u1"].vehicle.icon == "🚕"
+    assert by_id["u1"].vehicle.body_color == "#ff0000"
+    assert by_id["u2"].vehicle is None

@@ -5,6 +5,14 @@
  * paths/operations map.
  */
 
+// Phase 3: visual attrs of an equipped vehicle (only set when the user has
+// equipped a `car` shop item). Sourced from `shop_items.render_meta`.
+export type VehicleRenderMeta = {
+  icon: string;
+  body_color: string;
+  roof_color: string;
+};
+
 export type User = {
   id: string;
   email: string;
@@ -12,6 +20,8 @@ export type User = {
   character_key: string | null;
   role_label: string | null;
   marketing_opt_in?: boolean;
+  equipped_vehicle_item_id: string | null;
+  equipped_vehicle: VehicleRenderMeta | null;
 };
 
 export type Tokens = {
@@ -96,6 +106,13 @@ export type StreetUser = {
   display_name: string;
   character_key: string | null;
   status: string;
+  vehicle: VehicleRenderMeta | null;
+};
+
+// Phase 3: response from PUT /api/v1/me/equipment
+export type EquipmentResponse = {
+  equipped_vehicle_item_id: string | null;
+  equipped_vehicle: VehicleRenderMeta | null;
 };
 
 // ── Phase 2: wallet + items ────────────────────────────────────────────────

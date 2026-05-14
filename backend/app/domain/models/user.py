@@ -12,6 +12,8 @@ class User:
     character_key: str | None
     role_label: str | None
     is_active: bool
+    equipped_vehicle_item_id: str | None
+    equipped_avatar_item_id: str | None
     created_at: datetime
     updated_at: datetime
     terms_accepted_at: datetime | None = None

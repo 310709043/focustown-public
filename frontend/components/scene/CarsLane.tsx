@@ -39,6 +39,14 @@ function Car({
   laneIndex: number;
 }) {
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
+  // Phase 3: if the user has an equipped vehicle, prefer its colors + emoji
+  // over the character defaults. The driver's *name* still uses the character
+  // identity — the car visually changes, the person behind the wheel doesn't.
+  const v = user.vehicle;
+  const bodyColor = v?.body_color ?? ch.bodyColor;
+  const roofColor = v?.roof_color ?? ch.roofColor;
+  const plateEmoji = v?.icon ?? ch.emoji;
+
   // Stable per-user motion params so reflows from list reorders don't reset.
   const params = useMemo(() => {
     const h = Math.abs(hashCode(user.id));
@@ -67,7 +75,7 @@ function Car({
           left: "50%",
           transform: "translateX(-50%)",
           background: "rgba(3,1,17,0.85)",
-          border: `1px solid ${isSelf ? "var(--amber)" : ch.bodyColor}`,
+          border: `1px solid ${isSelf ? "var(--amber)" : bodyColor}`,
           padding: "0 4px",
           fontSize: 7,
           color: isSelf ? "var(--amber)" : "var(--a2)",
@@ -78,7 +86,7 @@ function Car({
             : "0 0 3px var(--a1)",
         }}
       >
-        {ch.emoji} {isSelf ? `${ch.name} ・ 你` : ch.name}
+        {plateEmoji} {isSelf ? `${ch.name} ・ 你` : ch.name}
       </div>
 
       {/* car body — pixel composition (self car gets amber underglow) */}
@@ -91,14 +99,14 @@ function Car({
             height: 9,
             borderRadius: "3px 3px 0 0",
             margin: "0 5px",
-            background: ch.roofColor,
+            background: roofColor,
           }}
         />
         <div
           style={{
             height: 13,
             borderRadius: 2,
-            background: ch.bodyColor,
+            background: bodyColor,
             position: "relative",
           }}
         >

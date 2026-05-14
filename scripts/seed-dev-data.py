@@ -43,11 +43,17 @@ ACHIEVEMENTS = [
 # centiT (cT) = the integer "minor" unit. 100 cT = 1 T. 1 T is earned per
 # 30 minutes of focused work, so 50 cT (0.5 T) is one 15-minute Pomodoro.
 SHOP_ITEMS = [
-    # cars
-    {"category": "car", "icon": "🚗", "name": "霓虹跑車", "description": "紫色霓虹燈特效，限定色款", "price_cT": 80, "price_cents": 4900, "featured": True},
-    {"category": "car", "icon": "🚕", "name": "復古計程車", "description": "懷舊黃色像素風格", "price_cT": 50, "price_cents": 3900, "featured": False},
-    {"category": "car", "icon": "🏎️", "name": "F1 賽車", "description": "超速紅色，帶尾翼特效", "price_cT": 120, "price_cents": 5900, "featured": False},
-    {"category": "car", "icon": "🚌", "name": "星空巴士", "description": "載著整個小鎮的夢", "price_cT": 80, "price_cents": 4900, "featured": False},
+    # cars — render_meta drives the equipped-vehicle colors in CarsLane (Phase 3).
+    # body / roof palettes deliberately distinct from the 30-character roster so
+    # an equipped car stands out from the default character-derived colors.
+    {"category": "car", "icon": "🚗", "name": "霓虹跑車", "description": "紫色霓虹燈特效，限定色款", "price_cT": 80, "price_cents": 4900, "featured": True,
+     "render_meta": {"icon": "🚗", "body_color": "#a855f7", "roof_color": "#6b21a8"}},
+    {"category": "car", "icon": "🚕", "name": "復古計程車", "description": "懷舊黃色像素風格", "price_cT": 50, "price_cents": 3900, "featured": False,
+     "render_meta": {"icon": "🚕", "body_color": "#fbbf24", "roof_color": "#b45309"}},
+    {"category": "car", "icon": "🏎️", "name": "F1 賽車", "description": "超速紅色，帶尾翼特效", "price_cT": 120, "price_cents": 5900, "featured": False,
+     "render_meta": {"icon": "🏎️", "body_color": "#dc2626", "roof_color": "#7f1d1d"}},
+    {"category": "car", "icon": "🚌", "name": "星空巴士", "description": "載著整個小鎮的夢", "price_cT": 80, "price_cents": 4900, "featured": False,
+     "render_meta": {"icon": "🚌", "body_color": "#1e3a8a", "roof_color": "#0c1d4f"}},
     # scenes
     {"category": "scene", "icon": "🌃", "name": "台灣夜市", "description": "霓虹燈、臭豆腐攤、人潮", "price_cT": 200, "price_cents": 7900, "featured": True},
     {"category": "scene", "icon": "🌸", "name": "京都春季", "description": "櫻花飄落、石板路", "price_cT": 200, "price_cents": 7900, "featured": False},
@@ -76,8 +82,8 @@ async def main() -> None:
                 db.add(AchievementORM(id=ids.new_id(), **a))
 
         # Shop items + prices: only seed on first run (idempotent by row count).
-        count_existing = (await db.execute(_select(ShopItemORM))).scalars().all()
-        if not count_existing:
+        existing_rows = (await db.execute(_select(ShopItemORM))).scalars().all()
+        if not existing_rows:
             for s in SHOP_ITEMS:
                 item_id = ids.new_id()
                 db.add(
@@ -89,6 +95,7 @@ async def main() -> None:
                         description=s["description"],
                         price_cents=s["price_cents"],
                         featured=s["featured"],
+                        render_meta=s.get("render_meta"),
                     )
                 )
                 # T price: every catalog item is purchasable with T coins.
@@ -101,6 +108,20 @@ async def main() -> None:
                         active=True,
                     )
                 )
+        else:
+            # Phase 3 backfill: for previously-seeded items with no render_meta,
+            # copy from SHOP_ITEMS by name. Safe to re-run; only writes when
+            # the row's render_meta is currently NULL.
+            by_name = {s["name"]: s for s in SHOP_ITEMS}
+            for row in existing_rows:
+                if row.render_meta is not None:
+                    continue
+                seed = by_name.get(row.name)
+                if seed is None:
+                    continue
+                meta = seed.get("render_meta")
+                if meta is not None:
+                    row.render_meta = meta
         await db.commit()
     print("✓ Seed complete")
 

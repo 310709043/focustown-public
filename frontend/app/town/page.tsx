@@ -82,6 +82,7 @@ export default function TownPage() {
         user_id: String(msg.user_id),
         state: msg.state as never,
         status: msg.status as string | undefined,
+        equipment_changed: Boolean(msg.equipment_changed),
       });
     }
   });

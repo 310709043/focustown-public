@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, NotFoundError
+from app.core.sentinels import UNSET, UnsetType
 from app.domain.models import User
 from app.domain.repositories.user_repo import IUserRepo, UserCredentials
 from app.infrastructure.db.models.user import UserORM
@@ -19,6 +20,8 @@ def _to_domain(row: UserORM) -> User:
         character_key=row.character_key,
         role_label=row.role_label,
         is_active=row.is_active,
+        equipped_vehicle_item_id=row.equipped_vehicle_item_id,
+        equipped_avatar_item_id=row.equipped_avatar_item_id,
         created_at=row.created_at,
         updated_at=row.updated_at,
         terms_accepted_at=row.terms_accepted_at,
@@ -116,3 +119,24 @@ class SqlUserRepo(IUserRepo):
         stmt = select(UserORM).where(UserORM.id.in_(user_ids))
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
+
+    async def update_equipment(
+        self,
+        *,
+        user_id: str,
+        equipped_vehicle_item_id: str | None | UnsetType = UNSET,
+        equipped_avatar_item_id: str | None | UnsetType = UNSET,
+    ) -> User:
+        row = await self._s.get(UserORM, user_id)
+        if row is None:
+            raise NotFoundError("user_not_found")
+        if not isinstance(equipped_vehicle_item_id, UnsetType):
+            row.equipped_vehicle_item_id = equipped_vehicle_item_id
+        if not isinstance(equipped_avatar_item_id, UnsetType):
+            row.equipped_avatar_item_id = equipped_avatar_item_id
+        await self._s.flush()
+        # Explicit refresh so the row's `updated_at` (server-side `onupdate=
+        # func.now()`) is loaded eagerly — accessing it lazily in _to_domain
+        # would trigger an async IO without an active greenlet.
+        await self._s.refresh(row, ["updated_at"])
+        return _to_domain(row)

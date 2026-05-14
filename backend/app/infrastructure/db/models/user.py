@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.db.base import Base, IdMixin, TimestampMixin
@@ -26,4 +26,17 @@ class UserORM(Base, IdMixin, TimestampMixin):
     )
     marketing_opt_in_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+    # Phase 3 — equipment pointers (FK→shop_items, ON DELETE SET NULL so an
+    # item being retired doesn't lock the user record). avatar slot is
+    # forward-declared; no UI in Phase 3 yet.
+    equipped_vehicle_item_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("shop_items.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    equipped_avatar_item_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("shop_items.id", ondelete="SET NULL"),
+        nullable=True,
     )

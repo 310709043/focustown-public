@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { authApi } from "../api/endpoints";
-import type { User } from "../api/types.gen";
+import type { User, VehicleRenderMeta } from "../api/types.gen";
 
 export type SignUpInput = {
   email: string;
@@ -20,6 +20,10 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (input: SignUpInput) => Promise<void>;
   signOut: () => void;
+  setEquippedVehicle: (
+    vehicleItemId: string | null,
+    meta: VehicleRenderMeta | null,
+  ) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -64,5 +68,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut() {
     authApi.signOut();
     set({ user: null });
+  },
+  setEquippedVehicle(vehicleItemId, meta) {
+    set((prev) =>
+      prev.user
+        ? {
+            user: {
+              ...prev.user,
+              equipped_vehicle_item_id: vehicleItemId,
+              equipped_vehicle: meta,
+            },
+          }
+        : prev,
+    );
   },
 }));
