@@ -8,8 +8,8 @@ from app.api.v1.equipment.schemas import (
     VehicleRenderMetaResponse,
 )
 from app.core.deps import CurrentUserId, DbDep, RealtimePublisherDep
-from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.services.equipment_service import EquipmentService
+from app.domain.services.presence_service import STREET_CHANNEL
 from app.infrastructure.db.repositories import (
     SqlShopRepo,
     SqlUserItemRepo,
@@ -19,12 +19,11 @@ from app.infrastructure.db.repositories import (
 router = APIRouter()
 
 
-def _service(db, publisher: IRealtimePublisher) -> EquipmentService:
+def _service(db) -> EquipmentService:
     return EquipmentService(
         users=SqlUserRepo(db),
         user_items=SqlUserItemRepo(db),
         shop=SqlShopRepo(db),
-        publisher=publisher,
     )
 
 
@@ -35,10 +34,23 @@ async def put_equipment(
     db: DbDep,
     publisher: RealtimePublisherDep,
 ) -> EquipmentResponse:
-    svc = _service(db, publisher)
+    svc = _service(db)
     user = await svc.equip_vehicle(
         user_id=user_id,
         shop_item_id=payload.vehicle_item_id,
+    )
+    # Broadcast a presence delta so other clients re-fetch the street
+    # snapshot (which now carries the new render_meta). Done at the
+    # transport layer, not in the service, so the service stays free of
+    # realtime knowledge.
+    await publisher.publish(
+        STREET_CHANNEL,
+        {
+            "type": "presence.changed",
+            "user_id": user_id,
+            "state": "on_street",
+            "equipment_changed": True,
+        },
     )
     vehicle = await svc.resolve_vehicle(user.equipped_vehicle_item_id)
     return EquipmentResponse(

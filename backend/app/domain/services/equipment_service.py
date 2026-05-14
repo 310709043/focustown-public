@@ -5,11 +5,9 @@ from typing import Any
 
 from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
 from app.domain.models import User
-from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.shop_repo import IShopRepo
 from app.domain.repositories.user_item_repo import IUserItemRepo
 from app.domain.repositories.user_repo import IUserWriter
-from app.domain.services.presence_service import STREET_CHANNEL
 
 
 @dataclass(slots=True, frozen=True)
@@ -33,17 +31,15 @@ class VehicleRenderMeta:
 
 
 class EquipmentService:
-    """Validates ownership + flips the equip pointer + broadcasts a delta.
+    """Validates ownership + flips the equip pointer.
 
     SOLID:
-    - S: only concerned with equipping; doesn't touch wallet, doesn't render
-    - D: depends on Protocols (`IUserWriter`, `IUserItemRepo`, `IShopRepo`,
-      `IRealtimePublisher`), not on adapters
-
-    Broadcast goes to the global ``street`` channel with
-    ``equipment_changed=true`` so other clients trigger a presence
-    rehydrate (carrying display name + the new render_meta) without
-    blowing up the WS payload.
+    - S: only concerned with equipping; persistence is the only side effect.
+      The street broadcast that follows a successful equip lives in the
+      router (a transport-layer concern), not here — that keeps this
+      service free of realtime knowledge and trivially testable.
+    - D: depends on Protocols (`IUserWriter`, `IUserItemRepo`, `IShopRepo`),
+      not on adapters.
     """
 
     def __init__(
@@ -52,12 +48,10 @@ class EquipmentService:
         users: IUserWriter,
         user_items: IUserItemRepo,
         shop: IShopRepo,
-        publisher: IRealtimePublisher,
     ) -> None:
         self._users = users
         self._user_items = user_items
         self._shop = shop
-        self._pub = publisher
 
     async def equip_vehicle(
         self, *, user_id: str, shop_item_id: str | None
@@ -73,20 +67,10 @@ class EquipmentService:
             ):
                 raise ForbiddenError("item_not_owned")
 
-        user = await self._users.update_equipment(
+        return await self._users.update_equipment(
             user_id=user_id,
             equipped_vehicle_item_id=shop_item_id,
         )
-        await self._pub.publish(
-            STREET_CHANNEL,
-            {
-                "type": "presence.changed",
-                "user_id": user_id,
-                "state": "on_street",
-                "equipment_changed": True,
-            },
-        )
-        return user
 
     async def resolve_vehicle(
         self, equipped_vehicle_item_id: str | None
