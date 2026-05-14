@@ -199,6 +199,25 @@ export type MoveRoomItemInput = {
   y: number;
 };
 
+// ── Phase 9: shared playback timeline ──────────────────────────────────────
+// Server-authoritative timeline; timestamps are epoch milliseconds so the
+// frontend's drift loop can do plain Date.now() arithmetic. ``track`` is
+// denormalized so a freshly-joining visitor doesn't have to round-trip to
+// the track lookup endpoint just to render "Now playing — {title}".
+export type RoomPlayback = {
+  id: string;
+  room_id: string;
+  current_track_id: string | null;
+  started_at_ms: number | null;
+  paused_at_ms: number | null;
+  is_playing: boolean;
+  track: Track | null;
+};
+
+export type PlaybackChangeInput = {
+  track_id: string;
+};
+
 // ── Phase 8: room visitor sessions ─────────────────────────────────────────
 // One row per active "user X is currently in room Y". Server enforces
 // max_visitors (visibility-aware: owner bypasses the cap). The frontend

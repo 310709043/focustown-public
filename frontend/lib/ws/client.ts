@@ -40,6 +40,26 @@ export type WsMessage =
       room_id: string;
       user_id: string;
     }
+  // Phase 9: shared playback timeline. Broadcast on the ``room:{id}``
+  // channel; subscribers compute the expected currentTime from
+  // started_at_ms and drift-correct their local <audio>.
+  | {
+      type: "music.play";
+      room_id: string;
+      track_id: string | null;
+      started_at_ms: number | null;
+    }
+  | {
+      type: "music.pause";
+      room_id: string;
+      paused_at_ms: number;
+    }
+  | {
+      type: "music.change";
+      room_id: string;
+      track_id: string;
+      started_at_ms: number;
+    }
   | { type: string; [k: string]: unknown };
 
 type Listener = (msg: WsMessage) => void;
