@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
+from app.core.clock import IClock
 from app.core.events import EventBus
 from app.core.exceptions import ConflictError, NotFoundError
 from app.core.ids import IIdGenerator
@@ -27,6 +30,7 @@ class MatchingService:
         strategy: ICompatibilityStrategy,
         events: EventBus,
         ids: IIdGenerator,
+        clock: IClock,
     ) -> None:
         self._users = users
         self._matches = matches
@@ -34,6 +38,7 @@ class MatchingService:
         self._strategy = strategy
         self._events = events
         self._ids = ids
+        self._clock = clock
 
     async def propose(self, *, requester_id: str, candidate_id: str) -> Match:
         requester = await self._users.get_by_id(requester_id)
@@ -44,11 +49,7 @@ class MatchingService:
             raise ConflictError("cannot_match_self")
 
         # MVP: hour-of-day buckets from each user's start times in 7d window
-        from datetime import timedelta
-
-        from app.core.clock import SystemClock
-
-        since = SystemClock().now() - timedelta(days=7)
+        since = self._clock.now() - timedelta(days=7)
         r_sessions = await self._sessions.list_by_user_since(
             user_id=requester.id, since=since
         )
