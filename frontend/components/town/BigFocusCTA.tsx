@@ -3,26 +3,24 @@
 import { useRouter } from "next/navigation";
 
 /**
- * The marquee CTA of the town view: a huge neon pixel-button anchored to the
- * bottom-center of the scene. Pulses constantly so the eye is drawn to it.
- *
- * Sits above buildings/NPCs (z-[7]) but below modals/overlays.
+ * Secondary marquee CTA — "enter focus mode". Used to sit absolute bottom-center
+ * but moved to bottom-left (above TimerPanel) now that the match button owns
+ * the bottom-center slot. Container is relatively positioned so the parent
+ * decides placement.
  */
 export function BigFocusCTA() {
   const router = useRouter();
   return (
     <button
       onClick={() => router.push("/focus/solo")}
-      className="absolute left-1/2 -translate-x-1/2 pixel-btn animate-bigPulse group"
+      className="pixel-btn animate-bigPulse group relative"
       style={{
-        bottom: 178,        /* sits above the panel row + ticker */
-        width: 300,
-        height: 84,
-        zIndex: 7,
+        width: 240,
+        height: 64,
         background:
           "linear-gradient(135deg, rgba(124,58,237,0.85), rgba(76,29,149,0.85))",
         borderColor: "var(--a2)",
-        fontSize: 14,
+        fontSize: 13,
         letterSpacing: 3,
         overflow: "hidden",
       }}
@@ -40,6 +38,7 @@ export function BigFocusCTA() {
 
       {/* shimmer sweep */}
       <span
+        aria-hidden
         className="pointer-events-none absolute inset-y-0 left-0 w-1/3 group-hover:animate-shimmerSweep"
         style={{
           background:
@@ -53,6 +52,7 @@ export function BigFocusCTA() {
         (pos) => (
           <span
             key={pos}
+            aria-hidden
             className={`absolute ${pos} text-[8px] opacity-70 animate-twinkle`}
             style={{ color: "var(--a2)" }}
           >

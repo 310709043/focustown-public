@@ -23,12 +23,13 @@ import { Buildings } from "@/components/scene/Buildings";
 import { Billboard } from "@/components/scene/Billboard";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
+import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
 
 import { TimerPanel } from "@/components/panels/TimerPanel";
-import { LeaderboardPanel } from "@/components/panels/LeaderboardPanel";
 import { MusicPanel } from "@/components/panels/MusicPanel";
 import { MatchModal } from "@/components/modals/MatchModal";
 import { BigFocusCTA } from "@/components/town/BigFocusCTA";
+import { MatchCTA } from "@/components/town/MatchCTA";
 import { CoinBadge } from "@/components/town/CoinBadge";
 
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
@@ -139,7 +140,7 @@ export default function TownPage() {
 
   return (
     <main className="absolute inset-0 flex flex-col overflow-hidden">
-      {/* ═══ LAYER 1: thicker navbar ═══ */}
+      {/* ═══ LAYER 1: navbar — logo left, T-coin leftmost in right cluster ═══ */}
       <nav
         className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between px-5 z-10"
         style={{ height: 56 }}
@@ -148,6 +149,7 @@ export default function TownPage() {
           <Logo scale={1.4} />
         </div>
         <div className="flex gap-2 items-center">
+          <CoinBadge />
           <span
             className="rounded-md px-2.5 py-2 flex items-center gap-1.5"
             style={{
@@ -182,7 +184,6 @@ export default function TownPage() {
           >
             🏆 大賞區
           </Link>
-          <CoinBadge />
           <Link
             href="/shop"
             className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-pink hover:text-pink transition-colors flex items-center gap-1.5"
@@ -217,7 +218,7 @@ export default function TownPage() {
         </div>
       </nav>
 
-      {/* ═══ SCENE ═══ */}
+      {/* ═══ SCENE (full-bleed, no bottom panel row) ═══ */}
       <div className="flex-1 relative overflow-hidden">
         <Sky />
         <StarsLayer />
@@ -230,27 +231,37 @@ export default function TownPage() {
         <WeatherBadge />
         <TownClock />
 
-        {/* LAYER 4: buildings + ground crowd */}
+        {/* skyline + ground crowd */}
         <Buildings />
         <Pedestrians />
         <CarsLane />
 
-        {/* LAYER 3: central billboard */}
+        {/* central billboard */}
         <Billboard />
 
-        {/* LAYER 5: massive focus CTA */}
-        <BigFocusCTA />
-      </div>
+        {/* top-center: leaderboard "city window" */}
+        <LeaderboardWindow />
 
-      {/* ═══ LAYER 2: bottom panels (compressed to give BigFocusCTA room) ═══ */}
-      <section
-        className="grid grid-cols-3 gap-2 p-2 bg-[rgba(2,0,12,0.98)] border-t border-border"
-        style={{ height: 156 }}
-      >
-        <TimerPanel />
-        <LeaderboardPanel onMatchClick={() => setMatchOpen(true)} />
-        <MusicPanel />
-      </section>
+        {/* bottom-left: BigFocusCTA stacked above TimerPanel */}
+        <div
+          className="absolute z-[9] flex flex-col gap-2 items-stretch"
+          style={{ left: 16, bottom: 16, width: 244 }}
+        >
+          <BigFocusCTA />
+          <TimerPanel />
+        </div>
+
+        {/* bottom-right: MusicPanel floating card */}
+        <div
+          className="absolute z-[9]"
+          style={{ right: 16, bottom: 16, width: 244 }}
+        >
+          <MusicPanel />
+        </div>
+
+        {/* bottom-center: match CTA */}
+        <MatchCTA onClick={() => setMatchOpen(true)} />
+      </div>
 
       <MatchModal open={matchOpen} onClose={() => setMatchOpen(false)} />
     </main>

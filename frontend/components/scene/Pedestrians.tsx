@@ -54,21 +54,22 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
       {/* status bubble — keyed by status code so it re-mounts and pops on change */}
       <div
         key={status.code}
-        className="animate-statusPop"
+        className="animate-statusPop font-japan"
         style={{
           position: "absolute",
-          bottom: 32,
+          bottom: 44,
           left: "50%",
           transform: "translateX(-50%)",
-          background: "rgba(3,1,17,0.92)",
+          background: "rgba(3,1,17,0.94)",
           border: `1px solid ${status.color}`,
           color: status.color,
-          fontSize: 9,
-          padding: "1.5px 6px",
+          fontSize: 11,
+          padding: "2px 8px",
           borderRadius: 99,
           whiteSpace: "nowrap",
-          boxShadow: `0 0 10px ${status.color}55`,
-          textShadow: `0 0 4px ${status.color}`,
+          boxShadow: `0 0 12px ${status.color}66, inset 0 0 4px ${status.color}33`,
+          textShadow: `0 0 6px ${status.color}`,
+          letterSpacing: 0.5,
         }}
       >
         {status.emoji} {status.label}
@@ -76,16 +77,25 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 
       {/* name plate — self gets amber accent so you find yourself instantly */}
       <div
+        className="font-japan"
         style={{
-          fontSize: 7,
+          fontSize: 11,
           color: isSelf ? "var(--amber)" : "var(--a2)",
           textAlign: "center",
           textShadow: isSelf
             ? "0 0 6px var(--amber), 0 0 12px rgba(252,211,77,0.55)"
-            : "0 0 4px var(--a3)",
-          marginBottom: 1,
+            : "0 0 6px var(--a3), 0 0 10px var(--a1)",
+          background: isSelf
+            ? "rgba(252,211,77,0.10)"
+            : "rgba(3,1,17,0.55)",
+          padding: "1px 6px",
+          borderRadius: 4,
+          marginBottom: 2,
           whiteSpace: "nowrap",
-          letterSpacing: isSelf ? "0.5px" : "normal",
+          border: isSelf
+            ? "1px solid rgba(252,211,77,0.45)"
+            : "1px solid rgba(167,139,250,0.25)",
+          letterSpacing: 0.5,
         }}
       >
         {isSelf ? `${ch.name} ・ 你` : ch.name}
