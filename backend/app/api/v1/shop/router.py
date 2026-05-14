@@ -10,11 +10,16 @@ from app.api.v1.shop.schemas import (
     ShopItemPriceResponse,
     ShopItemResponse,
 )
-from app.core.deps import ClockDep, CurrentUserId, DbDep, IdGenDep
+from app.core.deps import (
+    ClockDep,
+    CurrentUserId,
+    DbDep,
+    IdGenDep,
+    RealtimePublisherDep,
+)
 from app.domain.repositories.shop_repo import ShopItemRecord
 from app.domain.services.purchase_service import PurchaseService
 from app.domain.services.wallet_service import WalletService
-from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.repositories import (
     SqlShopItemPriceRepo,
     SqlShopRepo,
@@ -22,7 +27,6 @@ from app.infrastructure.db.repositories import (
     SqlWalletRepo,
     SqlWalletTransactionRepo,
 )
-from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 router = APIRouter()
 
@@ -73,8 +77,8 @@ async def purchase_item(
     db: DbDep,
     clock: ClockDep,
     ids: IdGenDep,
+    publisher: RealtimePublisherDep,
 ) -> PurchaseResponse:
-    publisher = RedisPubSubPublisher(get_redis())
     wallet_service = WalletService(
         wallets=SqlWalletRepo(db),
         transactions=SqlWalletTransactionRepo(db),

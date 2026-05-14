@@ -7,25 +7,24 @@ from app.api.v1.equipment.schemas import (
     EquipmentUpdateRequest,
     VehicleRenderMetaResponse,
 )
-from app.core.deps import CurrentUserId, DbDep
+from app.core.deps import CurrentUserId, DbDep, RealtimePublisherDep
+from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.services.equipment_service import EquipmentService
-from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.repositories import (
     SqlShopRepo,
     SqlUserItemRepo,
     SqlUserRepo,
 )
-from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 router = APIRouter()
 
 
-def _service(db) -> EquipmentService:
+def _service(db, publisher: IRealtimePublisher) -> EquipmentService:
     return EquipmentService(
         users=SqlUserRepo(db),
         user_items=SqlUserItemRepo(db),
         shop=SqlShopRepo(db),
-        publisher=RedisPubSubPublisher(get_redis()),
+        publisher=publisher,
     )
 
 
@@ -34,8 +33,9 @@ async def put_equipment(
     payload: EquipmentUpdateRequest,
     user_id: CurrentUserId,
     db: DbDep,
+    publisher: RealtimePublisherDep,
 ) -> EquipmentResponse:
-    svc = _service(db)
+    svc = _service(db, publisher)
     user = await svc.equip_vehicle(
         user_id=user_id,
         shop_item_id=payload.vehicle_item_id,

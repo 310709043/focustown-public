@@ -3,19 +3,23 @@ from __future__ import annotations
 from fastapi import APIRouter, Query
 
 from app.api.v1.presence.schemas import StreetUserResponse, VehicleViewResponse
-from app.core.deps import CurrentUserId, DbDep, PresenceTrackerDep
+from app.core.deps import (
+    CurrentUserId,
+    DbDep,
+    PresenceTrackerDep,
+    RealtimePublisherDep,
+)
+from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.services.presence_service import PresenceService
-from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.repositories import SqlShopRepo, SqlUserRepo
-from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 router = APIRouter()
 
 
-def _service(tracker) -> PresenceService:
+def _service(tracker, publisher: IRealtimePublisher) -> PresenceService:
     return PresenceService(
         tracker=tracker,
-        publisher=RedisPubSubPublisher(get_redis()),
+        publisher=publisher,
     )
 
 
@@ -24,9 +28,10 @@ async def list_street(
     _: CurrentUserId,
     db: DbDep,
     tracker: PresenceTrackerDep,
+    publisher: RealtimePublisherDep,
     cap: int = Query(12, ge=1, le=50),
 ) -> list[StreetUserResponse]:
-    svc = _service(tracker)
+    svc = _service(tracker, publisher)
     users = await svc.list_street(SqlUserRepo(db), SqlShopRepo(db), cap=cap)
     return [
         StreetUserResponse(
