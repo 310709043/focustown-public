@@ -27,9 +27,9 @@ from app.core.deps import (
     RateLimiterDep,
     SettingsDep,
 )
-from app.core.exceptions import AuthError, NotFoundError, RateLimitedError, ValidationError
-from app.core.security import hash_password, validate_password_strength, verify_password
+from app.core.exceptions import RateLimitedError
 from app.domain.models import User
+from app.domain.services.auth_service import AuthOutcome, AuthService
 from app.domain.services.equipment_service import VehicleRenderMeta
 from app.domain.services.password_reset_service import PasswordResetService
 from app.infrastructure.db.repositories import (
@@ -64,6 +64,16 @@ def _user_dto(
     )
 
 
+def _to_auth_response(outcome: AuthOutcome) -> AuthResponse:
+    return AuthResponse(
+        user=_user_dto(outcome.user),
+        tokens=TokensResponse(
+            access_token=outcome.tokens.access_token,
+            refresh_token=outcome.tokens.refresh_token,
+        ),
+    )
+
+
 async def _enforce_limit(
     limiter,
     *,
@@ -74,6 +84,15 @@ async def _enforce_limit(
     decision = await limiter.hit(key, limit=limit, window_seconds=window_seconds)
     if not decision.allowed:
         raise RateLimitedError("rate_limited")
+
+
+def _auth_service(db, auth, ids, clock) -> AuthService:
+    return AuthService(
+        users=SqlUserRepo(db),
+        auth_provider=auth,
+        ids=ids,
+        clock=clock,
+    )
 
 
 def _reset_service(
@@ -111,33 +130,16 @@ async def sign_up(
         limit=settings.auth_rl_signup_per_ip_per_hour,
         window_seconds=3600,
     )
-
-    if not payload.terms_accepted:
-        raise ValidationError("terms_must_be_accepted")
-    if payload.terms_version != settings.terms_current_version:
-        raise ValidationError("terms_version_mismatch")
-
-    validate_password_strength(payload.password)
-
-    now = clock.now()
-    repo = SqlUserRepo(db)
-    user = await repo.create(
-        user_id=ids.new_id(),
+    outcome = await _auth_service(db, auth, ids, clock).sign_up(
         email=payload.email,
-        password_hash=hash_password(payload.password),
+        password=payload.password,
         display_name=payload.display_name,
-        terms_accepted_at=now,
+        terms_accepted=payload.terms_accepted,
         terms_version=payload.terms_version,
         marketing_opt_in=payload.marketing_opt_in,
-        marketing_opt_in_at=now if payload.marketing_opt_in else None,
+        terms_current_version=settings.terms_current_version,
     )
-    tokens = await auth.issue_tokens(user_id=user.id)
-    return AuthResponse(
-        user=_user_dto(user),
-        tokens=TokensResponse(
-            access_token=tokens.access_token, refresh_token=tokens.refresh_token
-        ),
-    )
+    return _to_auth_response(outcome)
 
 
 @router.post("/signin", response_model=AuthResponse)
@@ -145,6 +147,8 @@ async def sign_in(
     payload: SignInRequest,
     db: DbDep,
     auth: AuthProviderDep,
+    ids: IdGenDep,
+    clock: ClockDep,
     settings: SettingsDep,
     limiter: RateLimiterDep,
     client_ip: ClientIpDep,
@@ -161,18 +165,11 @@ async def sign_in(
         limit=settings.auth_rl_signin_per_ip_per_hour,
         window_seconds=3600,
     )
-
-    repo = SqlUserRepo(db)
-    creds = await repo.get_credentials_by_email(payload.email)
-    if creds is None or not verify_password(payload.password, creds.password_hash):
-        raise AuthError("invalid_credentials")
-    tokens = await auth.issue_tokens(user_id=creds.user.id)
-    return AuthResponse(
-        user=_user_dto(creds.user),
-        tokens=TokensResponse(
-            access_token=tokens.access_token, refresh_token=tokens.refresh_token
-        ),
+    outcome = await _auth_service(db, auth, ids, clock).sign_in(
+        email=payload.email,
+        password=payload.password,
     )
+    return _to_auth_response(outcome)
 
 
 @router.post("/refresh", response_model=TokensResponse)
@@ -182,19 +179,16 @@ async def refresh(payload: RefreshRequest, auth: AuthProviderDep) -> TokensRespo
 
 
 @router.get("/me", response_model=UserResponse)
-async def me(user_id: CurrentUserId, db: DbDep) -> UserResponse:
-    repo = SqlUserRepo(db)
-    user = await repo.get_by_id(user_id)
-    if user is None:
-        raise NotFoundError("user_not_found")
-    vehicle: VehicleRenderMeta | None = None
-    if user.equipped_vehicle_item_id:
-        metas = await SqlShopRepo(db).get_render_metas(
-            [user.equipped_vehicle_item_id]
-        )
-        vehicle = VehicleRenderMeta.from_json(
-            metas.get(user.equipped_vehicle_item_id)
-        )
+async def me(
+    user_id: CurrentUserId,
+    db: DbDep,
+    auth: AuthProviderDep,
+    ids: IdGenDep,
+    clock: ClockDep,
+) -> UserResponse:
+    user, vehicle = await _auth_service(db, auth, ids, clock).get_me_with_vehicle(
+        user_id, shop=SqlShopRepo(db)
+    )
     return _user_dto(user, vehicle)
 
 
