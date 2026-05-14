@@ -29,6 +29,22 @@
     "tally": "Accountant",
     "just": "Lawyer",
     "run": "Athlete",
-    "stu": "Student"
+    "stu": "Student",
+    "other": "Custom (coming soon)"
+  },
+  "selectPage": {
+    "subtitle": "30 roles · find the one that feels most like you",
+    "fieldDisplayName": "Display name",
+    "displayNamePlaceholder": "How would you like to be called?",
+    "fieldAge": "Age",
+    "ageAria": "Age",
+    "fieldSpecialty": "Specialty",
+    "specialtyPlaceholder": "UI design, novel writing, research…",
+    "fieldInterests": "Interests (comma-separated)",
+    "interestsPlaceholder": "lofi, photography, coffee…",
+    "confirmCta": "✦ Enter Focus Town ▶",
+    "savingCta": "Saving…",
+    "toastPickFirst": "Please pick a character first.",
+    "toastComingSoon": "Coming soon ✦"
   }
 }

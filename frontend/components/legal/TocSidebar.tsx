@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Link } from "@/i18n/routing";
 
 export type TocItem = {
@@ -13,6 +15,7 @@ type Props = {
 };
 
 export function TocSidebar({ items, related }: Props) {
+  const t = useTranslations("common.legal");
   return (
     <aside className="hidden md:block sticky top-6 self-start w-64 shrink-0">
       <div className="bg-card border border-border rounded-lg p-5">
@@ -23,7 +26,7 @@ export function TocSidebar({ items, related }: Props) {
             lineHeight: 1.3,
           }}
         >
-          目錄
+          {t("toc")}
         </div>
         <nav className="flex flex-col gap-2">
           {items.map((it) => (
@@ -49,7 +52,7 @@ export function TocSidebar({ items, related }: Props) {
                 lineHeight: 1.3,
               }}
             >
-              相關
+              {t("related")}
             </div>
             <nav className="flex flex-col gap-2">
               {related.map((r) => (

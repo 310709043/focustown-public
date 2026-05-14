@@ -29,6 +29,22 @@
     "tally": "會計師",
     "just": "律師",
     "run": "運動員",
-    "stu": "學生"
+    "stu": "學生",
+    "other": "客製化（即將推出）"
+  },
+  "selectPage": {
+    "subtitle": "30 種職業身份 · 找到最像您的那一個",
+    "fieldDisplayName": "顯示名稱",
+    "displayNamePlaceholder": "請輸入您希望被稱呼的名字",
+    "fieldAge": "年齡",
+    "ageAria": "年齡",
+    "fieldSpecialty": "專長",
+    "specialtyPlaceholder": "UI 設計、小說、研究…",
+    "fieldInterests": "興趣（逗號分隔）",
+    "interestsPlaceholder": "lofi, 攝影, 咖啡…",
+    "confirmCta": "✦ 進入小鎮 ▶",
+    "savingCta": "儲存中…",
+    "toastPickFirst": "請先選一個角色",
+    "toastComingSoon": "敬請期待 ✦"
   }
 }

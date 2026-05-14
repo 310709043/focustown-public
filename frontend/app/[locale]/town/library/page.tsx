@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { Link, useRouter } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/client";
 import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";
@@ -18,6 +20,7 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inPlaylist, setInPlaylist] = useState<Set<string>>(() => new Set());
+  const t = useTranslations("library.page");
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -69,7 +72,7 @@ export default function LibraryPage() {
   }
 
   function handleDeleted(trackId: string) {
-    setTracks((prev) => prev.filter((t) => t.id !== trackId));
+    setTracks((prev) => prev.filter((tr) => tr.id !== trackId));
     setInPlaylist((prev) => {
       if (!prev.has(trackId)) return prev;
       const next = new Set(prev);
@@ -96,24 +99,24 @@ export default function LibraryPage() {
     <div className="mx-auto max-w-2xl px-4 py-6 flex flex-col gap-4">
       <header className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] text-muted">FOCUS TOWN / LIBRARY</div>
-          <h1 className="text-lg font-semibold">音樂庫</h1>
+          <div className="text-[10px] text-muted">{t("breadcrumb")}</div>
+          <h1 className="text-lg font-semibold">{t("title")}</h1>
         </div>
         <button
           type="button"
           onClick={() => router.push("/town")}
           className="text-[11px] px-3 py-1 border border-border rounded text-muted hover:border-accent-1 hover:text-accent-1"
         >
-          ← 回小鎮
+          {t("backCta")}
         </button>
       </header>
 
       <p className="text-[11px] text-muted leading-relaxed">
-        所有使用者共享的音樂庫。Phase 6 Tier-2：可上傳 MP3，未來
+        {t("intro")}
         <Link className="text-accent-1 ml-1" href="/town">
-          房間音樂庫
+          {t("introRoomLink")}
         </Link>
-        會從這裡挑歌加入自己房間（Phase 7）。
+        {t("introSuffix")}
       </p>
 
       <MoodTabs value={mood} onChange={setMood} />
@@ -122,15 +125,15 @@ export default function LibraryPage() {
         <UploadForm onUploaded={handleUploaded} />
       ) : (
         <div className="text-[11px] text-muted border border-border rounded p-3">
-          登入後即可上傳音樂。
+          {t("signedOutHint")}
         </div>
       )}
 
       {loading ? (
-        <div className="text-xs text-muted py-4 text-center">載入中…</div>
+        <div className="text-xs text-muted py-4 text-center">{t("loading")}</div>
       ) : error ? (
         <div className="text-[11px] text-red-400 border border-red-400/40 rounded px-2 py-1">
-          載入失敗：{error}
+          {t("loadFailedPrefix")}{error}
         </div>
       ) : (
         <TrackList

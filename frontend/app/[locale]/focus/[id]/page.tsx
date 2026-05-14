@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+
+import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { FocusTimer } from "@/components/focus-room/FocusTimer";
 import { NotesPanel } from "@/components/focus-room/NotesPanel";
@@ -95,6 +98,7 @@ export default function FocusRoomPage() {
   const router = useRouter();
   const { user, hydrate } = useAuthStore();
   const [paired] = useState<boolean>(id !== "solo");
+  const t = useTranslations("focus.session");
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -127,7 +131,7 @@ export default function FocusRoomPage() {
             textShadow: "0 0 10px var(--a1), 0 0 20px var(--a3)",
           }}
         >
-          ✦ {paired ? "共同專注" : "Solo 專注模式"}
+          ✦ {paired ? t("paired") : t("solo")}
         </div>
         <button
           onClick={() => router.push("/town")}
@@ -143,7 +147,7 @@ export default function FocusRoomPage() {
             textShadow: "none",
           }}
         >
-          ✕  退出全屏
+          {t("exitFullscreen")}
         </button>
       </header>
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { Link, useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { Logo } from "@/components/scene/Logo";
@@ -35,6 +37,7 @@ export default function SplashPage() {
   const [password, setPassword] = useState("");
   const stars = useMemo(() => generateStars(120), []);
   const [phase, setPhase] = useState<"night" | "dawn">("night");
+  const t = useTranslations("auth.splash");
 
   // Cycle splash between night/dawn every 16s for visible weather change.
   useEffect(() => {
@@ -172,7 +175,7 @@ export default function SplashPage() {
               letterSpacing: 6,
             }}
           >
-            找你的人・找你的專注
+            {t("tagline")}
           </div>
         </div>
 
@@ -185,7 +188,7 @@ export default function SplashPage() {
             data-testid="signin-email"
             type="email"
             required
-            placeholder="email"
+            placeholder={t("emailPlaceholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="pixel-input"
@@ -195,7 +198,7 @@ export default function SplashPage() {
             type="password"
             required
             minLength={8}
-            placeholder="密碼 (至少 8 字)"
+            placeholder={t("passwordPlaceholder")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="pixel-input"
@@ -228,11 +231,11 @@ export default function SplashPage() {
             className="pixel-btn"
             style={{ fontSize: 12, padding: "12px 16px", letterSpacing: 3 }}
           >
-            {loading ? "正在進城..." : "✦ 進入小鎮 ▶"}
+            {loading ? t("loadingCta") : t("submitCta")}
           </button>
           <div className="flex items-center gap-2 my-1">
             <div className="flex-1 h-px bg-border" />
-            <span style={{ fontSize: 11, color: "var(--muted)" }}>or</span>
+            <span style={{ fontSize: 11, color: "var(--muted)" }}>{t("or")}</span>
             <div className="flex-1 h-px bg-border" />
           </div>
           <Link
@@ -241,7 +244,7 @@ export default function SplashPage() {
             className="text-center font-japan border border-border rounded-md py-2.5 hover:border-accent-1 hover:text-accent-1 text-muted transition-colors"
             style={{ fontSize: 13 }}
           >
-            → 新帳號註冊
+            {t("signupLink")}
           </Link>
         </form>
 

@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { clsx } from "clsx";
+
+import { useRouter } from "@/i18n/routing";
 import {
   equipmentApi,
   purchaseApi,
@@ -13,12 +16,16 @@ import type { ShopItem, ShopItemPrice } from "@/lib/api/types.gen";
 import { useAuthStore } from "@/lib/state/authStore";
 import { formatMinor, useWalletStore } from "@/lib/state/walletStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
-import { clsx } from "clsx";
 
-const SECTIONS: { title: string; category: string }[] = [
-  { title: "🚗 車車外觀",  category: "car" },
-  { title: "🌆 場景皮膚",  category: "scene" },
-  { title: "✨ 特效道具",  category: "effect" },
+type SectionDef = {
+  category: "car" | "scene" | "effect";
+  titleKey: "carSkin" | "sceneSkin" | "effects";
+};
+
+const SECTIONS: SectionDef[] = [
+  { category: "car", titleKey: "carSkin" },
+  { category: "scene", titleKey: "sceneSkin" },
+  { category: "effect", titleKey: "effects" },
 ];
 
 function priceFor(prices: ShopItemPrice[], code: string): ShopItemPrice | null {
@@ -41,6 +48,12 @@ export default function ShopPage() {
     (s) => s.user?.equipped_vehicle_item_id ?? null,
   );
   const setEquippedVehicle = useAuthStore((s) => s.setEquippedVehicle);
+  const tPage = useTranslations("shop.page");
+  const tSection = useTranslations("shop.section");
+  const tItem = useTranslations("shop.item");
+  const tErr = useTranslations("shop.errors");
+
+  const featureBullets: string[] = tPage.raw("subscriptionFeatures") as string[];
 
   useEffect(() => {
     // Hydrate everything the shop needs in one shot — even if the user
@@ -58,11 +71,11 @@ export default function ShopPage() {
     if (pendingId || owns[item.id]) return;
     const price = priceFor(item.prices, "T");
     if (!price) {
-      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: "暫不可用" } }));
+      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: tErr("unavailable") } }));
       return;
     }
     if (tBalance < price.amount_minor) {
-      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: "T 幣不足" } }));
+      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: tErr("insufficient") } }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
         1800,
@@ -86,15 +99,14 @@ export default function ShopPage() {
         900,
       );
     } catch (e) {
-      // Match backend error codes from FocusTownError envelope
       const msg = (e as Error).message;
       const friendly = msg.includes("insufficient")
-        ? "T 幣不足"
+        ? tErr("insufficient")
         : msg.includes("already_owned")
-          ? "已擁有"
+          ? tErr("alreadyOwned")
           : msg.includes("price_not_available")
-            ? "暫不可用"
-            : "購買失敗";
+            ? tErr("unavailable")
+            : tErr("purchaseFailed");
       setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: friendly } }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
@@ -121,10 +133,10 @@ export default function ShopPage() {
     } catch (e) {
       const msg = (e as Error).message;
       const friendly = msg.includes("not_owned")
-        ? "未擁有"
+        ? tErr("notOwned")
         : msg.includes("not_a_vehicle")
-          ? "非車輛"
-          : "裝備失敗";
+          ? tErr("notAVehicle")
+          : tErr("equipFailed");
       setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: friendly } }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
@@ -145,7 +157,7 @@ export default function ShopPage() {
           className="font-pixel text-[9px] tracking-widest"
           style={{ color: "var(--pink)", textShadow: "0 0 10px var(--pink)" }}
         >
-          🛒 道具商店
+          {tPage("title")}
         </div>
         <div className="flex items-center gap-3">
           <span
@@ -160,7 +172,7 @@ export default function ShopPage() {
               padding: "4px 10px",
               borderRadius: 6,
             }}
-            title="T 幣餘額"
+            title={tPage("coinTooltip")}
           >
             💰 {formatMinor("T", tBalance)} T
           </span>
@@ -168,46 +180,50 @@ export default function ShopPage() {
             onClick={() => router.push("/town")}
             className="border border-border text-muted font-japan text-[10px] px-3 py-1 rounded hover:border-coral hover:text-coral"
           >
-            ✕ 關閉
+            {tPage("closeCta")}
           </button>
         </div>
       </header>
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="text-[10px] text-muted mb-1">★ FOCUS+ 訂閱方案</div>
+        <div className="text-[10px] text-muted mb-1">{tPage("subscriptionTitle")}</div>
         <div className="pixel-panel p-5 flex flex-col gap-2 mb-4">
           <div className="flex justify-between items-start">
             <div
               className="font-pixel text-[9px]"
               style={{ color: "var(--a2)", textShadow: "0 0 8px var(--a1)" }}
             >
-              ✦ FOCUS+
+              {tPage("subscriptionBadge")}
             </div>
             <div className="text-[14px] text-amber font-medium">
-              NT$129<span className="text-[11px] text-muted">/月</span>
+              {tPage("subscriptionPrice")}
+              <span className="text-[11px] text-muted">{tPage("subscriptionPriceSuffix")}</span>
             </div>
           </div>
           <ul className="flex flex-col gap-1.5 text-[11px]">
-            <li className="before:content-['✓'] before:text-teal before:mr-2">無限配對 + 看誰喜歡你</li>
-            <li className="before:content-['✓'] before:text-teal before:mr-2">共同專注室 + 即時聊天</li>
-            <li className="before:content-['✓'] before:text-teal before:mr-2">AI 性格分析完整報告</li>
-            <li className="before:content-['✓'] before:text-teal before:mr-2">大賞區特別光環效果</li>
-            <li className="before:content-['✓'] before:text-teal before:mr-2">所有場景解鎖</li>
+            {featureBullets.map((line) => (
+              <li
+                key={line}
+                className="before:content-['✓'] before:text-teal before:mr-2"
+              >
+                {line}
+              </li>
+            ))}
           </ul>
           <button
             disabled
             className="font-pixel text-[8px] py-3 rounded bg-gradient-to-br from-accent-3 to-accent-4 text-accent-2 tracking-wider opacity-60 cursor-not-allowed"
-            title="Visa 串接於 Phase 10 啟用"
+            title={tPage("subscriptionCtaTooltip")}
           >
-            ★ 即將開放（Phase 10）
+            {tPage("subscriptionCta")}
           </button>
         </div>
 
-        {SECTIONS.map(({ title, category }) => {
+        {SECTIONS.map(({ category, titleKey }) => {
           const list = byCategory(category);
           if (!list.length) return null;
           return (
             <div key={category}>
-              <div className="text-[10px] text-muted my-3 tracking-wide">{title}</div>
+              <div className="text-[10px] text-muted my-3 tracking-wide">{tSection(titleKey)}</div>
               <div className="grid grid-cols-2 gap-2 mb-1">
                 {list.map((it) => {
                   const tPrice = priceFor(it.prices, "T");
@@ -241,7 +257,9 @@ export default function ShopPage() {
                       <div className="text-2xl">{it.icon}</div>
                       <div className="text-[12px] flex items-center gap-1.5 flex-wrap">
                         {it.name}
-                        {it.featured ? <span className="text-[10px] text-pink">熱門</span> : null}
+                        {it.featured ? (
+                          <span className="text-[10px] text-pink">{tItem("featuredBadge")}</span>
+                        ) : null}
                         {owned ? (
                           <span
                             className="text-[10px]"
@@ -254,7 +272,7 @@ export default function ShopPage() {
                               letterSpacing: 0.5,
                             }}
                           >
-                            ✓ 已擁有
+                            {tItem("ownedBadge")}
                           </span>
                         ) : null}
                       </div>
@@ -284,14 +302,22 @@ export default function ShopPage() {
                                     ? "border border-amber bg-amber/10 text-amber"
                                     : "border border-teal/60 text-teal hover:bg-teal/10",
                                 )}
-                                title={isEquipped ? "點擊卸下" : "裝備此車"}
+                                title={
+                                  isEquipped
+                                    ? tItem("equipTooltipUnequip")
+                                    : tItem("equipTooltipEquip")
+                                }
                                 style={
                                   isEquipped
                                     ? { textShadow: "0 0 6px rgba(252,211,77,0.6)" }
                                     : undefined
                                 }
                               >
-                                {isLoading ? "..." : isEquipped ? "✓ 裝備中" : "👤 裝備"}
+                                {isLoading
+                                  ? tItem("buyLoading")
+                                  : isEquipped
+                                    ? tItem("equippedCta")
+                                    : tItem("equipCta")}
                               </button>
                             );
                           })()
@@ -309,13 +335,17 @@ export default function ShopPage() {
                             )}
                             title={
                               owned
-                                ? "已擁有"
+                                ? tItem("buyTooltipOwned")
                                 : !canAfford
-                                  ? "T 幣不足"
-                                  : "用 T 幣購買"
+                                  ? tItem("buyTooltipInsufficient")
+                                  : tItem("buyTooltipBuy")
                             }
                           >
-                            {owned ? "已擁有" : isLoading ? "..." : "購買"}
+                            {owned
+                              ? tItem("ownedBadge")
+                              : isLoading
+                                ? tItem("buyLoading")
+                                : tItem("buyCta")}
                           </button>
                         )}
                       </div>
@@ -332,7 +362,9 @@ export default function ShopPage() {
                             textShadow: "0 0 10px var(--amber), 0 0 18px rgba(252,211,77,0.5)",
                           }}
                         >
-                          {owned && it.category === "car" ? "✦ 出發" : "✦ 入手"}
+                          {owned && it.category === "car"
+                            ? tItem("successEquip")
+                            : tItem("successOwn")}
                         </span>
                       ) : null}
                       {state.kind === "err" ? (
@@ -347,7 +379,7 @@ export default function ShopPage() {
                             textShadow: "0 0 8px var(--coral)",
                           }}
                         >
-                          ✕ {state.msg}
+                          {tItem("errorPrefix")} {state.msg}
                         </span>
                       ) : null}
                     </div>
@@ -360,7 +392,7 @@ export default function ShopPage() {
 
         {items.length === 0 ? (
           <div className="text-[11px] text-muted text-center mt-4">
-            尚未建立商品（後端 seeder 待加入）
+            {tPage("emptyState")}
           </div>
         ) : null}
       </div>

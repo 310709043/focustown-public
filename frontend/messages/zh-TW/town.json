@@ -2,12 +2,15 @@
   "nav": {
     "awards": "🏆 大賞區",
     "myRoom": "🏠 我的房間",
+    "myRoomTooltip": "進入我的房間",
     "shop": "🛒 道具",
     "signout": "登出",
     "library": "🎵 音樂庫"
   },
   "presence": {
-    "online": "{count, plural, =0 {目前無人在線} other {目前在線 # 位}}"
+    "online": "{count, plural, =0 {目前無人在線} other {目前在線 # 位}}",
+    "onlineShort": "在線 {count}",
+    "onlineTooltip": "目前街上的人數"
   },
   "shopBadge": {
     "unlocked": "🔓 已解鎖 {count} 項"
@@ -17,5 +20,80 @@
   },
   "emptyRoom": {
     "enterHint": "進入我的房間"
+  },
+  "coin": {
+    "balanceTooltip": "T 幣餘額：{amount} T",
+    "unit": "T"
+  },
+  "leaderboard": {
+    "empty": "尚無資料"
+  },
+  "clock": {
+    "tooltip": "小鎮時間"
+  },
+  "scene": {
+    "youSuffix": "您",
+    "billboardEmptyLine1": "還沒有完成記錄",
+    "billboardEmptyLine2": "第一個專注的就是您 ✦"
+  },
+  "awards": {
+    "title": "✦ 大賞區 · HALL OF FAME",
+    "closeCta": "✕ 關閉",
+    "leadersHeading": "🏆 今日番茄鐘排行",
+    "leadersEmpty": "尚無資料",
+    "leaderCountSuffix": "🍅",
+    "achievementsHeading": "🎖️ 成就徽章",
+    "achievementsEmpty": "尚未建立任何成就（v2 會由 seeder 寫入）"
+  },
+  "room": {
+    "backToStreet": "回街景",
+    "renameTooltip": "點擊重新命名",
+    "ownerBadge": "OWNER",
+    "visitorBadge": "VISITOR",
+    "openingDoor": "正在開門…",
+    "themePickerLabel": "主題",
+    "themes": {
+      "dawn": "黎明",
+      "day": "白天",
+      "dusk": "黃昏",
+      "night": "夜晚",
+      "rain": "雨夜",
+      "snow": "雪夜",
+      "storm": "暴風雨"
+    },
+    "visitor": {
+      "panelLabel": "訪客",
+      "tooltipFmt": "{userId}（加入於 {joinedAt}）"
+    },
+    "audio": {
+      "idle": "尚未播放",
+      "playAria": "播放",
+      "pauseAria": "暫停",
+      "skipAria": "下一首",
+      "changePlaceholder": "換曲…"
+    },
+    "decoration": {
+      "modeEditing": "編輯中",
+      "modeDecorate": "裝飾",
+      "doneCta": "✓ 完成",
+      "editCta": "🎨 編輯",
+      "loading": "載入中…",
+      "loadFailed": "載入失敗 — 重新整理後再試",
+      "emptyLine1": "還沒有可擺放的道具。",
+      "emptyLine2": "到 🛒 道具店 買裝飾再回來。",
+      "dragAria": "拖動以重新擺放",
+      "iconAria": "裝飾",
+      "removeAria": "移除這個裝飾"
+    },
+    "missing": {
+      "title": "找不到這間房",
+      "backLink": "◂ 回街景"
+    },
+    "locked": {
+      "badge": "ROOM LOCKED",
+      "subtitle": "此房間僅限受邀者進入",
+      "idPrefix": "id:",
+      "backLink": "◂ 回街景"
+    }
   }
 }

@@ -1,26 +1,50 @@
 {
   "timer": {
-    "header": "專注時段",
-    "startCta": "▶ 開始專注",
-    "pauseCta": "⏸ 暫停",
-    "resumeCta": "▶ 繼續",
-    "resetCta": "↺ 重新開始",
-    "taskPlaceholder": "您今晚想專注在什麼？",
+    "header": "FOCUS · SESSION",
+    "startCta": "▶  開始",
+    "pauseCta": "⏸  暫停",
+    "resumeCta": "▶  繼續",
+    "resetCta": "↺  重置",
+    "startAria": "開始計時",
+    "pauseAria": "暫停計時",
+    "resetAria": "重置計時",
+    "taskPlaceholder": "今晚在做什麼？",
     "remainingLabel": "剩餘時間",
     "modeFocus": "專注",
     "modeShortBreak": "短休息",
-    "modeLongBreak": "長休息"
+    "modeLongBreak": "長休息",
+    "modeFocusLabel": "🍅 專注",
+    "modeShortLabel": "☕ 短休息",
+    "modeLongLabel": "🌙 長休息"
   },
   "chat": {
     "header": "💬 房間 #{roomId}",
-    "placeholder": "說點什麼吧…",
+    "placeholder": "說點什麼…",
     "sendCta": "送出",
     "systemJoined": "{name} 加入了房間",
     "systemLeft": "{name} 離開了房間"
   },
+  "notes": {
+    "title": "📝 筆記本",
+    "countLabel": "{count} 則",
+    "filterAll": "全部",
+    "filterTodo": "待辦",
+    "emptyLine1": "還沒有筆記",
+    "emptyLine2": "在下方新增您的第一則 ✦",
+    "untitled": "無標題",
+    "titlePlaceholder": "標題…",
+    "bodyPlaceholder": "寫下想法、待辦、靈感…",
+    "addCta": "＋ 新增筆記"
+  },
   "session": {
+    "solo": "Solo 專注模式",
+    "paired": "共同專注",
+    "exitFullscreen": "✕  退出全屏",
     "completing": "正在結算這次的專注…",
     "completed": "這次專注已完成，辛苦您了！",
     "abandonedConfirm": "確定要結束目前的專注嗎？您可以隨時再開始一次。"
+  },
+  "enter": {
+    "cta": "✦ 進入專注模式 ✦"
   }
 }

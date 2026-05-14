@@ -1,4 +1,6 @@
 import { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
+
 import { Link } from "@/i18n/routing";
 import { TocSidebar, TocItem } from "./TocSidebar";
 
@@ -8,13 +10,14 @@ type Props = {
   children: ReactNode;
 };
 
-const RELATED = [
-  { href: "/legal/terms", label: "服務條款", key: "terms" },
-  { href: "/legal/privacy", label: "隱私政策", key: "privacy" },
-  { href: "/legal/refund", label: "退款政策", key: "refund" },
-] as const;
+const RELATED: Array<{ href: string; key: "terms" | "privacy" | "refund" }> = [
+  { href: "/legal/terms", key: "terms" },
+  { href: "/legal/privacy", key: "privacy" },
+  { href: "/legal/refund", key: "refund" },
+];
 
-export function LegalLayout({ active, toc, children }: Props) {
+export async function LegalLayout({ active, toc, children }: Props) {
+  const t = await getTranslations("common.legal");
   return (
     <main
       className="min-h-screen px-4 md:px-10 py-10"
@@ -28,7 +31,7 @@ export function LegalLayout({ active, toc, children }: Props) {
           items={toc}
           related={RELATED.map((r) => ({
             href: r.href,
-            label: r.label,
+            label: t(r.key),
             active: r.key === active,
           }))}
         />
@@ -42,7 +45,7 @@ export function LegalLayout({ active, toc, children }: Props) {
             }}
           >
             <Link href="/" className="hover:text-accent-2">
-              ← 返回首頁
+              {t("backHome")}
             </Link>
           </footer>
         </article>

@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { useRouter } from "@/i18n/routing";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { findCharacter } from "@/lib/data/characters";
-import { useEffect, useState } from "react";
 
 const SEGMENTS = 10; // 10 boxes; each represents 10% compatibility
 
@@ -12,6 +14,8 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
   const current = useMatchStore((s) => s.current);
   const acceptMatch = useMatchStore((s) => s.accept);
   const skipMatch = useMatchStore((s) => s.skip);
+  const t = useTranslations("match.modal");
+  const tCommon = useTranslations("common.buttons");
 
   // Stagger the segment fill so the bar lights up box-by-box.
   const [litCount, setLitCount] = useState(0);
@@ -40,8 +44,8 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
   const character = findCharacter(current.candidate_id);
   const candidate = {
     emoji: character?.emoji ?? "❓",
-    name: character?.name ?? `匿名 #${current.candidate_id.slice(0, 6)}`,
-    role: character?.role ?? "配對中…",
+    name: character?.name ?? t("candidateAnonymous", { id: current.candidate_id.slice(0, 6) }),
+    role: character?.role ?? t("candidatePending"),
     bodyColor: character?.bodyColor ?? "#1a0e2a",
   };
 
@@ -65,7 +69,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
       >
         <button
           onClick={onClose}
-          aria-label="Close"
+          aria-label={tCommon("closeAria")}
           className="absolute top-3 right-4 text-muted hover:text-text"
           style={{ fontSize: 18 }}
         >
@@ -81,7 +85,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             textShadow: "0 0 10px var(--a1), 0 0 22px var(--a3)",
           }}
         >
-          ✦ 今晚的配對推薦 ✦
+          {t("title")}
         </h2>
 
         {/* Avatar with rotating halo */}
@@ -132,7 +136,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
           className="text-center mb-4"
           style={{ fontSize: 12, color: "var(--muted)" }}
         >
-          {candidate.role} · 在線 2h
+          {candidate.role} · {t("onlineStatus", { hours: 2 })}
         </div>
 
         {/* Segmented compatibility bar */}
@@ -166,7 +170,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
               letterSpacing: 2,
             }}
           >
-            {current.compatibility}% MATCH
+            {t("matchPercent", { percent: current.compatibility })}
           </div>
         </div>
 
@@ -180,7 +184,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             lineHeight: 1.7,
           }}
         >
-          {current.reason || "新的配對請求 — 點擊「一起專注」開始本場 25 分鐘 Pomodoro。"}
+          {current.reason || t("reasonFallback")}
         </div>
 
         <div className="flex gap-3 justify-center">
@@ -193,7 +197,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
               if (m) router.push(`/focus/${m.id}`);
             }}
           >
-            ✦ 一起專注
+            {t("acceptCta")}
           </button>
           <button
             className="pixel-btn"
@@ -209,7 +213,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             }}
             onClick={() => void skipMatch()}
           >
-            下一個 →
+            {t("nextCta")}
           </button>
         </div>
       </div>

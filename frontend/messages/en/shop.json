@@ -17,7 +17,47 @@
   },
   "item": {
     "priceLabel": "Price",
-    "ownedBadge": "Owned",
-    "buyCta": "Get it"
+    "ownedBadge": "✓ Owned",
+    "featuredBadge": "Featured",
+    "buyCta": "Buy",
+    "buyLoading": "…",
+    "buyTooltipOwned": "Already owned",
+    "buyTooltipInsufficient": "Not enough T coins",
+    "buyTooltipBuy": "Pay with T coins",
+    "equipCta": "👤 Equip",
+    "equippedCta": "✓ Equipped",
+    "equipTooltipEquip": "Equip this vehicle",
+    "equipTooltipUnequip": "Tap to unequip",
+    "successOwn": "✦ Yours",
+    "successEquip": "✦ Off you go",
+    "errorPrefix": "✕"
+  },
+  "errors": {
+    "unavailable": "Unavailable",
+    "insufficient": "Not enough T",
+    "alreadyOwned": "Owned",
+    "purchaseFailed": "Purchase failed",
+    "notOwned": "Not owned",
+    "notAVehicle": "Not a vehicle",
+    "equipFailed": "Could not equip"
+  },
+  "page": {
+    "title": "🛒 Item shop",
+    "closeCta": "✕ Close",
+    "coinTooltip": "T coin balance",
+    "subscriptionTitle": "★ FOCUS+ subscription",
+    "subscriptionBadge": "✦ FOCUS+",
+    "subscriptionPrice": "NT$129",
+    "subscriptionPriceSuffix": "/month",
+    "subscriptionFeatures": [
+      "Unlimited matches + see who liked you",
+      "Co-focus rooms + live chat",
+      "Full AI personality report",
+      "Special Hall of Fame aura",
+      "All scenes unlocked"
+    ],
+    "subscriptionCta": "★ Coming in Phase 10",
+    "subscriptionCtaTooltip": "Visa integration enabled in Phase 10",
+    "emptyState": "No items yet (backend seeder pending)"
   }
 }

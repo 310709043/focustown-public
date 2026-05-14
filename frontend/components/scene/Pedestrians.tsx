@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
@@ -50,6 +51,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
   // Initial position must be deterministic (SSR/CSR agreement). We
   // randomise via the interval below — that's client-only.
   const [x, setX] = useState<number>(() => seedPos(user.id));
+  const t = useTranslations("town.scene");
 
   useEffect(() => {
     const id = setInterval(
@@ -132,7 +134,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
           letterSpacing: 0.5,
         }}
       >
-        {isSelf ? `${ch.name} ・ 你` : ch.name}
+        {isSelf ? `${ch.name} ・ ${t("youSuffix")}` : ch.name}
       </div>
 
       {/* pixel walker (2-frame). Self carries a slow amber halo via the

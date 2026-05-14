@@ -1,16 +1,17 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { clsx } from "clsx";
 
-export const MOODS = [
-  { key: "all", label: "全部" },
-  { key: "lofi", label: "lofi" },
-  { key: "jazz", label: "jazz" },
-  { key: "rain", label: "🌧 rain" },
-  { key: "ambient", label: "ambient" },
-] as const;
+export const MOOD_KEYS = ["all", "lofi", "jazz", "rain", "ambient"] as const;
 
-export type MoodKey = (typeof MOODS)[number]["key"];
+export type MoodKey = (typeof MOOD_KEYS)[number];
+
+// Back-compat export: existing consumers (UploadForm, MusicPanel) iterate
+// MOODS to render selectable options. The `label` field is filled in at the
+// call-site via useTranslations now; we keep the shape but mark the label
+// optional so non-translated callers (e.g. tests) still type-check.
+export const MOODS: ReadonlyArray<{ key: MoodKey }> = MOOD_KEYS.map((key) => ({ key }));
 
 type Props = {
   value: MoodKey;
@@ -19,21 +20,22 @@ type Props = {
 };
 
 export function MoodTabs({ value, onChange, className }: Props) {
+  const t = useTranslations("library.moods");
   return (
     <div className={clsx("flex flex-wrap gap-1", className)}>
-      {MOODS.map((m) => (
+      {MOOD_KEYS.map((key) => (
         <button
-          key={m.key}
+          key={key}
           type="button"
-          onClick={() => onChange(m.key)}
+          onClick={() => onChange(key)}
           className={clsx(
             "text-[10px] px-2 py-0.5 rounded-full border transition-colors",
-            value === m.key
+            value === key
               ? "border-accent-1 text-accent-1"
               : "border-border text-muted hover:border-accent-1/60",
           )}
         >
-          {m.label}
+          {t(key)}
         </button>
       ))}
     </div>

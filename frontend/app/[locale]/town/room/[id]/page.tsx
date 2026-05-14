@@ -16,8 +16,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { Link, useRouter } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
+import { Link, useRouter } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/client";
 import { roomApi } from "@/lib/api/endpoints";
 import type { Room, RoomTheme } from "@/lib/api/types.gen";
@@ -35,14 +36,14 @@ import { DecorationCanvas } from "@/components/town/room/DecorationCanvas";
 import { VisitorPanel } from "@/components/town/room/VisitorPanel";
 import { RoomAudio } from "@/components/town/room/RoomAudio";
 
-const THEMES: { key: RoomTheme; label: string; chip: string }[] = [
-  { key: "dawn", label: "黎明",   chip: "🌅" },
-  { key: "day", label: "白天",    chip: "☀️" },
-  { key: "dusk", label: "黃昏",   chip: "🌇" },
-  { key: "night", label: "夜晚",  chip: "🌙" },
-  { key: "rain", label: "雨夜",   chip: "🌧" },
-  { key: "snow", label: "雪夜",   chip: "❄️" },
-  { key: "storm", label: "暴風雨", chip: "⛈" },
+const THEME_KEYS: Array<{ key: RoomTheme; chip: string }> = [
+  { key: "dawn", chip: "🌅" },
+  { key: "day", chip: "☀️" },
+  { key: "dusk", chip: "🌇" },
+  { key: "night", chip: "🌙" },
+  { key: "rain", chip: "🌧" },
+  { key: "snow", chip: "❄️" },
+  { key: "storm", chip: "⛈" },
 ];
 
 export default function RoomPage() {
@@ -50,15 +51,18 @@ export default function RoomPage() {
   const roomId = String(params?.id ?? "");
   const router = useRouter();
   const { user, hydrate } = useAuthStore();
+  const tRoom = useTranslations("town.room");
+  const tThemes = useTranslations("town.room.themes");
+
+  // Router pre-fetch noop kept for parity with previous file; useRouter not
+  // strictly needed yet but reserved for future programmatic nav from here.
+  void router;
 
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<"forbidden" | "not_found" | "load_failed" | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
-  // A token bumped on every successful theme switch so the wallpaper
-  // layer remounts with the cross-fade animation rather than swapping
-  // colors instantaneously.
   const [themeKey, setThemeKey] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -144,7 +148,7 @@ export default function RoomPage() {
   if (error === "load_failed" || !room) {
     return (
       <main className="absolute inset-0 grid place-items-center bg-bg text-muted font-japan">
-        <span>正在開門…</span>
+        <span>{tRoom("openingDoor")}</span>
       </main>
     );
   }
@@ -162,7 +166,7 @@ export default function RoomPage() {
           className="font-japan text-muted hover:text-amber transition-colors flex items-center gap-2"
           style={{ fontSize: 13 }}
         >
-          <span style={{ fontSize: 15 }}>◂</span> 回街景
+          <span style={{ fontSize: 15 }}>◂</span> {tRoom("backToStreet")}
         </Link>
         <div className="flex items-center gap-3">
           {editing && isOwner ? (
@@ -201,7 +205,7 @@ export default function RoomPage() {
                 letterSpacing: 1,
                 textShadow: "0 0 10px rgba(196,181,253,0.35)",
               }}
-              title={isOwner ? "點擊重新命名" : ""}
+              title={isOwner ? tRoom("renameTooltip") : ""}
             >
               {room.name}
             </button>
@@ -211,12 +215,10 @@ export default function RoomPage() {
           className="font-mono text-muted"
           style={{ fontSize: 11, letterSpacing: 1.2 }}
         >
-          {isOwner ? "OWNER" : "VISITOR"}
+          {isOwner ? tRoom("ownerBadge") : tRoom("visitorBadge")}
         </span>
       </nav>
 
-      {/* The whole interior animates open once on mount — feels like a
-          door being shoved aside rather than a quiet fade. */}
       <div className="relative flex-1 overflow-hidden animate-roomShutterOpen">
         <Wall key={themeKey} sky={scene.sky} label={scene.label} />
         <OutsideWindow />
@@ -235,9 +237,6 @@ export default function RoomPage() {
         />
         <RoomAudio roomId={roomId} isOwner={isOwner} />
 
-        {/* Theme toolbar — bottom-right, owner-only. The active chip is
-            inset (pressed) so the user can see which theme is current
-            without reading text. */}
         {isOwner && (
           <div
             className="absolute z-10 flex items-center gap-1.5 px-3 py-2 rounded-md"
@@ -254,17 +253,17 @@ export default function RoomPage() {
               className="font-mono text-muted"
               style={{ fontSize: 11, letterSpacing: 1, marginRight: 4 }}
             >
-              主題
+              {tRoom("themePickerLabel")}
             </span>
-            {THEMES.map((t) => {
-              const active = t.key === room.theme;
+            {THEME_KEYS.map((th) => {
+              const active = th.key === room.theme;
               return (
                 <button
-                  key={t.key}
+                  key={th.key}
                   type="button"
                   disabled={busy}
-                  onClick={() => switchTheme(t.key)}
-                  title={t.label}
+                  onClick={() => switchTheme(th.key)}
+                  title={tThemes(th.key)}
                   className="font-japan transition-transform"
                   style={{
                     width: 26,
@@ -284,7 +283,7 @@ export default function RoomPage() {
                     cursor: busy ? "wait" : "pointer",
                   }}
                 >
-                  {t.chip}
+                  {th.chip}
                 </button>
               );
             })}

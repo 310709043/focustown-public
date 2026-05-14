@@ -14,18 +14,27 @@ function isSupportedLocale(value: string): value is Locale {
   return (routing.locales as readonly string[]).includes(value);
 }
 
-export const metadata: Metadata = {
-  title: "Focus Town",
-  description: "找你的人 · 找你的專注",
-  icons: {
-    // Browser tab favicon. logo.svg scales at every dpi without rasterising.
-    icon: [
-      { url: "/logo.svg", type: "image/svg+xml" },
-      { url: "/logo.png", type: "image/png" },
-    ],
-    apple: "/logo.png",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const safe = isSupportedLocale(locale) ? locale : routing.defaultLocale;
+  const { getTranslations } = await import("next-intl/server");
+  const t = await getTranslations({ locale: safe, namespace: "auth.splash" });
+  return {
+    title: "Focus Town",
+    description: t("tagline"),
+    icons: {
+      icon: [
+        { url: "/logo.svg", type: "image/svg+xml" },
+        { url: "/logo.png", type: "image/png" },
+      ],
+      apple: "/logo.png",
+    },
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

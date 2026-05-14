@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { clsx } from "clsx";
+
+import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/client";
 import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import type { Track } from "@/lib/api/types.gen";
 
-const MOOD_TABS: { key: string; label: string }[] = [
-  { key: "all", label: "全部" },
-  { key: "lofi", label: "lofi" },
-  { key: "jazz", label: "jazz" },
-  { key: "rain", label: "🌧rain" },
+const MOOD_TABS: { key: string; labelKey: "allTab" | "lofiTab" | "jazzTab" | "rainTab" }[] = [
+  { key: "all", labelKey: "allTab" },
+  { key: "lofi", labelKey: "lofiTab" },
+  { key: "jazz", labelKey: "jazzTab" },
+  { key: "rain", labelKey: "rainTab" },
 ];
 
 type Source = "room" | "library";
@@ -26,6 +28,7 @@ export function MusicPanel() {
   const [mood, setMood] = useState<string>("all");
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const t = useTranslations("library.music");
 
   useEffect(() => {
     let cancelled = false;
@@ -102,7 +105,7 @@ export function MusicPanel() {
     <div className="pixel-panel relative overflow-hidden flex flex-col gap-1 px-2.5 py-2">
       <div className="flex items-center justify-between">
         <div className="font-pixel-en text-[10px]" style={{ color: "var(--dir-ink-mute)", letterSpacing: 1 }}>
-          ♪ MUSIC{source === "room" ? " · ROOM" : " · LOFI"}
+          {t("panelTitle")}{source === "room" ? t("sourceRoom") : t("sourceLofi")}
         </div>
         {/* Deterministic EQ silhouette (seeded by bar index) so SSR/CSR
             agree on bar heights and we don't trigger a hydration mismatch.
@@ -133,16 +136,20 @@ export function MusicPanel() {
           ? "—"
           : current
             ? current.title + (current.artist ? ` — ${current.artist}` : "")
-            : "（音樂庫是空的）"}
+            : t("empty")}
       </div>
       <div className="text-[9px] text-muted truncate">
-        {tracks.length > 0
-          ? `♪ ${idx + 1}/${tracks.length} · ${current?.mood ?? mood}`
-          : (
-              <Link href="/town/library" className="text-accent-1 hover:underline">
-                前往音樂庫上傳第一首 →
-              </Link>
-            )}
+        {tracks.length > 0 ? (
+          t("trackCount", {
+            current: idx + 1,
+            total: tracks.length,
+            mood: current?.mood ?? mood,
+          })
+        ) : (
+          <Link href="/town/library" className="text-accent-1 hover:underline">
+            {t("uploadHint")}
+          </Link>
+        )}
       </div>
 
       <div className="flex items-center gap-1">
@@ -186,14 +193,14 @@ export function MusicPanel() {
                 : "border-border text-muted",
             )}
           >
-            {m.label}
+            {t(m.labelKey)}
           </button>
         ))}
         <span
           className="text-[9px] px-1.5 py-0.5 rounded-full border border-border text-muted opacity-50 cursor-not-allowed"
-          title="Phase 6b 規劃中"
+          title={t("phaseNote")}
         >
-          🎵 Spotify
+          {t("spotifyTabLabel")}
         </span>
       </div>
 

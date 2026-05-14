@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+
+import { Link } from "@/i18n/routing";
 
 /**
  * Rendered when the API returns 403. After Phase 5 widened the room read
@@ -9,6 +11,7 @@ import Link from "next/link";
  * feels native to the world.
  */
 export function LockedRoom({ roomId }: { roomId: string }) {
+  const t = useTranslations("town.room.locked");
   return (
     <main className="absolute inset-0 grid place-items-center bg-bg">
       <div
@@ -30,19 +33,19 @@ export function LockedRoom({ roomId }: { roomId: string }) {
           className="font-pixel"
           style={{ fontSize: 12, letterSpacing: 1.5, marginBottom: 6 }}
         >
-          ROOM LOCKED
+          {t("badge")}
         </div>
         <div
           className="font-mono text-muted"
           style={{ fontSize: 12, letterSpacing: 0.8 }}
         >
-          此房間僅限受邀者進入
+          {t("subtitle")}
         </div>
         <div
           className="font-mono text-muted"
           style={{ fontSize: 10, marginTop: 6, opacity: 0.6 }}
         >
-          id: {roomId.slice(0, 8)}…
+          {t("idPrefix")} {roomId.slice(0, 8)}…
         </div>
         <div style={{ marginTop: 14 }}>
           <Link
@@ -50,7 +53,7 @@ export function LockedRoom({ roomId }: { roomId: string }) {
             className="font-japan text-amber hover:text-text transition-colors"
             style={{ fontSize: 12 }}
           >
-            ◂ 回街景
+            {t("backLink")}
           </Link>
         </div>
       </div>

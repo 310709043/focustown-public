@@ -2,6 +2,8 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+
 import { Link, useRouter } from "@/i18n/routing";
 import { authApi } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/client";
@@ -22,6 +24,7 @@ function ResetPasswordInner() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const t = useTranslations("auth.reset");
 
   if (!token) {
     return (
@@ -32,13 +35,13 @@ function ResetPasswordInner() {
           lineHeight: "var(--line-height-body)",
         }}
       >
-        <p className="mb-3">重設連結無效或已過期。</p>
+        <p className="mb-3">{t("invalidTokenMessage")}</p>
         <Link
           href="/forgot-password"
           className="text-accent-2 hover:text-accent-1"
           style={{ fontSize: "var(--font-size-label)" }}
         >
-          重新申請重設密碼 →
+          {t("requestAgain")}
         </Link>
       </div>
     );
@@ -75,14 +78,14 @@ function ResetPasswordInner() {
     } catch (e) {
       if (e instanceof ApiError) {
         if (e.code === "validation_error") {
-          setServerError("連結已過期或已使用，請重新申請。");
+          setServerError(t("validationError"));
         } else if (e.status === 429) {
-          setServerError("請求過於頻繁，請稍後再試。");
+          setServerError(t("rateLimited"));
         } else {
-          setServerError(e.message || "重設失敗，請稍後再試。");
+          setServerError(e.message || t("fallbackError"));
         }
       } else {
-        setServerError("重設失敗，請稍後再試。");
+        setServerError(t("fallbackError"));
       }
     } finally {
       setSubmitting(false);
@@ -102,13 +105,13 @@ function ResetPasswordInner() {
           className="mb-3 text-accent-2"
           style={{ fontSize: "var(--font-size-body-lg)" }}
         >
-          ✓ 密碼已成功重設
+          {t("successHeading")}
         </p>
         <p
           className="text-muted"
           style={{ fontSize: "var(--font-size-note)" }}
         >
-          即將前往登入頁...
+          {t("successRedirect")}
         </p>
       </div>
     );
@@ -123,11 +126,11 @@ function ResetPasswordInner() {
           lineHeight: "var(--line-height-body)",
         }}
       >
-        請輸入新密碼。
+        {t("intro")}
       </p>
       <div>
         <PasswordInput
-          placeholder="新密碼 (8+ 字, 含英文與數字)"
+          placeholder={t("newPasswordPlaceholder")}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           autoComplete="new-password"
@@ -143,7 +146,7 @@ function ResetPasswordInner() {
       </div>
       <div>
         <PasswordInput
-          placeholder="再次輸入新密碼"
+          placeholder={t("confirmPlaceholder")}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           autoComplete="new-password"
@@ -171,20 +174,33 @@ function ResetPasswordInner() {
         className="font-pixel border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50 tracking-widest"
         style={{ fontSize: "var(--font-size-label)", lineHeight: 1.2 }}
       >
-        {submitting ? "重設中..." : "重設密碼 ▶"}
+        {submitting ? t("loadingCta") : t("submitCta")}
       </button>
       <Link
         href="/signin"
         className="text-muted hover:text-accent-2 text-center"
         style={{ fontSize: "var(--font-size-label)" }}
       >
-        返回登入
+        {t("backToSigninShort")}
       </Link>
     </form>
   );
 }
 
+function ResetPasswordFallback() {
+  const t = useTranslations("auth.reset");
+  return (
+    <div
+      className="text-muted"
+      style={{ fontSize: "var(--font-size-label)" }}
+    >
+      {t("loadingPage")}
+    </div>
+  );
+}
+
 export default function ResetPasswordPage() {
+  const t = useTranslations("auth.reset");
   return (
     <main
       className="absolute inset-0 flex flex-col items-center justify-center p-6"
@@ -211,18 +227,9 @@ export default function ResetPasswordPage() {
             textShadow: "0 0 18px rgba(167,139,250,0.35)",
           }}
         >
-          重設密碼
+          {t("title")}
         </h1>
-        <Suspense
-          fallback={
-            <div
-              className="text-muted"
-              style={{ fontSize: "var(--font-size-label)" }}
-            >
-              載入中...
-            </div>
-          }
-        >
+        <Suspense fallback={<ResetPasswordFallback />}>
           <ResetPasswordInner />
         </Suspense>
       </div>

@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { clsx } from "clsx";
+
+import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { userApi } from "@/lib/api/endpoints";
 import { CHARACTERS } from "@/lib/data/characters";
-import { clsx } from "clsx";
 import { Logo } from "@/components/scene/Logo";
 
 function useTransientToast() {
@@ -24,6 +26,8 @@ export default function SelectCharacterPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { msg, show } = useTransientToast();
+  const t = useTranslations("characters.selectPage");
+  const tRoles = useTranslations("characters.roles");
 
   // Profile fields: display_name persists via /users/me; age + interests are
   // local-only (no backend columns yet) — they exist so the V2 UI matches the
@@ -44,11 +48,11 @@ export default function SelectCharacterPage() {
 
   const onConfirm = async () => {
     if (!selected) {
-      show("先選一個角色");
+      show(t("toastPickFirst"));
       return;
     }
     if (selected === "other") {
-      show("敬請期待 ✦");
+      show(t("toastComingSoon"));
       return;
     }
     setSaving(true);
@@ -81,7 +85,7 @@ export default function SelectCharacterPage() {
         className="text-center"
         style={{ fontSize: 14, color: "var(--muted)", letterSpacing: 2 }}
       >
-        30 種職業身份 · 找到最像你的那一個
+        {t("subtitle")}
       </div>
 
       {/* ═══ PROFILE FORM (上半) ═══ */}
@@ -89,16 +93,16 @@ export default function SelectCharacterPage() {
         className="self-center w-full max-w-3xl bg-card border border-border2 rounded-lg p-5 grid grid-cols-2 gap-3"
         style={{ boxShadow: "0 0 28px rgba(124,58,237,0.18)" }}
       >
-        <Field label="顯示名稱">
+        <Field label={t("fieldDisplayName")}>
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="叫我..."
+            placeholder={t("displayNamePlaceholder")}
             className="w-full bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3 py-2 outline-none focus:border-accent-1 font-japan"
             style={{ fontSize: 14 }}
           />
         </Field>
-        <Field label="年齡">
+        <Field label={t("fieldAge")}>
           <div className="flex items-center gap-3 bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3 py-2.5">
             <input
               type="range"
@@ -107,7 +111,7 @@ export default function SelectCharacterPage() {
               step={1}
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
-              aria-label="年齡"
+              aria-label={t("ageAria")}
               className="age-slider flex-1"
             />
             <span
@@ -125,20 +129,20 @@ export default function SelectCharacterPage() {
             </span>
           </div>
         </Field>
-        <Field label="專長">
+        <Field label={t("fieldSpecialty")}>
           <input
             value={specialty}
             onChange={(e) => setSpecialty(e.target.value)}
-            placeholder="UI 設計、小說、研究…"
+            placeholder={t("specialtyPlaceholder")}
             className="w-full bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3 py-2 outline-none focus:border-accent-1 font-japan"
             style={{ fontSize: 14 }}
           />
         </Field>
-        <Field label="興趣（逗號分隔）">
+        <Field label={t("fieldInterests")}>
           <input
             value={interests}
             onChange={(e) => setInterests(e.target.value)}
-            placeholder="lofi, 攝影, 咖啡…"
+            placeholder={t("interestsPlaceholder")}
             className="w-full bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3 py-2 outline-none focus:border-accent-1 font-japan"
             style={{ fontSize: 14 }}
           />
@@ -152,7 +156,7 @@ export default function SelectCharacterPage() {
             key={c.key}
             ckey={c.key}
             emoji={c.emoji}
-            role={c.role}
+            role={tRoles(c.key)}
             selected={selected === c.key}
             onSelect={() => setSelected(c.key)}
             gifDelay={(i * 0.07) % 0.6}
@@ -161,11 +165,11 @@ export default function SelectCharacterPage() {
         <CharacterCard
           ckey="other"
           emoji="❓"
-          role="客製化（即將推出）"
+          role={tRoles("other")}
           selected={selected === "other"}
           onSelect={() => {
             setSelected("other");
-            show("敬請期待 ✦");
+            show(t("toastComingSoon"));
           }}
           locked
         />
@@ -183,7 +187,7 @@ export default function SelectCharacterPage() {
           marginBottom: 16,
         }}
       >
-        {saving ? "儲存中..." : "✦ 進入小鎮 ▶"}
+        {saving ? t("savingCta") : t("confirmCta")}
       </button>
 
       {msg ? (

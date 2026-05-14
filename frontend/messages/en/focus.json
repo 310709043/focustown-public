@@ -1,15 +1,21 @@
 {
   "timer": {
-    "header": "Focus session",
-    "startCta": "▶ Start focus",
-    "pauseCta": "⏸ Pause",
-    "resumeCta": "▶ Resume",
-    "resetCta": "↺ Reset",
-    "taskPlaceholder": "What would you like to focus on tonight?",
+    "header": "FOCUS · SESSION",
+    "startCta": "▶  Start",
+    "pauseCta": "⏸  Pause",
+    "resumeCta": "▶  Resume",
+    "resetCta": "↺  Reset",
+    "startAria": "Start timer",
+    "pauseAria": "Pause timer",
+    "resetAria": "Reset timer",
+    "taskPlaceholder": "What are you working on tonight?",
     "remainingLabel": "Time remaining",
     "modeFocus": "Focus",
     "modeShortBreak": "Short break",
-    "modeLongBreak": "Long break"
+    "modeLongBreak": "Long break",
+    "modeFocusLabel": "🍅 Focus",
+    "modeShortLabel": "☕ Short break",
+    "modeLongLabel": "🌙 Long break"
   },
   "chat": {
     "header": "💬 Room #{roomId}",
@@ -18,9 +24,27 @@
     "systemJoined": "{name} joined the room",
     "systemLeft": "{name} left the room"
   },
+  "notes": {
+    "title": "📝 Notes",
+    "countLabel": "{count, plural, one {# note} other {# notes}}",
+    "filterAll": "All",
+    "filterTodo": "To-do",
+    "emptyLine1": "No notes yet",
+    "emptyLine2": "Add your first one below ✦",
+    "untitled": "Untitled",
+    "titlePlaceholder": "Title…",
+    "bodyPlaceholder": "Capture a thought, task, or spark…",
+    "addCta": "＋ Add note"
+  },
   "session": {
+    "solo": "Solo focus mode",
+    "paired": "Focus together",
+    "exitFullscreen": "✕  Exit fullscreen",
     "completing": "Wrapping up your focus session…",
     "completed": "Nice work. This session is complete.",
     "abandonedConfirm": "End the current session now? You can always start a new one when you are ready."
+  },
+  "enter": {
+    "cta": "✦ Enter focus mode ✦"
   }
 }

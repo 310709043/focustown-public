@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useTimer } from "@/lib/hooks/useTimer";
 import { fmtMS } from "@/lib/format";
@@ -9,6 +10,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
   useTimer();
   const [task, setTask] = useState("");
   const { remaining, durationSeconds, running, start, pause, reset } = useTimerStore();
+  const t = useTranslations("focus.timer");
 
   // Auto-reset when partner changes (defensive)
   useEffect(() => {
@@ -25,7 +27,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
           color: "var(--muted)",
         }}
       >
-        FOCUS · SESSION
+        {t("header")}
       </div>
 
       {/* MASSIVE timer with 7-segment-style pixel border */}
@@ -82,7 +84,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
       <input
         value={task}
         onChange={(e) => setTask(e.target.value)}
-        placeholder="今晚在做什麼？"
+        placeholder={t("taskPlaceholder")}
         className="text-center bg-[rgba(12,5,35,0.8)] border border-border rounded-md outline-none focus:border-accent-1 font-japan"
         style={{
           width: "min(380px, 70vw)",
@@ -104,7 +106,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
           }}
           onClick={() => (running ? pause() : void start(task || undefined, partnerId ?? null))}
         >
-          {running ? "⏸  暫停" : "▶  開始"}
+          {running ? t("pauseCta") : t("startCta")}
         </button>
         <button
           className="pixel-btn"
@@ -121,7 +123,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
           }}
           onClick={reset}
         >
-          ↺  重置
+          {t("resetCta")}
         </button>
       </div>
     </div>

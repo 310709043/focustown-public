@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import { findCharacter } from "@/lib/data/characters";
@@ -14,6 +16,7 @@ export function TopStatusPill() {
   const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
   const user = useAuthStore((s) => s.user);
   const myChar = findCharacter(user?.character_key);
+  const t = useTranslations("town.presence");
 
   return (
     <div className="flex items-center gap-2">
@@ -28,10 +31,10 @@ export function TopStatusPill() {
           letterSpacing: 0.6,
           textShadow: "0 0 6px rgba(52,211,153,0.4)",
         }}
-        title="目前街上的人數"
+        title={t("onlineTooltip")}
       >
         <span style={{ fontSize: 13 }}>👥</span>
-        <span>在線 {onlineCount}</span>
+        <span>{t("onlineShort", { count: onlineCount })}</span>
       </span>
       <span
         className="border border-border2 rounded-md px-3 py-2 flex items-center gap-1.5"

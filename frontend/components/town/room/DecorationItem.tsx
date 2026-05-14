@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import type { RoomItem } from "@/lib/api/types.gen";
 
 /**
@@ -48,6 +50,7 @@ export function DecorationItem({
   const [previewXY, setPreviewXY] = useState<{ x: number; y: number } | null>(
     null,
   );
+  const t = useTranslations("town.room.decoration");
 
   function deltaPct(e: { clientX: number; clientY: number }) {
     if (!drag || !elRef.current) return null;
@@ -121,7 +124,7 @@ export function DecorationItem({
         imageRendering: "pixelated",
         lineHeight: 1,
       }}
-      aria-label={editable ? "拖動以重新擺放" : "裝飾"}
+      aria-label={editable ? t("dragAria") : t("iconAria")}
       role={editable ? "button" : "img"}
     >
       <span>{icon}</span>
@@ -133,7 +136,7 @@ export function DecorationItem({
             onRemove();
           }}
           onPointerDown={(e) => e.stopPropagation()}
-          aria-label="移除這個裝飾"
+          aria-label={t("removeAria")}
           className="font-mono"
           style={{
             position: "absolute",

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { Link, useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { signUpSchema, type SignUpInput } from "@/lib/validation/auth";
@@ -22,6 +24,7 @@ export default function SignUpPage() {
     marketingOptIn: false,
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const t = useTranslations("auth.signup");
 
   const update = <K extends keyof SignUpInput>(key: K, value: SignUpInput[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -84,13 +87,13 @@ export default function SignUpPage() {
             textShadow: "0 0 18px rgba(167,139,250,0.35)",
           }}
         >
-          加入 Focus Town
+          {t("heading")}
         </h1>
 
         <div>
           <input
             data-testid="signup-name"
-            placeholder="顯示名稱"
+            placeholder={t("displayNamePlaceholder")}
             value={form.displayName}
             onChange={(e) => update("displayName", e.target.value)}
             className="pixel-input"
@@ -111,7 +114,7 @@ export default function SignUpPage() {
           <input
             data-testid="signup-email"
             type="email"
-            placeholder="email"
+            placeholder={t("emailPlaceholder")}
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
             className="pixel-input"
@@ -131,7 +134,7 @@ export default function SignUpPage() {
         <div>
           <PasswordInput
             data-testid="signup-password"
-            placeholder="密碼 (8+ 字, 含英文與數字)"
+            placeholder={t("passwordPlaceholder")}
             value={form.password}
             onChange={(e) => update("password", e.target.value)}
             autoComplete="new-password"
@@ -154,23 +157,23 @@ export default function SignUpPage() {
           name="termsAccepted"
           label={
             <>
-              我已閱讀並同意{" "}
+              {t("termsAgreement")}{" "}
               <Link
                 href="/legal/terms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-accent-2 underline hover:text-accent-1"
               >
-                服務條款
+                {t("termsLink")}
               </Link>{" "}
-              與{" "}
+              {t("termsConnector")}{" "}
               <Link
                 href="/legal/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-accent-2 underline hover:text-accent-1"
               >
-                隱私政策
+                {t("privacyLink")}
               </Link>
             </>
           }
@@ -180,7 +183,7 @@ export default function SignUpPage() {
           checked={form.marketingOptIn}
           onChange={(e) => update("marketingOptIn", e.target.checked)}
           name="marketingOptIn"
-          label="我願意接收電子報、產品更新與優惠通知（可隨時取消）"
+          label={t("marketingOptIn")}
         />
 
         {error ? (
@@ -200,7 +203,7 @@ export default function SignUpPage() {
           className="pixel-btn disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ fontSize: 12, padding: "10px 16px", letterSpacing: 2 }}
         >
-          {loading ? "註冊中..." : "註冊 ▶"}
+          {loading ? t("loadingCta") : t("submitCta")}
         </button>
 
         <Link
@@ -208,7 +211,7 @@ export default function SignUpPage() {
           className="text-muted hover:text-accent-2 text-center"
           style={{ fontSize: "var(--font-size-label)" }}
         >
-          已有帳號？登入
+          {t("toggleToSignin")}
         </Link>
       </form>
       <AppFooter />

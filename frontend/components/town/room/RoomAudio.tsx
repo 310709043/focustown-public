@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { roomPlaybackApi, roomTracksApi, tracksApi } from "@/lib/api/endpoints";
 import type { RoomPlayback, RoomTrack } from "@/lib/api/types.gen";
 import { useRealtime } from "@/lib/ws/useRealtime";
@@ -58,6 +60,7 @@ export function RoomAudio({ roomId, isOwner }: Props) {
   const [state, setState] = useState<RoomPlayback | null>(null);
   const [playlist, setPlaylist] = useState<RoomTrack[]>([]);
   const [busy, setBusy] = useState(false);
+  const t = useTranslations("town.room.audio");
 
   // Hydrate the playlist (so the owner's dropdown has options) and the
   // current playback snapshot (so freshly-joining listeners line up
@@ -249,7 +252,7 @@ export function RoomAudio({ roomId, isOwner }: Props) {
           whiteSpace: "nowrap",
         }}
       >
-        {trackTitle ?? "尚未播放"}
+        {trackTitle ?? t("idle")}
       </span>
 
       {isOwner && (
@@ -258,7 +261,7 @@ export function RoomAudio({ roomId, isOwner }: Props) {
             type="button"
             onClick={() => void togglePlay()}
             disabled={busy}
-            aria-label={state?.is_playing ? "暫停" : "播放"}
+            aria-label={state?.is_playing ? t("pauseAria") : t("playAria")}
             className="font-japan"
             style={{
               fontSize: 13,
@@ -276,7 +279,7 @@ export function RoomAudio({ roomId, isOwner }: Props) {
             type="button"
             onClick={() => void handleSkip()}
             disabled={busy || playlist.length === 0}
-            aria-label="下一首"
+            aria-label={t("skipAria")}
             className="font-japan"
             style={{
               fontSize: 13,
@@ -309,7 +312,7 @@ export function RoomAudio({ roomId, isOwner }: Props) {
               }}
             >
               <option value="" disabled>
-                換曲…
+                {t("changePlaceholder")}
               </option>
               {playlist.map((p) => (
                 <option key={p.track_id} value={p.track_id}>

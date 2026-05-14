@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { shopApi } from "@/lib/api/endpoints";
 import type { ShopItem, UserItem } from "@/lib/api/types.gen";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
@@ -35,6 +37,7 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
   const owned = useUserItemsStore((s) => s.byShopItemId);
   const [catalog, setCatalog] = useState<ShopItem[] | null>(null);
   const [catalogError, setCatalogError] = useState(false);
+  const t = useTranslations("town.room.decoration");
 
   useEffect(() => {
     if (!editMode || catalog !== null || catalogError) return;
@@ -83,7 +86,7 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
           className="font-mono text-muted"
           style={{ fontSize: 11, letterSpacing: 1 }}
         >
-          {editMode ? "編輯中" : "裝飾"}
+          {editMode ? t("modeEditing") : t("modeDecorate")}
         </span>
         <button
           type="button"
@@ -101,7 +104,7 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
             cursor: "pointer",
           }}
         >
-          {editMode ? "✓ 完成" : "🎨 編輯"}
+          {editMode ? t("doneCta") : t("editCta")}
         </button>
       </div>
 
@@ -112,7 +115,7 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
               className="font-mono text-muted"
               style={{ fontSize: 11, padding: "4px 0" }}
             >
-              載入中…
+              {t("loading")}
             </div>
           )}
           {catalogError && (
@@ -120,7 +123,7 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
               className="font-mono text-muted"
               style={{ fontSize: 11, padding: "4px 0" }}
             >
-              載入失敗 — 重新整理後再試
+              {t("loadFailed")}
             </div>
           )}
           {catalog !== null && !catalogError && entries.length === 0 && (
@@ -128,9 +131,9 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
               className="font-mono text-muted"
               style={{ fontSize: 11, lineHeight: 1.6 }}
             >
-              還沒有可擺放的道具。
+              {t("emptyLine1")}
               <br />
-              到 🛒 道具店 買裝飾再回來。
+              {t("emptyLine2")}
             </div>
           )}
           {entries.length > 0 && (

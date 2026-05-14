@@ -2,12 +2,15 @@
   "nav": {
     "awards": "🏆 Awards",
     "myRoom": "🏠 My room",
+    "myRoomTooltip": "Enter your room",
     "shop": "🛒 Shop",
     "signout": "Sign out",
     "library": "🎵 Music library"
   },
   "presence": {
-    "online": "{count, plural, =0 {No one online right now} one {# person online} other {# people online}}"
+    "online": "{count, plural, =0 {No one online right now} one {# person online} other {# people online}}",
+    "onlineShort": "Online {count}",
+    "onlineTooltip": "Who is on the street right now"
   },
   "shopBadge": {
     "unlocked": "🔓 {count} unlocked"
@@ -17,5 +20,80 @@
   },
   "emptyRoom": {
     "enterHint": "Enter your room"
+  },
+  "coin": {
+    "balanceTooltip": "T coin balance: {amount} T",
+    "unit": "T"
+  },
+  "leaderboard": {
+    "empty": "No entries yet"
+  },
+  "clock": {
+    "tooltip": "Town time"
+  },
+  "scene": {
+    "youSuffix": "you",
+    "billboardEmptyLine1": "No completed sessions yet",
+    "billboardEmptyLine2": "Be the first to focus ✦"
+  },
+  "awards": {
+    "title": "✦ Awards · HALL OF FAME",
+    "closeCta": "✕ Close",
+    "leadersHeading": "🏆 Today's Pomodoro leaders",
+    "leadersEmpty": "No entries yet",
+    "leaderCountSuffix": "🍅",
+    "achievementsHeading": "🎖️ Achievement badges",
+    "achievementsEmpty": "No achievements yet (v2 seeder pending)"
+  },
+  "room": {
+    "backToStreet": "Back to town",
+    "renameTooltip": "Tap to rename",
+    "ownerBadge": "OWNER",
+    "visitorBadge": "VISITOR",
+    "openingDoor": "Opening the door…",
+    "themePickerLabel": "Theme",
+    "themes": {
+      "dawn": "Dawn",
+      "day": "Day",
+      "dusk": "Dusk",
+      "night": "Night",
+      "rain": "Rainy night",
+      "snow": "Snowy night",
+      "storm": "Storm"
+    },
+    "visitor": {
+      "panelLabel": "Visitors",
+      "tooltipFmt": "{userId} (joined at {joinedAt})"
+    },
+    "audio": {
+      "idle": "Nothing playing",
+      "playAria": "Play",
+      "pauseAria": "Pause",
+      "skipAria": "Next track",
+      "changePlaceholder": "Change track…"
+    },
+    "decoration": {
+      "modeEditing": "Editing",
+      "modeDecorate": "Decorate",
+      "doneCta": "✓ Done",
+      "editCta": "🎨 Edit",
+      "loading": "Loading…",
+      "loadFailed": "Could not load — please refresh and try again",
+      "emptyLine1": "No decor items yet.",
+      "emptyLine2": "Visit the 🛒 shop to buy some, then come back.",
+      "dragAria": "Drag to reposition",
+      "iconAria": "Decoration",
+      "removeAria": "Remove this decoration"
+    },
+    "missing": {
+      "title": "We could not find that room",
+      "backLink": "◂ Back to town"
+    },
+    "locked": {
+      "badge": "ROOM LOCKED",
+      "subtitle": "This room is invite-only",
+      "idPrefix": "id:",
+      "backLink": "◂ Back to town"
+    }
   }
 }

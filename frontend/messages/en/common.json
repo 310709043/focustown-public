@@ -6,6 +6,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
+    "closeAria": "Close",
     "submit": "Submit",
     "back": "Back",
     "next": "Next",
@@ -33,5 +34,27 @@
     "seconds": "seconds",
     "hours": "hours",
     "celsius": "°C"
+  },
+  "forms": {
+    "passwordShow": "Show",
+    "passwordHide": "Hide",
+    "passwordShowAria": "Show password",
+    "passwordHideAria": "Hide password"
+  },
+  "legal": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "refund": "Refund Policy",
+    "backHome": "← Back to home",
+    "toc": "Contents",
+    "related": "Related",
+    "effectiveDate": "Effective date: {date}",
+    "version": "Version: {version}"
+  },
+  "locale": {
+    "aria": "Language"
+  },
+  "misc": {
+    "or": "or"
   }
 }

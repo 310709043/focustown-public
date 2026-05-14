@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+
+import { useRouter } from "@/i18n/routing";
 import { leaderboardApi, achievementsApi } from "@/lib/api/endpoints";
 import type { LeaderboardEntry, Achievement } from "@/lib/api/types.gen";
 
@@ -9,6 +11,7 @@ export default function AwardsPage() {
   const router = useRouter();
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const t = useTranslations("town.awards");
 
   useEffect(() => {
     leaderboardApi.today().then(setLeaders).catch(() => {});
@@ -25,13 +28,13 @@ export default function AwardsPage() {
           className="font-pixel text-[9px] tracking-widest"
           style={{ color: "var(--amber)", textShadow: "0 0 10px var(--amber)" }}
         >
-          ✦ 大賞區 · HALL OF FAME
+          {t("title")}
         </div>
         <button
           onClick={() => router.push("/town")}
           className="border border-border text-muted font-japan text-[10px] px-3 py-1 rounded hover:border-coral hover:text-coral"
         >
-          ✕ 關閉
+          {t("closeCta")}
         </button>
       </header>
       <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-4">
@@ -40,18 +43,23 @@ export default function AwardsPage() {
             className="font-pixel text-[8px] tracking-wider"
             style={{ color: "var(--amber)", textShadow: "0 0 8px var(--amber)" }}
           >
-            🏆 今日番茄鐘排行
+            {t("leadersHeading")}
           </h3>
           {leaders.length === 0 ? (
-            <div className="text-[11px] text-muted">尚無資料</div>
+            <div className="text-[11px] text-muted">{t("leadersEmpty")}</div>
           ) : (
             leaders.map((l, i) => (
-              <div key={l.user_id} className="flex items-center gap-2 py-1 border-b border-border last:border-0 text-[12px]">
+              <div
+                key={l.user_id}
+                className="flex items-center gap-2 py-1 border-b border-border last:border-0 text-[12px]"
+              >
                 <span className="font-pixel text-[9px] w-5 text-center text-amber">
                   {i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1}
                 </span>
                 <span className="flex-1 truncate">{l.display_name}</span>
-                <span className="text-amber">{l.completed_count} 🍅</span>
+                <span className="text-amber">
+                  {l.completed_count} {t("leaderCountSuffix")}
+                </span>
               </div>
             ))
           )}
@@ -61,10 +69,10 @@ export default function AwardsPage() {
             className="font-pixel text-[8px] tracking-wider"
             style={{ color: "var(--teal)", textShadow: "0 0 8px var(--teal)" }}
           >
-            🎖️ 成就徽章
+            {t("achievementsHeading")}
           </h3>
           {achievements.length === 0 ? (
-            <div className="text-[11px] text-muted">尚未建立任何成就（v2 會由 seeder 寫入）</div>
+            <div className="text-[11px] text-muted">{t("achievementsEmpty")}</div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {achievements.map((a) => (

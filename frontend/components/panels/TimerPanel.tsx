@@ -1,21 +1,31 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { clsx } from "clsx";
+
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useTimer } from "@/lib/hooks/useTimer";
 import { fmtMS } from "@/lib/format";
 import type { FocusSessionMode } from "@/lib/api/types.gen";
-import { clsx } from "clsx";
 
-const MODES: { mode: FocusSessionMode; seconds: number; label: string; icon: string }[] = [
-  { mode: "focus", seconds: 25 * 60, label: "🍅 專注",   icon: "🍅" },
-  { mode: "short", seconds: 5 * 60,  label: "☕ 短休息", icon: "☕" },
-  { mode: "long",  seconds: 15 * 60, label: "🌙 長休息", icon: "🌙" },
+type ModeDef = {
+  mode: FocusSessionMode;
+  seconds: number;
+  labelKey: "modeFocusLabel" | "modeShortLabel" | "modeLongLabel";
+  icon: string;
+};
+
+const MODES: ModeDef[] = [
+  { mode: "focus", seconds: 25 * 60, labelKey: "modeFocusLabel", icon: "🍅" },
+  { mode: "short", seconds: 5 * 60, labelKey: "modeShortLabel", icon: "☕" },
+  { mode: "long", seconds: 15 * 60, labelKey: "modeLongLabel", icon: "🌙" },
 ];
 
 export function TimerPanel() {
   useTimer();
   const { mode, durationSeconds, remaining, running, tomatoCount, setMode, start, pause, reset } =
     useTimerStore();
+  const t = useTranslations("focus.timer");
 
   const onToggle = async () => {
     if (running) {
@@ -31,7 +41,7 @@ export function TimerPanel() {
   return (
     <div className="pixel-panel relative overflow-hidden flex flex-col gap-1.5 px-3 py-2.5">
       <div className="font-pixel-en text-xs" style={{ color: "var(--dir-ink-mute)", letterSpacing: 1 }}>
-        {current.label}
+        {t(current.labelKey)}
       </div>
       <div className="flex items-center gap-3">
         <div
@@ -48,7 +58,7 @@ export function TimerPanel() {
         {/* BIG play/pause button — the marquee control of the panel */}
         <button
           onClick={onToggle}
-          aria-label={running ? "Pause" : "Start"}
+          aria-label={running ? t("pauseAria") : t("startAria")}
           className={clsx(
             "pixel-btn shrink-0 flex items-center justify-center",
             running && "animate-bigPulse",
@@ -89,6 +99,7 @@ export function TimerPanel() {
                   : "border-border text-muted hover:border-accent-1 hover:text-accent-1",
               )}
               style={{ fontSize: 12 }}
+              aria-label={t(m.labelKey)}
             >
               {m.icon}
             </button>
@@ -97,7 +108,7 @@ export function TimerPanel() {
             onClick={reset}
             className="border border-border text-muted rounded px-2 py-1 hover:border-accent-1 hover:text-accent-1"
             style={{ fontSize: 12 }}
-            aria-label="Reset"
+            aria-label={t("resetAria")}
           >
             ↺
           </button>

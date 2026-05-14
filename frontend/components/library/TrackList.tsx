@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { clsx } from "clsx";
 import { ApiError } from "@/lib/api/client";
 import { tracksApi } from "@/lib/api/endpoints";
@@ -36,6 +37,7 @@ export function TrackList({
   const [playlistBusyId, setPlaylistBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
+  const t = useTranslations("library.tracks");
 
   function handleToggle(id: string) {
     setError(null);
@@ -54,16 +56,16 @@ export function TrackList({
     }
   }
 
-  async function handleDelete(t: Track) {
+  async function handleDelete(track: Track) {
     if (deletingId) return;
-    const el = audioRefs.current[t.id];
+    const el = audioRefs.current[track.id];
     if (el) el.pause();
-    setDeletingId(t.id);
+    setDeletingId(track.id);
     setError(null);
     try {
-      await tracksApi.remove(t.id);
-      onDeleted(t.id);
-      if (playingId === t.id) setPlayingId(null);
+      await tracksApi.remove(track.id);
+      onDeleted(track.id);
+      if (playingId === track.id) setPlayingId(null);
     } catch (e) {
       const msg = e instanceof ApiError ? e.message : "delete_failed";
       setError(msg);
@@ -93,7 +95,7 @@ export function TrackList({
   if (tracks.length === 0) {
     return (
       <div className="text-xs text-muted py-8 text-center border border-border rounded">
-        目前還沒有任何 track。上傳一首試試！
+        {t("empty")}
       </div>
     );
   }
@@ -106,12 +108,12 @@ export function TrackList({
         </div>
       )}
       <ul className="flex flex-col gap-1.5">
-        {tracks.map((t) => {
-          const mine = currentUserId !== null && t.uploaded_by_user_id === currentUserId;
-          const isPlaying = playingId === t.id;
+        {tracks.map((track) => {
+          const mine = currentUserId !== null && track.uploaded_by_user_id === currentUserId;
+          const isPlaying = playingId === track.id;
           return (
             <li
-              key={t.id}
+              key={track.id}
               className={clsx(
                 "flex items-center gap-2 px-2 py-1.5 border rounded",
                 isPlaying ? "border-accent-1 bg-accent-1/5" : "border-border",
@@ -119,54 +121,54 @@ export function TrackList({
             >
               <button
                 type="button"
-                onClick={() => handleToggle(t.id)}
+                onClick={() => handleToggle(track.id)}
                 className="w-7 h-7 shrink-0 rounded-sm border border-accent-1 text-accent-1 hover:bg-accent-1/10"
-                aria-label={isPlaying ? "pause" : "play"}
+                aria-label={isPlaying ? t("pauseAria") : t("playAria")}
               >
                 {isPlaying ? "⏸" : "▶"}
               </button>
               <div className="flex-1 min-w-0">
-                <div className="text-xs truncate">{t.title}</div>
+                <div className="text-xs truncate">{track.title}</div>
                 <div className="text-[10px] text-muted truncate">
-                  {t.artist ? `${t.artist} · ` : ""}
-                  {t.mood} · {formatBytes(t.file_size_bytes)}
+                  {track.artist ? `${track.artist} · ` : ""}
+                  {track.mood} · {formatBytes(track.file_size_bytes)}
                 </div>
               </div>
               {currentUserId !== null && (
                 <button
                   type="button"
-                  onClick={() => handleTogglePlaylist(t.id)}
-                  disabled={playlistBusyId === t.id}
+                  onClick={() => handleTogglePlaylist(track.id)}
+                  disabled={playlistBusyId === track.id}
                   className={clsx(
                     "text-[10px] px-1.5 py-0.5 border rounded disabled:opacity-50",
-                    inPlaylist.has(t.id)
+                    inPlaylist.has(track.id)
                       ? "border-accent-1 text-accent-1 hover:border-red-400 hover:text-red-400"
                       : "border-border text-muted hover:border-accent-1 hover:text-accent-1",
                   )}
-                  aria-pressed={inPlaylist.has(t.id)}
+                  aria-pressed={inPlaylist.has(track.id)}
                 >
-                  {playlistBusyId === t.id
+                  {playlistBusyId === track.id
                     ? "…"
-                    : inPlaylist.has(t.id)
-                      ? "✓ 房間"
-                      : "+ 加入房間"}
+                    : inPlaylist.has(track.id)
+                      ? t("inRoom")
+                      : t("addToRoom")}
                 </button>
               )}
               {mine && (
                 <button
                   type="button"
-                  onClick={() => handleDelete(t)}
-                  disabled={deletingId === t.id}
+                  onClick={() => handleDelete(track)}
+                  disabled={deletingId === track.id}
                   className="text-[10px] px-1.5 py-0.5 border border-border rounded text-muted hover:border-red-400 hover:text-red-400 disabled:opacity-50"
                 >
-                  {deletingId === t.id ? "刪除中…" : "刪除"}
+                  {deletingId === track.id ? t("deleting") : t("delete")}
                 </button>
               )}
               <audio
                 ref={(el) => {
-                  audioRefs.current[t.id] = el;
+                  audioRefs.current[track.id] = el;
                 }}
-                src={tracksApi.streamUrl(t.id)}
+                src={tracksApi.streamUrl(track.id)}
                 preload="none"
                 onEnded={() => setPlayingId(null)}
               />

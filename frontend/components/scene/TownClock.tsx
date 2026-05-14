@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const WD = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MN = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 export function TownClock() {
   const [now, setNow] = useState<Date | null>(null);
+  const t = useTranslations("town.clock");
   useEffect(() => {
     const tick = () => setNow(new Date());
     tick();
@@ -19,7 +21,7 @@ export function TownClock() {
   return (
     <div
       className="pixel-panel absolute top-[12px] right-[14px] text-right z-[6] px-3 py-1.5"
-      title="小鎮時間"
+      title={t("tooltip")}
     >
       <div
         className="font-mono leading-none tracking-widest flex items-center justify-end"

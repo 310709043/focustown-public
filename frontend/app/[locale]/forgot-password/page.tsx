@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { Link } from "@/i18n/routing";
 import { authApi } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/client";
@@ -12,13 +14,14 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const t = useTranslations("auth.forgot");
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     const parsed = forgotPasswordSchema.safeParse({ email });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "請輸入有效 email");
+      setError(parsed.error.issues[0]?.message ?? t("invalidEmail"));
       return;
     }
     setSubmitting(true);
@@ -28,7 +31,7 @@ export default function ForgotPasswordPage() {
     } catch (e) {
       // Even on backend error, present a generic message to avoid enumeration.
       if (e instanceof ApiError && e.status === 429) {
-        setError("請求過於頻繁，請稍後再試。");
+        setError(t("rateLimited"));
       } else {
         setSubmitted(true);
       }
@@ -63,7 +66,7 @@ export default function ForgotPasswordPage() {
             textShadow: "0 0 18px rgba(167,139,250,0.35)",
           }}
         >
-          忘記密碼
+          {t("title")}
         </h1>
 
         {submitted ? (
@@ -74,9 +77,7 @@ export default function ForgotPasswordPage() {
               lineHeight: "var(--line-height-body)",
             }}
           >
-            <p className="mb-2">
-              如果該 email 已註冊，重設密碼的連結已寄出，請至信箱查收。
-            </p>
+            <p className="mb-2">{t("successMessage")}</p>
             <p
               className="text-muted mb-4"
               style={{
@@ -84,14 +85,14 @@ export default function ForgotPasswordPage() {
                 lineHeight: 1.6,
               }}
             >
-              連結將於 1 小時後失效。若未收到，請檢查垃圾郵件夾或稍後再試。
+              {t("linkExpiryNote")}
             </p>
             <Link
               href="/signin"
               className="block text-accent-2 hover:text-accent-1 text-center"
               style={{ fontSize: "var(--font-size-label)" }}
             >
-              ← 返回登入
+              {t("backToSignin")}
             </Link>
           </div>
         ) : (
@@ -103,12 +104,12 @@ export default function ForgotPasswordPage() {
                 lineHeight: "var(--line-height-body)",
               }}
             >
-              輸入您的帳號 email，我們將寄送重設密碼的連結。
+              {t("instructionsShort")}
             </p>
             <input
               type="email"
               required
-              placeholder="email"
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="bg-[rgba(12,5,35,.9)] border border-border rounded px-3 py-2 outline-none focus:border-accent-1"
@@ -129,14 +130,14 @@ export default function ForgotPasswordPage() {
               className="font-pixel border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50 tracking-widest"
               style={{ fontSize: "var(--font-size-label)", lineHeight: 1.2 }}
             >
-              {submitting ? "寄送中..." : "寄送重設連結 ▶"}
+              {submitting ? t("loadingCta") : t("submitCta")}
             </button>
             <Link
               href="/signin"
               className="text-muted hover:text-accent-2 text-center"
               style={{ fontSize: "var(--font-size-label)" }}
             >
-              返回登入
+              {t("backToSigninShort")}
             </Link>
           </form>
         )}

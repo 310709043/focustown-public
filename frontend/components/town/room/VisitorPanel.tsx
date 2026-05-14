@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { ApiError } from "@/lib/api/client";
 import { roomVisitApi } from "@/lib/api/endpoints";
 import type { RoomVisit } from "@/lib/api/types.gen";
@@ -48,6 +50,7 @@ function shortId(uid: string): string {
 export function VisitorPanel({ roomId, ownerUserId, currentUserId }: Props) {
   const [visitors, setVisitors] = useState<RoomVisit[]>([]);
   const [visitError, setVisitError] = useState(false);
+  const t = useTranslations("town.room.visitor");
   const realtime = useRealtime((msg) => {
     if (msg.type === "room.visitor_joined" && msg.room_id === roomId) {
       const userId = String(msg.user_id);
@@ -147,12 +150,12 @@ export function VisitorPanel({ roomId, ownerUserId, currentUserId }: Props) {
         className="font-mono text-muted"
         style={{ fontSize: 11, letterSpacing: 1, marginRight: 4 }}
       >
-        訪客
+        {t("panelLabel")}
       </span>
       {renderable.map((v) => (
         <span
           key={v.visitor_user_id}
-          title={`${v.visitor_user_id}（加入於 ${v.joined_at}）`}
+          title={t("tooltipFmt", { userId: v.visitor_user_id, joinedAt: v.joined_at })}
           className="font-japan flex items-center gap-1"
           style={{
             fontSize: 12,

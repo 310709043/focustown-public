@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 type Props = {
   title: string;
   subtitle?: string;
@@ -5,7 +7,8 @@ type Props = {
   version: string;
 };
 
-export function LegalDocHeader({ title, subtitle, effectiveDate, version }: Props) {
+export async function LegalDocHeader({ title, subtitle, effectiveDate, version }: Props) {
+  const t = await getTranslations("common.legal");
   return (
     <header className="mb-10 pb-6 border-b border-border">
       <h1
@@ -38,8 +41,8 @@ export function LegalDocHeader({ title, subtitle, effectiveDate, version }: Prop
           lineHeight: 1.5,
         }}
       >
-        <span>生效日期：{effectiveDate}</span>
-        <span>版本：{version}</span>
+        <span>{t("effectiveDate", { date: effectiveDate })}</span>
+        <span>{t("version", { version })}</span>
       </div>
     </header>
   );

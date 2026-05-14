@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { leaderboardApi } from "@/lib/api/endpoints";
 import { findCharacter } from "@/lib/data/characters";
 import type { LeaderboardEntry } from "@/lib/api/types.gen";
@@ -9,6 +11,7 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 
 export function LeaderboardPanel() {
   const [rows, setRows] = useState<LeaderboardEntry[]>([]);
+  const t = useTranslations("town.leaderboard");
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +34,7 @@ export function LeaderboardPanel() {
   return (
     <div className="flex flex-col gap-0.5">
       {rows.length === 0 ? (
-        <div className="text-xs text-muted text-center py-2">尚無資料</div>
+        <div className="text-xs text-muted text-center py-2">{t("empty")}</div>
       ) : (
         rows.slice(0, 5).map((r, i) => {
           const ch = findCharacter(r.character_key);
