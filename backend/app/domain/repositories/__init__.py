@@ -1,3 +1,16 @@
+"""Domain repository **ports** (Protocols).
+
+This package holds the abstract contracts the domain layer programs
+against — never the SQL bodies. Concrete adapters live in
+``app.infrastructure.db.repositories`` (and would equally well live in
+a DynamoDB / Redis / HTTP package). The split is **intentional**
+hexagonal layering: do **not** collocate impls here.
+
+Add a new method by editing the Protocol first, then mirror it in every
+adapter under ``app.infrastructure.db.repositories``. The two files
+must stay in lock-step or LSP fails.
+"""
+
 from app.domain.repositories.achievement_repo import IAchievementRepo
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
 from app.domain.repositories.match_repo import IMatchRepo
