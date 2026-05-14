@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,6 +18,7 @@ def _to_record(row: ShopItemORM) -> ShopItemRecord:
         description=row.description,
         price_cents=row.price_cents,
         featured=row.featured,
+        render_meta=row.render_meta,
     )
 
 
@@ -40,3 +43,14 @@ class SqlShopRepo(IShopRepo):
     async def get_by_id(self, item_id: str) -> ShopItemRecord | None:
         row = await self._s.get(ShopItemORM, item_id)
         return _to_record(row) if row else None
+
+    async def get_render_metas(
+        self, item_ids: list[str]
+    ) -> dict[str, dict[str, Any] | None]:
+        if not item_ids:
+            return {}
+        stmt = select(ShopItemORM.id, ShopItemORM.render_meta).where(
+            ShopItemORM.id.in_(item_ids)
+        )
+        rows = (await self._s.execute(stmt)).all()
+        return {row.id: row.render_meta for row in rows}

@@ -43,6 +43,12 @@ class TokensResponse(BaseModel):
     token_type: str = "bearer"  # noqa: S105 — OAuth2 scheme name, not a secret
 
 
+class VehicleViewBrief(BaseModel):
+    icon: str
+    body_color: str
+    roof_color: str
+
+
 class UserResponse(BaseModel):
     id: str
     email: str
@@ -50,6 +56,8 @@ class UserResponse(BaseModel):
     character_key: str | None = None
     role_label: str | None = None
     marketing_opt_in: bool = False
+    equipped_vehicle_item_id: str | None = None
+    equipped_vehicle: VehicleViewBrief | None = None
 
 
 class AuthResponse(BaseModel):

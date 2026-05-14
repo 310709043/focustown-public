@@ -4,9 +4,21 @@ from dataclasses import dataclass
 
 from app.domain.repositories.presence import IPresenceTracker, PresenceState
 from app.domain.repositories.realtime import IRealtimePublisher
+from app.domain.repositories.shop_repo import IShopRepo
 from app.domain.repositories.user_repo import IUserRepo
 
 STREET_CHANNEL = "street"
+
+
+@dataclass(slots=True, frozen=True)
+class VehicleView:
+    """Minimal car visuals for the street view; sourced from
+    ``shop_items.render_meta`` of the user's equipped vehicle item.
+    """
+
+    icon: str
+    body_color: str
+    roof_color: str
 
 
 @dataclass(slots=True, frozen=True)
@@ -17,15 +29,17 @@ class StreetUser:
     display_name: str
     character_key: str | None
     status: str
+    vehicle: VehicleView | None
 
 
 class PresenceService:
     """Orchestrates presence state mutations and realtime broadcast.
 
     Construction depends only on the two ports actually used by every method
-    (tracker + publisher). The DB-backed ``IUserRepo`` is taken as a method
-    parameter on ``list_street`` so the WS lifecycle (which has no per-request
-    DB session) can use this same service without carrying an unused dep.
+    (tracker + publisher). The DB-backed ``IUserRepo`` / ``IShopRepo`` are
+    taken as method parameters on ``list_street`` so the WS lifecycle
+    (which has no per-request DB session) can use this same service
+    without carrying unused deps.
 
     SOLID:
     - S: presence concerns only (no user CRUD, no socket I/O)
@@ -88,24 +102,55 @@ class PresenceService:
             },
         )
 
-    async def list_street(self, users: IUserRepo, *, cap: int) -> list[StreetUser]:
+    async def list_street(
+        self,
+        users: IUserRepo,
+        shop: IShopRepo,
+        *,
+        cap: int,
+    ) -> list[StreetUser]:
         entries = await self._tracker.list(state="on_street")
         if not entries:
             return []
         user_rows = await users.get_many_by_ids([e.user_id for e in entries])
         by_id = {u.id: u for u in user_rows}
         status_by_id = {e.user_id: e.status for e in entries}
+
+        vehicle_ids = sorted(
+            {u.equipped_vehicle_item_id for u in user_rows if u.equipped_vehicle_item_id}
+        )
+        render_metas = (
+            await shop.get_render_metas(vehicle_ids) if vehicle_ids else {}
+        )
+
         out: list[StreetUser] = []
         for entry in entries:
             user = by_id.get(entry.user_id)
             if user is None or not user.is_active:
                 continue
+            vehicle = _vehicle_from_meta(
+                render_metas.get(user.equipped_vehicle_item_id or "")
+            )
             out.append(
                 StreetUser(
                     id=user.id,
                     display_name=user.public_name(),
                     character_key=user.character_key,
                     status=status_by_id.get(user.id, "focus"),
+                    vehicle=vehicle,
                 )
             )
         return out[:cap]
+
+
+def _vehicle_from_meta(raw: dict | None) -> VehicleView | None:
+    if not raw:
+        return None
+    try:
+        return VehicleView(
+            icon=str(raw["icon"]),
+            body_color=str(raw["body_color"]),
+            roof_color=str(raw["roof_color"]),
+        )
+    except (KeyError, TypeError):
+        return None

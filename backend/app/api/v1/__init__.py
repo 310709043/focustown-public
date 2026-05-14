@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.v1.achievements.router import router as achievements_router
 from app.api.v1.auth.router import router as auth_router
+from app.api.v1.equipment.router import router as equipment_router
 from app.api.v1.items.router import router as items_router
 from app.api.v1.leaderboard.router import router as leaderboard_router
 from app.api.v1.matches.router import router as matches_router
@@ -25,4 +26,5 @@ router.include_router(shop_router, prefix="/shop", tags=["shop"])
 router.include_router(presence_router, prefix="/presence", tags=["presence"])
 router.include_router(wallet_router, prefix="/me/wallet", tags=["wallet"])
 router.include_router(items_router, prefix="/me/items", tags=["items"])
+router.include_router(equipment_router, prefix="/me/equipment", tags=["equipment"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

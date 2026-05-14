@@ -14,6 +14,10 @@ export type WsMessage =
       user_id: string;
       state?: PresenceStateValue;
       status?: string;
+      // Phase 3: signals other clients to re-fetch /presence/street so they
+      // pick up the new vehicle render_meta (we deliberately don't bloat the
+      // WS frame with the full payload).
+      equipment_changed?: boolean;
     }
   | {
       type: "wallet.updated";

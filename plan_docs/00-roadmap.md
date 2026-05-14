@@ -110,7 +110,7 @@
 
 ---
 
-### Phase 3 — Avatar / 車輛裝備　〔PENDING〕
+### Phase 3 — Avatar / 車輛裝備　〔DONE 2026-05-14〕
 
 **Deliverable**: 買來的角色 / 車輛在街上實際渲染。
 
@@ -270,3 +270,4 @@
 | 2026-05-14 | 1 | 細部 plan 完成 + 程式碼實作 | 8/8 unit tests 通過、frontend typecheck+lint+build 全綠；docker compose smoke test pending |
 | 2026-05-14 | 1 | Smoke test 通過 ➜ DONE | WS lifecycle 4 messages 全收到、`/presence/street` 上線下線正確切換；ready for Phase 2 |
 | 2026-05-14 | 2 | T 幣經濟系統實作 ➜ DONE | 22 個新單元測試 (累積 30/30)、ruff 0 新錯、front quality gates 全綠；session→earn→buy→wallet WS push 整條 pipeline 通過、4 個錯誤路徑 (409/402/404) 正確；副帶修了 EventBus log 的 structlog kwarg 衝突 bug |
+| 2026-05-14 | 3 | Avatar / 車輛裝備實作 ➜ DONE | 9 個新單元測試 (累積 39/39)、ruff 0 新錯 (基線 17→16)；裝備 API 4 個錯誤路徑 (403/400/404/200-unequip) 正確；多瀏覽器 WS equipment_changed 廣播驗證通過；CarsLane 渲染優先 vehicle.render_meta；副帶修了 UserORM.updated_at 在 async session 重新整理時的 MissingGreenlet bug |

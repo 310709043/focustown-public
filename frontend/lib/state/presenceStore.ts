@@ -24,6 +24,9 @@ export type PresenceDelta = {
   user_id: string;
   state?: PresenceStateValue;
   status?: string;
+  /** Phase 3: signals the receiving client to re-fetch /presence/street so
+   * the vehicle render_meta lands. */
+  equipment_changed?: boolean;
 };
 
 interface PresenceStore {
@@ -47,9 +50,16 @@ export const usePresenceStore = create<PresenceStore>((set, get) => ({
   },
 
   applyDelta(msg) {
-    const { user_id, state, status } = msg;
+    const { user_id, state, status, equipment_changed } = msg;
 
     set((prev) => {
+      // Equipment changes don't carry the new render_meta on the wire; force a
+      // snapshot fetch so the next render uses the right colors. This takes
+      // precedence over the status/state branches below.
+      if (equipment_changed) {
+        return { ...prev, pendingRehydrate: true };
+      }
+
       const existing = prev.byId[user_id];
 
       // Departures: drop from the street view entirely.

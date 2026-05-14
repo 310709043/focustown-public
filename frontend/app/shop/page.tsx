@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { purchaseApi, shopApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
+import {
+  equipmentApi,
+  purchaseApi,
+  shopApi,
+  userItemsApi,
+  walletApi,
+} from "@/lib/api/endpoints";
 import type { ShopItem, ShopItemPrice } from "@/lib/api/types.gen";
+import { useAuthStore } from "@/lib/state/authStore";
 import { formatMinor, useWalletStore } from "@/lib/state/walletStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
 import { clsx } from "clsx";
@@ -30,6 +37,10 @@ export default function ShopPage() {
   const [flash, setFlash] = useState<Record<string, FlashState>>({});
   const tBalance = useWalletStore((s) => s.balanceMinor("T"));
   const owns = useUserItemsStore((s) => s.byShopItemId);
+  const equippedVehicleId = useAuthStore(
+    (s) => s.user?.equipped_vehicle_item_id ?? null,
+  );
+  const setEquippedVehicle = useAuthStore((s) => s.setEquippedVehicle);
 
   useEffect(() => {
     // Hydrate everything the shop needs in one shot — even if the user
@@ -84,6 +95,36 @@ export default function ShopPage() {
           : msg.includes("price_not_available")
             ? "暫不可用"
             : "購買失敗";
+      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: friendly } }));
+      window.setTimeout(
+        () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
+        1800,
+      );
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  async function handleEquipToggle(item: ShopItem) {
+    if (pendingId) return;
+    const isEquipped = equippedVehicleId === item.id;
+    setPendingId(item.id);
+    try {
+      const target = isEquipped ? null : item.id;
+      const res = await equipmentApi.setVehicle(target);
+      setEquippedVehicle(res.equipped_vehicle_item_id, res.equipped_vehicle);
+      setFlash((f) => ({ ...f, [item.id]: { kind: "ok", key: Date.now() } }));
+      window.setTimeout(
+        () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
+        900,
+      );
+    } catch (e) {
+      const msg = (e as Error).message;
+      const friendly = msg.includes("not_owned")
+        ? "未擁有"
+        : msg.includes("not_a_vehicle")
+          ? "非車輛"
+          : "裝備失敗";
       setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: friendly } }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
@@ -219,27 +260,53 @@ export default function ShopPage() {
                         >
                           {tPrice ? `💰 ${formatMinor("T", tPrice.amount_minor)} T` : "—"}
                         </span>
-                        <button
-                          onClick={() => handleBuy(it)}
-                          disabled={owned || isLoading || !tPrice}
-                          className={clsx(
-                            "font-pixel text-[8px] px-2.5 py-1 rounded relative",
-                            owned
-                              ? "border border-teal/40 text-teal/70 cursor-not-allowed"
-                              : !canAfford
-                                ? "border border-border text-muted cursor-not-allowed"
-                                : "border border-accent-1 text-accent-1 hover:bg-accent-1/10",
-                          )}
-                          title={
-                            owned
-                              ? "已擁有"
-                              : !canAfford
-                                ? "T 幣不足"
-                                : "用 T 幣購買"
-                          }
-                        >
-                          {owned ? "已擁有" : isLoading ? "..." : "購買"}
-                        </button>
+                        {owned && it.category === "car" ? (
+                          (() => {
+                            const isEquipped = equippedVehicleId === it.id;
+                            return (
+                              <button
+                                onClick={() => handleEquipToggle(it)}
+                                disabled={isLoading}
+                                className={clsx(
+                                  "font-pixel text-[8px] px-2.5 py-1 rounded relative",
+                                  isEquipped
+                                    ? "border border-amber bg-amber/10 text-amber"
+                                    : "border border-teal/60 text-teal hover:bg-teal/10",
+                                )}
+                                title={isEquipped ? "點擊卸下" : "裝備此車"}
+                                style={
+                                  isEquipped
+                                    ? { textShadow: "0 0 6px rgba(252,211,77,0.6)" }
+                                    : undefined
+                                }
+                              >
+                                {isLoading ? "..." : isEquipped ? "✓ 裝備中" : "👤 裝備"}
+                              </button>
+                            );
+                          })()
+                        ) : (
+                          <button
+                            onClick={() => handleBuy(it)}
+                            disabled={owned || isLoading || !tPrice}
+                            className={clsx(
+                              "font-pixel text-[8px] px-2.5 py-1 rounded relative",
+                              owned
+                                ? "border border-teal/40 text-teal/70 cursor-not-allowed"
+                                : !canAfford
+                                  ? "border border-border text-muted cursor-not-allowed"
+                                  : "border border-accent-1 text-accent-1 hover:bg-accent-1/10",
+                            )}
+                            title={
+                              owned
+                                ? "已擁有"
+                                : !canAfford
+                                  ? "T 幣不足"
+                                  : "用 T 幣購買"
+                            }
+                          >
+                            {owned ? "已擁有" : isLoading ? "..." : "購買"}
+                          </button>
+                        )}
                       </div>
                       {state.kind === "ok" ? (
                         <span
@@ -254,7 +321,7 @@ export default function ShopPage() {
                             textShadow: "0 0 10px var(--amber), 0 0 18px rgba(252,211,77,0.5)",
                           }}
                         >
-                          ✦ 入手
+                          {owned && it.category === "car" ? "✦ 出發" : "✦ 入手"}
                         </span>
                       ) : null}
                       {state.kind === "err" ? (

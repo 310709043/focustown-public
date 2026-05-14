@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
+from app.core.sentinels import UNSET, UnsetType
 from app.domain.models import User
 
 
@@ -40,3 +41,10 @@ class IUserRepo(Protocol):
     async def update_password_hash(self, *, user_id: str, password_hash: str) -> None: ...
     async def list_recent(self, *, limit: int) -> list[User]: ...
     async def get_many_by_ids(self, user_ids: list[str]) -> list[User]: ...
+    async def update_equipment(
+        self,
+        *,
+        user_id: str,
+        equipped_vehicle_item_id: str | None | UnsetType = UNSET,
+        equipped_avatar_item_id: str | None | UnsetType = UNSET,
+    ) -> User: ...
