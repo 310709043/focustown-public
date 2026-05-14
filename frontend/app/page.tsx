@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useAuthStore } from "@/lib/state/authStore";
 import { Logo } from "@/components/scene/Logo";
 import { Airplane } from "@/components/scene/Airplane";
+import { PixelSprite } from "@/components/pixel/PixelSprite";
+import { AVATARS } from "@/lib/pixel/sprites/avatars";
 
 /* Pre-computed sprinkle of pixel stars; deterministic so SSR + client match. */
 function generateStars(count: number, seed = 7) {
@@ -178,11 +180,7 @@ export default function SplashPage() {
         <form
           data-testid="signin-form"
           onSubmit={onSignIn}
-          className="bg-card border border-border2 rounded-lg p-6 w-full max-w-sm flex flex-col gap-3 pixel-edge"
-          style={{
-            backdropFilter: "blur(8px)",
-            boxShadow: "0 0 32px rgba(124,58,237,0.25)",
-          }}
+          className="pixel-panel p-6 w-full max-w-sm flex flex-col gap-3"
         >
           <input
             data-testid="signin-email"
@@ -191,8 +189,7 @@ export default function SplashPage() {
             placeholder="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3.5 py-3 outline-none focus:border-accent-1 font-japan"
-            style={{ fontSize: 14 }}
+            className="pixel-input"
           />
           <input
             data-testid="signin-password"
@@ -202,8 +199,7 @@ export default function SplashPage() {
             placeholder="密碼 (至少 8 字)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="bg-[rgba(12,5,35,0.9)] border border-border rounded-md px-3.5 py-3 outline-none focus:border-accent-1 font-japan"
-            style={{ fontSize: 14 }}
+            className="pixel-input"
           />
           {error ? (
             <div
@@ -250,25 +246,29 @@ export default function SplashPage() {
           </Link>
         </form>
 
-        <div className="flex gap-3" style={{ fontSize: 26 }}>
-          {[
-            { e: "🐱", d: "0s" },
-            { e: "🦊", d: "0.3s" },
-            { e: "🌸", d: "0.6s" },
-            { e: "🐸", d: "0.1s" },
-            { e: "🦋", d: "0.4s" },
-          ].map((c, i) => (
+        {/* Pixel avatar strip — previews what character-select will offer.
+            Uses the same staggered `gifBounce` cadence as the old emoji row,
+            so the visual rhythm is preserved while swapping emoji glyphs
+            for canvas-rendered AVATARS[0..4] (designer / frontend / novelist
+            / researcher / musician). */}
+        <div className="flex gap-3 items-end">
+          {AVATARS.slice(0, 5).map((a, i) => (
             <span
-              key={i}
+              key={a.id}
               className="animate-gifBounce"
               style={
                 {
                   ["--gif-dur" as string]: `${1.9 + i * 0.15}s`,
-                  ["--gif-delay" as string]: c.d,
+                  ["--gif-delay" as string]: `${i * 0.15}s`,
                 } as React.CSSProperties
               }
             >
-              {c.e}
+              <PixelSprite
+                sprite={a.sprite}
+                palette={a.palette}
+                scale={2}
+                title={a.name}
+              />
             </span>
           ))}
         </div>

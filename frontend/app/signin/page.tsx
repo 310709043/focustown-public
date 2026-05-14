@@ -34,7 +34,7 @@ export default function SignInPage() {
       <form
         data-testid="signin-form"
         onSubmit={onSubmit}
-        className="bg-card border border-border rounded-lg p-6 w-full max-w-sm flex flex-col gap-3"
+        className="pixel-panel p-6 w-full max-w-sm flex flex-col gap-3"
       >
         <h1
           className="font-pixel text-[10px] tracking-widest text-center mb-2"
@@ -49,7 +49,7 @@ export default function SignInPage() {
           placeholder="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="bg-[rgba(12,5,35,.9)] border border-border rounded text-[12px] px-3 py-2 outline-none focus:border-accent-1"
+          className="pixel-input"
           autoComplete="email"
         />
         <PasswordInput
@@ -86,7 +86,8 @@ export default function SignInPage() {
           data-testid="signin-submit"
           type="submit"
           disabled={loading}
-          className="font-pixel text-[8px] border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50"
+          className="pixel-btn"
+          style={{ fontSize: 12, padding: "10px 16px", letterSpacing: 2 }}
         >
           {loading ? "登入中..." : "進入小鎮 ▶"}
         </button>
