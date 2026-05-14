@@ -34,8 +34,8 @@ export default function AwardsPage() {
           ✕ 關閉
         </button>
       </header>
-      <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3">
-        <section className="bg-card border border-border rounded-lg p-4 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-4">
+        <section className="pixel-panel p-4 flex flex-col gap-2">
           <h3
             className="font-pixel text-[8px] tracking-wider"
             style={{ color: "var(--amber)", textShadow: "0 0 8px var(--amber)" }}
@@ -56,7 +56,7 @@ export default function AwardsPage() {
             ))
           )}
         </section>
-        <section className="bg-card border border-border rounded-lg p-4 flex flex-col gap-2 col-span-2">
+        <section className="pixel-panel p-4 flex flex-col gap-2 col-span-2">
           <h3
             className="font-pixel text-[8px] tracking-wider"
             style={{ color: "var(--teal)", textShadow: "0 0 8px var(--teal)" }}
@@ -66,9 +66,9 @@ export default function AwardsPage() {
           {achievements.length === 0 ? (
             <div className="text-[11px] text-muted">尚未建立任何成就（v2 會由 seeder 寫入）</div>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {achievements.map((a) => (
-                <div key={a.code} className="bg-[rgba(20,10,50,.6)] border border-border rounded px-3 py-2 flex items-center gap-2">
+                <div key={a.code} className="pixel-panel px-3 py-2 flex items-center gap-2">
                   <div className="text-xl">{a.icon}</div>
                   <div>
                     <div className="text-[11px]">{a.title}</div>
