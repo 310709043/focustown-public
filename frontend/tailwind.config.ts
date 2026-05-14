@@ -73,6 +73,9 @@ const config: Config = {
         userPop:     "userPop .42s cubic-bezier(.34,1.56,.64,1) both",
         selfHalo:    "selfHalo 1.8s ease-in-out infinite",
         coinPop:     "coinPop .9s ease-out forwards",
+        roomShutterOpen: "roomShutterOpen 600ms cubic-bezier(0.16,1,0.3,1) both",
+        themeCrossfade:  "themeCrossfade 300ms ease-out both",
+        plaqueFlicker:   "plaqueFlicker 6s infinite",
       },
       keyframes: {
         tw: {

@@ -9,6 +9,8 @@ import type {
   Match,
   Note,
   PurchaseResponse,
+  Room,
+  RoomTheme,
   ShopItem,
   StreetUser,
   User,
@@ -196,5 +198,21 @@ export const equipmentApi = {
       method: "PUT",
       body: { vehicle_item_id: vehicleItemId },
     });
+  },
+};
+
+// ── rooms (Phase 4) ────────────────────────────────────
+export const roomApi = {
+  /** Fetch the current user's room. First call lazy-creates it server-side. */
+  getMine() {
+    return apiFetch<Room>("/api/v1/me/room", { method: "GET" });
+  },
+  /** Update the room's name and/or theme. Omitted fields stay unchanged. */
+  updateMine(patch: { name?: string; theme?: RoomTheme }) {
+    return apiFetch<Room>("/api/v1/me/room", { method: "PUT", body: patch });
+  },
+  /** Read any room by id. Phase 4 returns 403 unless caller is the owner. */
+  getById(roomId: string) {
+    return apiFetch<Room>(`/api/v1/rooms/${roomId}`, { method: "GET" });
   },
 };

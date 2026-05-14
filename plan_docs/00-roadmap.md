@@ -124,7 +124,7 @@
 
 ---
 
-### Phase 4 — Room model (空房間)　〔PENDING〕
+### Phase 4 — Room model (空房間)　〔IN-PROGRESS〕
 
 **Deliverable**: 每個使用者自動擁有一間空房，可以進去 (只有自己)。
 

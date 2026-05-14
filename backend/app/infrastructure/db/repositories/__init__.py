@@ -5,6 +5,7 @@ from app.infrastructure.db.repositories.note_repo import SqlNoteRepo
 from app.infrastructure.db.repositories.password_reset_token_repo import (
     SqlPasswordResetTokenRepo,
 )
+from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
 from app.infrastructure.db.repositories.shop_item_price_repo import SqlShopItemPriceRepo
 from app.infrastructure.db.repositories.shop_repo import SqlShopRepo
 from app.infrastructure.db.repositories.user_item_repo import SqlUserItemRepo
@@ -20,6 +21,7 @@ __all__ = [
     "SqlMatchRepo",
     "SqlNoteRepo",
     "SqlPasswordResetTokenRepo",
+    "SqlRoomRepo",
     "SqlShopItemPriceRepo",
     "SqlShopRepo",
     "SqlUserItemRepo",
