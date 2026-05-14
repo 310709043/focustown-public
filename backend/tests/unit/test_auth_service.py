@@ -1,58 +1,22 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any
 
 import pytest
 
 from app.core.exceptions import AuthError, NotFoundError, ValidationError
 from app.core.security import hash_password
 from app.domain.models import User
-from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
 from app.domain.services.auth_service import AuthService
-from app.infrastructure.auth.providers.base import AuthProvider, Principal, TokenPair
-from tests.unit.fakes import FakeClock, FakeIdGen, FakeUserRepo
+from tests.unit.fakes import (
+    FakeAuthProvider,
+    FakeClock,
+    FakeIdGen,
+    FakeShopRepo,
+    FakeUserRepo,
+)
 
 TERMS_VERSION_CURRENT = "2026-05-14"
-
-
-@dataclass
-class FakeAuthProvider(AuthProvider):
-    """Hands back deterministic, user-id-derived tokens so tests can assert."""
-
-    issued: list[str] = field(default_factory=list)
-
-    async def issue_tokens(self, *, user_id: str) -> TokenPair:
-        self.issued.append(user_id)
-        return TokenPair(
-            access_token=f"at:{user_id}", refresh_token=f"rt:{user_id}"
-        )
-
-    async def refresh(self, refresh_token: str) -> TokenPair:
-        raise NotImplementedError
-
-    async def verify_access_token(self, token: str) -> Principal:
-        raise NotImplementedError
-
-
-@dataclass
-class FakeShopRepo(IShopRepo):
-    metas: dict[str, dict[str, Any]] = field(default_factory=dict)
-
-    async def list_all(self) -> list[ShopItemRecord]:
-        return []
-
-    async def list_by_category(self, category: str) -> list[ShopItemRecord]:
-        return []
-
-    async def get_by_id(self, item_id: str) -> ShopItemRecord | None:
-        return None
-
-    async def get_render_metas(
-        self, item_ids: list[str]
-    ) -> dict[str, dict[str, Any] | None]:
-        return {i: self.metas.get(i) for i in item_ids}
 
 
 def _make_service(
@@ -224,7 +188,7 @@ async def test_me_returns_user_with_vehicle_when_equipped():
     seeded: User = users.users["u1"]
     seeded.equipped_vehicle_item_id = "car1"
     shop = FakeShopRepo(
-        metas={
+        render_metas={
             "car1": {
                 "icon": "🚗",
                 "body_color": "#abc123",

@@ -2,111 +2,19 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import UTC, datetime
-from typing import Any
 
 import pytest
 
 from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
-from app.core.sentinels import UNSET, UnsetType
 from app.domain.models import User
-from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
-from app.domain.repositories.user_item_repo import IUserItemRepo
-from app.domain.repositories.user_repo import IUserRepo
+from app.domain.repositories.shop_repo import ShopItemRecord
 from app.domain.services.equipment_service import (
     EquipmentService,
     VehicleRenderMeta,
 )
+from tests.unit.fakes import FakeShopRepo, FakeUserItemRepo, FakeUserRepo
 
-# ── Fakes ──────────────────────────────────────────────────────────────────
-
-class FakeUserRepo(IUserRepo):
-    def __init__(self, users: list[User]):
-        self._by_id = {u.id: u for u in users}
-        self.updates: list[dict[str, Any]] = []
-
-    async def get_by_id(self, user_id):
-        return self._by_id.get(user_id)
-
-    async def get_credentials_by_email(self, email):
-        return None
-
-    async def create(self, **kwargs) -> User:
-        raise NotImplementedError
-
-    async def update_profile(self, **kwargs) -> User:
-        raise NotImplementedError
-
-    async def list_recent(self, *, limit):
-        return list(self._by_id.values())[:limit]
-
-    async def get_many_by_ids(self, user_ids):
-        return [self._by_id[u] for u in user_ids if u in self._by_id]
-
-    async def update_equipment(
-        self,
-        *,
-        user_id,
-        equipped_vehicle_item_id: str | None | UnsetType = UNSET,
-        equipped_avatar_item_id: str | None | UnsetType = UNSET,
-    ) -> User:
-        u = self._by_id[user_id]
-        self.updates.append(
-            {
-                "user_id": user_id,
-                "vehicle": equipped_vehicle_item_id,
-                "avatar": equipped_avatar_item_id,
-            }
-        )
-        new = replace(
-            u,
-            equipped_vehicle_item_id=(
-                u.equipped_vehicle_item_id
-                if isinstance(equipped_vehicle_item_id, UnsetType)
-                else equipped_vehicle_item_id
-            ),
-            equipped_avatar_item_id=(
-                u.equipped_avatar_item_id
-                if isinstance(equipped_avatar_item_id, UnsetType)
-                else equipped_avatar_item_id
-            ),
-        )
-        self._by_id[user_id] = new
-        return new
-
-
-class FakeUserItemRepo(IUserItemRepo):
-    def __init__(self, ownerships: set[tuple[str, str]]):
-        self._owned = ownerships
-
-    async def insert(self, **kwargs):
-        raise NotImplementedError
-
-    async def list_for_user(self, user_id):
-        return []
-
-    async def owns(self, *, user_id, shop_item_id):
-        return (user_id, shop_item_id) in self._owned
-
-
-class FakeShopRepo(IShopRepo):
-    def __init__(self, items: list[ShopItemRecord]):
-        self._by_id = {i.id: i for i in items}
-
-    async def list_all(self):
-        return list(self._by_id.values())
-
-    async def list_by_category(self, category):
-        return [i for i in self._by_id.values() if i.category == category]
-
-    async def get_by_id(self, item_id):
-        return self._by_id.get(item_id)
-
-    async def get_render_metas(self, item_ids):
-        return {
-            i.id: i.render_meta
-            for i in self._by_id.values()
-            if i.id in item_ids
-        }
+# ── Fakes/fixtures ─────────────────────────────────────────────────────────
 
 
 def _user(user_id="u1") -> User:
@@ -143,9 +51,9 @@ def _make(
     ownerships: set[tuple[str, str]],
 ) -> EquipmentService:
     return EquipmentService(
-        users=FakeUserRepo(users),
-        user_items=FakeUserItemRepo(ownerships),
-        shop=FakeShopRepo(items),
+        users=FakeUserRepo.from_users(users),
+        user_items=FakeUserItemRepo(owned=ownerships),
+        shop=FakeShopRepo(items=items),
     )
 
 
