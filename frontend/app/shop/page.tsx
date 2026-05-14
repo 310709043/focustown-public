@@ -174,7 +174,7 @@ export default function ShopPage() {
       </header>
       <div className="flex-1 overflow-y-auto p-4">
         <div className="text-[10px] text-muted mb-1">★ FOCUS+ 訂閱方案</div>
-        <div className="bg-card border-[1.5px] border-accent-1 rounded-lg p-5 flex flex-col gap-2 mb-4">
+        <div className="pixel-panel p-5 flex flex-col gap-2 mb-4">
           <div className="flex justify-between items-start">
             <div
               className="font-pixel text-[9px]"
@@ -219,13 +219,24 @@ export default function ShopPage() {
                     <div
                       key={it.id}
                       className={clsx(
-                        "bg-card border rounded-lg p-3 flex flex-col gap-1.5 transition-all relative",
-                        owned
-                          ? "border-teal/40 bg-teal/5"
-                          : it.featured
-                            ? "border-pink bg-pink/5 hover:-translate-y-0.5"
-                            : "border-border hover:-translate-y-0.5",
+                        "pixel-panel p-3 flex flex-col gap-1.5 transition-all relative",
+                        !owned && "hover:-translate-y-0.5",
                       )}
+                      style={
+                        owned
+                          ? {
+                              boxShadow:
+                                "0 0 0 2px var(--bg), 0 0 0 3px var(--teal), 0 12px 30px rgba(0,0,0,0.6)",
+                              background: "rgba(52,211,153,0.05)",
+                            }
+                          : it.featured
+                            ? {
+                                boxShadow:
+                                  "0 0 0 2px var(--bg), 0 0 0 3px var(--pink), 0 12px 30px rgba(0,0,0,0.6)",
+                                background: "rgba(244,114,182,0.05)",
+                              }
+                            : undefined
+                      }
                     >
                       <div className="text-2xl">{it.icon}</div>
                       <div className="text-[12px] flex items-center gap-1.5 flex-wrap">
