@@ -15,10 +15,12 @@ from app.core.ids import IIdGenerator, UUID4Generator
 from app.domain.notifications import INotificationService
 from app.domain.rate_limit import IRateLimiter
 from app.domain.repositories.presence import IPresenceTracker
+from app.domain.repositories.realtime import IRealtimePublisher
 from app.infrastructure.auth.providers.base import AuthProvider
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.session import get_session_factory
+from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.messaging.ws_manager import WSManager
 from app.infrastructure.notifications.log_notifier import LogNotifier
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
@@ -95,6 +97,19 @@ def get_presence_tracker(clock: ClockDep) -> IPresenceTracker:
 
 
 PresenceTrackerDep = Annotated[IPresenceTracker, Depends(get_presence_tracker)]
+
+
+def get_realtime_publisher() -> IRealtimePublisher:
+    """Single wire point for realtime publishing.
+
+    Routers / services depend on the ``IRealtimePublisher`` Protocol so
+    swapping the backend (Redis → Kafka / NATS / ...) only touches this
+    factory.
+    """
+    return RedisPubSubPublisher(get_redis())
+
+
+RealtimePublisherDep = Annotated[IRealtimePublisher, Depends(get_realtime_publisher)]
 
 
 async def get_current_user_id(
