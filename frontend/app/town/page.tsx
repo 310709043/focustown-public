@@ -25,6 +25,7 @@ import { CarsLane } from "@/components/scene/CarsLane";
 import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
 import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
+import { FrameTicker } from "@/components/pixel/FrameTicker";
 import { TownNavbar } from "@/components/chrome/TownNavbar";
 import { TickerBar } from "@/components/chrome/TickerBar";
 import { VenueCards } from "@/components/scene/VenueCards";
@@ -160,6 +161,7 @@ export default function TownPage() {
   const sceneIsWet = currentScene === "rain" || currentScene === "storm";
 
   return (
+    <FrameTicker>
     <main className="absolute inset-0 flex flex-col overflow-hidden">
       <TownNavbar />
 
@@ -232,5 +234,6 @@ export default function TownPage() {
 
       <MatchModal open={matchOpen} onClose={() => setMatchOpen(false)} />
     </main>
+    </FrameTicker>
   );
 }

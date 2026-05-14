@@ -27,11 +27,21 @@ export function StreetProps() {
   const [catFlip, setCatFlip] = useState(false);
 
   useEffect(() => {
+    // Throttle to 30fps. The cat walks at 0.04% per frame; at 60fps the
+    // state setter fires 60 times/sec for no visible benefit. 30fps still
+    // animates smoothly because the per-frame delta is tiny.
+    const FRAME_MS = 1000 / 30;
     let raf: number | undefined;
+    let last = 0;
     let lastX = 10;
     let dir = 1;
 
-    const tick = () => {
+    const tick = (t: number) => {
+      if (t - last < FRAME_MS) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      last = t;
       lastX += dir * CAT_SPEED;
       if (lastX > 92) {
         dir = -1;
