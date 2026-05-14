@@ -1,8 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
-
-import { PixelWord } from "@/components/pixel/PixelWord";
 
 const SESSION_FLAG = "ft.splash.seen";
 const HIDE_DELAY_MS = 1100;
@@ -70,7 +69,19 @@ export function SplashGate() {
         pointerEvents: hiding ? "none" : "auto",
       }}
     >
-      <PixelWord text="FOCUSTOWN" color="var(--a2)" glow="var(--a3)" scale={6} />
+      <Image
+        src="/logo.png"
+        alt="Focus Town"
+        width={160}
+        height={160}
+        priority
+        style={{
+          width: 160,
+          height: "auto",
+          filter:
+            "drop-shadow(0 0 12px var(--a1)) drop-shadow(0 0 28px var(--a3))",
+        }}
+      />
       <div className="font-pixel-en" style={{ color: "var(--muted)", letterSpacing: "0.2em", fontSize: 12 }}>
         LOADING THE TOWN…
       </div>

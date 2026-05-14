@@ -1,6 +1,6 @@
 "use client";
 
-import { PixelWord } from "@/components/pixel/PixelWord";
+import Image from "next/image";
 
 type Props = {
   scale?: number;
@@ -8,20 +8,34 @@ type Props = {
   className?: string;
 };
 
-// `scale=1` legacy = 40px square PNG. The pixel wordmark is 7 rows tall
-// at scale=1, so we multiply by 3 to land in a similar visual weight.
-// Hero-size callers pass higher `scale` values (e.g. splash hero passes 5).
-const PIXEL_SCALE_MULTIPLIER = 3;
+const BASE_HEIGHT = 40;
 
+/**
+ * FocusTown brand mark. Renders `/logo.png` from the public folder.
+ * `scale` multiplies the base 40px height linearly; `glow` toggles the
+ * accent drop-shadow halo.
+ *
+ * Used by the splash hero (`scale=5`), the town navbar (`scale=1.4`), and
+ * the character-select header (`scale=1.6`). Public API is preserved
+ * across implementation changes so call sites never need to update.
+ */
 export function Logo({ scale = 1, glow = true, className }: Props) {
-  const pixelScale = Math.max(2, Math.round(scale * PIXEL_SCALE_MULTIPLIER));
+  const size = Math.round(BASE_HEIGHT * scale);
   return (
-    <PixelWord
-      text="FocusTown"
-      color="var(--a2)"
-      glow={glow ? "var(--a3)" : null}
-      scale={pixelScale}
+    <Image
+      src="/logo.png"
+      alt="Focus Town"
+      width={size}
+      height={size}
+      priority
       className={className}
+      style={{
+        height: size,
+        width: "auto",
+        filter: glow
+          ? "drop-shadow(0 0 6px var(--a1)) drop-shadow(0 0 12px var(--a3))"
+          : "none",
+      }}
     />
   );
 }
