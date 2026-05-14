@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { clsx } from "clsx";
 import { ApiError } from "@/lib/api/client";
-import { tracksApi } from "@/lib/api/endpoints";
+import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";
+import { useAuthStore } from "@/lib/state/authStore";
 import type { Track } from "@/lib/api/types.gen";
 
 const MOOD_TABS: { key: string; label: string }[] = [
@@ -14,8 +15,12 @@ const MOOD_TABS: { key: string; label: string }[] = [
   { key: "rain", label: "🌧rain" },
 ];
 
+type Source = "room" | "library";
+
 export function MusicPanel() {
+  const { user } = useAuthStore();
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [source, setSource] = useState<Source>("library");
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [mood, setMood] = useState<string>("all");
@@ -25,23 +30,46 @@ export function MusicPanel() {
   useEffect(() => {
     let cancelled = false;
     setError(null);
-    const filter = mood === "all" ? undefined : mood;
-    tracksApi
-      .list(filter)
-      .then((rows) => {
+
+    async function load() {
+      // Prefer the authenticated user's room playlist when non-empty;
+      // fall back to the global library (Phase 6) otherwise. The source
+      // switch is silent (no UI toggle) — Phase 9 will add UI surface
+      // for in-room playback controls.
+      if (user) {
+        try {
+          const playlist = await roomTracksApi.list();
+          if (cancelled) return;
+          if (playlist.length > 0) {
+            setTracks(playlist.map((p) => p.track));
+            setSource("room");
+            setIdx(0);
+            setPlaying(false);
+            return;
+          }
+        } catch {
+          // fall through to global library
+        }
+      }
+      const filter = mood === "all" ? undefined : mood;
+      try {
+        const rows = await tracksApi.list(filter);
         if (cancelled) return;
         setTracks(rows);
+        setSource("library");
         setIdx(0);
         setPlaying(false);
-      })
-      .catch((e) => {
+      } catch (e) {
         if (cancelled) return;
         setError(e instanceof ApiError ? e.message : "load_failed");
-      });
+      }
+    }
+
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [mood]);
+  }, [mood, user]);
 
   const current: Track | null = tracks[idx] ?? null;
 
@@ -73,7 +101,9 @@ export function MusicPanel() {
   return (
     <div className="panel relative overflow-hidden flex flex-col gap-1 px-2.5 py-2 bg-card border border-border rounded">
       <div className="flex items-center justify-between">
-        <div className="text-[10px] text-muted">🎵 音樂</div>
+        <div className="text-[10px] text-muted">
+          🎵 音樂{source === "room" ? " · 房間" : ""}
+        </div>
         <div className="flex items-end gap-0.5 h-4">
           {Array.from({ length: 14 }).map((_, i) => {
             const h = 3 + Math.random() * 13;

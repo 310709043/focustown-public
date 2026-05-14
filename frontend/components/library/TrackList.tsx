@@ -10,6 +10,11 @@ type Props = {
   tracks: Track[];
   currentUserId: string | null;
   onDeleted: (trackId: string) => void;
+  /** Track ids currently in the signed-in user's room playlist. Empty
+   *  set when not logged in. */
+  inPlaylist: Set<string>;
+  onAddToRoom: (trackId: string) => void | Promise<void>;
+  onRemoveFromRoom: (trackId: string) => void | Promise<void>;
 };
 
 function formatBytes(n: number): string {
@@ -18,9 +23,17 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function TrackList({ tracks, currentUserId, onDeleted }: Props) {
+export function TrackList({
+  tracks,
+  currentUserId,
+  onDeleted,
+  inPlaylist,
+  onAddToRoom,
+  onRemoveFromRoom,
+}: Props) {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [playlistBusyId, setPlaylistBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
 
@@ -56,6 +69,24 @@ export function TrackList({ tracks, currentUserId, onDeleted }: Props) {
       setError(msg);
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleTogglePlaylist(trackId: string) {
+    if (playlistBusyId) return;
+    setPlaylistBusyId(trackId);
+    setError(null);
+    try {
+      if (inPlaylist.has(trackId)) {
+        await onRemoveFromRoom(trackId);
+      } else {
+        await onAddToRoom(trackId);
+      }
+    } catch (e) {
+      const msg = e instanceof ApiError ? e.message : "playlist_failed";
+      setError(msg);
+    } finally {
+      setPlaylistBusyId(null);
     }
   }
 
@@ -101,6 +132,26 @@ export function TrackList({ tracks, currentUserId, onDeleted }: Props) {
                   {t.mood} · {formatBytes(t.file_size_bytes)}
                 </div>
               </div>
+              {currentUserId !== null && (
+                <button
+                  type="button"
+                  onClick={() => handleTogglePlaylist(t.id)}
+                  disabled={playlistBusyId === t.id}
+                  className={clsx(
+                    "text-[10px] px-1.5 py-0.5 border rounded disabled:opacity-50",
+                    inPlaylist.has(t.id)
+                      ? "border-accent-1 text-accent-1 hover:border-red-400 hover:text-red-400"
+                      : "border-border text-muted hover:border-accent-1 hover:text-accent-1",
+                  )}
+                  aria-pressed={inPlaylist.has(t.id)}
+                >
+                  {playlistBusyId === t.id
+                    ? "…"
+                    : inPlaylist.has(t.id)
+                      ? "✓ 房間"
+                      : "+ 加入房間"}
+                </button>
+              )}
               {mine && (
                 <button
                   type="button"

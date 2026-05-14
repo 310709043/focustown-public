@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
-import { tracksApi } from "@/lib/api/endpoints";
+import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";
 import type { Track } from "@/lib/api/types.gen";
 import { useAuthStore } from "@/lib/state/authStore";
 import { MoodTabs, type MoodKey } from "@/components/library/MoodTabs";
@@ -18,6 +18,7 @@ export default function LibraryPage() {
   const [mood, setMood] = useState<MoodKey>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inPlaylist, setInPlaylist] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -45,12 +46,51 @@ export default function LibraryPage() {
     };
   }, [mood]);
 
+  useEffect(() => {
+    if (!user) {
+      setInPlaylist(new Set());
+      return;
+    }
+    let cancelled = false;
+    roomTracksApi
+      .list()
+      .then((rows) => {
+        if (!cancelled) setInPlaylist(new Set(rows.map((r) => r.track_id)));
+      })
+      .catch(() => {
+        if (!cancelled) setInPlaylist(new Set());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   function handleUploaded(track: Track) {
     setTracks((prev) => [track, ...prev]);
   }
 
   function handleDeleted(trackId: string) {
     setTracks((prev) => prev.filter((t) => t.id !== trackId));
+    setInPlaylist((prev) => {
+      if (!prev.has(trackId)) return prev;
+      const next = new Set(prev);
+      next.delete(trackId);
+      return next;
+    });
+  }
+
+  async function handleAddToRoom(trackId: string) {
+    await roomTracksApi.add(trackId);
+    setInPlaylist((prev) => new Set(prev).add(trackId));
+  }
+
+  async function handleRemoveFromRoom(trackId: string) {
+    await roomTracksApi.remove(trackId);
+    setInPlaylist((prev) => {
+      const next = new Set(prev);
+      next.delete(trackId);
+      return next;
+    });
   }
 
   return (
@@ -98,6 +138,9 @@ export default function LibraryPage() {
           tracks={tracks}
           currentUserId={user?.id ?? null}
           onDeleted={handleDeleted}
+          inPlaylist={inPlaylist}
+          onAddToRoom={handleAddToRoom}
+          onRemoveFromRoom={handleRemoveFromRoom}
         />
       )}
     </div>
