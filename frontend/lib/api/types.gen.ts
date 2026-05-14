@@ -172,3 +172,19 @@ export type Room = {
   created_at: string;
   updated_at: string;
 };
+
+// ── Phase 6 Tier-2: track library ───────────────────────────────────────────
+export type TrackMood = "lofi" | "jazz" | "rain" | "ambient";
+
+export type Track = {
+  id: string;
+  title: string;
+  artist: string | null;
+  mood: string;                 // TrackMood at the edge; string in transport
+  duration_ms: number | null;
+  content_type: string;
+  file_size_bytes: number;
+  license: string | null;
+  uploaded_by_user_id: string;
+  created_at: string;
+};

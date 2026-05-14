@@ -52,13 +52,22 @@ export async function apiFetch<T>(
   opts: ApiFetchOptions = {},
 ): Promise<T> {
   const { body, auth = true, headers, ...rest } = opts;
+
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const baseHeaders: Record<string, string> = { ...(headers as Record<string, string> ?? {}) };
+  // Let the browser set the multipart boundary itself when sending FormData.
+  if (!isFormData && !baseHeaders["content-type"] && !baseHeaders["Content-Type"]) {
+    baseHeaders["content-type"] = "application/json";
+  }
+
   const init: RequestInit = {
     ...rest,
-    headers: {
-      "content-type": "application/json",
-      ...(headers ?? {}),
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    headers: baseHeaders,
+    body: isFormData
+      ? (body as FormData)
+      : body !== undefined
+        ? JSON.stringify(body)
+        : undefined,
   };
 
   if (auth) {
