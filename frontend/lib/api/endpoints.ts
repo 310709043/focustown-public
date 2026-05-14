@@ -7,8 +7,13 @@ import type {
   LeaderboardEntry,
   Match,
   Note,
+  PurchaseResponse,
   ShopItem,
+  StreetUser,
   User,
+  UserItem,
+  Wallet,
+  WalletTransaction,
 } from "./types.gen";
 
 // ── auth ───────────────────────────────────────────────
@@ -120,5 +125,43 @@ export const shopApi = {
   list(category?: string) {
     const qs = category ? `?category=${encodeURIComponent(category)}` : "";
     return apiFetch<ShopItem[]>(`/api/v1/shop${qs}`, { method: "GET", auth: false });
+  },
+};
+
+// ── presence ───────────────────────────────────────────
+export const presenceApi = {
+  /** Snapshot of who is currently walking the street (cap to N visible). */
+  listStreet(cap = 12) {
+    return apiFetch<StreetUser[]>(`/api/v1/presence/street?cap=${cap}`, {
+      method: "GET",
+    });
+  },
+};
+
+// ── wallet / items / purchase ──────────────────────────
+export const walletApi = {
+  list() {
+    return apiFetch<Wallet[]>("/api/v1/me/wallet", { method: "GET" });
+  },
+  transactions(limit = 20) {
+    return apiFetch<WalletTransaction[]>(
+      `/api/v1/me/wallet/transactions?limit=${limit}`,
+      { method: "GET" },
+    );
+  },
+};
+
+export const userItemsApi = {
+  list() {
+    return apiFetch<UserItem[]>("/api/v1/me/items", { method: "GET" });
+  },
+};
+
+export const purchaseApi = {
+  buy(itemId: string, currencyCode = "T") {
+    return apiFetch<PurchaseResponse>(`/api/v1/shop/items/${itemId}/purchase`, {
+      method: "POST",
+      body: { currency_code: currencyCode },
+    });
   },
 };

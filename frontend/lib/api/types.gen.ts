@@ -74,12 +74,58 @@ export type Achievement = {
   description: string;
 };
 
+export type ShopItemPrice = {
+  currency_code: string;       // "T" | "TWD" | ...
+  amount_minor: number;        // integer in minor units (T -> centiT, TWD -> NTD cents)
+};
+
 export type ShopItem = {
   id: string;
   category: string;
   icon: string;
   name: string;
   description: string;
-  price_cents: number;
+  price_cents: number;          // legacy field — kept for backward compat
   featured: boolean;
+  prices: ShopItemPrice[];      // Phase 2: multi-currency prices
+};
+
+export type StreetUser = {
+  id: string;
+  display_name: string;
+  character_key: string | null;
+  status: string;
+};
+
+// ── Phase 2: wallet + items ────────────────────────────────────────────────
+export type Wallet = {
+  currency_code: string;
+  balance_minor: number;
+};
+
+export type WalletTransaction = {
+  id: string;
+  currency_code: string;
+  delta_minor: number;
+  reason: string;
+  ref_type: string | null;
+  ref_id: string | null;
+  balance_after_minor: number;
+  created_at: string;
+};
+
+export type UserItem = {
+  id: string;
+  shop_item_id: string;
+  acquired_via: string;
+  acquired_at: string;
+};
+
+export type PurchaseResponse = {
+  item_id: string;
+  transaction_id: string;
+  currency_code: string;
+  new_balance_minor: number;
+  delta_minor: number;
+  acquired_at: string;
 };

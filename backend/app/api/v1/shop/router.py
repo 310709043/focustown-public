@@ -4,18 +4,101 @@ from dataclasses import asdict
 
 from fastapi import APIRouter
 
-from app.api.v1.shop.schemas import ShopItemResponse
-from app.core.deps import DbDep
-from app.infrastructure.db.repositories import SqlShopRepo
+from app.api.v1.shop.schemas import (
+    PurchaseRequest,
+    PurchaseResponse,
+    ShopItemPriceResponse,
+    ShopItemResponse,
+)
+from app.core.deps import ClockDep, CurrentUserId, DbDep, IdGenDep
+from app.domain.repositories.shop_repo import ShopItemRecord
+from app.domain.services.purchase_service import PurchaseService
+from app.domain.services.wallet_service import WalletService
+from app.infrastructure.cache.redis_client import get_redis
+from app.infrastructure.db.repositories import (
+    SqlShopItemPriceRepo,
+    SqlShopRepo,
+    SqlUserItemRepo,
+    SqlWalletRepo,
+    SqlWalletTransactionRepo,
+)
+from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 router = APIRouter()
 
 
+def _item_to_response(
+    item: ShopItemRecord,
+    prices: list[ShopItemPriceResponse],
+) -> ShopItemResponse:
+    payload = asdict(item)
+    payload["prices"] = prices
+    return ShopItemResponse(**payload)
+
+
 @router.get("", response_model=list[ShopItemResponse])
-async def list_items(db: DbDep, category: str | None = None) -> list[ShopItemResponse]:
+async def list_items(
+    db: DbDep, category: str | None = None
+) -> list[ShopItemResponse]:
     repo = SqlShopRepo(db)
+    prices_repo = SqlShopItemPriceRepo(db)
     items = (
         await repo.list_by_category(category) if category else await repo.list_all()
     )
-    # ShopItemRecord is a slots=True dataclass → no __dict__; use asdict().
-    return [ShopItemResponse(**asdict(i)) for i in items]
+    price_map = await prices_repo.list_for_items([i.id for i in items])
+    return [
+        _item_to_response(
+            i,
+            [
+                ShopItemPriceResponse(
+                    currency_code=p.currency_code,
+                    amount_minor=p.amount_minor,
+                )
+                for p in price_map.get(i.id, [])
+            ],
+        )
+        for i in items
+    ]
+
+
+@router.post(
+    "/items/{item_id}/purchase",
+    response_model=PurchaseResponse,
+    status_code=201,
+)
+async def purchase_item(
+    item_id: str,
+    payload: PurchaseRequest,
+    user_id: CurrentUserId,
+    db: DbDep,
+    clock: ClockDep,
+    ids: IdGenDep,
+) -> PurchaseResponse:
+    publisher = RedisPubSubPublisher(get_redis())
+    wallet_service = WalletService(
+        wallets=SqlWalletRepo(db),
+        transactions=SqlWalletTransactionRepo(db),
+        publisher=publisher,
+        ids=ids,
+        clock=clock,
+    )
+    svc = PurchaseService(
+        shop=SqlShopRepo(db),
+        prices=SqlShopItemPriceRepo(db),
+        user_items=SqlUserItemRepo(db),
+        wallet_service=wallet_service,
+        ids=ids,
+    )
+    result = await svc.purchase(
+        user_id=user_id,
+        shop_item_id=item_id,
+        currency_code=payload.currency_code,
+    )
+    return PurchaseResponse(
+        item_id=result.item.id,
+        transaction_id=result.transaction.id,
+        currency_code=result.transaction.currency_code,
+        new_balance_minor=result.new_balance_minor,
+        delta_minor=result.transaction.delta_minor,
+        acquired_at=result.transaction.created_at,
+    )

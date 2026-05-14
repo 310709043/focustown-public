@@ -1,12 +1,27 @@
 import { config } from "../config";
 import { tokenStore } from "../api/client";
 
+export type PresenceStateValue = "on_street" | "in_room" | "offline";
+
 export type WsMessage =
   | { type: "chat"; room_id: string; from: string; text: string }
   | { type: "match.proposed"; match_id: string; from: string; compatibility: number }
   | { type: "match.accepted"; match_id: string }
   | { type: "session.completed"; session_id: string }
   | { type: "presence"; user_id: string; status: string }
+  | {
+      type: "presence.changed";
+      user_id: string;
+      state?: PresenceStateValue;
+      status?: string;
+    }
+  | {
+      type: "wallet.updated";
+      currency_code: string;
+      balance_minor: number;
+      delta_minor: number;
+      reason: string;
+    }
   | { type: string; [k: string]: unknown };
 
 type Listener = (msg: WsMessage) => void;

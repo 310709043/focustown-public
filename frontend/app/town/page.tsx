@@ -3,9 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { presenceApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
+import { usePresenceStore } from "@/lib/state/presenceStore";
 import { useSceneStore } from "@/lib/state/sceneStore";
+import { useUserItemsStore } from "@/lib/state/userItemsStore";
+import { useWalletStore } from "@/lib/state/walletStore";
 import { findCharacter } from "@/lib/data/characters";
+import { useRealtime } from "@/lib/ws/useRealtime";
 
 import { Sky } from "@/components/scene/Sky";
 import { StarsLayer } from "@/components/scene/StarsLayer";
@@ -24,15 +29,17 @@ import { LeaderboardPanel } from "@/components/panels/LeaderboardPanel";
 import { MusicPanel } from "@/components/panels/MusicPanel";
 import { MatchModal } from "@/components/modals/MatchModal";
 import { BigFocusCTA } from "@/components/town/BigFocusCTA";
+import { CoinBadge } from "@/components/town/CoinBadge";
 
-// MVP placeholder counts for the shop lock badge until /shop API is consumed.
-const OWNED_ITEMS = 2;
-const TOTAL_ITEMS = 12;
+const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
 
 export default function TownPage() {
   const router = useRouter();
   const { user, hydrate, signOut } = useAuthStore();
   const advanceScene = useSceneStore((s) => s.advance);
+  const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
+  const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
+  const ownedItemsCount = useUserItemsStore((s) => Object.keys(s.byShopItemId).length);
   const [matchOpen, setMatchOpen] = useState(false);
 
   useEffect(() => {
@@ -44,6 +51,88 @@ export default function TownPage() {
     const id = setInterval(advanceScene, 2 * 60_000);
     return () => clearInterval(id);
   }, [advanceScene]);
+
+  // Hydrate the street view from the snapshot endpoint, then re-hydrate every
+  // 60 seconds as drift correction (in case any WS delta got dropped).
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const fetchSnapshot = async () => {
+      try {
+        const users = await presenceApi.listStreet(STREET_CAP);
+        if (!cancelled) usePresenceStore.getState().hydrate(users);
+      } catch {
+        /* surfaced as empty street; next tick will retry */
+      }
+    };
+    void fetchSnapshot();
+    const id = setInterval(fetchSnapshot, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      usePresenceStore.getState().reset();
+    };
+  }, [user]);
+
+  // Subscribe to incremental presence deltas via WebSocket. Unknown users in
+  // a delta flip pendingRehydrate, which the next effect picks up and resolves.
+  useRealtime((msg) => {
+    if (msg.type === "presence.changed") {
+      usePresenceStore.getState().applyDelta({
+        user_id: String(msg.user_id),
+        state: msg.state as never,
+        status: msg.status as string | undefined,
+      });
+    }
+  });
+
+  useEffect(() => {
+    if (!pendingRehydrate || !user) return;
+    // Debounce: coalesce burst arrivals into a single snapshot fetch.
+    const id = setTimeout(async () => {
+      try {
+        const users = await presenceApi.listStreet(STREET_CAP);
+        usePresenceStore.getState().hydrate(users);
+      } catch {
+        usePresenceStore.getState().clearPendingRehydrate();
+      }
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [pendingRehydrate, user]);
+
+  // Phase 2: hydrate wallet + owned-items, then keep wallet in sync via WS.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const sync = async () => {
+      try {
+        const [wallets, items] = await Promise.all([
+          walletApi.list(),
+          userItemsApi.list(),
+        ]);
+        if (cancelled) return;
+        useWalletStore.getState().hydrate(wallets);
+        useUserItemsStore.getState().hydrate(items);
+      } catch {
+        /* tolerate transient network glitches */
+      }
+    };
+    void sync();
+    return () => {
+      cancelled = true;
+      useWalletStore.getState().reset();
+      useUserItemsStore.getState().reset();
+    };
+  }, [user]);
+
+  useRealtime((msg) => {
+    if (msg.type === "wallet.updated") {
+      useWalletStore.getState().setBalance(
+        String(msg.currency_code),
+        Number(msg.balance_minor),
+      );
+    }
+  });
 
   const myChar = findCharacter(user?.character_key);
 
@@ -58,6 +147,22 @@ export default function TownPage() {
           <Logo scale={1.4} />
         </div>
         <div className="flex gap-2 items-center">
+          <span
+            className="rounded-md px-2.5 py-2 flex items-center gap-1.5"
+            style={{
+              background: "rgba(52,211,153,0.06)",
+              border: "1px solid rgba(52,211,153,0.35)",
+              fontSize: 12,
+              color: "var(--teal)",
+              fontFamily: "VT323, monospace",
+              letterSpacing: 0.6,
+              textShadow: "0 0 6px rgba(52,211,153,0.4)",
+            }}
+            title="目前街上的人數"
+          >
+            <span style={{ fontSize: 13 }}>👥</span>
+            <span>在線 {onlineCount}</span>
+          </span>
           <span
             className="border border-border2 rounded-md px-3 py-2 flex items-center gap-1.5"
             style={{
@@ -76,6 +181,7 @@ export default function TownPage() {
           >
             🏆 大賞區
           </Link>
+          <CoinBadge />
           <Link
             href="/shop"
             className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-pink hover:text-pink transition-colors flex items-center gap-1.5"
@@ -94,7 +200,7 @@ export default function TownPage() {
                 letterSpacing: 0.5,
               }}
             >
-              🔓 {OWNED_ITEMS}/{TOTAL_ITEMS}
+              🔓 {ownedItemsCount}
             </span>
           </Link>
           <button
