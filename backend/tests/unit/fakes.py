@@ -32,7 +32,9 @@ from app.domain.repositories.presence import (
     PresenceState,
 )
 from app.domain.repositories.room_item_repo import IRoomItemRepo
+from app.domain.models.room_playback import RoomPlayback
 from app.domain.models.room_visit import RoomVisit
+from app.domain.repositories.room_playback_repo import IRoomPlaybackRepo
 from app.domain.repositories.room_visit_repo import IRoomVisitRepo
 from app.domain.repositories.room_repo import IRoomRepo, RoomAlreadyExistsError
 from app.domain.repositories.room_track_repo import (
@@ -437,6 +439,51 @@ class FakeRoomVisitRepo(IRoomVisitRepo):
 
     async def delete(self, visit_id: str) -> None:
         self.rows.pop(visit_id, None)
+
+
+@dataclass
+class FakeRoomPlaybackRepo(IRoomPlaybackRepo):
+    """In-memory ``IRoomPlaybackRepo`` (composed reader + writer).
+
+    LSP rule: observationally identical to ``SqlRoomPlaybackRepo`` —
+    ``upsert`` keyed by ``room_id`` collapses concurrent writes to a
+    single row, ``get_by_room`` returns ``None`` when no row exists.
+    The synthesized ``id`` mirrors what the PG ``ON CONFLICT DO UPDATE``
+    keeps stable across upserts (preserved across mutations of the same
+    room_id).
+    """
+
+    rows: dict[str, RoomPlayback] = field(default_factory=dict)
+    _next_id: int = 1
+
+    async def get_by_room(self, room_id: str) -> RoomPlayback | None:
+        return self.rows.get(room_id)
+
+    async def upsert(
+        self,
+        *,
+        room_id: str,
+        current_track_id: str | None,
+        started_at_ms: int | None,
+        paused_at_ms: int | None,
+        is_playing: bool,
+    ) -> RoomPlayback:
+        existing = self.rows.get(room_id)
+        if existing is not None:
+            row_id = existing.id
+        else:
+            row_id = f"rp-{self._next_id}"
+            self._next_id += 1
+        row = RoomPlayback(
+            id=row_id,
+            room_id=room_id,
+            current_track_id=current_track_id,
+            started_at_ms=started_at_ms,
+            paused_at_ms=paused_at_ms,
+            is_playing=is_playing,
+        )
+        self.rows[room_id] = row
+        return row
 
 
 @dataclass

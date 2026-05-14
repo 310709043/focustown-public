@@ -96,3 +96,36 @@ class RoomVisitResponse(BaseModel):
     room_id: str
     visitor_user_id: str
     joined_at: datetime
+
+
+# ── Phase 9: shared playback timeline ──────────────────────────────────────
+
+
+class PlaybackChangeRequest(BaseModel):
+    """Body for ``POST /me/room/playback/change``.
+
+    Switches the current track. Server validates that ``track_id``
+    exists in the global tracks table; the playlist (room_tracks)
+    constraint is enforced by the client UI (which only surfaces
+    tracks already in the room's playlist).
+    """
+
+    track_id: str = Field(..., min_length=1, max_length=36)
+
+
+class RoomPlaybackResponse(BaseModel):
+    """The room's playback timeline state.
+
+    Timestamps are epoch milliseconds so the frontend's drift loop can
+    use ``Date.now()`` arithmetic without timezone parsing. ``track``
+    is denormalized for one-shot hydration — visitors mounting fresh
+    don't have to round-trip to ``tracksApi.get(current_track_id)``.
+    """
+
+    id: str
+    room_id: str
+    current_track_id: str | None
+    started_at_ms: int | None
+    paused_at_ms: int | None
+    is_playing: bool
+    track: TrackResponse | None

@@ -33,6 +33,7 @@ import { LockedRoom } from "@/components/town/room/LockedRoom";
 import { MissingRoom } from "@/components/town/room/MissingRoom";
 import { DecorationCanvas } from "@/components/town/room/DecorationCanvas";
 import { VisitorPanel } from "@/components/town/room/VisitorPanel";
+import { RoomAudio } from "@/components/town/room/RoomAudio";
 
 const THEMES: { key: RoomTheme; label: string; chip: string }[] = [
   { key: "dawn", label: "黎明",   chip: "🌅" },
@@ -232,7 +233,7 @@ export default function RoomPage() {
           ownerUserId={room.owner_user_id}
           currentUserId={user?.id ?? null}
         />
-        {/* slot:audio — Phase 9 mounts <audio> + sync controls here */}
+        <RoomAudio roomId={roomId} isOwner={isOwner} />
 
         {/* Theme toolbar — bottom-right, owner-only. The active chip is
             inset (pressed) so the user can see which theme is current

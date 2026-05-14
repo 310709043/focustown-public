@@ -7,14 +7,18 @@ from app.api.v1.rooms.schemas import (
     AddRoomTrackRequest,
     MoveRoomItemRequest,
     PlaceRoomItemRequest,
+    PlaybackChangeRequest,
     RoomItemResponse,
+    RoomPlaybackResponse,
     RoomResponse,
     RoomTrackResponse,
     RoomVisitResponse,
     UpdateRoomRequest,
 )
 from app.api.v1.tracks.schemas import TrackResponse
+from app.core.clock import IClock
 from app.core.deps import (
+    ClockDep,
     CurrentUserId,
     DbDep,
     IdGenDep,
@@ -26,12 +30,14 @@ from app.core.ids import IIdGenerator
 from app.core.sentinels import UNSET
 from app.domain.models.room import Room
 from app.domain.models.room_item import RoomItem
+from app.domain.models.room_playback import RoomPlayback
 from app.domain.models.room_visit import RoomVisit
 from app.domain.repositories.presence import IPresenceTracker
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.track_repo import TrackRecord
 from app.domain.services.presence_service import PresenceService
 from app.domain.services.room_decoration_service import RoomDecorationService
+from app.domain.services.room_playback_service import RoomPlaybackService
 from app.domain.services.room_service import RoomService
 from app.domain.services.room_track_service import (
     RoomTrackEntry,
@@ -40,6 +46,7 @@ from app.domain.services.room_track_service import (
 from app.domain.services.room_visit_service import RoomVisitService
 from app.infrastructure.db.repositories import (
     SqlRoomItemRepo,
+    SqlRoomPlaybackRepo,
     SqlRoomRepo,
     SqlRoomTrackRepo,
     SqlRoomVisitRepo,
@@ -127,6 +134,60 @@ def _to_visit_response(visit: RoomVisit) -> RoomVisitResponse:
         room_id=visit.room_id,
         visitor_user_id=visit.visitor_user_id,
         joined_at=visit.joined_at,
+    )
+
+
+def _room_playback_service(
+    db: AsyncSession,
+    id_gen: IIdGenerator,
+    publisher: IRealtimePublisher,
+    clock: IClock,
+) -> RoomPlaybackService:
+    """Wires the concrete adapters to the playback service.
+
+    ``SqlRoomPlaybackRepo`` implements both reader and writer protocols;
+    the same instance is passed to both slots so the service declares
+    its narrowed dependencies (ISP) without us duplicating the SQL
+    backend. ``IClock`` is injected so timeline math stays
+    deterministically testable.
+    """
+    playback = SqlRoomPlaybackRepo(db, id_gen)
+    return RoomPlaybackService(
+        rooms=SqlRoomRepo(db),
+        playback_reader=playback,
+        playback_writer=playback,
+        tracks=SqlTrackRepo(db),
+        realtime=publisher,
+        clock=clock,
+    )
+
+
+async def _to_playback_response(
+    playback: RoomPlayback | None, db: AsyncSession
+) -> RoomPlaybackResponse | None:
+    """Denormalize the playback row with embedded track metadata.
+
+    Returns ``None`` when there's no playback row (room has never been
+    played); callers translate that to a 204 or a structured "no
+    playback yet" hint. When ``current_track_id`` is set, we round-trip
+    once through ``SqlTrackRepo`` so the frontend gets a single-shot
+    hydration payload.
+    """
+    if playback is None:
+        return None
+    track_meta: TrackResponse | None = None
+    if playback.current_track_id is not None:
+        t = await SqlTrackRepo(db).get(playback.current_track_id)
+        if t is not None:
+            track_meta = _track_to_response(t)
+    return RoomPlaybackResponse(
+        id=playback.id,
+        room_id=playback.room_id,
+        current_track_id=playback.current_track_id,
+        started_at_ms=playback.started_at_ms,
+        paused_at_ms=playback.paused_at_ms,
+        is_playing=playback.is_playing,
+        track=track_meta,
     )
 
 
@@ -432,3 +493,97 @@ async def list_room_visitors(
         room_id=room_id, requester_user_id=user_id
     )
     return [_to_visit_response(v) for v in visits]
+
+
+# ── Per-room shared playback (Phase 9) ──────────────────────────────────────
+# Owner mutations live under ``me_room_router`` (owner-scoped, no room_id
+# in the path — derived from /me/room → owner's only room). Visitor reads
+# live under ``rooms_router`` because the room_id is the path subject.
+
+
+@me_room_router.post("/playback/play", response_model=RoomPlaybackResponse)
+async def play_my_room(
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+    publisher: RealtimePublisherDep,
+    clock: ClockDep,
+) -> RoomPlaybackResponse:
+    """Start or resume playback in the caller's own room.
+
+    Requires a track to have been selected first (``BusinessError(
+    "no_track_selected")`` otherwise). Idempotent: if already playing,
+    returns the current state unchanged and skips the WS broadcast.
+    """
+    room = await _service(db, id_gen).get_or_create_for_user(user_id=user_id)
+    svc = _room_playback_service(db, id_gen, publisher, clock)
+    state = await svc.play(owner_user_id=user_id, room_id=room.id)
+    response = await _to_playback_response(state, db)
+    assert response is not None  # play() always returns a state
+    return response
+
+
+@me_room_router.post(
+    "/playback/pause", response_model=RoomPlaybackResponse | None
+)
+async def pause_my_room(
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+    publisher: RealtimePublisherDep,
+    clock: ClockDep,
+) -> RoomPlaybackResponse | None:
+    """Pause playback in the caller's own room.
+
+    Returns ``null`` if nothing was playing (idempotent for the
+    "spam-pause-on-page-close" case).
+    """
+    room = await _service(db, id_gen).get_or_create_for_user(user_id=user_id)
+    svc = _room_playback_service(db, id_gen, publisher, clock)
+    state = await svc.pause(owner_user_id=user_id, room_id=room.id)
+    return await _to_playback_response(state, db)
+
+
+@me_room_router.post("/playback/change", response_model=RoomPlaybackResponse)
+async def change_my_room_track(
+    payload: PlaybackChangeRequest,
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+    publisher: RealtimePublisherDep,
+    clock: ClockDep,
+) -> RoomPlaybackResponse:
+    """Switch the current track and auto-play it from t=0."""
+    room = await _service(db, id_gen).get_or_create_for_user(user_id=user_id)
+    svc = _room_playback_service(db, id_gen, publisher, clock)
+    state = await svc.change_track(
+        owner_user_id=user_id, room_id=room.id, track_id=payload.track_id
+    )
+    response = await _to_playback_response(state, db)
+    assert response is not None
+    return response
+
+
+@rooms_router.get(
+    "/{room_id}/playback", response_model=RoomPlaybackResponse | None
+)
+async def get_room_playback(
+    room_id: str,
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+    publisher: RealtimePublisherDep,
+    clock: ClockDep,
+) -> RoomPlaybackResponse | None:
+    """Snapshot the room's playback timeline for a freshly-joining client.
+
+    Visitor-readable on public rooms; invite_only stays owner-only.
+    Returns ``null`` if the room has no playback row yet (never played).
+    """
+    if not room_id or len(room_id) > 36:
+        raise BusinessError("invalid_room_id")
+    svc = _room_playback_service(db, id_gen, publisher, clock)
+    state = await svc.get_by_room(
+        room_id=room_id, requester_user_id=user_id
+    )
+    return await _to_playback_response(state, db)

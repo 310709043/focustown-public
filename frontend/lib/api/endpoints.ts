@@ -14,6 +14,7 @@ import type {
   PurchaseResponse,
   Room,
   RoomItem,
+  RoomPlayback,
   RoomTheme,
   RoomTrack,
   RoomVisit,
@@ -303,6 +304,36 @@ export const roomTracksApi = {
   },
   remove(track_id: string) {
     return apiFetch<void>(`/api/v1/me/room/tracks/${track_id}`, { method: "DELETE" });
+  },
+};
+
+// ── room shared playback timeline (Phase 9) ────────────
+// Owner mutations live under ``/me/room/playback/*`` (no room id in the
+// path — derived from the caller's owned room). Visitor read uses
+// ``/rooms/{room_id}/playback`` for the snapshot a freshly-joining
+// listener needs to hydrate their <audio> and start drift-correcting.
+export const roomPlaybackApi = {
+  play() {
+    return apiFetch<RoomPlayback>("/api/v1/me/room/playback/play", {
+      method: "POST",
+    });
+  },
+  pause() {
+    return apiFetch<RoomPlayback | null>("/api/v1/me/room/playback/pause", {
+      method: "POST",
+    });
+  },
+  change(track_id: string) {
+    return apiFetch<RoomPlayback>("/api/v1/me/room/playback/change", {
+      method: "POST",
+      body: { track_id },
+    });
+  },
+  getByRoom(roomId: string) {
+    return apiFetch<RoomPlayback | null>(
+      `/api/v1/rooms/${roomId}/playback`,
+      { method: "GET" },
+    );
   },
 };
 
