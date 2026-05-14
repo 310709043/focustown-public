@@ -52,6 +52,16 @@ class Settings(BaseSettings):
     tracks_max_per_user: int = 10
     tracks_max_file_size_mb: int = 15
 
+    # Auth-endpoint rate limits. Centralised here so an operator can tune
+    # them per environment (e.g. relax in dev, tighten in prod) without
+    # editing router code. Defaults preserve the original hardcoded values.
+    auth_rl_signup_per_ip_per_hour: int = 10
+    auth_rl_signin_per_email_per_min: int = 5
+    auth_rl_signin_per_ip_per_hour: int = 30
+    auth_rl_forgot_per_ip_per_hour: int = 5
+    auth_rl_forgot_per_email_per_hour: int = 3
+    auth_rl_reset_per_ip_per_hour: int = 10
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.app_cors_origins.split(",") if o.strip()]

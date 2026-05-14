@@ -1,47 +1,19 @@
+"""Domain events — pure dataclasses dispatched via ``app.core.events.EventBus``.
+
+Events are grouped by feature (one module per bounded context) so adding a
+new event surface for a future feature (e.g. ``track.py`` for the upload
+library) does not bloat a single module. This ``__init__`` re-exports them
+so callers can keep writing ``from app.domain.events import X``.
+"""
+
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
-
-
-@dataclass(slots=True)
-class SessionStarted:
-    session_id: str
-    user_id: str
-    partner_user_id: str | None
-    started_at: datetime
-
-
-@dataclass(slots=True)
-class SessionCompleted:
-    session_id: str
-    user_id: str
-    partner_user_id: str | None
-    duration_seconds: int
-    ended_at: datetime
-
-
-@dataclass(slots=True)
-class SessionAbandoned:
-    session_id: str
-    user_id: str
-    ended_at: datetime
-
-
-@dataclass(slots=True)
-class MatchProposed:
-    match_id: str
-    requester_id: str
-    candidate_id: str
-    compatibility: int
-
-
-@dataclass(slots=True)
-class MatchAccepted:
-    match_id: str
-    requester_id: str
-    candidate_id: str
-
+from app.domain.events.match import MatchAccepted, MatchProposed
+from app.domain.events.session import (
+    SessionAbandoned,
+    SessionCompleted,
+    SessionStarted,
+)
 
 __all__ = [
     "MatchAccepted",

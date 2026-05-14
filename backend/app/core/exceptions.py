@@ -46,3 +46,16 @@ class InsufficientFundsError(FocusTownError):
 class BusinessError(FocusTownError):
     status_code = 400
     code = "business_error"
+
+
+class IdempotencyViolationError(FocusTownError):
+    """A previously-recorded (ref_type, ref_id) was retried.
+
+    Raised by repositories when a unique index for idempotency keys trips.
+    Services decide whether to translate this into ``ConflictError`` (user
+    action — e.g. double-purchase) or to swallow it as a silent retry
+    (event-driven award).
+    """
+
+    status_code = 409
+    code = "idempotency_violation"

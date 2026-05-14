@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from sqlalchemy.exc import IntegrityError
-
 from app.core.clock import IClock
 from app.core.exceptions import InsufficientFundsError
 from app.core.ids import IIdGenerator
@@ -23,10 +21,10 @@ class WalletService:
     failure would mean we already broadcast — acceptable since the client
     just sees one delayed-but-correct value on the next snapshot fetch.
 
-    Idempotency is enforced by the DB (partial unique index on the ledger
-    table for ``session_complete`` and ``purchase`` reasons). The service
-    re-raises ``IntegrityError`` from the inner insert so callers can
-    decide whether to treat it as a no-op (event awards) or a conflict
+    Idempotency is enforced by the repository (which translates its
+    storage-native uniqueness error into ``IdempotencyViolationError``).
+    The service re-raises that domain exception so callers can decide
+    whether to treat it as a no-op (event awards) or a conflict
     (purchase attempts).
     """
 
@@ -138,10 +136,3 @@ class WalletService:
         return txn
 
 
-def is_idempotency_violation(exc: IntegrityError) -> bool:
-    """Distinguish the wallet-ledger idempotency index from other constraint
-    violations (e.g. user_items UNIQUE). The constraint name is set in the
-    migration to ``ux_wallet_txn_idempotent``.
-    """
-    msg = str(exc.orig) if exc.orig is not None else str(exc)
-    return "ux_wallet_txn_idempotent" in msg

@@ -1,3 +1,15 @@
+"""SQLAlchemy **adapters** for the domain repository ports.
+
+These are the concrete bodies for the Protocols defined in
+``app.domain.repositories``. They are the only classes in the codebase
+that import ``sqlalchemy``. The Protocol / adapter split is intentional
+hexagonal layering — see the docstring on the sibling
+``app.domain.repositories`` package.
+
+Naming convention: a Protocol ``IFooRepo`` in domain maps to a class
+``SqlFooRepo`` here. Keep the method signatures in lock-step.
+"""
+
 from app.infrastructure.db.repositories.achievement_repo import SqlAchievementRepo
 from app.infrastructure.db.repositories.focus_session_repo import SqlFocusSessionRepo
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo

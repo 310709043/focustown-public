@@ -109,14 +109,6 @@ class FakeShopRepo(IShopRepo):
         }
 
 
-class RecordingPublisher:
-    def __init__(self):
-        self.published: list[tuple[str, dict[str, Any]]] = []
-
-    async def publish(self, channel, payload):
-        self.published.append((channel, payload))
-
-
 def _user(user_id="u1") -> User:
     return User(
         id=user_id,
@@ -149,22 +141,19 @@ def _make(
     users: list[User],
     items: list[ShopItemRecord],
     ownerships: set[tuple[str, str]],
-):
-    pub = RecordingPublisher()
-    svc = EquipmentService(
+) -> EquipmentService:
+    return EquipmentService(
         users=FakeUserRepo(users),
         user_items=FakeUserItemRepo(ownerships),
         shop=FakeShopRepo(items),
-        publisher=pub,
     )
-    return svc, pub
 
 
 # ── Tests ──────────────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_equip_owned_vehicle_succeeds_and_broadcasts():
-    svc, pub = _make(
+async def test_equip_owned_vehicle_succeeds():
+    svc = _make(
         users=[_user("u1")],
         items=[_car()],
         ownerships={("u1", "car1")},
@@ -173,24 +162,13 @@ async def test_equip_owned_vehicle_succeeds_and_broadcasts():
     user = await svc.equip_vehicle(user_id="u1", shop_item_id="car1")
 
     assert user.equipped_vehicle_item_id == "car1"
-    assert pub.published == [
-        (
-            "street",
-            {
-                "type": "presence.changed",
-                "user_id": "u1",
-                "state": "on_street",
-                "equipment_changed": True,
-            },
-        )
-    ]
 
 
 @pytest.mark.asyncio
 async def test_unequip_with_null():
     seed = _user("u1")
     seed_owned = replace(seed, equipped_vehicle_item_id="car1")
-    svc, pub = _make(
+    svc = _make(
         users=[seed_owned],
         items=[_car()],
         ownerships={("u1", "car1")},
@@ -199,12 +177,11 @@ async def test_unequip_with_null():
     user = await svc.equip_vehicle(user_id="u1", shop_item_id=None)
 
     assert user.equipped_vehicle_item_id is None
-    assert pub.published[-1][1]["equipment_changed"] is True
 
 
 @pytest.mark.asyncio
 async def test_equip_not_owned_raises_forbidden():
-    svc, _ = _make(
+    svc = _make(
         users=[_user("u1")],
         items=[_car()],
         ownerships=set(),  # alice doesn't own car1
@@ -215,7 +192,7 @@ async def test_equip_not_owned_raises_forbidden():
 
 @pytest.mark.asyncio
 async def test_equip_unknown_item_raises_not_found():
-    svc, _ = _make(
+    svc = _make(
         users=[_user("u1")],
         items=[],
         ownerships=set(),
@@ -227,7 +204,7 @@ async def test_equip_unknown_item_raises_not_found():
 @pytest.mark.asyncio
 async def test_equip_non_car_category_raises_business():
     scene = _car(item_id="scene1", category="scene")
-    svc, _ = _make(
+    svc = _make(
         users=[_user("u1")],
         items=[scene],
         ownerships={("u1", "scene1")},
@@ -238,7 +215,7 @@ async def test_equip_non_car_category_raises_business():
 
 @pytest.mark.asyncio
 async def test_resolve_vehicle_returns_meta_when_equipped():
-    svc, _ = _make(
+    svc = _make(
         users=[_user("u1")],
         items=[_car()],
         ownerships={("u1", "car1")},
@@ -251,7 +228,7 @@ async def test_resolve_vehicle_returns_meta_when_equipped():
 
 @pytest.mark.asyncio
 async def test_resolve_vehicle_none_when_unequipped():
-    svc, _ = _make(users=[_user("u1")], items=[_car()], ownerships=set())
+    svc = _make(users=[_user("u1")], items=[_car()], ownerships=set())
     assert await svc.resolve_vehicle(None) is None
 
 

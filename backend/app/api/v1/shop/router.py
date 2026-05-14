@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-
 from fastapi import APIRouter
 
 from app.api.v1.shop.schemas import (
@@ -10,11 +8,16 @@ from app.api.v1.shop.schemas import (
     ShopItemPriceResponse,
     ShopItemResponse,
 )
-from app.core.deps import ClockDep, CurrentUserId, DbDep, IdGenDep
+from app.core.deps import (
+    ClockDep,
+    CurrentUserId,
+    DbDep,
+    IdGenDep,
+    RealtimePublisherDep,
+)
 from app.domain.repositories.shop_repo import ShopItemRecord
 from app.domain.services.purchase_service import PurchaseService
 from app.domain.services.wallet_service import WalletService
-from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.repositories import (
     SqlShopItemPriceRepo,
     SqlShopRepo,
@@ -22,7 +25,6 @@ from app.infrastructure.db.repositories import (
     SqlWalletRepo,
     SqlWalletTransactionRepo,
 )
-from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 router = APIRouter()
 
@@ -31,9 +33,18 @@ def _item_to_response(
     item: ShopItemRecord,
     prices: list[ShopItemPriceResponse],
 ) -> ShopItemResponse:
-    payload = asdict(item)
-    payload["prices"] = prices
-    return ShopItemResponse(**payload)
+    # Explicit field-by-field mapping so internal-only ShopItemRecord
+    # fields (e.g. `render_meta`) cannot leak into the wire shape.
+    return ShopItemResponse(
+        id=item.id,
+        category=item.category,
+        icon=item.icon,
+        name=item.name,
+        description=item.description,
+        price_cents=item.price_cents,
+        featured=item.featured,
+        prices=prices,
+    )
 
 
 @router.get("", response_model=list[ShopItemResponse])
@@ -73,8 +84,8 @@ async def purchase_item(
     db: DbDep,
     clock: ClockDep,
     ids: IdGenDep,
+    publisher: RealtimePublisherDep,
 ) -> PurchaseResponse:
-    publisher = RedisPubSubPublisher(get_redis())
     wallet_service = WalletService(
         wallets=SqlWalletRepo(db),
         transactions=SqlWalletTransactionRepo(db),

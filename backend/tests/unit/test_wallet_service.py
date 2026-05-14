@@ -5,10 +5,9 @@ from datetime import UTC, datetime
 from typing import Any
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from app.core.clock import SystemClock
-from app.core.exceptions import InsufficientFundsError
+from app.core.exceptions import IdempotencyViolationError, InsufficientFundsError
 from app.core.ids import IIdGenerator
 from app.domain.repositories.wallet_repo import IWalletRepo, Wallet
 from app.domain.repositories.wallet_transaction_repo import (
@@ -69,19 +68,16 @@ class FakeWalletRepo(IWalletRepo):
 class FakeWalletTransactionRepo(IWalletTransactionRepo):
     def __init__(self):
         self.rows: list[WalletTransaction] = []
-        # Track idempotency keys; raise IntegrityError on duplicate insert
-        # the same way Postgres' partial unique index would.
+        # Track idempotency keys; raise IdempotencyViolationError on duplicate
+        # insert the same way the SQL adapter does when its partial unique
+        # index trips.
         self._seen: set[tuple[str, str, str, str | None, str | None]] = set()
 
     async def insert(self, *, txn_id, user_id, currency_code, delta_minor,
                      reason, ref_type, ref_id, balance_after_minor):
         key = (user_id, currency_code, reason, ref_type, ref_id)
         if reason in {"session_complete", "purchase"} and key in self._seen:
-            raise IntegrityError(
-                statement="INSERT",
-                params=None,
-                orig=Exception("ux_wallet_txn_idempotent"),
-            )
+            raise IdempotencyViolationError("wallet_ledger_idempotent")
         self._seen.add(key)
         t = WalletTransaction(
             id=txn_id, user_id=user_id, currency_code=currency_code,
@@ -178,12 +174,12 @@ async def test_debit_when_insufficient_funds_raises():
 
 
 @pytest.mark.asyncio
-async def test_idempotent_credit_same_ref_raises_integrity_second_time():
+async def test_idempotent_credit_same_ref_raises_idempotency_violation_second_time():
     svc, _, _, _ = _make_service()
 
     await svc.credit(user_id="u1", currency_code="T", amount_minor=100,
                      reason="session_complete", ref_type="focus_session", ref_id="s1")
-    with pytest.raises(IntegrityError):
+    with pytest.raises(IdempotencyViolationError):
         await svc.credit(user_id="u1", currency_code="T", amount_minor=100,
                          reason="session_complete", ref_type="focus_session", ref_id="s1")
 

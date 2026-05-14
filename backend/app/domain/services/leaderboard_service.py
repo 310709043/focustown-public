@@ -6,7 +6,7 @@ from datetime import datetime, time, timedelta
 from app.core.clock import IClock
 from app.domain.models import User
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
-from app.domain.repositories.user_repo import IUserRepo
+from app.domain.repositories.user_repo import IUserReader
 
 
 @dataclass(slots=True)
@@ -20,7 +20,7 @@ class LeaderboardService:
         self,
         *,
         sessions: IFocusSessionRepo,
-        users: IUserRepo,
+        users: IUserReader,
         clock: IClock,
     ) -> None:
         self._sessions = sessions

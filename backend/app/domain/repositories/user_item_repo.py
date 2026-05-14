@@ -25,8 +25,13 @@ class IUserItemRepo(Protocol):
         acquired_via: str,
         wallet_transaction_id: str | None,
     ) -> UserItem:
-        """Raises the underlying ``IntegrityError`` if the user already owns
-        ``shop_item_id`` (UNIQUE constraint). Callers translate that into a
+        """Insert a user→item ownership row.
+
+        Raises ``IdempotencyViolationError`` if the user already owns
+        ``shop_item_id`` (UNIQUE constraint). Adapter implementations are
+        responsible for translating their storage-native uniqueness
+        exception (e.g. SQL ``IntegrityError``) into the domain exception.
+        Callers (e.g. ``PurchaseService``) translate that into
         ``ConflictError("already_owned")``.
         """
 

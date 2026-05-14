@@ -14,10 +14,23 @@ class UserCredentials:
     password_hash: str
 
 
-class IUserRepo(Protocol):
+class IUserReader(Protocol):
+    """Read-only view over users.
+
+    Services that never write should depend on this Protocol so they
+    cannot accidentally call a mutator.
+    """
+
     async def get_by_id(self, user_id: str) -> User | None: ...
     async def get_by_email(self, email: str) -> User | None: ...
     async def get_credentials_by_email(self, email: str) -> UserCredentials | None: ...
+    async def list_recent(self, *, limit: int) -> list[User]: ...
+    async def get_many_by_ids(self, user_ids: list[str]) -> list[User]: ...
+
+
+class IUserWriter(Protocol):
+    """Write-side over users (create + targeted updates)."""
+
     async def create(
         self,
         *,
@@ -39,8 +52,6 @@ class IUserRepo(Protocol):
         role_label: str | None = None,
     ) -> User: ...
     async def update_password_hash(self, *, user_id: str, password_hash: str) -> None: ...
-    async def list_recent(self, *, limit: int) -> list[User]: ...
-    async def get_many_by_ids(self, user_ids: list[str]) -> list[User]: ...
     async def update_equipment(
         self,
         *,
@@ -48,3 +59,12 @@ class IUserRepo(Protocol):
         equipped_vehicle_item_id: str | None | UnsetType = UNSET,
         equipped_avatar_item_id: str | None | UnsetType = UNSET,
     ) -> User: ...
+
+
+class IUserRepo(IUserReader, IUserWriter, Protocol):
+    """Full user repository — composes reader + writer.
+
+    Callers that genuinely need both sides (e.g. ``PasswordResetService``)
+    depend on this; everything else should narrow to ``IUserReader`` or
+    ``IUserWriter`` per Interface Segregation.
+    """

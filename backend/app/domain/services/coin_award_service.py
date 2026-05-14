@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 
-from sqlalchemy.exc import IntegrityError
-
 from app.core.events import EventBus
+from app.core.exceptions import IdempotencyViolationError
 from app.core.logging import get_logger
 from app.domain.events import SessionCompleted
-from app.domain.services.wallet_service import WalletService, is_idempotency_violation
+from app.domain.services.wallet_service import WalletService
 
 log = get_logger(__name__)
 
@@ -83,13 +82,8 @@ class CoinAwardService:
                     ref_id=event.session_id,
                 )
                 await acquired.commit()
-            except IntegrityError as exc:
+            except IdempotencyViolationError:
                 # Same session already awarded (e.g. retry); silently skip.
                 await acquired.rollback()
-                if not is_idempotency_violation(exc):
-                    log.warning(
-                        "coin_award_integrity_unexpected",
-                        session_id=event.session_id,
-                    )
         finally:
             await acquired.close()
