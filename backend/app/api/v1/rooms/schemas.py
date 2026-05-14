@@ -83,3 +83,16 @@ class RoomTrackResponse(BaseModel):
     track_id: str
     position: int
     track: TrackResponse
+
+
+class RoomVisitResponse(BaseModel):
+    """Active visitor session row (Phase 8).
+
+    Returned by ``POST /rooms/{id}/visit`` and as elements of
+    ``GET /rooms/{id}/visitors``. ``leave`` returns 204 (no body).
+    """
+
+    id: str
+    room_id: str
+    visitor_user_id: str
+    joined_at: datetime
