@@ -43,13 +43,34 @@ export default function SignInPage() {
         onSubmit={onSubmit}
         className="pixel-panel p-6 w-full max-w-sm flex flex-col gap-3"
       >
-        <h1
-          className="font-pixel text-[10px] tracking-widest text-center mb-1"
+        {/* Decorative pixel marquee — kept tiny so it reads like a sign,
+            not a heading. The real H1 sits below at section-title scale. */}
+        <div
+          aria-hidden
+          className="font-pixel text-[10px] tracking-widest text-center mb-2 opacity-80"
           style={{ color: "var(--a2)", textShadow: "0 0 10px var(--a1)" }}
         >
-          ✦ {t("title")} ✦
+          ✦ FOCUS TOWN ✦
+        </div>
+        <h1
+          className="text-center mb-1"
+          style={{
+            fontSize: "var(--font-size-section-title)",
+            lineHeight: "var(--line-height-title)",
+            fontWeight: 500,
+            color: "var(--text)",
+            textShadow: "0 0 18px rgba(167,139,250,0.35)",
+          }}
+        >
+          {t("title")}
         </h1>
-        <p className="text-[11px] text-muted text-center mb-2 leading-relaxed">
+        <p
+          className="text-muted text-center mb-3"
+          style={{
+            fontSize: "var(--font-size-label)",
+            lineHeight: "var(--line-height-body)",
+          }}
+        >
           {t("subtitle")}
         </p>
         <label className="sr-only" htmlFor="signin-email">
@@ -64,6 +85,8 @@ export default function SignInPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="pixel-input"
+          // Override .pixel-input's 13px so iOS Safari does not zoom on focus.
+          style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4 }}
           autoComplete="email"
         />
         <label className="sr-only" htmlFor="signin-password">
@@ -85,13 +108,13 @@ export default function SignInPage() {
             role="alert"
             className="font-japan"
             style={{
-              fontSize: 14,
+              fontSize: "var(--font-size-label)",
+              lineHeight: 1.5,
               color: "#fecaca",
               background: "rgba(220,38,38,0.18)",
               border: "1px solid rgba(248,113,113,0.6)",
               borderRadius: 6,
               padding: "10px 12px",
-              lineHeight: 1.4,
               textShadow: "0 0 6px rgba(248,113,113,0.8)",
               boxShadow: "0 0 18px rgba(220,38,38,0.25)",
             }}
@@ -109,7 +132,10 @@ export default function SignInPage() {
         >
           {loading ? t("loadingCta") : `${t("submitCta")} ▶`}
         </button>
-        <div className="flex justify-between text-[10px]">
+        <div
+          className="flex justify-between gap-3 mt-1"
+          style={{ fontSize: "var(--font-size-label)" }}
+        >
           <Link href="/signup" className="text-muted hover:text-accent-2">
             {t("toggleToSignup")}
           </Link>

@@ -34,7 +34,13 @@ export function LegalLayout({ active, toc, children }: Props) {
         />
         <article className="flex-1 max-w-3xl bg-card border border-border rounded-lg p-6 md:p-10">
           {children}
-          <footer className="mt-12 pt-6 border-t border-border text-[11px] text-muted">
+          <footer
+            className="mt-12 pt-6 border-t border-border text-muted"
+            style={{
+              fontSize: "var(--font-size-label)",
+              lineHeight: 1.5,
+            }}
+          >
             <Link href="/" className="hover:text-accent-2">
               ← 返回首頁
             </Link>

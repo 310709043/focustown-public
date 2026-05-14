@@ -24,6 +24,9 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(
             framed && "pixel-input pr-10",
             className,
           )}
+          // Body-scale font on inputs keeps iOS Safari from auto-zooming on
+          // focus; the override on top of .pixel-input only touches font-size.
+          style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4, ...(rest.style ?? {}) }}
           autoComplete={rest.autoComplete ?? "current-password"}
         />
         <button
@@ -31,7 +34,8 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "隱藏密碼" : "顯示密碼"}
           aria-pressed={visible}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted hover:text-accent-2 px-1.5 py-0.5 border border-border rounded font-pixel"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-accent-2 px-1.5 py-0.5 border border-border rounded font-pixel tracking-wide"
+          style={{ fontSize: "var(--font-size-caption)" }}
         >
           {visible ? "隱藏" : "顯示"}
         </button>

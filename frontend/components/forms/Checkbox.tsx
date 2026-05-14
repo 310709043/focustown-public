@@ -29,10 +29,21 @@ export const Checkbox = forwardRef<HTMLInputElement, Props>(function Checkbox(
         {...rest}
         className="mt-0.5 w-4 h-4 accent-accent-1 cursor-pointer"
       />
-      <span className="text-[11px] leading-snug text-text">
+      <span
+        className="text-text"
+        style={{
+          fontSize: "var(--font-size-label)",
+          lineHeight: "var(--line-height-body)",
+        }}
+      >
         {label}
         {error ? (
-          <span className="block text-coral text-[10px] mt-0.5">{error}</span>
+          <span
+            className="block text-coral mt-1"
+            style={{ fontSize: "var(--font-size-note)" }}
+          >
+            {error}
+          </span>
         ) : null}
       </span>
     </label>

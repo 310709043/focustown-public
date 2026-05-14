@@ -19,7 +19,11 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
     <div className="flex flex-col items-center justify-center gap-6 p-8 relative">
       <div
         className="font-pixel tracking-[6px]"
-        style={{ fontSize: 11, color: "var(--muted)" }}
+        style={{
+          fontSize: "var(--font-size-label)",
+          lineHeight: 1.2,
+          color: "var(--muted)",
+        }}
       >
         FOCUS · SESSION
       </div>
@@ -83,7 +87,8 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
         style={{
           width: "min(380px, 70vw)",
           padding: "12px 18px",
-          fontSize: 16,
+          fontSize: "var(--font-size-body)",
+          lineHeight: 1.5,
           letterSpacing: 1,
         }}
       />
@@ -91,7 +96,12 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
       <div className="flex gap-3">
         <button
           className="pixel-btn"
-          style={{ fontSize: 12, padding: "14px 28px", letterSpacing: 2 }}
+          style={{
+            fontSize: "var(--font-size-label)",
+            lineHeight: 1.2,
+            padding: "14px 28px",
+            letterSpacing: 2,
+          }}
           onClick={() => (running ? pause() : void start(task || undefined, partnerId ?? null))}
         >
           {running ? "⏸  暫停" : "▶  開始"}
@@ -99,7 +109,8 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
         <button
           className="pixel-btn"
           style={{
-            fontSize: 12,
+            fontSize: "var(--font-size-label)",
+            lineHeight: 1.2,
             padding: "14px 28px",
             letterSpacing: 2,
             background: "transparent",

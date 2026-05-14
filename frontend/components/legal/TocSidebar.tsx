@@ -14,17 +14,27 @@ type Props = {
 
 export function TocSidebar({ items, related }: Props) {
   return (
-    <aside className="hidden md:block sticky top-6 self-start w-60 shrink-0">
-      <div className="bg-card border border-border rounded-lg p-4">
-        <div className="font-pixel text-[9px] tracking-widest text-accent-2 mb-3">
+    <aside className="hidden md:block sticky top-6 self-start w-64 shrink-0">
+      <div className="bg-card border border-border rounded-lg p-5">
+        <div
+          className="font-pixel tracking-widest text-accent-2 mb-4"
+          style={{
+            fontSize: "var(--font-size-caption)",
+            lineHeight: 1.3,
+          }}
+        >
           目錄
         </div>
-        <nav className="flex flex-col gap-1.5">
+        <nav className="flex flex-col gap-2">
           {items.map((it) => (
             <a
               key={it.id}
               href={`#${it.id}`}
-              className="text-[11px] text-muted hover:text-accent-2 transition-colors"
+              className="text-muted hover:text-accent-2 transition-colors"
+              style={{
+                fontSize: "var(--font-size-label)",
+                lineHeight: 1.45,
+              }}
             >
               {it.title}
             </a>
@@ -32,19 +42,29 @@ export function TocSidebar({ items, related }: Props) {
         </nav>
         {related?.length ? (
           <>
-            <div className="font-pixel text-[9px] tracking-widest text-accent-2 mt-5 mb-3">
+            <div
+              className="font-pixel tracking-widest text-accent-2 mt-6 mb-4"
+              style={{
+                fontSize: "var(--font-size-caption)",
+                lineHeight: 1.3,
+              }}
+            >
               相關
             </div>
-            <nav className="flex flex-col gap-1.5">
+            <nav className="flex flex-col gap-2">
               {related.map((r) => (
                 <Link
                   key={r.href}
                   href={r.href as never}
                   className={
                     r.active
-                      ? "text-[11px] text-accent-1"
-                      : "text-[11px] text-muted hover:text-accent-2"
+                      ? "text-accent-1"
+                      : "text-muted hover:text-accent-2"
                   }
+                  style={{
+                    fontSize: "var(--font-size-label)",
+                    lineHeight: 1.45,
+                  }}
                 >
                   {r.label}
                 </Link>

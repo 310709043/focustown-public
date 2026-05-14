@@ -121,7 +121,8 @@ export default function FocusRoomPage() {
         <div
           className="font-pixel tracking-[3px]"
           style={{
-            fontSize: 12,
+            fontSize: "var(--font-size-label)",
+            lineHeight: 1.2,
             color: "var(--a2)",
             textShadow: "0 0 10px var(--a1), 0 0 20px var(--a3)",
           }}
@@ -130,9 +131,10 @@ export default function FocusRoomPage() {
         </div>
         <button
           onClick={() => router.push("/town")}
-          className="pixel-btn"
+          className="pixel-btn tracking-wider"
           style={{
-            fontSize: 10,
+            fontSize: "var(--font-size-caption)",
+            lineHeight: 1.2,
             padding: "8px 16px",
             background: "transparent",
             color: "var(--muted)",

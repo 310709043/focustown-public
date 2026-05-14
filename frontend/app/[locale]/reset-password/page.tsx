@@ -25,11 +25,18 @@ function ResetPasswordInner() {
 
   if (!token) {
     return (
-      <div className="text-[12px] text-text">
+      <div
+        className="text-text"
+        style={{
+          fontSize: "var(--font-size-body)",
+          lineHeight: "var(--line-height-body)",
+        }}
+      >
         <p className="mb-3">重設連結無效或已過期。</p>
         <Link
           href="/forgot-password"
-          className="text-[10px] text-accent-2 hover:text-accent-1"
+          className="text-accent-2 hover:text-accent-1"
+          style={{ fontSize: "var(--font-size-label)" }}
         >
           重新申請重設密碼 →
         </Link>
@@ -84,16 +91,40 @@ function ResetPasswordInner() {
 
   if (done) {
     return (
-      <div className="text-[12px] text-text text-center">
-        <p className="mb-3 text-accent-2">✓ 密碼已成功重設</p>
-        <p className="text-[10px] text-muted">即將前往登入頁...</p>
+      <div
+        className="text-text text-center"
+        style={{
+          fontSize: "var(--font-size-body)",
+          lineHeight: "var(--line-height-body)",
+        }}
+      >
+        <p
+          className="mb-3 text-accent-2"
+          style={{ fontSize: "var(--font-size-body-lg)" }}
+        >
+          ✓ 密碼已成功重設
+        </p>
+        <p
+          className="text-muted"
+          style={{ fontSize: "var(--font-size-note)" }}
+        >
+          即將前往登入頁...
+        </p>
       </div>
     );
   }
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-3">
-      <p className="text-[11px] text-muted mb-1">請輸入新密碼。</p>
+      <p
+        className="text-muted mb-1"
+        style={{
+          fontSize: "var(--font-size-label)",
+          lineHeight: "var(--line-height-body)",
+        }}
+      >
+        請輸入新密碼。
+      </p>
       <div>
         <PasswordInput
           placeholder="新密碼 (8+ 字, 含英文與數字)"
@@ -102,7 +133,12 @@ function ResetPasswordInner() {
           autoComplete="new-password"
         />
         {errors.newPassword ? (
-          <p className="text-coral text-[10px] mt-0.5">{errors.newPassword}</p>
+          <p
+            className="text-coral mt-1"
+            style={{ fontSize: "var(--font-size-note)" }}
+          >
+            {errors.newPassword}
+          </p>
         ) : null}
       </div>
       <div>
@@ -113,22 +149,34 @@ function ResetPasswordInner() {
           autoComplete="new-password"
         />
         {errors.confirmPassword ? (
-          <p className="text-coral text-[10px] mt-0.5">{errors.confirmPassword}</p>
+          <p
+            className="text-coral mt-1"
+            style={{ fontSize: "var(--font-size-note)" }}
+          >
+            {errors.confirmPassword}
+          </p>
         ) : null}
       </div>
       {serverError ? (
-        <div className="text-[11px] text-coral">{serverError}</div>
+        <div
+          className="text-coral"
+          style={{ fontSize: "var(--font-size-label)", lineHeight: 1.5 }}
+        >
+          {serverError}
+        </div>
       ) : null}
       <button
         type="submit"
         disabled={submitting}
-        className="font-pixel text-[8px] border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50"
+        className="font-pixel border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50 tracking-widest"
+        style={{ fontSize: "var(--font-size-label)", lineHeight: 1.2 }}
       >
         {submitting ? "重設中..." : "重設密碼 ▶"}
       </button>
       <Link
         href="/signin"
-        className="text-[10px] text-muted hover:text-accent-2 text-center"
+        className="text-muted hover:text-accent-2 text-center"
+        style={{ fontSize: "var(--font-size-label)" }}
       >
         返回登入
       </Link>
@@ -146,13 +194,35 @@ export default function ResetPasswordPage() {
       }}
     >
       <div className="bg-card border border-border rounded-lg p-6 w-full max-w-sm">
-        <h1
-          className="font-pixel text-[10px] tracking-widest text-center mb-3"
+        <div
+          aria-hidden
+          className="font-pixel text-[10px] tracking-widest text-center mb-2 opacity-80"
           style={{ color: "var(--a2)", textShadow: "0 0 10px var(--a1)" }}
         >
-          ✦ 重設密碼 ✦
+          ✦ FOCUS TOWN ✦
+        </div>
+        <h1
+          className="text-center mb-3"
+          style={{
+            fontSize: "var(--font-size-section-title)",
+            lineHeight: "var(--line-height-title)",
+            fontWeight: 500,
+            color: "var(--text)",
+            textShadow: "0 0 18px rgba(167,139,250,0.35)",
+          }}
+        >
+          重設密碼
         </h1>
-        <Suspense fallback={<div className="text-[11px] text-muted">載入中...</div>}>
+        <Suspense
+          fallback={
+            <div
+              className="text-muted"
+              style={{ fontSize: "var(--font-size-label)" }}
+            >
+              載入中...
+            </div>
+          }
+        >
           <ResetPasswordInner />
         </Suspense>
       </div>

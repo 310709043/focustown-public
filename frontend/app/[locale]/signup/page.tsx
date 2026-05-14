@@ -67,11 +67,24 @@ export default function SignUpPage() {
         onSubmit={onSubmit}
         className="pixel-panel p-6 w-full max-w-sm flex flex-col gap-3"
       >
-        <h1
-          className="font-pixel text-[10px] tracking-widest text-center mb-2"
+        <div
+          aria-hidden
+          className="font-pixel text-[10px] tracking-widest text-center opacity-80"
           style={{ color: "var(--a2)", textShadow: "0 0 10px var(--a1)" }}
         >
-          ✦ 加入 FOCUS TOWN ✦
+          ✦ FOCUS TOWN ✦
+        </div>
+        <h1
+          className="text-center mb-2"
+          style={{
+            fontSize: "var(--font-size-section-title)",
+            lineHeight: "var(--line-height-title)",
+            fontWeight: 500,
+            color: "var(--text)",
+            textShadow: "0 0 18px rgba(167,139,250,0.35)",
+          }}
+        >
+          加入 Focus Town
         </h1>
 
         <div>
@@ -81,10 +94,16 @@ export default function SignUpPage() {
             value={form.displayName}
             onChange={(e) => update("displayName", e.target.value)}
             className="pixel-input"
+            style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4 }}
             autoComplete="nickname"
           />
           {errors.displayName ? (
-            <p className="text-coral text-[10px] mt-0.5">{errors.displayName}</p>
+            <p
+              className="text-coral mt-1"
+              style={{ fontSize: "var(--font-size-note)" }}
+            >
+              {errors.displayName}
+            </p>
           ) : null}
         </div>
 
@@ -96,10 +115,16 @@ export default function SignUpPage() {
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
             className="pixel-input"
+            style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4 }}
             autoComplete="email"
           />
           {errors.email ? (
-            <p className="text-coral text-[10px] mt-0.5">{errors.email}</p>
+            <p
+              className="text-coral mt-1"
+              style={{ fontSize: "var(--font-size-note)" }}
+            >
+              {errors.email}
+            </p>
           ) : null}
         </div>
 
@@ -112,7 +137,12 @@ export default function SignUpPage() {
             autoComplete="new-password"
           />
           {errors.password ? (
-            <p className="text-coral text-[10px] mt-0.5">{errors.password}</p>
+            <p
+              className="text-coral mt-1"
+              style={{ fontSize: "var(--font-size-note)" }}
+            >
+              {errors.password}
+            </p>
           ) : null}
         </div>
 
@@ -154,7 +184,11 @@ export default function SignUpPage() {
         />
 
         {error ? (
-          <div data-testid="signup-error" className="text-[11px] text-coral">
+          <div
+            data-testid="signup-error"
+            className="text-coral"
+            style={{ fontSize: "var(--font-size-label)", lineHeight: 1.5 }}
+          >
             {error}
           </div>
         ) : null}
@@ -171,7 +205,8 @@ export default function SignUpPage() {
 
         <Link
           href="/signin"
-          className="text-[10px] text-muted hover:text-accent-2 text-center"
+          className="text-muted hover:text-accent-2 text-center"
+          style={{ fontSize: "var(--font-size-label)" }}
         >
           已有帳號？登入
         </Link>

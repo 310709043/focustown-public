@@ -46,31 +46,63 @@ export default function ForgotPasswordPage() {
       }}
     >
       <div className="bg-card border border-border rounded-lg p-6 w-full max-w-sm">
-        <h1
-          className="font-pixel text-[10px] tracking-widest text-center mb-3"
+        <div
+          aria-hidden
+          className="font-pixel text-[10px] tracking-widest text-center mb-2 opacity-80"
           style={{ color: "var(--a2)", textShadow: "0 0 10px var(--a1)" }}
         >
-          ✦ 忘記密碼 ✦
+          ✦ FOCUS TOWN ✦
+        </div>
+        <h1
+          className="text-center mb-3"
+          style={{
+            fontSize: "var(--font-size-section-title)",
+            lineHeight: "var(--line-height-title)",
+            fontWeight: 500,
+            color: "var(--text)",
+            textShadow: "0 0 18px rgba(167,139,250,0.35)",
+          }}
+        >
+          忘記密碼
         </h1>
 
         {submitted ? (
-          <div className="text-[12px] text-text leading-relaxed">
+          <div
+            className="text-text"
+            style={{
+              fontSize: "var(--font-size-body)",
+              lineHeight: "var(--line-height-body)",
+            }}
+          >
             <p className="mb-2">
               如果該 email 已註冊，重設密碼的連結已寄出，請至信箱查收。
             </p>
-            <p className="text-muted text-[10px] mb-4">
+            <p
+              className="text-muted mb-4"
+              style={{
+                fontSize: "var(--font-size-note)",
+                lineHeight: 1.6,
+              }}
+            >
               連結將於 1 小時後失效。若未收到，請檢查垃圾郵件夾或稍後再試。
             </p>
             <Link
               href="/signin"
-              className="block text-[10px] text-accent-2 hover:text-accent-1 text-center"
+              className="block text-accent-2 hover:text-accent-1 text-center"
+              style={{ fontSize: "var(--font-size-label)" }}
             >
               ← 返回登入
             </Link>
           </div>
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-3">
-            <p className="text-[11px] text-muted mb-1">
+            <p
+              className="text-muted mb-1"
+              style={{
+                fontSize: "var(--font-size-label)",
+                lineHeight: "var(--line-height-body)",
+              }}
+            >
               輸入您的帳號 email，我們將寄送重設密碼的連結。
             </p>
             <input
@@ -79,22 +111,30 @@ export default function ForgotPasswordPage() {
               placeholder="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-[rgba(12,5,35,.9)] border border-border rounded text-[12px] px-3 py-2 outline-none focus:border-accent-1"
+              className="bg-[rgba(12,5,35,.9)] border border-border rounded px-3 py-2 outline-none focus:border-accent-1"
+              style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4 }}
               autoComplete="email"
             />
             {error ? (
-              <div className="text-[11px] text-coral">{error}</div>
+              <div
+                className="text-coral"
+                style={{ fontSize: "var(--font-size-label)", lineHeight: 1.5 }}
+              >
+                {error}
+              </div>
             ) : null}
             <button
               type="submit"
               disabled={submitting}
-              className="font-pixel text-[8px] border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50"
+              className="font-pixel border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50 tracking-widest"
+              style={{ fontSize: "var(--font-size-label)", lineHeight: 1.2 }}
             >
               {submitting ? "寄送中..." : "寄送重設連結 ▶"}
             </button>
             <Link
               href="/signin"
-              className="text-[10px] text-muted hover:text-accent-2 text-center"
+              className="text-muted hover:text-accent-2 text-center"
+              style={{ fontSize: "var(--font-size-label)" }}
             >
               返回登入
             </Link>

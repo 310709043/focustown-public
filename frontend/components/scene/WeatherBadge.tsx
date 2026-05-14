@@ -45,7 +45,7 @@ export function WeatherBadge() {
   return (
     <div
       className="pixel-panel absolute top-[12px] left-[14px] px-3 py-1.5 z-[6] transition-all duration-1000 font-japan"
-      style={{ fontSize: 12, letterSpacing: 1 }}
+      style={{ fontSize: "var(--font-size-caption)", letterSpacing: 1 }}
     >
       {emoji} {name}・{condition} {temp}°C
     </div>
