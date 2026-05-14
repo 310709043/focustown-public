@@ -99,10 +99,10 @@ export function MusicPanel() {
   }
 
   return (
-    <div className="panel relative overflow-hidden flex flex-col gap-1 px-2.5 py-2 bg-card border border-border rounded">
+    <div className="pixel-panel relative overflow-hidden flex flex-col gap-1 px-2.5 py-2">
       <div className="flex items-center justify-between">
-        <div className="text-[10px] text-muted">
-          🎵 音樂{source === "room" ? " · 房間" : ""}
+        <div className="font-pixel-en text-[10px]" style={{ color: "var(--dir-ink-mute)", letterSpacing: 1 }}>
+          ♪ MUSIC{source === "room" ? " · ROOM" : " · LOFI"}
         </div>
         <div className="flex items-end gap-0.5 h-4">
           {Array.from({ length: 14 }).map((_, i) => {

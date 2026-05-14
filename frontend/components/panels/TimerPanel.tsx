@@ -29,8 +29,10 @@ export function TimerPanel() {
   const current = MODES.find((m) => m.mode === mode) ?? MODES[0];
 
   return (
-    <div className="relative overflow-hidden flex flex-col gap-1.5 px-3 py-2.5 bg-card border border-border rounded-md">
-      <div className="text-xs text-muted">{current.label} 模式</div>
+    <div className="pixel-panel relative overflow-hidden flex flex-col gap-1.5 px-3 py-2.5">
+      <div className="font-pixel-en text-xs" style={{ color: "var(--dir-ink-mute)", letterSpacing: 1 }}>
+        {current.label}
+      </div>
       <div className="flex items-center gap-3">
         <div
           className="font-pixel leading-tight tracking-widest"

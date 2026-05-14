@@ -27,6 +27,8 @@ import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { TownNavbar } from "@/components/chrome/TownNavbar";
 import { TickerBar } from "@/components/chrome/TickerBar";
+import { VenueCards } from "@/components/scene/VenueCards";
+import { StreetProps } from "@/components/scene/StreetProps";
 import { SCENES } from "@/lib/data/scenes";
 
 import { TimerPanel } from "@/components/panels/TimerPanel";
@@ -178,8 +180,14 @@ export default function TownPage() {
         <WeatherBadge />
         <TownClock />
 
-        {/* skyline + ground crowd */}
+        {/* skyline + venue overlays */}
         <Buildings />
+        <VenueCards />
+
+        {/* sidewalk props (lamps/trees/bench/cat) sit under moving crowd */}
+        <StreetProps />
+
+        {/* ground crowd */}
         <Pedestrians />
         <CarsLane />
 
