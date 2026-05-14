@@ -233,3 +233,61 @@ body {
   0%, 100% { box-shadow: 0 0 28px rgba(252, 211, 77, 0.4), 0 0 80px rgba(252, 211, 77, 0.1); }
   50%      { box-shadow: 0 0 50px rgba(252, 211, 77, 0.6), 0 0 140px rgba(252, 211, 77, 0.2); }
 }
+
+/* Pixel-aesthetic range slider (used by /select-character age field) */
+.age-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--a1) 0%,
+    var(--a3) 60%,
+    var(--border) 100%
+  );
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.age-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 18px;
+  border-radius: 0;
+  background: var(--a2);
+  border: 1px solid var(--a4);
+  box-shadow:
+    0 0 6px var(--a1),
+    0 0 14px var(--a3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+  cursor: grab;
+  transition: transform 0.12s ease;
+}
+
+.age-slider::-webkit-slider-thumb:hover {
+  transform: scaleY(1.1);
+}
+
+.age-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scaleY(1.15);
+}
+
+.age-slider::-moz-range-thumb {
+  width: 14px;
+  height: 18px;
+  border-radius: 0;
+  background: var(--a2);
+  border: 1px solid var(--a4);
+  box-shadow: 0 0 6px var(--a1), 0 0 14px var(--a3);
+  cursor: grab;
+}
+
+.age-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 8px var(--a1),
+    0 0 20px var(--a3),
+    0 0 0 2px var(--a2);
+}
