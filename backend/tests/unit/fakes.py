@@ -32,6 +32,8 @@ from app.domain.repositories.presence import (
     PresenceState,
 )
 from app.domain.repositories.room_item_repo import IRoomItemRepo
+from app.domain.models.room_visit import RoomVisit
+from app.domain.repositories.room_visit_repo import IRoomVisitRepo
 from app.domain.repositories.room_repo import IRoomRepo, RoomAlreadyExistsError
 from app.domain.repositories.room_track_repo import (
     IRoomTrackRepo,
@@ -385,6 +387,56 @@ class FakeRoomItemRepo(IRoomItemRepo):
 
     async def delete(self, item_id: str) -> None:
         self.rows.pop(item_id, None)
+
+
+@dataclass
+class FakeRoomVisitRepo(IRoomVisitRepo):
+    """In-memory ``IRoomVisitRepo`` (composed reader + writer).
+
+    LSP rule: observationally identical to ``SqlRoomVisitRepo`` —
+    ``delete`` is idempotent on missing ids, ``create`` raises
+    ``ConflictError("already_visiting")`` if the visitor_user_id
+    constraint would trip.
+    """
+
+    rows: dict[str, RoomVisit] = field(default_factory=dict)
+
+    async def list_by_room(self, room_id: str) -> list[RoomVisit]:
+        rows = [r for r in self.rows.values() if r.room_id == room_id]
+        rows.sort(key=lambda r: r.joined_at)
+        return rows
+
+    async def get_by_user(self, visitor_user_id: str) -> RoomVisit | None:
+        return next(
+            (r for r in self.rows.values() if r.visitor_user_id == visitor_user_id),
+            None,
+        )
+
+    async def count_by_room(self, room_id: str) -> int:
+        return sum(1 for r in self.rows.values() if r.room_id == room_id)
+
+    async def create(
+        self,
+        *,
+        visit_id: str,
+        room_id: str,
+        visitor_user_id: str,
+    ) -> RoomVisit:
+        from app.core.exceptions import ConflictError
+
+        if any(r.visitor_user_id == visitor_user_id for r in self.rows.values()):
+            raise ConflictError("already_visiting")
+        row = RoomVisit(
+            id=visit_id,
+            room_id=room_id,
+            visitor_user_id=visitor_user_id,
+            joined_at=datetime.now(UTC),
+        )
+        self.rows[visit_id] = row
+        return row
+
+    async def delete(self, visit_id: str) -> None:
+        self.rows.pop(visit_id, None)
 
 
 @dataclass
