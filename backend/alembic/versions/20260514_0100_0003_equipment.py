@@ -22,7 +22,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision: str = "0003"
-down_revision: str | Sequence[str] | None = "0002"
+down_revision: str | Sequence[str] | None = ("0002", "0002_consent")
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
