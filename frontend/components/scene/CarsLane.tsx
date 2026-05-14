@@ -6,13 +6,22 @@ import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/charact
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 
+import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
+import { buildCar } from "@/lib/pixel/sprites/world";
+
 /**
  * One car per online user, driving across the road in a continuous loop.
- * Each user appears here in tandem with their <Pedestrian> entry — Phase 3
- * will split the two when the user equips a vehicle / avatar separately.
  *
- * Drive duration + offset are derived deterministically from user.id so a
- * given user's car always feels "theirs" and doesn't reshuffle every render.
+ * Tier 4b: the car body is now a pixel `<AnimatedSprite>` from
+ * `buildCar(bodyColor, windowColor)` in `lib/pixel/sprites/world.ts`.
+ * The vehicle-equipment swap path still works — `user.vehicle.body_color`
+ * overrides the character default, just as the previous CSS implementation
+ * did, so equipping a vehicle in /shop flips the on-screen car color via
+ * the presence WebSocket without a page reload.
+ *
+ * Drive duration + offset remain derived deterministically from `user.id`
+ * so a given user's car always feels "theirs" and doesn't reshuffle on
+ * every render.
  */
 
 const fallbackCharacter = (userId: string): CharacterDef => {
@@ -39,12 +48,12 @@ function Car({
   laneIndex: number;
 }) {
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
-  // Phase 3: if the user has an equipped vehicle, prefer its colors + emoji
-  // over the character defaults. The driver's *name* still uses the character
+  // If the user has an equipped vehicle, prefer its body/window colors over
+  // the character defaults. The driver's *name* still uses the character
   // identity — the car visually changes, the person behind the wheel doesn't.
   const v = user.vehicle;
   const bodyColor = v?.body_color ?? ch.bodyColor;
-  const roofColor = v?.roof_color ?? ch.roofColor;
+  const windowColor = v?.roof_color ?? "#a78bfa";
   const plateEmoji = v?.icon ?? ch.emoji;
 
   // Stable per-user motion params so reflows from list reorders don't reset.
@@ -54,6 +63,11 @@ function Car({
     const delay = -((h % 100) / 100) * dur;
     return { dur, delay };
   }, [user.id]);
+
+  // Re-build the car sprite only when the body/window colors actually change.
+  // The sprite engine LRU caches by `sprite+palette` so repeated mounts with
+  // the same equipment cost zero canvas draws after the first.
+  const car = useMemo(() => buildCar(bodyColor, windowColor), [bodyColor, windowColor]);
 
   return (
     <div
@@ -71,7 +85,7 @@ function Car({
       <div
         style={{
           position: "absolute",
-          bottom: 24,
+          bottom: 36,
           left: "50%",
           transform: "translateX(-50%)",
           background: "rgba(3,1,17,0.85)",
@@ -89,111 +103,20 @@ function Car({
         {plateEmoji} {isSelf ? `${ch.name} ・ 你` : ch.name}
       </div>
 
-      {/* car body — pixel composition (self car gets amber underglow) */}
+      {/* pixel car body. The drop-shadow filter gives the neon-glow trail
+          that the old CSS taillight-blur effect provided, but tied to the
+          live body color so vehicle equips shift the glow too. */}
       <div
-        className={`pixel-edge ${isSelf ? "animate-selfHalo" : ""}`}
-        style={{ width: 40, position: "relative" }}
+        className={isSelf ? "animate-selfHalo" : undefined}
+        style={{
+          filter: `drop-shadow(0 0 6px ${bodyColor}) drop-shadow(0 0 12px ${bodyColor}55)`,
+        }}
       >
-        <div
-          style={{
-            height: 9,
-            borderRadius: "3px 3px 0 0",
-            margin: "0 5px",
-            background: roofColor,
-          }}
-        />
-        <div
-          style={{
-            height: 13,
-            borderRadius: 2,
-            background: bodyColor,
-            position: "relative",
-          }}
-        >
-          {/* windows */}
-          <div
-            style={{
-              position: "absolute",
-              top: 2,
-              left: 5,
-              width: 10,
-              height: 8,
-              borderRadius: 1,
-              background: "rgba(147,197,253,0.55)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: 2,
-              left: 21,
-              width: 10,
-              height: 8,
-              borderRadius: 1,
-              background: "rgba(147,197,253,0.55)",
-            }}
-          />
-          {/* headlight */}
-          <div
-            style={{
-              position: "absolute",
-              right: -2,
-              top: 4,
-              width: 3,
-              height: 5,
-              background: "#fed7aa",
-              borderRadius: 1,
-              boxShadow: "0 0 8px #fed7aacc",
-            }}
-          />
-          {/* taillight */}
-          <div
-            style={{
-              position: "absolute",
-              left: -2,
-              top: 4,
-              width: 3,
-              height: 5,
-              background: "#fca5a5",
-              borderRadius: 1,
-              boxShadow: "0 0 4px #fca5a566",
-            }}
-          />
-        </div>
-        <div className="flex justify-between px-1 mt-px">
-          <div
-            style={{
-              width: 10,
-              height: 6,
-              background: "#111",
-              border: "1px solid #333",
-              borderRadius: 2,
-            }}
-          />
-          <div
-            style={{
-              width: 10,
-              height: 6,
-              background: "#111",
-              border: "1px solid #333",
-              borderRadius: 2,
-            }}
-          />
-        </div>
-        {/* taillight glow trail */}
-        <div
-          style={{
-            position: "absolute",
-            left: -6,
-            top: "50%",
-            width: 14,
-            height: 5,
-            background:
-              "radial-gradient(ellipse, rgba(252,165,165,0.55), transparent 70%)",
-            transform: "translateY(-50%)",
-            borderRadius: "50%",
-            filter: "blur(2px)",
-          }}
+        <AnimatedSprite
+          frames={car.frames}
+          palette={car.palette}
+          fps={5}
+          scale={2}
         />
       </div>
     </div>
