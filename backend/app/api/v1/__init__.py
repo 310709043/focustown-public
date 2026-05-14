@@ -8,6 +8,7 @@ from app.api.v1.leaderboard.router import router as leaderboard_router
 from app.api.v1.matches.router import router as matches_router
 from app.api.v1.notes.router import router as notes_router
 from app.api.v1.presence.router import router as presence_router
+from app.api.v1.rooms.router import me_room_router, rooms_router
 from app.api.v1.sessions.router import router as sessions_router
 from app.api.v1.shop.router import router as shop_router
 from app.api.v1.users.router import router as users_router
@@ -27,4 +28,6 @@ router.include_router(presence_router, prefix="/presence", tags=["presence"])
 router.include_router(wallet_router, prefix="/me/wallet", tags=["wallet"])
 router.include_router(items_router, prefix="/me/items", tags=["items"])
 router.include_router(equipment_router, prefix="/me/equipment", tags=["equipment"])
+router.include_router(me_room_router, prefix="/me/room", tags=["rooms"])
+router.include_router(rooms_router, prefix="/rooms", tags=["rooms"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

@@ -147,3 +147,28 @@ export type PurchaseResponse = {
   delta_minor: number;
   acquired_at: string;
 };
+
+// ── Phase 4: rooms ─────────────────────────────────────────────────────────
+// Mirrors backend ALLOWED_THEMES (frozenset in app/domain/models/room.py);
+// keep this list in sync with frontend/lib/data/scenes.ts SCENES keys.
+export type RoomTheme =
+  | "dawn"
+  | "day"
+  | "dusk"
+  | "night"
+  | "rain"
+  | "snow"
+  | "storm";
+
+export type RoomVisibility = "public" | "invite_only";
+
+export type Room = {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  theme: RoomTheme;
+  visibility: RoomVisibility;
+  max_visitors: number;
+  created_at: string;
+  updated_at: string;
+};

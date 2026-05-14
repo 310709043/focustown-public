@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { presenceApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
+import { presenceApi, roomApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import { useSceneStore } from "@/lib/state/sceneStore";
@@ -184,6 +184,31 @@ export default function TownPage() {
           >
             🏆 大賞區
           </Link>
+          <button
+            className="font-japan rounded-md px-3 py-2 transition-colors flex items-center gap-1.5"
+            style={{
+              fontSize: 13,
+              background:
+                "linear-gradient(180deg, rgba(252,211,77,0.16), rgba(252,211,77,0.06))",
+              border: "1px solid var(--amber)",
+              color: "var(--amber)",
+              textShadow: "0 0 8px rgba(252,211,77,0.35)",
+              boxShadow:
+                "0 0 12px rgba(252,211,77,0.18), inset 0 0 8px rgba(252,211,77,0.08)",
+            }}
+            onClick={async () => {
+              try {
+                const room = await roomApi.getMine();
+                // typed-routes doesn't know about /town/room/[id]; safe cast.
+                router.push(`/town/room/${room.id}` as Parameters<typeof router.push>[0]);
+              } catch {
+                /* hydration retry on next click; surfaced via roomStore. */
+              }
+            }}
+            title="進入我的房間"
+          >
+            🏠 我的房間
+          </button>
           <Link
             href="/shop"
             className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-pink hover:text-pink transition-colors flex items-center gap-1.5"
