@@ -108,7 +108,7 @@ async def sign_up(
     await _enforce_limit(
         limiter,
         key=f"signup:ip:{client_ip or 'unknown'}",
-        limit=10,
+        limit=settings.auth_rl_signup_per_ip_per_hour,
         window_seconds=3600,
     )
 
@@ -145,19 +145,20 @@ async def sign_in(
     payload: SignInRequest,
     db: DbDep,
     auth: AuthProviderDep,
+    settings: SettingsDep,
     limiter: RateLimiterDep,
     client_ip: ClientIpDep,
 ) -> AuthResponse:
     await _enforce_limit(
         limiter,
         key=f"signin:email:{payload.email.lower()}",
-        limit=5,
+        limit=settings.auth_rl_signin_per_email_per_min,
         window_seconds=60,
     )
     await _enforce_limit(
         limiter,
         key=f"signin:ip:{client_ip or 'unknown'}",
-        limit=30,
+        limit=settings.auth_rl_signin_per_ip_per_hour,
         window_seconds=3600,
     )
 
@@ -211,13 +212,13 @@ async def forgot_password(
     await _enforce_limit(
         limiter,
         key=f"forgot:ip:{client_ip or 'unknown'}",
-        limit=5,
+        limit=settings.auth_rl_forgot_per_ip_per_hour,
         window_seconds=3600,
     )
     await _enforce_limit(
         limiter,
         key=f"forgot:email:{payload.email.lower()}",
-        limit=3,
+        limit=settings.auth_rl_forgot_per_email_per_hour,
         window_seconds=3600,
     )
 
@@ -240,7 +241,7 @@ async def reset_password(
     await _enforce_limit(
         limiter,
         key=f"reset:ip:{client_ip or 'unknown'}",
-        limit=10,
+        limit=settings.auth_rl_reset_per_ip_per_hour,
         window_seconds=3600,
     )
 
