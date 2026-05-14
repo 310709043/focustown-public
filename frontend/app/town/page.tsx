@@ -11,6 +11,9 @@ import { useUserItemsStore } from "@/lib/state/userItemsStore";
 import { useWalletStore } from "@/lib/state/walletStore";
 import { findCharacter } from "@/lib/data/characters";
 import { useRealtime } from "@/lib/ws/useRealtime";
+import { useRealtimeMatch } from "@/lib/ws/useRealtimeMatch";
+import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionCompleted";
+import { useMatchStore } from "@/lib/state/matchStore";
 
 import { Sky } from "@/components/scene/Sky";
 import { StarsLayer } from "@/components/scene/StarsLayer";
@@ -134,6 +137,23 @@ export default function TownPage() {
         Number(msg.balance_minor),
       );
     }
+  });
+
+  // Wave 1 / Lane A: subscribe to match + session events. The WS payload
+  // for match.proposed lacks `reason`/`candidate_id`, so the hook
+  // synthesizes a partial Match — MatchModal renders a fallback reason
+  // string and a neutral placeholder candidate when those fields are empty.
+  useRealtimeMatch({
+    onProposed: (match) => {
+      useMatchStore.setState({ current: match });
+      setMatchOpen(true);
+    },
+    onAccepted: (_matchId) => {
+      // TODO Wave 4: surface a toast / auto-navigate to the focus room.
+    },
+  });
+  useRealtimeSessionCompleted((_sessionId) => {
+    // TODO Wave 4: surface a "session complete" toast.
   });
 
   const myChar = findCharacter(user?.character_key);

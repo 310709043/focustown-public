@@ -9,9 +9,9 @@
  * scanline pattern, and the bedrock element is an engraved nameplate
  * on the back wall (the one thing visitors will remember in Phase 8).
  *
- * Phase 5 will mount decorations on `<Wall>` and `<Floor>`; for now we
- * keep this whole page inline so the components don't get promoted
- * before they have real reuse.
+ * Wave 1 (this stint) factored the six interior sub-components out to
+ * `@/components/town/room/*` and reserved three slot markers for the
+ * later waves to mount their features into.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -24,6 +24,13 @@ import type { Room, RoomTheme } from "@/lib/api/types.gen";
 import { findCharacter } from "@/lib/data/characters";
 import { SCENES } from "@/lib/data/scenes";
 import { useAuthStore } from "@/lib/state/authStore";
+
+import { Wall } from "@/components/town/room/Wall";
+import { OutsideWindow } from "@/components/town/room/OutsideWindow";
+import { OwnerPlaque } from "@/components/town/room/OwnerPlaque";
+import { Floor } from "@/components/town/room/Floor";
+import { LockedRoom } from "@/components/town/room/LockedRoom";
+import { MissingRoom } from "@/components/town/room/MissingRoom";
 
 const THEMES: { key: RoomTheme; label: string; chip: string }[] = [
   { key: "dawn", label: "黎明",   chip: "🌅" },
@@ -217,6 +224,10 @@ export default function RoomPage() {
         />
         <Floor />
 
+        {/* slot:decoration — Phase 5 mounts DecorationCanvas here */}
+        {/* slot:visitor   — Phase 8 mounts visitor avatars here */}
+        {/* slot:audio     — Phase 9 mounts <audio> + sync controls here */}
+
         {/* Theme toolbar — bottom-right, owner-only. The active chip is
             inset (pressed) so the user can see which theme is current
             without reading text. */}
@@ -272,241 +283,6 @@ export default function RoomPage() {
             })}
           </div>
         )}
-      </div>
-    </main>
-  );
-}
-
-// ── Sub-components (inline; promoted to /components/room in Phase 5) ────────
-
-function Wall({ sky, label }: { sky: string; label: string }) {
-  return (
-    <div
-      className="absolute inset-0 animate-themeCrossfade"
-      style={{
-        background: sky,
-        // 48-pixel wallpaper pinstripe — barely there, but it breaks the
-        // flat gradient so the wall feels like a surface, not a void.
-        backgroundImage: `${sky}, repeating-linear-gradient(90deg, transparent 0 47px, rgba(167,139,250,0.05) 47px 48px)`,
-        backgroundBlendMode: "normal",
-      }}
-    >
-      {/* Top label — same family as the street's WeatherBadge so the
-          worlds feel cohesive, but framed as a wall plaque. */}
-      <div
-        className="absolute font-mono"
-        style={{
-          top: 16,
-          left: 24,
-          fontSize: 12,
-          color: "var(--muted)",
-          letterSpacing: 1.5,
-          padding: "4px 8px",
-          border: "1px solid var(--border)",
-          background: "rgba(8,3,25,0.55)",
-        }}
-      >
-        {label}
-      </div>
-    </div>
-  );
-}
-
-function OutsideWindow() {
-  // A small 80×60 pixel window high on the right wall. The interior
-  // (next-door scene gradient + a single twinkling star) reads as the
-  // street weather seen from inside.
-  return (
-    <div
-      className="absolute"
-      style={{
-        right: "12%",
-        top: "14%",
-        width: 96,
-        height: 72,
-        border: "2px solid var(--a3)",
-        background: "linear-gradient(180deg, #04020e 0%, #0a0420 100%)",
-        boxShadow:
-          "0 0 14px rgba(167,139,250,0.25), inset 0 0 18px rgba(167,139,250,0.15)",
-        imageRendering: "pixelated",
-      }}
-    >
-      {/* Mullion cross — pixel-art window pane divider. */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage:
-            "linear-gradient(90deg, transparent 47%, var(--a3) 47% 53%, transparent 53%), linear-gradient(0deg, transparent 47%, var(--a3) 47% 53%, transparent 53%)",
-          pointerEvents: "none",
-        }}
-      />
-      {/* A single twinkling star — same `tw` animation the night sky
-          uses, so the window feels connected to the street outside. */}
-      <div
-        className="animate-twinkle"
-        style={{
-          position: "absolute",
-          top: 16,
-          left: 18,
-          width: 3,
-          height: 3,
-          background: "var(--a2)",
-          boxShadow: "0 0 4px var(--a1), 0 0 10px var(--a3)",
-        }}
-      />
-    </div>
-  );
-}
-
-function OwnerPlaque({
-  emoji,
-  name,
-  role,
-}: {
-  emoji: string;
-  name: string;
-  role: string | null;
-}) {
-  // Engraved brass nameplate on the back wall — Press Start 2P for the
-  // name (display), VT323 for the role caption. Box-shadow stacks four
-  // layers to fake the brass + engraved-into-wood look.
-  return (
-    <div
-      className="absolute animate-plaqueFlicker text-center"
-      style={{
-        left: "50%",
-        top: "38%",
-        transform: "translate(-50%, -50%)",
-        padding: "14px 22px 12px",
-        background:
-          "linear-gradient(180deg, rgba(34,17,42,0.95) 0%, rgba(20,9,30,0.95) 100%)",
-        boxShadow: [
-          "0 0 0 1px #b97f3a inset",
-          "0 0 0 3px #1a0e22 inset",
-          "0 1px 0 0 #1a0e22",
-          "0 2px 0 0 #b97f3a",
-          "0 6px 22px rgba(0,0,0,0.55)",
-        ].join(", "),
-        imageRendering: "pixelated",
-        minWidth: 200,
-      }}
-    >
-      <div
-        className="font-japan"
-        style={{ fontSize: 28, lineHeight: 1, marginBottom: 6 }}
-      >
-        {emoji}
-      </div>
-      <div
-        className="font-pixel"
-        style={{
-          fontSize: 13,
-          color: "#ffd9a8",
-          letterSpacing: 1.5,
-          marginBottom: 4,
-          textShadow: "0 0 6px rgba(255,217,168,0.45)",
-        }}
-      >
-        {name.toUpperCase()}
-      </div>
-      <div
-        className="font-mono"
-        style={{ fontSize: 12, color: "var(--muted)", letterSpacing: 1 }}
-      >
-        {role ?? "resident"}
-      </div>
-    </div>
-  );
-}
-
-function Floor() {
-  // The floor sits in the bottom 38%. The skirting board (踢腳線) at
-  // its top edge — 1px solid `--a3` — is what most strongly sells the
-  // "interior" read.
-  return (
-    <div
-      className="absolute left-0 right-0 bottom-0"
-      style={{
-        height: "38%",
-        background: "linear-gradient(180deg, #0a0418 0%, #050010 100%)",
-        backgroundImage:
-          "linear-gradient(180deg, #0a0418 0%, #050010 100%), repeating-linear-gradient(0deg, transparent 0 11px, rgba(167,139,250,0.06) 11px 12px)",
-        backgroundBlendMode: "normal",
-        borderTop: "1px solid var(--a3)",
-        boxShadow: "inset 0 1px 0 0 rgba(196,181,253,0.18)",
-      }}
-    >
-      {/* Floor reflection of the wall light — a thin amber band right
-          under the skirting. Tiny detail, but it visually anchors the
-          plaque. */}
-      <div
-        style={{
-          position: "absolute",
-          top: 2,
-          left: "30%",
-          right: "30%",
-          height: 2,
-          background: "linear-gradient(90deg, transparent, rgba(252,211,77,0.18), transparent)",
-        }}
-      />
-    </div>
-  );
-}
-
-function LockedRoom({ roomId }: { roomId: string }) {
-  return (
-    <main className="absolute inset-0 grid place-items-center bg-bg">
-      <div
-        className="text-center font-japan animate-plaqueFlicker"
-        style={{
-          padding: "18px 26px 16px",
-          background: "linear-gradient(180deg, rgba(34,17,42,0.95), rgba(20,9,30,0.95))",
-          boxShadow: [
-            "0 0 0 1px #b97f3a inset",
-            "0 0 0 3px #1a0e22 inset",
-            "0 2px 0 0 #b97f3a",
-          ].join(", "),
-          color: "#ffd9a8",
-        }}
-      >
-        <div style={{ fontSize: 28, marginBottom: 8 }}>🔒</div>
-        <div className="font-pixel" style={{ fontSize: 12, letterSpacing: 1.5, marginBottom: 6 }}>
-          ROOM LOCKED
-        </div>
-        <div className="font-mono text-muted" style={{ fontSize: 12, letterSpacing: 0.8 }}>
-          訪客機制 Phase 8 啟用
-        </div>
-        <div className="font-mono text-muted" style={{ fontSize: 10, marginTop: 6, opacity: 0.6 }}>
-          id: {roomId.slice(0, 8)}…
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <Link
-            href="/town"
-            className="font-japan text-amber hover:text-text transition-colors"
-            style={{ fontSize: 12 }}
-          >
-            ◂ 回街景
-          </Link>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function MissingRoom() {
-  return (
-    <main className="absolute inset-0 grid place-items-center bg-bg">
-      <div className="font-japan text-muted text-center">
-        <div style={{ fontSize: 28 }}>🚪</div>
-        <div style={{ fontSize: 13, marginTop: 10 }}>找不到這間房</div>
-        <Link
-          href="/town"
-          className="font-japan text-amber hover:text-text transition-colors"
-          style={{ fontSize: 12, marginTop: 16, display: "inline-block" }}
-        >
-          ◂ 回街景
-        </Link>
       </div>
     </main>
   );
