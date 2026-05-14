@@ -16,6 +16,7 @@ import type {
   RoomItem,
   RoomTheme,
   RoomTrack,
+  RoomVisit,
   ShopItem,
   StreetUser,
   Track,
@@ -302,5 +303,30 @@ export const roomTracksApi = {
   },
   remove(track_id: string) {
     return apiFetch<void>(`/api/v1/me/room/tracks/${track_id}`, { method: "DELETE" });
+  },
+};
+
+// ── room visitor sessions (Phase 8) ────────────────────
+// ``visit`` starts a session in a room; ``leave`` ends it. Both endpoints
+// route through ``/rooms/{room_id}/...`` because the room_id is the
+// path-level subject (unlike /me/room/* which is owner-scoped). Server
+// publishes ``room.visitor_joined`` / ``room.visitor_left`` events on the
+// ``room:{room_id}`` channel — frontend subscribes by sending a WS
+// ``join`` frame after a successful HTTP visit.
+export const roomVisitApi = {
+  visit(roomId: string) {
+    return apiFetch<RoomVisit>(`/api/v1/rooms/${roomId}/visit`, {
+      method: "POST",
+    });
+  },
+  leave(roomId: string) {
+    return apiFetch<void>(`/api/v1/rooms/${roomId}/leave`, {
+      method: "POST",
+    });
+  },
+  listVisitors(roomId: string) {
+    return apiFetch<RoomVisit[]>(`/api/v1/rooms/${roomId}/visitors`, {
+      method: "GET",
+    });
   },
 };

@@ -199,6 +199,18 @@ export type MoveRoomItemInput = {
   y: number;
 };
 
+// ── Phase 8: room visitor sessions ─────────────────────────────────────────
+// One row per active "user X is currently in room Y". Server enforces
+// max_visitors (visibility-aware: owner bypasses the cap). The frontend
+// drives visit/leave on room page mount/unmount; abrupt browser-close
+// scenarios leave a stale row for a future cleanup job to reap.
+export type RoomVisit = {
+  id: string;
+  room_id: string;
+  visitor_user_id: string;
+  joined_at: string;
+};
+
 // ── Phase 6 Tier-2: track library ───────────────────────────────────────────
 export type TrackMood = "lofi" | "jazz" | "rain" | "ambient";
 

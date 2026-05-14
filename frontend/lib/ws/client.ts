@@ -26,6 +26,20 @@ export type WsMessage =
       delta_minor: number;
       reason: string;
     }
+  // Phase 8: visitor session lifecycle. Broadcast on the ``room:{id}``
+  // channel — VisitorPanel subscribes after sending the ``join`` frame
+  // that follows a successful HTTP visit.
+  | {
+      type: "room.visitor_joined";
+      room_id: string;
+      user_id: string;
+      joined_at: string;
+    }
+  | {
+      type: "room.visitor_left";
+      room_id: string;
+      user_id: string;
+    }
   | { type: string; [k: string]: unknown };
 
 type Listener = (msg: WsMessage) => void;
