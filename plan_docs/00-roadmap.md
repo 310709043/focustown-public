@@ -153,7 +153,7 @@
 
 ---
 
-### Phase 6 — Track library + LocalFSStorage 串接　〔PENDING〕
+### Phase 6 — Track library + LocalFSStorage 串接　〔DONE 2026-05-14, Tier-2〕
 
 **Deliverable**: 後端真正能存 / 播放 MP3 (本地)。
 
@@ -271,3 +271,4 @@
 | 2026-05-14 | 1 | Smoke test 通過 ➜ DONE | WS lifecycle 4 messages 全收到、`/presence/street` 上線下線正確切換；ready for Phase 2 |
 | 2026-05-14 | 2 | T 幣經濟系統實作 ➜ DONE | 22 個新單元測試 (累積 30/30)、ruff 0 新錯、front quality gates 全綠；session→earn→buy→wallet WS push 整條 pipeline 通過、4 個錯誤路徑 (409/402/404) 正確；副帶修了 EventBus log 的 structlog kwarg 衝突 bug |
 | 2026-05-14 | 3 | Avatar / 車輛裝備實作 ➜ DONE | 9 個新單元測試 (累積 39/39)、ruff 0 新錯 (基線 17→16)；裝備 API 4 個錯誤路徑 (403/400/404/200-unequip) 正確；多瀏覽器 WS equipment_changed 廣播驗證通過；CarsLane 渲染優先 vehicle.render_meta；副帶修了 UserORM.updated_at 在 async session 重新整理時的 MissingGreenlet bug |
+| 2026-05-14 | 6 | Track library Tier-2 ➜ DONE (parallel to Phase 4 worktree) | 平行於另一 worktree 之 Phase 4 (Room) 開發。Tier-2 切片：tracks 表 + GET /tracks (mood filter) + GET /tracks/{id}/stream (Range 206 partial) + POST /tracks (multipart, MIME magic + 15 MB 限制 + 每人 10 首 quota) + DELETE /tracks/{id} (owner-only)。22 個新單元測試 (累積 97/97 全綠)、ruff 11 (基線 15→11，net -4)、frontend typecheck+lint+build 全綠。前端 /town/library 頁 + MusicPanel 改吃 backend。Tier-3 (S3 adapter) 留 Phase 6b plan。Alembic 雙 head (本 phase 0004 + Phase 4 也將 0004) 合並時須 `alembic merge`。詳見 plan_docs/04-phase6-track-library.md。

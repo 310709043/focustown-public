@@ -11,6 +11,7 @@ from app.api.v1.presence.router import router as presence_router
 from app.api.v1.rooms.router import me_room_router, rooms_router
 from app.api.v1.sessions.router import router as sessions_router
 from app.api.v1.shop.router import router as shop_router
+from app.api.v1.tracks.router import router as tracks_router
 from app.api.v1.users.router import router as users_router
 from app.api.v1.wallet.router import router as wallet_router
 from app.api.v1.ws.router import router as ws_router
@@ -30,4 +31,5 @@ router.include_router(items_router, prefix="/me/items", tags=["items"])
 router.include_router(equipment_router, prefix="/me/equipment", tags=["equipment"])
 router.include_router(me_room_router, prefix="/me/room", tags=["rooms"])
 router.include_router(rooms_router, prefix="/rooms", tags=["rooms"])
+router.include_router(tracks_router, prefix="/tracks", tags=["tracks"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

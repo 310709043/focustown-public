@@ -1,3 +1,4 @@
+import { config } from "../config";
 import { apiFetch, tokenStore } from "./client";
 import type {
   Achievement,
@@ -13,6 +14,7 @@ import type {
   RoomTheme,
   ShopItem,
   StreetUser,
+  Track,
   User,
   UserItem,
   Wallet,
@@ -214,5 +216,41 @@ export const roomApi = {
   /** Read any room by id. Phase 4 returns 403 unless caller is the owner. */
   getById(roomId: string) {
     return apiFetch<Room>(`/api/v1/rooms/${roomId}`, { method: "GET" });
+  },
+};
+
+// ── tracks (Phase 6 Tier-2) ────────────────────────────
+export type TrackUploadInput = {
+  file: File;
+  title: string;
+  mood: string;
+  artist?: string;
+  license?: string;
+};
+
+export const tracksApi = {
+  list(mood?: string) {
+    const qs = mood ? `?mood=${encodeURIComponent(mood)}` : "";
+    return apiFetch<Track[]>(`/api/v1/tracks${qs}`, { method: "GET", auth: false });
+  },
+  get(id: string) {
+    return apiFetch<Track>(`/api/v1/tracks/${id}`, { method: "GET", auth: false });
+  },
+  upload(input: TrackUploadInput) {
+    const form = new FormData();
+    form.append("file", input.file);
+    form.append("title", input.title);
+    form.append("mood", input.mood);
+    if (input.artist) form.append("artist", input.artist);
+    if (input.license) form.append("license", input.license);
+    return apiFetch<Track>("/api/v1/tracks", { method: "POST", body: form });
+  },
+  remove(id: string) {
+    return apiFetch<void>(`/api/v1/tracks/${id}`, { method: "DELETE" });
+  },
+  /** Absolute URL suitable for `<audio src={...}>`. Stream endpoint is
+   *  unauthenticated by design; tokens aren't needed for playback. */
+  streamUrl(id: string) {
+    return `${config.apiBaseUrl}/api/v1/tracks/${id}/stream`;
   },
 };

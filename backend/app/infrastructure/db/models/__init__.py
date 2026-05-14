@@ -6,6 +6,7 @@ from app.infrastructure.db.models.password_reset_token import PasswordResetToken
 from app.infrastructure.db.models.room import RoomORM
 from app.infrastructure.db.models.shop_item import ShopItemORM
 from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM
+from app.infrastructure.db.models.track import TrackORM
 from app.infrastructure.db.models.user import UserORM
 from app.infrastructure.db.models.user_item import UserItemORM
 from app.infrastructure.db.models.wallet import WalletORM
@@ -20,6 +21,7 @@ __all__ = [
     "RoomORM",
     "ShopItemORM",
     "ShopItemPriceORM",
+    "TrackORM",
     "UserAchievementORM",
     "UserItemORM",
     "UserORM",

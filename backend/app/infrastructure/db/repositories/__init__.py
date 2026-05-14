@@ -8,6 +8,7 @@ from app.infrastructure.db.repositories.password_reset_token_repo import (
 from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
 from app.infrastructure.db.repositories.shop_item_price_repo import SqlShopItemPriceRepo
 from app.infrastructure.db.repositories.shop_repo import SqlShopRepo
+from app.infrastructure.db.repositories.track_repo import SqlTrackRepo
 from app.infrastructure.db.repositories.user_item_repo import SqlUserItemRepo
 from app.infrastructure.db.repositories.user_repo import SqlUserRepo
 from app.infrastructure.db.repositories.wallet_repo import SqlWalletRepo
@@ -24,6 +25,7 @@ __all__ = [
     "SqlRoomRepo",
     "SqlShopItemPriceRepo",
     "SqlShopRepo",
+    "SqlTrackRepo",
     "SqlUserItemRepo",
     "SqlUserRepo",
     "SqlWalletRepo",

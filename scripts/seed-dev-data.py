@@ -25,10 +25,14 @@ for candidate in (ROOT / "backend", Path("/app")):
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.ids import UUID4Generator  # noqa: E402
+from app.core.security import hash_password  # noqa: E402
 from app.infrastructure.db.models.achievement import AchievementORM  # noqa: E402
 from app.infrastructure.db.models.shop_item import ShopItemORM  # noqa: E402
 from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM  # noqa: E402
+from app.infrastructure.db.models.track import TrackORM  # noqa: E402
+from app.infrastructure.db.models.user import UserORM  # noqa: E402
 from app.infrastructure.db.session import get_session_factory  # noqa: E402
+from app.infrastructure.storage.local import LocalFSStorage  # noqa: E402
 
 ACHIEVEMENTS = [
     {"code": "streak_7", "icon": "🔥", "title": "連續 7 天", "description": "每天都有專注"},
@@ -65,6 +69,22 @@ SHOP_ITEMS = [
     {"category": "effect", "icon": "🎁", "name": "禮物盒", "description": "送給你的配對對象", "price_cT": 250, "price_cents": 9900, "featured": True},
     {"category": "effect", "icon": "💫", "name": "完成爆炸", "description": "番茄完成時的煙火特效", "price_cT": 80, "price_cents": 4900, "featured": False},
 ]
+
+# Phase 6 Tier-2 — track library seeds.
+#
+# Real audio data isn't shipped in git. Drop any royalty-free MP3 file at
+# backend/assets/seed-tracks/<name>.mp3 to enable seeding; the script picks
+# them up by filename and seeds rows with default mood lofi (override via the
+# inline mapping below). If the directory is empty, track seeding is skipped
+# silently. Users can also upload via /town/library once registered.
+SEED_TRACK_MOOD_BY_FILENAME: dict[str, dict[str, str]] = {
+    # filename -> overrides; everything else defaults to lofi / artist None.
+    "midnight-city-lofi.mp3": {"title": "Midnight City — Lofi", "mood": "lofi"},
+    "tokyo-rain.mp3": {"title": "Tokyo Rain", "mood": "rain"},
+    "late-night-drive.mp3": {"title": "Late Night Drive", "mood": "jazz"},
+}
+
+SEED_SYSTEM_USER_EMAIL = "seed-system@focustown.local"
 
 
 async def main() -> None:
@@ -122,8 +142,73 @@ async def main() -> None:
                 meta = seed.get("render_meta")
                 if meta is not None:
                     row.render_meta = meta
+
+        await _seed_tracks(db, settings, ids)
+
         await db.commit()
     print("✓ Seed complete")
+
+
+async def _seed_tracks(db, settings, ids) -> None:
+    """Phase 6 Tier-2: copy any MP3 files found in backend/assets/seed-tracks/
+    into storage_root and insert tracks rows owned by a system seed user.
+    Idempotent — files already seeded (same filename → file_key) are skipped.
+    Silently no-ops when the assets directory is empty or missing."""
+    assets_dir = ROOT / "backend" / "assets" / "seed-tracks"
+    if not assets_dir.exists():
+        return
+    mp3_files = sorted(assets_dir.glob("*.mp3"))
+    if not mp3_files:
+        print(f"  (track seed) no MP3s found in {assets_dir}; skipping")
+        return
+
+    # Reuse storage backend so AWS swap doesn't break the seeder.
+    storage = LocalFSStorage(settings.storage_root)
+
+    system_user = (
+        await db.execute(_select(UserORM).where(UserORM.email == SEED_SYSTEM_USER_EMAIL))
+    ).scalar_one_or_none()
+    if system_user is None:
+        system_user = UserORM(
+            id=ids.new_id(),
+            email=SEED_SYSTEM_USER_EMAIL,
+            password_hash=hash_password("seed-system-no-login-3xpq8w"),
+            display_name="Focus Town Seed",
+            is_active=False,
+        )
+        db.add(system_user)
+        await db.flush()
+
+    for path in mp3_files:
+        filename = path.name
+        existing = (
+            await db.execute(_select(TrackORM).where(TrackORM.title == _seed_title(filename)))
+        ).scalar_one_or_none()
+        if existing is not None:
+            continue
+        data = path.read_bytes()
+        track_id = ids.new_id()
+        file_key = f"tracks/{track_id}.mp3"
+        await storage.put(key=file_key, data=data, content_type="audio/mpeg")
+        meta = SEED_TRACK_MOOD_BY_FILENAME.get(filename, {})
+        db.add(
+            TrackORM(
+                id=track_id,
+                title=meta.get("title", _seed_title(filename)),
+                artist=None,
+                mood=meta.get("mood", "lofi"),
+                duration_ms=None,
+                file_key=file_key,
+                content_type="audio/mpeg",
+                file_size_bytes=len(data),
+                license="royalty-free-seed",
+                uploaded_by_user_id=system_user.id,
+            )
+        )
+
+
+def _seed_title(filename: str) -> str:
+    return filename[:-4].replace("-", " ").title() if filename.lower().endswith(".mp3") else filename
 
 
 def _select(model):
