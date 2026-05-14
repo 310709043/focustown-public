@@ -8,9 +8,12 @@ import type {
   FocusSessionMode,
   LeaderboardEntry,
   Match,
+  MoveRoomItemInput,
   Note,
+  PlaceRoomItemInput,
   PurchaseResponse,
   Room,
+  RoomItem,
   RoomTheme,
   ShopItem,
   StreetUser,
@@ -213,9 +216,39 @@ export const roomApi = {
   updateMine(patch: { name?: string; theme?: RoomTheme }) {
     return apiFetch<Room>("/api/v1/me/room", { method: "PUT", body: patch });
   },
-  /** Read any room by id. Phase 4 returns 403 unless caller is the owner. */
+  /** Read any room by id. After Phase 5, public rooms are readable by any
+   *  authenticated user; invite_only rooms still return 403 to non-owners. */
   getById(roomId: string) {
     return apiFetch<Room>(`/api/v1/rooms/${roomId}`, { method: "GET" });
+  },
+};
+
+// ── room decorations (Phase 5) ─────────────────────────
+// Reads are visitor-eligible on public rooms; mutations are owner-only and
+// scoped to ``/me/room/items`` (no room id in the path — derived from the
+// caller's owned room server-side).
+export const decorationApi = {
+  list(roomId: string) {
+    return apiFetch<RoomItem[]>(`/api/v1/rooms/${roomId}/items`, {
+      method: "GET",
+    });
+  },
+  place(input: PlaceRoomItemInput) {
+    return apiFetch<RoomItem>("/api/v1/me/room/items", {
+      method: "POST",
+      body: input,
+    });
+  },
+  move(itemId: string, input: MoveRoomItemInput) {
+    return apiFetch<RoomItem>(`/api/v1/me/room/items/${itemId}`, {
+      method: "PUT",
+      body: input,
+    });
+  },
+  remove(itemId: string) {
+    return apiFetch<void>(`/api/v1/me/room/items/${itemId}`, {
+      method: "DELETE",
+    });
   },
 };
 

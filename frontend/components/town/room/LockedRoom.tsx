@@ -3,10 +3,10 @@
 import Link from "next/link";
 
 /**
- * Rendered when the API returns 403 for a room the caller does not own.
- * Phase 8 will replace this with a real visitor experience; until then we
- * show an engraved "ROOM LOCKED" plaque that matches the OwnerPlaque
- * visual language so the gate feels native to the world.
+ * Rendered when the API returns 403. After Phase 5 widened the room read
+ * for public visibility, this gate only fires for `invite_only` rooms.
+ * The engraved plaque visual language matches OwnerPlaque so the gate
+ * feels native to the world.
  */
 export function LockedRoom({ roomId }: { roomId: string }) {
   return (
@@ -36,7 +36,7 @@ export function LockedRoom({ roomId }: { roomId: string }) {
           className="font-mono text-muted"
           style={{ fontSize: 12, letterSpacing: 0.8 }}
         >
-          訪客機制 Phase 8 啟用
+          此房間僅限受邀者進入
         </div>
         <div
           className="font-mono text-muted"

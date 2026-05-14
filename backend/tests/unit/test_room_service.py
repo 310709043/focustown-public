@@ -142,10 +142,26 @@ async def test_update_happy_path_changes_name_and_theme() -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_by_id_forbidden_for_non_owner() -> None:
+async def test_get_by_id_returns_public_room_to_non_owner() -> None:
+    # Phase 5 widening: public rooms are readable by any authenticated user.
     users = [_make_user("u-alice", "Alice"), _make_user("u-bob", "Bob")]
     svc, _, _ = _make_service(users=users)
     alice_room = await svc.get_or_create_for_user(user_id="u-alice")
+    # Default visibility is "public" — Bob can read.
+    fetched = await svc.get_by_id(
+        room_id=alice_room.id, requester_user_id="u-bob"
+    )
+    assert fetched.id == alice_room.id
+
+
+@pytest.mark.asyncio
+async def test_get_by_id_rejects_invite_only_for_non_owner() -> None:
+    users = [_make_user("u-alice", "Alice"), _make_user("u-bob", "Bob")]
+    svc, rooms, _ = _make_service(users=users)
+    alice_room = await svc.get_or_create_for_user(user_id="u-alice")
+    # Flip to invite_only by direct fake mutation — the service has no
+    # mutator for visibility yet (Phase 5 scope), but the gate must hold.
+    rooms.rows[alice_room.id].visibility = "invite_only"
     with pytest.raises(ForbiddenError) as exc:
         await svc.get_by_id(room_id=alice_room.id, requester_user_id="u-bob")
     assert "room_not_accessible" in str(exc.value)

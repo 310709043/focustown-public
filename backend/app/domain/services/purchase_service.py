@@ -10,7 +10,7 @@ from app.core.exceptions import (
 from app.core.ids import IIdGenerator
 from app.domain.repositories.shop_item_price_repo import IShopItemPriceRepo
 from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
-from app.domain.repositories.user_item_repo import IUserItemRepo
+from app.domain.repositories.user_item_repo import IUserItemWriter
 from app.domain.repositories.wallet_transaction_repo import WalletTransaction
 from app.domain.services.wallet_service import WalletService
 
@@ -40,7 +40,7 @@ class PurchaseService:
         *,
         shop: IShopRepo,
         prices: IShopItemPriceRepo,
-        user_items: IUserItemRepo,
+        user_items: IUserItemWriter,
         wallet_service: WalletService,
         ids: IIdGenerator,
     ) -> None:

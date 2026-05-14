@@ -15,7 +15,24 @@ class UserItem:
     acquired_at: datetime
 
 
-class IUserItemRepo(Protocol):
+class IUserItemReader(Protocol):
+    """Read-only view over user_items.
+
+    Services that only check ownership (e.g. ``EquipmentService``) or
+    resolve an inventory row (e.g. ``RoomDecorationService.place``) should
+    depend on this Protocol so they cannot accidentally mutate inventory.
+    """
+
+    async def list_for_user(self, user_id: str) -> list[UserItem]: ...
+    async def owns(self, *, user_id: str, shop_item_id: str) -> bool: ...
+    async def get_by_id_and_owner(
+        self, *, user_item_id: str, owner_user_id: str
+    ) -> UserItem | None: ...
+
+
+class IUserItemWriter(Protocol):
+    """Write-side over user_items (grant ownership rows)."""
+
     async def insert(
         self,
         *,
@@ -35,6 +52,12 @@ class IUserItemRepo(Protocol):
         ``ConflictError("already_owned")``.
         """
 
-    async def list_for_user(self, user_id: str) -> list[UserItem]: ...
 
-    async def owns(self, *, user_id: str, shop_item_id: str) -> bool: ...
+class IUserItemRepo(IUserItemReader, IUserItemWriter, Protocol):
+    """Full user_items repository — composes reader + writer.
+
+    Callers that genuinely need both sides depend on this; everything
+    else should narrow to ``IUserItemReader`` or ``IUserItemWriter`` per
+    Interface Segregation (mirrors the ``IUserRepo`` split in
+    user_repo.py).
+    """

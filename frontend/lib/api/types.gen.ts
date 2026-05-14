@@ -173,6 +173,32 @@ export type Room = {
   updated_at: string;
 };
 
+// ── Phase 5: room decoration items ─────────────────────────────────────────
+// One row per placement inside a room. `x` and `y` are integer percentages
+// (0–100) of the room interior bounding box, kept resolution-independent so
+// the same data renders identically across viewport sizes.
+export type RoomItem = {
+  id: string;
+  room_id: string;
+  user_item_id: string;
+  x: number;
+  y: number;
+  z_index: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlaceRoomItemInput = {
+  user_item_id: string;
+  x: number;
+  y: number;
+};
+
+export type MoveRoomItemInput = {
+  x: number;
+  y: number;
+};
+
 // ── Phase 6 Tier-2: track library ───────────────────────────────────────────
 export type TrackMood = "lofi" | "jazz" | "rain" | "ambient";
 

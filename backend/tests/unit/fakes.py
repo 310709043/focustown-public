@@ -30,6 +30,8 @@ from app.domain.repositories.presence import (
     PresenceEntry,
     PresenceState,
 )
+from app.domain.models.room_item import RoomItem
+from app.domain.repositories.room_item_repo import IRoomItemRepo
 from app.domain.repositories.room_repo import IRoomRepo, RoomAlreadyExistsError
 from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
 from app.domain.repositories.user_item_repo import IUserItemRepo, UserItem
@@ -316,6 +318,71 @@ class FakeRoomRepo(IRoomRepo):
 
 
 @dataclass
+class FakeRoomItemRepo(IRoomItemRepo):
+    """In-memory ``IRoomItemRepo`` (composed reader + writer).
+
+    LSP rule: observationally identical to ``SqlRoomItemRepo`` from the
+    service's perspective — ``delete`` is idempotent on missing ids, and
+    ``update_position`` raises ``NotFoundError`` for unknown items.
+    """
+
+    rows: dict[str, RoomItem] = field(default_factory=dict)
+
+    async def list_for_room(self, room_id: str) -> list[RoomItem]:
+        items = [r for r in self.rows.values() if r.room_id == room_id]
+        items.sort(key=lambda r: (r.z_index, r.created_at))
+        return items
+
+    async def get(self, item_id: str) -> RoomItem | None:
+        return self.rows.get(item_id)
+
+    async def create(
+        self,
+        *,
+        item_id: str,
+        room_id: str,
+        user_item_id: str,
+        x: int,
+        y: int,
+        z_index: int,
+    ) -> RoomItem:
+        now = datetime.now(UTC)
+        row = RoomItem(
+            id=item_id,
+            room_id=room_id,
+            user_item_id=user_item_id,
+            x=x,
+            y=y,
+            z_index=z_index,
+            created_at=now,
+            updated_at=now,
+        )
+        self.rows[item_id] = row
+        return row
+
+    async def update_position(
+        self,
+        *,
+        item_id: str,
+        x: int,
+        y: int,
+        z_index: int | UnsetType = UNSET,
+    ) -> RoomItem:
+        row = self.rows.get(item_id)
+        if row is None:
+            raise NotFoundError("room_item_not_found")
+        row.x = x
+        row.y = y
+        if isinstance(z_index, int):
+            row.z_index = z_index
+        row.updated_at = datetime.now(UTC)
+        return row
+
+    async def delete(self, item_id: str) -> None:
+        self.rows.pop(item_id, None)
+
+
+@dataclass
 class FakePresenceTracker(IPresenceTracker):
     """In-memory IPresenceTracker.
 
@@ -407,6 +474,14 @@ class FakeUserItemRepo(IUserItemRepo):
 
     async def owns(self, *, user_id: str, shop_item_id: str) -> bool:
         return (user_id, shop_item_id) in self.owned
+
+    async def get_by_id_and_owner(
+        self, *, user_item_id: str, owner_user_id: str
+    ) -> UserItem | None:
+        row = self.items.get(user_item_id)
+        if row is None or row.user_id != owner_user_id:
+            return None
+        return row
 
 
 @dataclass

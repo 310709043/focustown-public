@@ -31,3 +31,38 @@ class UpdateRoomRequest(BaseModel):
 
     name: str | None = Field(default=None, min_length=1, max_length=64)
     theme: RoomTheme | None = None
+
+
+class RoomItemResponse(BaseModel):
+    id: str
+    room_id: str
+    user_item_id: str
+    x: int
+    y: int
+    z_index: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class PlaceRoomItemRequest(BaseModel):
+    """Body for ``POST /me/room/items``.
+
+    ``x`` and ``y`` are integer percentages of the room interior bounding
+    box (0–100). The service runs the same range check again as the
+    second line of defense before the DB CHECK fires.
+    """
+
+    user_item_id: str = Field(..., min_length=1, max_length=36)
+    x: int = Field(..., ge=0, le=100)
+    y: int = Field(..., ge=0, le=100)
+
+
+class MoveRoomItemRequest(BaseModel):
+    """Body for ``PUT /me/room/items/{item_id}``.
+
+    z_index reordering is reserved for a later stint; for now only the
+    flat (x, y) position changes here.
+    """
+
+    x: int = Field(..., ge=0, le=100)
+    y: int = Field(..., ge=0, le=100)
