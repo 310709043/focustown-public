@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass, field, replace
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from app.core.clock import IClock
@@ -17,6 +17,10 @@ from app.core.sentinels import UNSET, UnsetType
 from app.domain.models import User
 from app.domain.models.room import Room, RoomVisibility
 from app.domain.notifications import INotificationService
+from app.domain.repositories.leaderboard_snapshot_repo import (
+    ILeaderboardSnapshotRepo,
+    LeaderboardSnapshotRecord,
+)
 from app.domain.repositories.password_reset_token_repo import (
     IPasswordResetTokenRepo,
     ResetTokenRecord,
@@ -470,3 +474,29 @@ class RecordingPublisher:
 
     async def publish(self, channel: str, payload: dict[str, Any]) -> None:
         self.published.append((channel, payload))
+
+
+@dataclass
+class FakeLeaderboardSnapshotRepo(ILeaderboardSnapshotRepo):
+    """In-memory ILeaderboardSnapshotRepo. Stores rows keyed by
+    ``(snapshot_date, user_id)`` so repeated ``upsert_day`` calls are
+    idempotent (subsequent insertions of the same key return 0)."""
+
+    rows: dict[tuple[date, str], LeaderboardSnapshotRecord] = field(default_factory=dict)
+    calls: list[tuple[date, list[LeaderboardSnapshotRecord]]] = field(default_factory=list)
+
+    async def upsert_day(
+        self,
+        *,
+        snapshot_date: date,
+        entries: list[LeaderboardSnapshotRecord],
+    ) -> int:
+        self.calls.append((snapshot_date, list(entries)))
+        inserted = 0
+        for e in entries:
+            key = (snapshot_date, e.user_id)
+            if key in self.rows:
+                continue
+            self.rows[key] = e
+            inserted += 1
+        return inserted
