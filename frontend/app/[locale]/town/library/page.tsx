@@ -105,7 +105,7 @@ export default function LibraryPage() {
         <button
           type="button"
           onClick={() => router.push("/town")}
-          className="text-[11px] px-3 py-1 border border-border rounded text-muted hover:border-accent-1 hover:text-accent-1"
+          className="text-[11px] px-3 py-1.5 touch:py-2.5 touch:min-h-[40px] border border-border rounded text-muted hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1"
         >
           {t("backCta")}
         </button>

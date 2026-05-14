@@ -228,7 +228,7 @@ export default function SplashPage() {
             data-testid="signin-submit"
             type="submit"
             disabled={loading}
-            className="pixel-btn"
+            className="pixel-btn touch:min-h-[48px]"
             style={{ fontSize: 12, padding: "12px 16px", letterSpacing: 3 }}
           >
             {loading ? t("loadingCta") : t("submitCta")}
@@ -241,7 +241,7 @@ export default function SplashPage() {
           <Link
             data-testid="signup-link"
             href="/signup"
-            className="text-center font-japan border border-border rounded-md py-2.5 hover:border-accent-1 hover:text-accent-1 text-muted transition-colors"
+            className="text-center font-japan border border-border rounded-md py-2.5 touch:py-3.5 hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1 text-muted transition-colors"
             style={{ fontSize: 13 }}
           >
             {t("signupLink")}

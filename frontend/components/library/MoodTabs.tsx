@@ -22,17 +22,17 @@ type Props = {
 export function MoodTabs({ value, onChange, className }: Props) {
   const t = useTranslations("library.moods");
   return (
-    <div className={clsx("flex flex-wrap gap-1", className)}>
+    <div className={clsx("flex flex-wrap gap-1.5 md:gap-1", className)}>
       {MOOD_KEYS.map((key) => (
         <button
           key={key}
           type="button"
           onClick={() => onChange(key)}
           className={clsx(
-            "text-[10px] px-2 py-0.5 rounded-full border transition-colors",
+            "text-[10px] px-2.5 py-1.5 touch:py-2 touch:min-h-[36px] md:py-0.5 md:px-2 rounded-full border transition-colors",
             value === key
               ? "border-accent-1 text-accent-1"
-              : "border-border text-muted hover:border-accent-1/60",
+              : "border-border text-muted hover:border-accent-1/60 active:border-accent-1/60",
           )}
         >
           {t(key)}

@@ -36,7 +36,7 @@ export default function SignInPage() {
       }}
     >
       <div className="absolute top-4 right-4 z-10">
-        <LocaleSwitcher className="flex gap-1 bg-glass border border-border rounded px-1 py-0.5 backdrop-blur-md" />
+        <LocaleSwitcher className="flex gap-1 bg-glass border border-border rounded px-2 py-1 touch:px-3 touch:py-2 backdrop-blur-md" />
       </div>
       <form
         data-testid="signin-form"
@@ -127,7 +127,7 @@ export default function SignInPage() {
           data-testid="signin-submit"
           type="submit"
           disabled={loading}
-          className="pixel-btn"
+          className="pixel-btn touch:min-h-[48px]"
           style={{ fontSize: 12, padding: "10px 16px", letterSpacing: 2 }}
         >
           {loading ? t("loadingCta") : `${t("submitCta")} ▶`}
@@ -136,12 +136,15 @@ export default function SignInPage() {
           className="flex justify-between gap-3 mt-1"
           style={{ fontSize: "var(--font-size-label)" }}
         >
-          <Link href="/signup" className="text-muted hover:text-accent-2">
+          <Link
+            href="/signup"
+            className="text-muted hover:text-accent-2 active:text-accent-2 touch:py-2 touch:-my-2"
+          >
             {t("toggleToSignup")}
           </Link>
           <Link
             href="/forgot-password"
-            className="text-muted hover:text-accent-2"
+            className="text-muted hover:text-accent-2 active:text-accent-2 touch:py-2 touch:-my-2"
           >
             {t("forgotPasswordLink")}
           </Link>

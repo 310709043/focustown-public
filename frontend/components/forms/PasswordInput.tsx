@@ -36,7 +36,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? t("passwordHideAria") : t("passwordShowAria")}
           aria-pressed={visible}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-accent-2 px-1.5 py-0.5 border border-border rounded font-pixel tracking-wide"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-accent-2 active:text-accent-2 px-2 py-1.5 touch:py-2 touch:min-h-[36px] md:px-1.5 md:py-0.5 border border-border rounded font-pixel tracking-wide"
           style={{ fontSize: "var(--font-size-caption)" }}
         >
           {visible ? t("passwordHide") : t("passwordShow")}

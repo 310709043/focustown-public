@@ -87,16 +87,16 @@ export function TimerPanel() {
         />
       </div>
       <div className="flex gap-1 justify-between items-center">
-        <div className="flex gap-1">
+        <div className="flex gap-1.5 md:gap-1">
           {MODES.map((m) => (
             <button
               key={m.mode}
               onClick={() => setMode(m.mode, m.seconds)}
               className={clsx(
-                "border rounded transition-all px-2 py-1 font-japan",
+                "border rounded transition-all px-2.5 py-1.5 touch:py-2 touch:min-h-[36px] md:px-2 md:py-1 font-japan",
                 mode === m.mode
                   ? "border-accent-1 text-accent-1 bg-accent-1/10"
-                  : "border-border text-muted hover:border-accent-1 hover:text-accent-1",
+                  : "border-border text-muted hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1",
               )}
               style={{ fontSize: 12 }}
               aria-label={t(m.labelKey)}
@@ -106,7 +106,7 @@ export function TimerPanel() {
           ))}
           <button
             onClick={reset}
-            className="border border-border text-muted rounded px-2 py-1 hover:border-accent-1 hover:text-accent-1"
+            className="border border-border text-muted rounded px-2.5 py-1.5 touch:py-2 touch:min-h-[36px] md:px-2 md:py-1 hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1"
             style={{ fontSize: 12 }}
             aria-label={t("resetAria")}
           >

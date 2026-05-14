@@ -70,7 +70,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
         <button
           onClick={onClose}
           aria-label={tCommon("closeAria")}
-          className="absolute top-3 right-4 text-muted hover:text-text"
+          className="absolute top-2 right-2 text-muted hover:text-text active:text-text flex items-center justify-center w-10 h-10 rounded"
           style={{ fontSize: 18 }}
         >
           ✕
@@ -139,9 +139,10 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
           {candidate.role} · {t("onlineStatus", { hours: 2 })}
         </div>
 
-        {/* Segmented compatibility bar */}
+        {/* Segmented compatibility bar — wraps to two rows on very narrow
+            viewports so the 10 boxes always read at one glance. */}
         <div className="flex flex-col items-center gap-2 mb-4">
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap justify-center max-w-full">
             {Array.from({ length: SEGMENTS }).map((_, i) => {
               const lit = i < litCount;
               return (
@@ -187,9 +188,9 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
           {current.reason || t("reasonFallback")}
         </div>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center flex-wrap">
           <button
-            className="pixel-btn"
+            className="pixel-btn touch:min-h-[48px]"
             style={{ fontSize: 11, padding: "12px 24px", letterSpacing: 2 }}
             onClick={async () => {
               const m = await acceptMatch();
@@ -200,7 +201,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             {t("acceptCta")}
           </button>
           <button
-            className="pixel-btn"
+            className="pixel-btn touch:min-h-[48px]"
             style={{
               fontSize: 11,
               padding: "12px 24px",

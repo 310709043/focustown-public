@@ -95,9 +95,9 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
         }}
       />
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap justify-center">
         <button
-          className="pixel-btn"
+          className="pixel-btn touch:min-h-[52px]"
           style={{
             fontSize: "var(--font-size-label)",
             lineHeight: 1.2,
@@ -109,7 +109,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
           {running ? t("pauseCta") : t("startCta")}
         </button>
         <button
-          className="pixel-btn"
+          className="pixel-btn touch:min-h-[52px]"
           style={{
             fontSize: "var(--font-size-label)",
             lineHeight: 1.2,

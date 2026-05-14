@@ -178,7 +178,7 @@ export default function ShopPage() {
           </span>
           <button
             onClick={() => router.push("/town")}
-            className="border border-border text-muted font-japan text-[10px] px-3 py-1 rounded hover:border-coral hover:text-coral"
+            className="border border-border text-muted font-japan text-[10px] px-3 py-1.5 touch:py-2.5 touch:min-h-[40px] rounded hover:border-coral hover:text-coral active:border-coral active:text-coral"
           >
             {tPage("closeCta")}
           </button>
@@ -236,7 +236,7 @@ export default function ShopPage() {
                       key={it.id}
                       className={clsx(
                         "pixel-panel p-3 flex flex-col gap-1.5 transition-all relative",
-                        !owned && "hover:-translate-y-0.5",
+                        !owned && "hover:-translate-y-0.5 touch:active:scale-[0.98]",
                       )}
                       style={
                         owned
@@ -297,10 +297,10 @@ export default function ShopPage() {
                                 onClick={() => handleEquipToggle(it)}
                                 disabled={isLoading}
                                 className={clsx(
-                                  "font-pixel text-[8px] px-2.5 py-1 rounded relative",
+                                  "font-pixel text-[8px] px-2.5 py-1.5 touch:px-3 touch:py-2 touch:text-[10px] touch:min-h-[40px] rounded relative",
                                   isEquipped
                                     ? "border border-amber bg-amber/10 text-amber"
-                                    : "border border-teal/60 text-teal hover:bg-teal/10",
+                                    : "border border-teal/60 text-teal hover:bg-teal/10 active:bg-teal/10",
                                 )}
                                 title={
                                   isEquipped
@@ -326,12 +326,12 @@ export default function ShopPage() {
                             onClick={() => handleBuy(it)}
                             disabled={owned || isLoading || !tPrice}
                             className={clsx(
-                              "font-pixel text-[8px] px-2.5 py-1 rounded relative",
+                              "font-pixel text-[8px] px-2.5 py-1.5 touch:px-3 touch:py-2 touch:text-[10px] touch:min-h-[40px] rounded relative",
                               owned
                                 ? "border border-teal/40 text-teal/70 cursor-not-allowed"
                                 : !canAfford
                                   ? "border border-border text-muted cursor-not-allowed"
-                                  : "border border-accent-1 text-accent-1 hover:bg-accent-1/10",
+                                  : "border border-accent-1 text-accent-1 hover:bg-accent-1/10 active:bg-accent-1/10",
                             )}
                             title={
                               owned

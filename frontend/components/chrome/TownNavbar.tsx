@@ -27,21 +27,23 @@ export function TownNavbar() {
   return (
     <nav
       data-testid="town-navbar"
-      className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between px-5 z-10"
+      className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between gap-2 px-3 md:px-5 z-10"
       style={{ height: 56 }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <Logo scale={1.4} />
       </div>
 
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <CoinBadge />
-        <TopStatusPill />
+        <div className="hidden md:flex">
+          <TopStatusPill />
+        </div>
 
         <Link
           data-testid="nav-awards"
           href="/awards"
-          className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-amber hover:text-amber transition-colors"
+          className="shrink-0 border border-border text-muted font-japan rounded-md px-2.5 py-2 md:px-3 hover:border-amber hover:text-amber active:border-amber active:text-amber transition-colors touch:min-h-[40px]"
           style={{ fontSize: 13 }}
         >
           {tNav("awards")}
@@ -49,7 +51,7 @@ export function TownNavbar() {
 
         <button
           data-testid="nav-room"
-          className="font-japan rounded-md px-3 py-2 transition-colors flex items-center gap-1.5"
+          className="shrink-0 font-japan rounded-md px-2.5 py-2 md:px-3 transition-colors flex items-center gap-1.5 touch:min-h-[40px]"
           style={{
             fontSize: 13,
             background:
@@ -76,11 +78,12 @@ export function TownNavbar() {
         <Link
           data-testid="nav-shop"
           href="/shop"
-          className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-pink hover:text-pink transition-colors flex items-center gap-1.5"
+          className="shrink-0 border border-border text-muted font-japan rounded-md px-2.5 py-2 md:px-3 hover:border-pink hover:text-pink active:border-pink active:text-pink transition-colors flex items-center gap-1.5 touch:min-h-[40px]"
           style={{ fontSize: 13 }}
         >
           {tNav("shop")}
           <span
+            className="hidden xs:inline-block"
             style={{
               fontSize: 10,
               color: "var(--amber)",
@@ -98,7 +101,7 @@ export function TownNavbar() {
 
         <button
           data-testid="nav-logout"
-          className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-coral hover:text-coral transition-colors"
+          className="shrink-0 border border-border text-muted font-japan rounded-md px-2.5 py-2 md:px-3 hover:border-coral hover:text-coral active:border-coral active:text-coral transition-colors touch:min-h-[40px]"
           style={{ fontSize: 13 }}
           onClick={() => {
             signOut();

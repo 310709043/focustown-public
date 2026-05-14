@@ -117,6 +117,20 @@ body {
   font-feature-settings: "liga" off, "calt" off;
 }
 
+/* Respect user motion preference: collapse marquee/shimmer/parallax animations
+   for visitors who set OS-level reduced motion. Keeps essential transitions
+   (focus rings, button press) but flattens decorative loops. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* CRT, vignette, grain overlays (global) */
 .crt-overlay {
   position: fixed;

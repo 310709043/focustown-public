@@ -34,14 +34,16 @@ export function NotesPanel() {
         <span>{t("title")}</span>
         <span>{t("countLabel", { count: notes.length })}</span>
       </div>
-      <div className="flex gap-1 px-3 py-2 border-b border-border flex-wrap">
+      <div className="flex gap-1.5 md:gap-1 px-3 py-2 border-b border-border flex-wrap">
         {(["all", "todo"] as const).map((k) => (
           <button
             key={k}
             onClick={() => setFilter(k)}
             className={clsx(
-              "text-[10px] px-2 py-0.5 rounded border font-japan",
-              filter === k ? "border-accent-1 text-accent-1" : "border-border text-muted",
+              "text-[10px] px-2.5 py-1.5 touch:py-2 touch:min-h-[36px] md:py-0.5 md:px-2 rounded border font-japan transition-colors",
+              filter === k
+                ? "border-accent-1 text-accent-1"
+                : "border-border text-muted active:border-accent-1/60",
             )}
           >
             {k === "all" ? t("filterAll") : t("filterTodo")}
@@ -91,7 +93,7 @@ export function NotesPanel() {
           className="bg-[rgba(12,5,35,.9)] border border-border rounded-b text-[12px] px-2.5 py-1.5 outline-none focus:border-accent-1 resize-none h-16 leading-snug font-body"
         />
         <button
-          className="w-full border border-border text-muted text-[10px] py-1 rounded font-japan hover:border-accent-1 hover:text-accent-1"
+          className="w-full border border-border text-muted text-[10px] py-2 touch:py-2.5 touch:min-h-[40px] md:py-1 rounded font-japan hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1"
           onClick={async () => {
             if (!title.trim() && !body.trim()) return;
             await notesApi.create({ title: title.trim() || t("untitled"), body: body.trim() });

@@ -72,7 +72,7 @@ export default function SelectCharacterPage() {
 
   return (
     <main
-      className="absolute inset-0 flex flex-col px-6 py-5 gap-4 overflow-y-auto"
+      className="absolute inset-0 flex flex-col px-4 py-4 md:px-6 md:py-5 gap-4 overflow-y-auto"
       style={{
         background:
           "linear-gradient(155deg,#060120 0%,#0d0435 55%,#060120 100%)",
@@ -90,7 +90,7 @@ export default function SelectCharacterPage() {
 
       {/* ═══ PROFILE FORM (上半) ═══ */}
       <section
-        className="self-center w-full max-w-3xl bg-card border border-border2 rounded-lg p-5 grid grid-cols-2 gap-3"
+        className="self-center w-full max-w-3xl bg-card border border-border2 rounded-lg p-4 md:p-5 grid grid-cols-1 md:grid-cols-2 gap-3"
         style={{ boxShadow: "0 0 28px rgba(124,58,237,0.18)" }}
       >
         <Field label={t("fieldDisplayName")}>
@@ -150,7 +150,7 @@ export default function SelectCharacterPage() {
       </section>
 
       {/* ═══ CHARACTER GRID (下半) ═══ */}
-      <section className="self-center w-full max-w-3xl grid grid-cols-6 gap-2">
+      <section className="self-center w-full max-w-3xl grid grid-cols-3 xs:grid-cols-4 md:grid-cols-6 gap-2">
         {CHARACTERS.map((c, i) => (
           <CharacterCard
             key={c.key}
@@ -178,7 +178,7 @@ export default function SelectCharacterPage() {
       <button
         disabled={!selected || saving}
         onClick={onConfirm}
-        className="pixel-btn self-center"
+        className="pixel-btn self-center touch:min-h-[52px] w-full max-w-xs"
         style={{
           fontSize: 12,
           padding: "14px 28px",
@@ -247,14 +247,14 @@ function CharacterCard({
       title={role}
       className={clsx(
         "relative rounded-lg flex flex-col items-center justify-end cursor-pointer transition-all pixel-edge",
-        "bg-glass border-2 hover:-translate-y-0.5",
+        "bg-glass border-2 hover:-translate-y-0.5 active:scale-95",
+        "h-[100px] xs:h-[96px] md:h-[92px]",
         selected
           ? "border-accent-2 bg-accent-1/15 shadow-[0_0_18px_rgba(167,139,250,0.4)]"
-          : "border-border hover:border-accent-1",
+          : "border-border hover:border-accent-1 active:border-accent-1",
         locked && "opacity-70 saturate-50",
       )}
       style={{
-        height: 92,
         padding: "6px 4px 8px",
       }}
     >
@@ -273,9 +273,8 @@ function CharacterCard({
         {emoji}
       </span>
       <div
-        className="font-japan"
+        className="font-japan text-[11px] md:text-[9px]"
         style={{
-          fontSize: 9,
           color: selected ? "var(--a2)" : "var(--muted)",
           lineHeight: 1.2,
           textAlign: "center",
