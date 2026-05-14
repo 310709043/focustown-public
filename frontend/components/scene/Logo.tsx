@@ -9,7 +9,8 @@ type Props = {
 };
 
 // `scale=1` legacy = 40px square PNG. The pixel wordmark is 7 rows tall
-// at scale=1, so we multiply by ~3 to land in a similar visual weight.
+// at scale=1, so we multiply by 3 to land in a similar visual weight.
+// Hero-size callers pass higher `scale` values (e.g. splash hero passes 5).
 const PIXEL_SCALE_MULTIPLIER = 3;
 
 export function Logo({ scale = 1, glow = true, className }: Props) {

@@ -15,17 +15,24 @@ const REMOVE_DELAY_MS = 1600;
  * layout so deep-link routes also get it, not just `/`.
  */
 export function SplashGate() {
-  const [visible, setVisible] = useState(true);
+  // Lazy initializer reads sessionStorage synchronously on the client so
+  // subsequent reloads skip the splash entirely (no one-frame flash). The
+  // server always renders `visible=true` because it has no sessionStorage;
+  // React reconciles on hydration. The visible overlay being an absolute
+  // fixed-position aria-hidden div means the hydration delta is invisible
+  // to assistive tech and the document outline.
+  const [visible, setVisible] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return !window.sessionStorage.getItem(SESSION_FLAG);
+  });
   const [hiding, setHiding] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const already = window.sessionStorage.getItem(SESSION_FLAG);
-    if (already) {
-      setVisible(false);
-      return;
-    }
+    if (typeof window === "undefined" || !visible) return;
 
+    // Deliberate first-load boot ceremony: the splash blocks pointer events
+    // for HIDE_DELAY_MS — that's a feature, not a bug. Don't shorten this
+    // without a UX reason.
     const hideTimer = window.setTimeout(() => setHiding(true), HIDE_DELAY_MS);
     const removeTimer = window.setTimeout(() => {
       setVisible(false);
@@ -40,7 +47,7 @@ export function SplashGate() {
       window.clearTimeout(hideTimer);
       window.clearTimeout(removeTimer);
     };
-  }, []);
+  }, [visible]);
 
   if (!visible) return null;
 

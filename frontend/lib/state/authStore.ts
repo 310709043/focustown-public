@@ -26,6 +26,20 @@ interface AuthState {
   ) => void;
 }
 
+/**
+ * Map a thrown error to a human-readable Chinese message. Backend
+ * ApiError instances carry localised `message` already; only browser
+ * network failures need the friendlier override, since `"Failed to
+ * fetch"` is opaque to most users.
+ */
+function describeAuthError(e: unknown): string {
+  if (e instanceof TypeError) {
+    return "無法連線到伺服器，請確認後端服務已啟動";
+  }
+  if (e instanceof Error) return e.message;
+  return "未知錯誤";
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: false,
@@ -44,7 +58,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user = await authApi.signIn({ email, password });
       set({ user, loading: false });
     } catch (e) {
-      set({ loading: false, error: (e as Error).message });
+      set({ loading: false, error: describeAuthError(e) });
       throw e;
     }
   },
@@ -61,7 +75,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       set({ user, loading: false });
     } catch (e) {
-      set({ loading: false, error: (e as Error).message });
+      set({ loading: false, error: describeAuthError(e) });
       throw e;
     }
   },

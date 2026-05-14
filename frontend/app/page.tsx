@@ -162,7 +162,7 @@ export default function SplashPage() {
       {/* foreground content */}
       <div className="relative z-[5] h-full flex flex-col items-center justify-center px-6 gap-7 animate-fadeUp">
         <div className="flex flex-col items-center gap-3">
-          <Logo scale={4} />
+          <Logo scale={5} />
           <div
             className="font-japan"
             style={{
