@@ -9,6 +9,9 @@ from app.domain.repositories.user_item_repo import IUserItemRepo, UserItem
 from app.infrastructure.db.models.user_item import UserItemORM
 
 
+__all__ = ["SqlUserItemRepo"]
+
+
 def _to_domain(row: UserItemORM) -> UserItem:
     return UserItem(
         id=row.id,
@@ -66,3 +69,13 @@ class SqlUserItemRepo(IUserItemRepo):
             )
         )
         return bool((await self._s.execute(stmt)).scalar())
+
+    async def get_by_id_and_owner(
+        self, *, user_item_id: str, owner_user_id: str
+    ) -> UserItem | None:
+        stmt = select(UserItemORM).where(
+            UserItemORM.id == user_item_id,
+            UserItemORM.user_id == owner_user_id,
+        )
+        row = (await self._s.execute(stmt)).scalar_one_or_none()
+        return _to_domain(row) if row else None

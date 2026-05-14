@@ -6,7 +6,7 @@ from typing import Any
 from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
 from app.domain.models import User
 from app.domain.repositories.shop_repo import IShopRepo
-from app.domain.repositories.user_item_repo import IUserItemRepo
+from app.domain.repositories.user_item_repo import IUserItemReader
 from app.domain.repositories.user_repo import IUserWriter
 
 
@@ -38,15 +38,16 @@ class EquipmentService:
       The street broadcast that follows a successful equip lives in the
       router (a transport-layer concern), not here — that keeps this
       service free of realtime knowledge and trivially testable.
-    - D: depends on Protocols (`IUserWriter`, `IUserItemRepo`, `IShopRepo`),
-      not on adapters.
+    - D: depends on Protocols (`IUserWriter`, `IUserItemReader`,
+      `IShopRepo`), not on adapters. The user_items side narrows to the
+      Reader since equip only verifies ownership; it never inserts.
     """
 
     def __init__(
         self,
         *,
         users: IUserWriter,
-        user_items: IUserItemRepo,
+        user_items: IUserItemReader,
         shop: IShopRepo,
     ) -> None:
         self._users = users
