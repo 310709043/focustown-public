@@ -291,6 +291,9 @@ export const tracksApi = {
 };
 
 // ── per-room playlist (Phase 7) ────────────────────────
+// add(): pass the body object — apiFetch JSON-stringifies for us. Earlier
+// versions of this module called JSON.stringify here too, which
+// double-encoded the payload and made the backend see track_id=undefined.
 export const roomTracksApi = {
   list() {
     return apiFetch<RoomTrack[]>("/api/v1/me/room/tracks", { method: "GET" });
@@ -298,7 +301,7 @@ export const roomTracksApi = {
   add(track_id: string) {
     return apiFetch<RoomTrack>("/api/v1/me/room/tracks", {
       method: "POST",
-      body: JSON.stringify({ track_id }),
+      body: { track_id },
     });
   },
   remove(track_id: string) {
