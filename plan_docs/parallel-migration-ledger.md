@@ -4,8 +4,9 @@ Authoritative rev_id assignments while two lanes (`focustown-lane-a` and
 `focustown-lane-b`) ship phases in parallel. Both lanes consult this file
 before running `alembic revision` so that the two histories merge cleanly.
 
-**Current head (origin/main):** `0007_leaderboard_snapshots` (post Lane B
-Wave 1 merge). `feat/p5-decoration` (this branch) stages `0008_room_items`.
+**Current head (origin/main):** `0009_room_tracks` (post Lane B Wave 2
+merge, PR #13). `feat/p8-visit-leave` (this branch) stages
+`0010_room_visit`.
 
 ## Rules
 
