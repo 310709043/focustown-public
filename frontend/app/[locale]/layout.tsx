@@ -1,5 +1,3 @@
-import "../globals.css";
-
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
@@ -56,17 +54,13 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body>
-        <div className="grain-overlay" aria-hidden />
-        <div className="vignette-overlay" aria-hidden />
-        <div className="crt-overlay" aria-hidden />
-        <DirectionSync />
-        <SplashGate />
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <div className="grain-overlay" aria-hidden />
+      <div className="vignette-overlay" aria-hidden />
+      <div className="crt-overlay" aria-hidden />
+      <DirectionSync locale={locale} />
+      <SplashGate />
+      {children}
+    </NextIntlClientProvider>
   );
 }

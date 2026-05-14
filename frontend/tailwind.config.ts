@@ -8,8 +8,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // CSS variables defined in app/globals.css — keeping these as Tailwind
-      // tokens lets components compose with `bg-bg`, `text-accent-2`, etc.
+      screens: {
+        // Mobile-first tier: phones <480px, large phones xs:480-767, tablets
+        // md:768-1023, laptops lg:1024+. Input-type media queries let us
+        // split hover-only visuals from active-press feedback without JS.
+        xs: "480px",
+        mouse: { raw: "(hover: hover)" },
+        touch: { raw: "(hover: none)" },
+      },
       colors: {
         bg: "var(--bg)",
         text: "var(--text)",

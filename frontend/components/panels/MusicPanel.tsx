@@ -152,10 +152,10 @@ export function MusicPanel() {
         )}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <button
           type="button"
-          className="w-[22px] h-[22px] border border-border rounded-sm text-muted hover:border-accent-1 hover:text-accent-1 disabled:opacity-40"
+          className="w-[22px] h-[22px] touch:w-9 touch:h-9 border border-border rounded-sm text-muted hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1 disabled:opacity-40"
           onClick={() => step(-1)}
           disabled={tracks.length < 2}
         >
@@ -163,7 +163,7 @@ export function MusicPanel() {
         </button>
         <button
           type="button"
-          className="w-[22px] h-[22px] border border-accent-1 rounded-sm text-accent-1 disabled:opacity-40"
+          className="w-[22px] h-[22px] touch:w-10 touch:h-10 border border-accent-1 rounded-sm text-accent-1 active:bg-accent-1/15 disabled:opacity-40"
           onClick={handleToggle}
           disabled={!current}
         >
@@ -171,7 +171,7 @@ export function MusicPanel() {
         </button>
         <button
           type="button"
-          className="w-[22px] h-[22px] border border-border rounded-sm text-muted hover:border-accent-1 hover:text-accent-1 disabled:opacity-40"
+          className="w-[22px] h-[22px] touch:w-9 touch:h-9 border border-border rounded-sm text-muted hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1 disabled:opacity-40"
           onClick={() => step(1)}
           disabled={tracks.length < 2}
         >
@@ -180,24 +180,24 @@ export function MusicPanel() {
         <input type="range" min="0" max="100" defaultValue="65" className="flex-1" />
       </div>
 
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex gap-1.5 flex-wrap">
         {MOOD_TABS.map((m) => (
           <button
             key={m.key}
             type="button"
             onClick={() => setMood(m.key)}
             className={clsx(
-              "text-[9px] px-1.5 py-0.5 rounded-full border",
+              "text-[9px] px-2 py-1 touch:py-1.5 touch:px-2.5 touch:min-h-[32px] md:px-1.5 md:py-0.5 rounded-full border",
               mood === m.key
                 ? "border-accent-1 text-accent-1"
-                : "border-border text-muted",
+                : "border-border text-muted active:border-accent-1/60",
             )}
           >
             {t(m.labelKey)}
           </button>
         ))}
         <span
-          className="text-[9px] px-1.5 py-0.5 rounded-full border border-border text-muted opacity-50 cursor-not-allowed"
+          className="text-[9px] px-2 py-1 touch:py-1.5 touch:px-2.5 md:px-1.5 md:py-0.5 rounded-full border border-border text-muted opacity-50 cursor-not-allowed"
           title={t("phaseNote")}
         >
           {t("spotifyTabLabel")}

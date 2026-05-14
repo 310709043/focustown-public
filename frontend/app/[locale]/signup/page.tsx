@@ -200,7 +200,7 @@ export default function SignUpPage() {
           data-testid="signup-submit"
           type="submit"
           disabled={loading || !form.termsAccepted}
-          className="pixel-btn disabled:opacity-50 disabled:cursor-not-allowed"
+          className="pixel-btn touch:min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ fontSize: 12, padding: "10px 16px", letterSpacing: 2 }}
         >
           {loading ? t("loadingCta") : t("submitCta")}
@@ -208,7 +208,7 @@ export default function SignUpPage() {
 
         <Link
           href="/signin"
-          className="text-muted hover:text-accent-2 text-center"
+          className="text-muted hover:text-accent-2 active:text-accent-2 text-center touch:py-2 touch:-my-2"
           style={{ fontSize: "var(--font-size-label)" }}
         >
           {t("toggleToSignin")}

@@ -32,12 +32,12 @@ export default function AwardsPage() {
         </div>
         <button
           onClick={() => router.push("/town")}
-          className="border border-border text-muted font-japan text-[10px] px-3 py-1 rounded hover:border-coral hover:text-coral"
+          className="border border-border text-muted font-japan text-[10px] px-3 py-1.5 touch:py-2.5 touch:min-h-[40px] rounded hover:border-coral hover:text-coral active:border-coral active:text-coral"
         >
           {t("closeCta")}
         </button>
       </header>
-      <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-4">
+      <div className="flex-1 overflow-y-auto p-3 md:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         <section className="pixel-panel p-4 flex flex-col gap-2">
           <h3
             className="font-pixel text-[8px] tracking-wider"
@@ -51,9 +51,9 @@ export default function AwardsPage() {
             leaders.map((l, i) => (
               <div
                 key={l.user_id}
-                className="flex items-center gap-2 py-1 border-b border-border last:border-0 text-[12px]"
+                className="flex items-center gap-2 py-2 md:py-1 border-b border-border last:border-0 text-[12px]"
               >
-                <span className="font-pixel text-[9px] w-5 text-center text-amber">
+                <span className="font-pixel text-[10px] md:text-[9px] w-5 text-center text-amber">
                   {i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1}
                 </span>
                 <span className="flex-1 truncate">{l.display_name}</span>
@@ -64,7 +64,7 @@ export default function AwardsPage() {
             ))
           )}
         </section>
-        <section className="pixel-panel p-4 flex flex-col gap-2 col-span-2">
+        <section className="pixel-panel p-4 flex flex-col gap-2 md:col-span-2">
           <h3
             className="font-pixel text-[8px] tracking-wider"
             style={{ color: "var(--teal)", textShadow: "0 0 8px var(--teal)" }}
@@ -74,13 +74,13 @@ export default function AwardsPage() {
           {achievements.length === 0 ? (
             <div className="text-[11px] text-muted">{t("achievementsEmpty")}</div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
               {achievements.map((a) => (
-                <div key={a.code} className="pixel-panel px-3 py-2 flex items-center gap-2">
+                <div key={a.code} className="pixel-panel px-3 py-3 md:py-2 flex items-center gap-3 md:gap-2">
                   <div className="text-xl">{a.icon}</div>
                   <div>
-                    <div className="text-[11px]">{a.title}</div>
-                    <div className="text-[10px] text-muted">{a.description}</div>
+                    <div className="text-[12px] md:text-[11px]">{a.title}</div>
+                    <div className="text-[11px] md:text-[10px] text-muted">{a.description}</div>
                   </div>
                 </div>
               ))}

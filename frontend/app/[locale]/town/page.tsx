@@ -208,18 +208,23 @@ export default function TownPage() {
           />
         ) : null}
 
-        {/* bottom-left: BigFocusCTA stacked above TimerPanel */}
+        {/* bottom-left: BigFocusCTA stacked above TimerPanel.
+            Mobile: full-width minus 12px gutter so the panel doesn't fight
+            with MatchCTA in the centre. Tablet+: fixed 244px pinned left. */}
         <div
-          className="absolute z-[9] flex flex-col gap-2 items-stretch"
-          style={{ left: 16, bottom: 16, width: 244 }}
+          className="absolute z-[9] flex flex-col gap-2 items-stretch
+                     left-3 right-3 bottom-[120px] xs:bottom-[140px]
+                     md:left-4 md:right-auto md:bottom-4 md:w-[244px]"
         >
           <BigFocusCTA />
           <TimerPanel />
         </div>
 
-        {/* bottom-right: MusicPanel floating card */}
+        {/* bottom-right: MusicPanel floating card. Hidden on phones (use
+            /town/library or wait for /focus room playback); shown from
+            tablet upwards where there's room next to the left HUD. */}
         <div
-          className="absolute z-[9]"
+          className="absolute z-[9] hidden md:block"
           style={{ right: 16, bottom: 16, width: 244 }}
         >
           <MusicPanel />

@@ -16,9 +16,8 @@ export function BigFocusCTA() {
   return (
     <button
       onClick={() => router.push("/focus/solo")}
-      className="pixel-btn animate-bigPulse group relative"
+      className="pixel-btn animate-bigPulse group relative w-full max-w-[240px] mx-auto"
       style={{
-        width: 240,
         height: 64,
         background:
           "linear-gradient(135deg, rgba(124,58,237,0.85), rgba(76,29,149,0.85))",

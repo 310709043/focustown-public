@@ -119,11 +119,11 @@ export default function FocusRoomPage() {
       <CitySilhouette />
 
       <header
-        className="bg-[rgba(3,1,17,0.96)] border-b border-border flex items-center justify-between px-5 relative z-10"
+        className="bg-[rgba(3,1,17,0.96)] border-b border-border flex items-center justify-between px-3 md:px-5 relative z-10 gap-3"
         style={{ height: 52 }}
       >
         <div
-          className="font-pixel tracking-[3px]"
+          className="font-pixel tracking-[3px] truncate"
           style={{
             fontSize: "var(--font-size-label)",
             lineHeight: 1.2,
@@ -135,7 +135,7 @@ export default function FocusRoomPage() {
         </div>
         <button
           onClick={() => router.push("/town")}
-          className="pixel-btn tracking-wider"
+          className="pixel-btn tracking-wider shrink-0 touch:min-h-[40px]"
           style={{
             fontSize: "var(--font-size-caption)",
             lineHeight: 1.2,
@@ -151,12 +151,15 @@ export default function FocusRoomPage() {
         </button>
       </header>
 
+      {/* Mobile: stack timer on top, notes/chat below as a bottom drawer-like
+          fixed-height panel. Tablet+: classic side-by-side with the panel
+          pinned to the right. */}
       <div
-        className={`flex-1 grid ${paired ? "grid-cols-[1fr_380px]" : "grid-cols-[1fr_360px]"} min-h-0 relative z-[3]`}
+        className={`flex-1 grid min-h-0 relative z-[3] grid-cols-1 grid-rows-[1fr_240px] md:grid-rows-1 ${paired ? "md:grid-cols-[1fr_380px]" : "md:grid-cols-[1fr_360px]"}`}
       >
         <FocusTimer partnerId={paired ? id : null} />
         <aside
-          className="border-l border-border flex flex-col"
+          className="border-t border-border md:border-l md:border-t-0 flex flex-col min-h-0"
           style={{ background: "rgba(5,1,20,0.6)", backdropFilter: "blur(8px)" }}
         >
           {paired && user ? <ChatPanel roomId={id} myUserId={user.id} /> : <NotesPanel />}

@@ -158,12 +158,12 @@ export default function RoomPage() {
   return (
     <main className="absolute inset-0 flex flex-col overflow-hidden bg-bg">
       <nav
-        className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between px-5 z-20"
+        className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between px-3 md:px-5 z-20 gap-2"
         style={{ height: 56 }}
       >
         <Link
           href="/town"
-          className="font-japan text-muted hover:text-amber transition-colors flex items-center gap-2"
+          className="font-japan text-muted hover:text-amber active:text-amber transition-colors flex items-center gap-2 touch:py-2 touch:-my-2 shrink-0"
           style={{ fontSize: 13 }}
         >
           <span style={{ fontSize: 15 }}>◂</span> {tRoom("backToStreet")}
@@ -239,10 +239,8 @@ export default function RoomPage() {
 
         {isOwner && (
           <div
-            className="absolute z-10 flex items-center gap-1.5 px-3 py-2 rounded-md"
+            className="absolute z-10 flex items-center gap-1.5 px-3 py-2 rounded-md flex-wrap right-3 bottom-3 md:right-6 md:bottom-6 max-w-[calc(100%-1.5rem)]"
             style={{
-              right: 24,
-              bottom: 24,
               background: "rgba(8,3,25,0.85)",
               border: "1px solid var(--border2)",
               boxShadow: "0 0 14px rgba(167,139,250,0.18)",
@@ -264,7 +262,7 @@ export default function RoomPage() {
                   disabled={busy}
                   onClick={() => switchTheme(th.key)}
                   title={tThemes(th.key)}
-                  className="font-japan transition-transform"
+                  className="font-japan transition-transform touch:w-9 touch:h-9 touch:text-[15px]"
                   style={{
                     width: 26,
                     height: 26,

@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
             </p>
             <Link
               href="/signin"
-              className="block text-accent-2 hover:text-accent-1 text-center"
+              className="block text-accent-2 hover:text-accent-1 active:text-accent-1 text-center touch:py-2"
               style={{ fontSize: "var(--font-size-label)" }}
             >
               {t("backToSignin")}
@@ -127,14 +127,14 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="font-pixel border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50 tracking-widest"
+              className="font-pixel border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 active:border-accent-2 active:bg-accent-1/10 touch:min-h-[48px] disabled:opacity-50 tracking-widest"
               style={{ fontSize: "var(--font-size-label)", lineHeight: 1.2 }}
             >
               {submitting ? t("loadingCta") : t("submitCta")}
             </button>
             <Link
               href="/signin"
-              className="text-muted hover:text-accent-2 text-center"
+              className="text-muted hover:text-accent-2 active:text-accent-2 text-center touch:py-2 touch:-my-2"
               style={{ fontSize: "var(--font-size-label)" }}
             >
               {t("backToSigninShort")}

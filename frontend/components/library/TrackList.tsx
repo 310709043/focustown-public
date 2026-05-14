@@ -122,7 +122,7 @@ export function TrackList({
               <button
                 type="button"
                 onClick={() => handleToggle(track.id)}
-                className="w-7 h-7 shrink-0 rounded-sm border border-accent-1 text-accent-1 hover:bg-accent-1/10"
+                className="w-9 h-9 touch:w-11 touch:h-11 md:w-7 md:h-7 shrink-0 rounded-sm border border-accent-1 text-accent-1 hover:bg-accent-1/10 active:bg-accent-1/10"
                 aria-label={isPlaying ? t("pauseAria") : t("playAria")}
               >
                 {isPlaying ? "⏸" : "▶"}
@@ -140,10 +140,10 @@ export function TrackList({
                   onClick={() => handleTogglePlaylist(track.id)}
                   disabled={playlistBusyId === track.id}
                   className={clsx(
-                    "text-[10px] px-1.5 py-0.5 border rounded disabled:opacity-50",
+                    "text-[10px] px-2 py-1.5 touch:px-3 touch:py-2 touch:min-h-[36px] md:px-1.5 md:py-0.5 border rounded disabled:opacity-50",
                     inPlaylist.has(track.id)
-                      ? "border-accent-1 text-accent-1 hover:border-red-400 hover:text-red-400"
-                      : "border-border text-muted hover:border-accent-1 hover:text-accent-1",
+                      ? "border-accent-1 text-accent-1 hover:border-red-400 hover:text-red-400 active:border-red-400 active:text-red-400"
+                      : "border-border text-muted hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1",
                   )}
                   aria-pressed={inPlaylist.has(track.id)}
                 >
@@ -159,7 +159,7 @@ export function TrackList({
                   type="button"
                   onClick={() => handleDelete(track)}
                   disabled={deletingId === track.id}
-                  className="text-[10px] px-1.5 py-0.5 border border-border rounded text-muted hover:border-red-400 hover:text-red-400 disabled:opacity-50"
+                  className="text-[10px] px-2 py-1.5 touch:px-3 touch:py-2 touch:min-h-[36px] md:px-1.5 md:py-0.5 border border-border rounded text-muted hover:border-red-400 hover:text-red-400 active:border-red-400 active:text-red-400 disabled:opacity-50"
                 >
                   {deletingId === track.id ? t("deleting") : t("delete")}
                 </button>
