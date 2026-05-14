@@ -1,0 +1,46 @@
+{
+  "shared": {
+    "companyName": "Focus Town",
+    "jurisdiction": "Taiwan (R.O.C.)",
+    "contactLine": "If you have any questions about this policy, please contact us at {email}. We will reply within 30 days.",
+    "effectiveDateLabel": "Effective date",
+    "versionLabel": "Version",
+    "tocHeader": "Contents",
+    "backToApp": "Back to Focus Town"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "subtitle": "How {companyName} collects, uses, and protects your personal data",
+    "metaTitle": "Privacy Policy — Focus Town",
+    "metaDescription": "Learn how Focus Town handles your personal data, what we keep, and the rights you have under Taiwan's PDPA.",
+    "toc": {
+      "intro": "1. Our commitment",
+      "collect": "2. What we collect",
+      "purpose": "3. Why we collect it",
+      "use": "4. How we use your data",
+      "share": "5. Sharing and processors",
+      "retention": "6. How long we keep it",
+      "rights": "7. Your rights",
+      "cookies": "8. Cookies and similar tech",
+      "minors": "9. Protecting younger users",
+      "security": "10. Security measures",
+      "international": "11. International transfers",
+      "update": "12. Policy updates",
+      "contact": "13. Contact us"
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "subtitle": "Welcome to Focus Town. Please read these terms before using the service.",
+    "metaTitle": "Terms of Service — Focus Town",
+    "metaDescription": "Understand your rights and responsibilities when using Focus Town, including accounts, payments, conduct, and dispute resolution.",
+    "toc": {}
+  },
+  "refund": {
+    "title": "Refund Policy",
+    "subtitle": "We want every purchase to feel right. Here is how refunds work.",
+    "metaTitle": "Refund Policy — Focus Town",
+    "metaDescription": "Learn about Focus Town's refund conditions, how to request a refund, and how to reach our support team.",
+    "toc": {}
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "section": {
+    "carSkin": "🚗 車車外觀",
+    "sceneSkin": "🌆 場景皮膚",
+    "effects": "✨ 特效道具"
+  },
+  "status": {
+    "unavailable": "目前無法購買",
+    "insufficientFunds": "T 幣不足，您可以稍後再來看看",
+    "alreadyOwned": "已擁有",
+    "purchaseFailed": "購買沒有完成，請稍後再試一次",
+    "purchaseSuccess": "已成功購買，感謝您的支持！"
+  },
+  "balance": {
+    "label": "餘額",
+    "currency": "T 幣"
+  },
+  "item": {
+    "priceLabel": "價格",
+    "ownedBadge": "✓ 已擁有",
+    "featuredBadge": "熱門",
+    "buyCta": "購買",
+    "buyLoading": "...",
+    "buyTooltipOwned": "已擁有",
+    "buyTooltipInsufficient": "T 幣不足",
+    "buyTooltipBuy": "用 T 幣購買",
+    "equipCta": "👤 裝備",
+    "equippedCta": "✓ 裝備中",
+    "equipTooltipEquip": "裝備此車",
+    "equipTooltipUnequip": "點擊卸下",
+    "successOwn": "✦ 入手",
+    "successEquip": "✦ 出發",
+    "errorPrefix": "✕"
+  },
+  "errors": {
+    "unavailable": "暫不可用",
+    "insufficient": "T 幣不足",
+    "alreadyOwned": "已擁有",
+    "purchaseFailed": "購買失敗",
+    "notOwned": "未擁有",
+    "notAVehicle": "非車輛",
+    "equipFailed": "裝備失敗"
+  },
+  "page": {
+    "title": "🛒 道具商店",
+    "closeCta": "✕ 關閉",
+    "coinTooltip": "T 幣餘額",
+    "subscriptionTitle": "★ FOCUS+ 訂閱方案",
+    "subscriptionBadge": "✦ FOCUS+",
+    "subscriptionPrice": "NT$129",
+    "subscriptionPriceSuffix": "/月",
+    "subscriptionFeatures": [
+      "無限配對 + 看誰喜歡您",
+      "共同專注室 + 即時聊天",
+      "AI 性格分析完整報告",
+      "大賞區特別光環效果",
+      "所有場景解鎖"
+    ],
+    "subscriptionCta": "★ 即將開放（Phase 10）",
+    "subscriptionCtaTooltip": "Visa 串接於 Phase 10 啟用",
+    "emptyState": "尚未建立商品（後端 seeder 待加入）"
+  }
+}

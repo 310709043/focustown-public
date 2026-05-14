@@ -217,7 +217,11 @@ async def forgot_password(
     )
 
     service = _reset_service(db, notifier, clock, ids, settings)
-    await service.request_reset(email=payload.email, requested_ip=client_ip)
+    await service.request_reset(
+        email=payload.email,
+        requested_ip=client_ip,
+        locale=payload.locale,
+    )
     return OkResponse()
 
 

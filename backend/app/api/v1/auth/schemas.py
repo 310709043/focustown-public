@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, EmailStr, Field
 
 _DISPLAY_NAME_PATTERN = r"^[^\r\n\t\x00-\x1f\x7f]+$"
@@ -27,6 +29,7 @@ class RefreshRequest(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+    locale: Literal["en", "zh-TW"] = "zh-TW"
 
 
 class ResetPasswordRequest(BaseModel):

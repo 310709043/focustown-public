@@ -1,0 +1,9 @@
+{
+  "night":  { "name": "Night",        "condition": "Cool and quiet" },
+  "dawn":   { "name": "Dawn",         "condition": "Misty" },
+  "day":    { "name": "Daytime",      "condition": "Clear skies" },
+  "dusk":   { "name": "Dusk",         "condition": "Cool breeze" },
+  "rain":   { "name": "Rainy",        "condition": "Damp air" },
+  "snow":   { "name": "Snow",         "condition": "Hushed and still" },
+  "storm":  { "name": "Stormy",       "condition": "Take cover" }
+}

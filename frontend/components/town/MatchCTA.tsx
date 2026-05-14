@@ -1,11 +1,16 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
+const WAITING_PLACEHOLDER_COUNT = 12;
+
 /**
  * Bottom-center matchmaking button. Coral/pink palette (warmer than the focus
  * CTA) so the two main CTAs are visually distinct. Pulses + shimmers + sparkles
  * to read as the primary nightly action.
  */
 export function MatchCTA({ onClick }: { onClick: () => void }) {
+  const t = useTranslations("match.cta");
   return (
     <div className="absolute left-1/2 -translate-x-1/2 z-[8] flex flex-col items-center gap-1.5"
          style={{ bottom: 28 }}>
@@ -31,7 +36,7 @@ export function MatchCTA({ onClick }: { onClick: () => void }) {
               "0 0 8px var(--pink), 0 0 22px var(--coral), 0 0 38px rgba(251,113,133,0.6)",
           }}
         >
-          ✦ 配對今晚的專注夥伴 ✦
+          {t("label")}
         </span>
 
         {/* shimmer sweep */}
@@ -78,7 +83,7 @@ export function MatchCTA({ onClick }: { onClick: () => void }) {
             boxShadow: "0 0 8px var(--coral)",
           }}
         />
-        12 人正在等待夥伴
+        {t("waiting", { count: WAITING_PLACEHOLDER_COUNT })}
       </div>
     </div>
   );

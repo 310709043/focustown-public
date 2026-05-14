@@ -26,7 +26,7 @@
   --r: 6px;
   --r2: 10px;
 
-  /* V2 type scale */
+  /* V2 type scale (decorative — kept for the pixel-marquee surfaces) */
   --t-xs:  10px;
   --t-sm:  13px;
   --t-md:  16px;
@@ -46,6 +46,30 @@
   --dir-accent-glow:        0 0 6px rgba(183, 148, 246, 0.6),  0 0 14px rgba(183, 148, 246, 0.35);
   --dir-accent-glow-pink:   0 0 6px rgba(236,  72, 153, 0.7),  0 0 14px rgba(236,  72, 153, 0.4);
   --dir-accent-glow-cyan:   0 0 6px rgba( 34, 211, 238, 0.7),  0 0 14px rgba( 34, 211, 238, 0.4);
+
+  /* Immersive-app readability ladder. The pixel-font tokens above stay
+     intentionally small for marquee ✦ headers; these semantic tokens are
+     for everything that must remain legible (body, CTAs, form copy,
+     legal articles, metric digits). Keep body ≥ 16px so iOS Safari does
+     not zoom inputs on focus. */
+  --font-size-caption:       12px;
+  --font-size-note:          13px;
+  --font-size-label:         14px;
+  --font-size-body:          16px;
+  --font-size-body-lg:       18px;
+  --font-size-card-title:    20px;
+  --font-size-section-title: 24px;
+  --font-size-page-title:    32px;
+  --font-size-hero:          48px;
+
+  --line-height-tight:   1.2;
+  --line-height-title:   1.35;
+  --line-height-body:    1.7;
+  --line-height-reading: 1.85;
+
+  /* Metric / focus-timer digits — clamped so small viewports don't blow
+     the layout. */
+  --font-size-metric: clamp(32px, 5vw, 56px);
 }
 
 :root[data-direction="dusk"] {
@@ -68,6 +92,16 @@
   --dir-accent-glow:        0 0 6px rgba(  0, 245, 212, 0.65), 0 0 14px rgba(  0, 245, 212, 0.35);
   --dir-accent-glow-pink:   0 0 6px rgba(255,   0, 110, 0.75), 0 0 14px rgba(255,   0, 110, 0.4);
   --dir-accent-glow-cyan:   0 0 6px rgba(  0, 245, 212, 0.7),  0 0 14px rgba(  0, 245, 212, 0.4);
+}
+
+/* Shrink only headline tokens on phones; body/inputs stay at 16px so
+   reading and tap-typing remain comfortable. Mirrors the supplied
+   immersive-app guideline ("Mobile 不要全面縮小字體，只縮小大標題"). */
+@media (max-width: 768px) {
+  :root {
+    --font-size-page-title: 26px;
+    --font-size-hero:       40px;
+  }
 }
 
 html,

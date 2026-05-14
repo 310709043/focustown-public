@@ -1,0 +1,46 @@
+{
+  "shared": {
+    "companyName": "Focus Town",
+    "jurisdiction": "中華民國（台灣）",
+    "contactLine": "如您對本政策有任何疑問，歡迎來信 {email}，我們會在 30 日內回覆。",
+    "effectiveDateLabel": "生效日期",
+    "versionLabel": "版本",
+    "tocHeader": "目錄",
+    "backToApp": "返回 Focus Town"
+  },
+  "privacy": {
+    "title": "隱私政策",
+    "subtitle": "{companyName} 個人資料蒐集、處理及利用之說明",
+    "metaTitle": "隱私政策 — Focus Town",
+    "metaDescription": "了解 Focus Town 如何蒐集、處理及保護您的個人資料，並依個資法說明您所擁有的權利。",
+    "toc": {
+      "intro": "1. 政策宗旨",
+      "collect": "2. 蒐集之個資項目",
+      "purpose": "3. 蒐集目的與法律基礎",
+      "use": "4. 利用方式與範圍",
+      "share": "5. 對外提供與委外",
+      "retention": "6. 保存期間",
+      "rights": "7. 當事人權利",
+      "cookies": "8. Cookie 與類似技術",
+      "minors": "9. 兒少資料保護",
+      "security": "10. 資安措施",
+      "international": "11. 跨境傳輸",
+      "update": "12. 政策更新",
+      "contact": "13. 聯絡窗口"
+    }
+  },
+  "terms": {
+    "title": "服務條款",
+    "subtitle": "歡迎使用 Focus Town，使用前請閱讀以下條款",
+    "metaTitle": "服務條款 — Focus Town",
+    "metaDescription": "了解您與 Focus Town 之間的權利與義務，包含帳號管理、付費機制、使用規範與爭議處理等重要事項。",
+    "toc": {}
+  },
+  "refund": {
+    "title": "退款政策",
+    "subtitle": "我們希望您每一次購買都安心，以下是退款的相關說明",
+    "metaTitle": "退款政策 — Focus Town",
+    "metaDescription": "了解 Focus Town 商品的退款條件、申請流程與聯絡方式，協助您安心使用每一項服務。",
+    "toc": {}
+  }
+}

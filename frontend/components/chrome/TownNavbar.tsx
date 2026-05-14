@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Logo } from "@/components/scene/Logo";
 import { CoinBadge } from "@/components/town/CoinBadge";
+import { Link, useRouter } from "@/i18n/routing";
 import { roomApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
@@ -21,6 +21,8 @@ export function TownNavbar() {
   const router = useRouter();
   const signOut = useAuthStore((s) => s.signOut);
   const ownedItemsCount = useUserItemsStore((s) => Object.keys(s.byShopItemId).length);
+  const tNav = useTranslations("town.nav");
+  const tBadge = useTranslations("town.shopBadge");
 
   return (
     <nav
@@ -42,7 +44,7 @@ export function TownNavbar() {
           className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-amber hover:text-amber transition-colors"
           style={{ fontSize: 13 }}
         >
-          🏆 大賞區
+          {tNav("awards")}
         </Link>
 
         <button
@@ -66,9 +68,9 @@ export function TownNavbar() {
               /* hydration retry on next click */
             }
           }}
-          title="進入我的房間"
+          title={tNav("myRoomTooltip")}
         >
-          🏠 我的房間
+          {tNav("myRoom")}
         </button>
 
         <Link
@@ -77,7 +79,7 @@ export function TownNavbar() {
           className="border border-border text-muted font-japan rounded-md px-3 py-2 hover:border-pink hover:text-pink transition-colors flex items-center gap-1.5"
           style={{ fontSize: 13 }}
         >
-          🛒 道具
+          {tNav("shop")}
           <span
             style={{
               fontSize: 10,
@@ -90,7 +92,7 @@ export function TownNavbar() {
               letterSpacing: 0.5,
             }}
           >
-            🔓 {ownedItemsCount}
+            {tBadge("unlocked", { count: ownedItemsCount })}
           </span>
         </Link>
 
@@ -103,7 +105,7 @@ export function TownNavbar() {
             router.push("/");
           }}
         >
-          登出
+          {tNav("signout")}
         </button>
       </div>
     </nav>

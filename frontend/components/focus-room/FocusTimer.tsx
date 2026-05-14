@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useTimer } from "@/lib/hooks/useTimer";
 import { fmtMS } from "@/lib/format";
@@ -9,6 +10,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
   useTimer();
   const [task, setTask] = useState("");
   const { remaining, durationSeconds, running, start, pause, reset } = useTimerStore();
+  const t = useTranslations("focus.timer");
 
   // Auto-reset when partner changes (defensive)
   useEffect(() => {
@@ -19,9 +21,13 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
     <div className="flex flex-col items-center justify-center gap-6 p-8 relative">
       <div
         className="font-pixel tracking-[6px]"
-        style={{ fontSize: 11, color: "var(--muted)" }}
+        style={{
+          fontSize: "var(--font-size-label)",
+          lineHeight: 1.2,
+          color: "var(--muted)",
+        }}
       >
-        FOCUS · SESSION
+        {t("header")}
       </div>
 
       {/* MASSIVE timer with 7-segment-style pixel border */}
@@ -78,12 +84,13 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
       <input
         value={task}
         onChange={(e) => setTask(e.target.value)}
-        placeholder="今晚在做什麼？"
+        placeholder={t("taskPlaceholder")}
         className="text-center bg-[rgba(12,5,35,0.8)] border border-border rounded-md outline-none focus:border-accent-1 font-japan"
         style={{
           width: "min(380px, 70vw)",
           padding: "12px 18px",
-          fontSize: 16,
+          fontSize: "var(--font-size-body)",
+          lineHeight: 1.5,
           letterSpacing: 1,
         }}
       />
@@ -91,15 +98,21 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
       <div className="flex gap-3">
         <button
           className="pixel-btn"
-          style={{ fontSize: 12, padding: "14px 28px", letterSpacing: 2 }}
+          style={{
+            fontSize: "var(--font-size-label)",
+            lineHeight: 1.2,
+            padding: "14px 28px",
+            letterSpacing: 2,
+          }}
           onClick={() => (running ? pause() : void start(task || undefined, partnerId ?? null))}
         >
-          {running ? "⏸  暫停" : "▶  開始"}
+          {running ? t("pauseCta") : t("startCta")}
         </button>
         <button
           className="pixel-btn"
           style={{
-            fontSize: 12,
+            fontSize: "var(--font-size-label)",
+            lineHeight: 1.2,
             padding: "14px 28px",
             letterSpacing: 2,
             background: "transparent",
@@ -110,7 +123,7 @@ export function FocusTimer({ partnerId }: { partnerId?: string | null }) {
           }}
           onClick={reset}
         >
-          ↺  重置
+          {t("resetCta")}
         </button>
       </div>
     </div>

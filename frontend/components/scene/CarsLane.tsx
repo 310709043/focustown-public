@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
@@ -48,6 +49,7 @@ function Car({
   isSelf: boolean;
   laneIndex: number;
 }) {
+  const t = useTranslations("town.scene");
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
   // If the user has an equipped vehicle, prefer its body/window colors over
   // the character defaults. The driver's *name* still uses the character
@@ -101,7 +103,7 @@ function Car({
             : "0 0 3px var(--a1)",
         }}
       >
-        {plateEmoji} {isSelf ? `${ch.name} ・ 你` : ch.name}
+        {plateEmoji} {isSelf ? `${ch.name} ・ ${t("youSuffix")}` : ch.name}
       </div>
 
       {/* pixel car body. The drop-shadow filter gives the neon-glow trail
