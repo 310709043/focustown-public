@@ -32,6 +32,7 @@ export default function SignInPage() {
       }}
     >
       <form
+        data-testid="signin-form"
         onSubmit={onSubmit}
         className="bg-card border border-border rounded-lg p-6 w-full max-w-sm flex flex-col gap-3"
       >
@@ -42,6 +43,7 @@ export default function SignInPage() {
           ✦ 登入 ✦
         </h1>
         <input
+          data-testid="signin-email"
           type="email"
           required
           placeholder="email"
@@ -51,6 +53,7 @@ export default function SignInPage() {
           autoComplete="email"
         />
         <PasswordInput
+          data-testid="signin-password"
           required
           minLength={8}
           placeholder="密碼"
@@ -60,6 +63,7 @@ export default function SignInPage() {
         />
         {error ? (
           <div
+            data-testid="signin-error"
             role="alert"
             className="font-japan"
             style={{
@@ -79,6 +83,7 @@ export default function SignInPage() {
           </div>
         ) : null}
         <button
+          data-testid="signin-submit"
           type="submit"
           disabled={loading}
           className="font-pixel text-[8px] border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 disabled:opacity-50"

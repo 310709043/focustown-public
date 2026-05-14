@@ -1,35 +1,55 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
 import { statusByCode, type StatusCode } from "@/lib/data/statuses";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 
+import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
+import { WALKERS } from "@/lib/pixel/sprites/world";
+
 /**
  * Real online users walking the street. Each <Pedestrian> manages its own
- * jitter / leg phase so adding & removing users from the parent list doesn't
- * thrash sibling timers. CSS animations (legs / pedWalk / statusPop / userPop)
- * carry the visual feel; data driving them is now live from `presenceStore`.
+ * jitter so adding & removing users from the parent list doesn't thrash
+ * sibling timers. CSS animations (statusPop, userPop, selfHalo) still
+ * carry the mount/focus feel; the *walking figure itself* is now a
+ * canvas pixel sprite from `lib/pixel/sprites/world.ts` — the WALKERS
+ * 2-frame walk cycle, with its clothes/pants palette remapped to the
+ * user's character body/roof color so identity survives the swap.
  */
 
 const POSITIONS = [4, 13, 22, 32, 42, 52, 62, 72, 82, 91];
 
 const pickPos = () => POSITIONS[Math.floor(Math.random() * POSITIONS.length)];
 
-const fallbackCharacter = (userId: string): CharacterDef => {
+// Deterministic hash → integer (stable across SSR + CSR + reorders).
+const hashUserId = (userId: string): number => {
   let hash = 0;
   for (let i = 0; i < userId.length; i++) {
     hash = (hash * 31 + userId.charCodeAt(i)) | 0;
   }
-  return CHARACTERS[Math.abs(hash) % CHARACTERS.length];
+  return Math.abs(hash);
 };
 
+const fallbackCharacter = (userId: string): CharacterDef =>
+  CHARACTERS[hashUserId(userId) % CHARACTERS.length];
+
+// Stable per-user walker variant. The variant index never changes for a
+// given user.id, so list reorders from WS deltas don't reshuffle walkers.
+const walkerIndexFor = (userId: string): number =>
+  hashUserId(userId) % WALKERS.length;
+
+// Deterministic seed position based on user.id; same on SSR + CSR.
+const seedPos = (userId: string): number =>
+  POSITIONS[hashUserId(userId) % POSITIONS.length];
+
 function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
-  const [x, setX] = useState<number>(() => pickPos());
-  // Each pedestrian gets a stable leg-phase so they don't all stomp in sync.
-  const walkPhase = useMemo(() => Math.random() * 0.5, []);
+  // Initial position must be deterministic (SSR/CSR agreement). We
+  // randomise via the interval below — that's client-only.
+  const [x, setX] = useState<number>(() => seedPos(user.id));
 
   useEffect(() => {
     const id = setInterval(
@@ -41,6 +61,20 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
   const status = statusByCode((user.status as StatusCode) || "focus");
+  const walker = WALKERS[walkerIndexFor(user.id)];
+
+  // Remap walker palette so clothes (C, B) match the character's body color
+  // and pants (L) match the roof color. Stable identity = stable cache key
+  // in the sprite-engine LRU: `sprite + JSON.stringify(palette)`.
+  const palette = useMemo(
+    () => ({
+      ...walker.palette,
+      C: ch.bodyColor,
+      B: ch.bodyColor,
+      L: ch.roofColor,
+    }),
+    [walker.palette, ch.bodyColor, ch.roofColor],
+  );
 
   return (
     <div
@@ -57,7 +91,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
         className="animate-statusPop font-japan"
         style={{
           position: "absolute",
-          bottom: 44,
+          bottom: 56,
           left: "50%",
           transform: "translateX(-50%)",
           background: "rgba(3,1,17,0.94)",
@@ -101,52 +135,27 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
         {isSelf ? `${ch.name} ・ 你` : ch.name}
       </div>
 
-      {/* head — self carries a slow amber halo (animate-selfHalo) */}
-      <div
-        className={isSelf ? "animate-pedWalk animate-selfHalo" : "animate-pedWalk"}
-        style={{
-          width: 10,
-          height: 10,
-          margin: "0 auto",
-          background: ch.bodyColor,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 8,
-          borderRadius: 1,
-        }}
-      >
-        {ch.emoji}
-      </div>
-      {/* body */}
-      <div
-        style={{
-          width: 10,
-          height: 9,
-          margin: "0 auto",
-          background: ch.bodyColor,
-          filter: "brightness(0.8)",
-        }}
-      />
-      {/* legs */}
-      <div
-        className="flex w-[10px] mx-auto animate-legs"
-        style={
-          {
-            gap: 1,
-            ["--ld" as string]: `${walkPhase}s`,
-          } as React.CSSProperties
-        }
-      >
-        <div className="flex-1 h-1.5" style={{ background: ch.roofColor }} />
-        <div className="flex-1 h-1.5" style={{ background: ch.roofColor }} />
+      {/* pixel walker (2-frame). Self carries a slow amber halo via the
+          shared selfHalo keyframe; we apply it to the sprite wrapper so
+          the glow surrounds the whole figure. */}
+      <div className={isSelf ? "animate-selfHalo" : undefined} style={{ display: "inline-block" }}>
+        <AnimatedSprite
+          frames={walker.frames}
+          palette={palette}
+          fps={3}
+          scale={3}
+        />
       </div>
     </div>
   );
 }
 
 export function Pedestrians() {
-  const users = usePresenceStore((s) => Object.values(s.byId));
+  // `Object.values` would return a fresh array on every store read and
+  // break Zustand's SSR snapshot caching ("getServerSnapshot infinite
+  // loop"). useShallow gives us a stable reference until the underlying
+  // map changes element-wise.
+  const users = usePresenceStore(useShallow((s) => Object.values(s.byId)));
   const selfId = useAuthStore((s) => s.user?.id ?? null);
 
   return (

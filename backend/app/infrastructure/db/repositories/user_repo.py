@@ -99,6 +99,10 @@ class SqlUserRepo(IUserRepo):
         if role_label is not None:
             row.role_label = role_label
         await self._s.flush()
+        # Refresh inside the async context so server-side `updated_at`
+        # (set via ON UPDATE) is fetched here, not lazy-loaded later
+        # during _to_domain → MissingGreenlet.
+        await self._s.refresh(row)
         return _to_domain(row)
 
     async def update_password_hash(self, *, user_id: str, password_hash: str) -> None:

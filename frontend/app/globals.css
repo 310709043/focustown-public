@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=VT323&family=Noto+Sans+TC:wght@300;400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=DotGothic16&family=VT323&family=Noto+Sans+TC:wght@300;400;500;700&display=swap");
 
 :root {
   --bg: #030111;
@@ -34,6 +34,40 @@
   --t-xl:  28px;
   --t-2xl: 40px;
   --t-3xl: 72px;
+
+  /* Direction tokens (default = neon). DirectionSync flips
+     :root[data-direction] to "dusk" or "rain"; these vars layer on top of
+     the scene-driven --a1..--a4 palette without overwriting it. */
+  --dir-ink-mute:           #a89bd6;
+  --dir-ink-dim:            #6b5e9a;
+  --dir-panel-stroke:       rgba(167, 139, 250, 0.35);
+  --dir-panel-stroke-strong:rgba(167, 139, 250, 0.6);
+  --dir-button-fill:        rgba(183, 148, 246, 0.12);
+  --dir-accent-glow:        0 0 6px rgba(183, 148, 246, 0.6),  0 0 14px rgba(183, 148, 246, 0.35);
+  --dir-accent-glow-pink:   0 0 6px rgba(236,  72, 153, 0.7),  0 0 14px rgba(236,  72, 153, 0.4);
+  --dir-accent-glow-cyan:   0 0 6px rgba( 34, 211, 238, 0.7),  0 0 14px rgba( 34, 211, 238, 0.4);
+}
+
+:root[data-direction="dusk"] {
+  --dir-ink-mute:           #f0c7a3;
+  --dir-ink-dim:            #b8896e;
+  --dir-panel-stroke:       rgba(255, 184, 107, 0.35);
+  --dir-panel-stroke-strong:rgba(255, 184, 107, 0.6);
+  --dir-button-fill:        rgba(255, 184, 107, 0.12);
+  --dir-accent-glow:        0 0 6px rgba(255, 184, 107, 0.65), 0 0 14px rgba(255, 184, 107, 0.35);
+  --dir-accent-glow-pink:   0 0 6px rgba(255, 107, 157, 0.7),  0 0 14px rgba(255, 107, 157, 0.4);
+  --dir-accent-glow-cyan:   0 0 6px rgba(255, 209, 102, 0.7),  0 0 14px rgba(255, 209, 102, 0.4);
+}
+
+:root[data-direction="rain"] {
+  --dir-ink-mute:           #88a8d8;
+  --dir-ink-dim:            #4a6890;
+  --dir-panel-stroke:       rgba(  0, 245, 212, 0.3);
+  --dir-panel-stroke-strong:rgba(  0, 245, 212, 0.55);
+  --dir-button-fill:        rgba(  0, 245, 212, 0.1);
+  --dir-accent-glow:        0 0 6px rgba(  0, 245, 212, 0.65), 0 0 14px rgba(  0, 245, 212, 0.35);
+  --dir-accent-glow-pink:   0 0 6px rgba(255,   0, 110, 0.75), 0 0 14px rgba(255,   0, 110, 0.4);
+  --dir-accent-glow-cyan:   0 0 6px rgba(  0, 245, 212, 0.7),  0 0 14px rgba(  0, 245, 212, 0.4);
 }
 
 html,
@@ -135,6 +169,47 @@ body {
 .pixel-edge {
   image-rendering: pixelated;
   box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Pixel panel: chunky double-stroke shell used by every chrome surface
+   (weather badge, clock, bottom HUD, shop card, leaderboard, modals).
+   The outer 2px solid bg ring + 3px stroke gives the "pixel cut-out"
+   look without losing the dark backdrop bleed-through. */
+.pixel-panel {
+  background: var(--card);
+  border: 1px solid var(--dir-panel-stroke);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 3px var(--dir-panel-stroke),
+    0 12px 30px rgba(0, 0, 0, 0.6);
+  border-radius: 2px;
+}
+
+/* Pixel input: matches form fields across login, signup, character
+   select, chat, notes. Focus glow follows the active direction. */
+.pixel-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--dir-panel-stroke);
+  color: var(--text);
+  padding: 10px 14px;
+  font-family: "Silkscreen", "Noto Sans TC", monospace;
+  font-size: var(--t-sm);
+  outline: none;
+  width: 100%;
+  border-radius: 2px;
+  transition: border-color 0.12s ease, box-shadow 0.18s ease;
+}
+.pixel-input:focus {
+  border-color: var(--a1);
+  box-shadow: var(--dir-accent-glow);
+}
+.pixel-input::placeholder { color: var(--dir-ink-dim); }
+
+/* English-only label utility: tight pixel monospace with widened tracking.
+   Reach for this on chips, badges, tags, and English-only headers. */
+.font-pixel-en {
+  font-family: "Silkscreen", "Press Start 2P", monospace;
+  letter-spacing: 0.04em;
 }
 
 /* ════════════════════════════════════════
@@ -337,4 +412,27 @@ body {
   0%, 92%, 100% { filter: brightness(1); }
   94%           { filter: brightness(1.3); }
   96%           { filter: brightness(0.9); }
+}
+
+/* Horizontal drift used by the ticker bar (60s linear, full-width wrap). */
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+/* Stepped on/off blink — for cursors, indicator dots, clock colons. */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Smooth opacity shimmer for status pills and "coming soon" placeholders. */
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+/* 8-bit float bob — venue cards and floating badges over the skyline. */
+@keyframes pixelFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
 }
