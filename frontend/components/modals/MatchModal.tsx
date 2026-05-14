@@ -33,16 +33,17 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
 
   if (!open || !current) return null;
 
-  // Fallback fake candidate when backend hasn't returned one (MVP demo).
-  const candidate =
-    findCharacter("milo") ?? {
-      key: "milo",
-      emoji: "🐸",
-      name: "Milo",
-      role: "小說作家",
-      bodyColor: "#065f46",
-      roofColor: "#064e3b",
-    };
+  // The Match HTTP/WS schema only carries `candidate_id` (a user UUID), not
+  // a character_key — so this lookup misses for now. When backend extends
+  // Match with `candidate_character_key`, the hit path will start working;
+  // until then we render a neutral placeholder.
+  const character = findCharacter(current.candidate_id);
+  const candidate = {
+    emoji: character?.emoji ?? "❓",
+    name: character?.name ?? `匿名 #${current.candidate_id.slice(0, 6)}`,
+    role: character?.role ?? "配對中…",
+    bodyColor: character?.bodyColor ?? "#1a0e2a",
+  };
 
   return (
     <div
@@ -179,7 +180,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             lineHeight: 1.7,
           }}
         >
-          {current.reason}
+          {current.reason || "新的配對請求 — 點擊「一起專注」開始本場 25 分鐘 Pomodoro。"}
         </div>
 
         <div className="flex gap-3 justify-center">
