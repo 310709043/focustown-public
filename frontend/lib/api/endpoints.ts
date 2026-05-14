@@ -57,10 +57,10 @@ export const authApi = {
   async me() {
     return apiFetch<User>("/api/v1/auth/me", { method: "GET" });
   },
-  async forgotPassword(input: { email: string }) {
+  async forgotPassword(input: { email: string; locale?: "en" | "zh-TW" }) {
     return apiFetch<{ ok: boolean }>("/api/v1/auth/forgot-password", {
       method: "POST",
-      body: input,
+      body: { email: input.email, locale: input.locale ?? "zh-TW" },
       auth: false,
     });
   },

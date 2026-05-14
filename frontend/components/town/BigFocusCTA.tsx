@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 
 /**
  * Secondary marquee CTA — "enter focus mode". Used to sit absolute bottom-center

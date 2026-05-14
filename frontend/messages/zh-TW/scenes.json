@@ -1,0 +1,9 @@
+{
+  "night":  { "name": "夜晚",   "condition": "微涼" },
+  "dawn":   { "name": "黎明",   "condition": "薄霧" },
+  "day":    { "name": "白天",   "condition": "晴朗" },
+  "dusk":   { "name": "黃昏",   "condition": "涼爽" },
+  "rain":   { "name": "下雨",   "condition": "潮濕" },
+  "snow":   { "name": "下雪",   "condition": "靜謐" },
+  "storm":  { "name": "暴風雨", "condition": "請小心" }
+}

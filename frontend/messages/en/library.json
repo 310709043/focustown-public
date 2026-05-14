@@ -1,0 +1,40 @@
+{
+  "music": {
+    "allTab": "All",
+    "lofiTab": "lofi",
+    "jazzTab": "jazz",
+    "rainTab": "🌧 Rain",
+    "spotifyTab": "Spotify",
+    "empty": "Your library is empty for now",
+    "trackCount": "♪ {current}/{total} · {mood}",
+    "uploadHint": "Upload your first track →",
+    "phaseNote": "Coming in Phase 6b"
+  },
+  "upload": {
+    "title": "Upload a new track (up to 10 tracks · 15 MB each)",
+    "titleField": "Title",
+    "titlePlaceholder": "Give this track a title",
+    "artistField": "Artist (optional)",
+    "artistPlaceholder": "e.g. Lo-fi Girl",
+    "fileField": "Audio file",
+    "submitCta": "Upload",
+    "uploadingCta": "Uploading…",
+    "successMessage": "\"{title}\" is ready to play",
+    "errors": {
+      "file_too_large": "This file is over 15 MB. Please choose a smaller one.",
+      "limit_reached": "You have reached the 10-track limit. Please remove an older track first.",
+      "unsupported_format": "We currently support MP3 and M4A files.",
+      "title_required": "Please give this track a title.",
+      "title_too_long": "Titles can be up to 80 characters.",
+      "network_error": "Your connection seems unstable. Please check it and try again.",
+      "server_error": "Our server could not process this. Please try again in a moment.",
+      "upload_failed": "The upload did not finish. Please try again.",
+      "invalid_file": "We could not read this file. Please try a different one.",
+      "duplicate_title": "You have already uploaded a track with this title. Please choose another name.",
+      "quota_exceeded": "You have used up your storage. Please tidy up your library first.",
+      "processing_failed": "We could not process this file right now. Please try again later.",
+      "unauthorized": "Please sign in again before uploading.",
+      "unknown": "Something unexpected happened. Please try again in a little while."
+    }
+  }
+}

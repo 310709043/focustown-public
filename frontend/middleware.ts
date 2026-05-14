@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import createIntlMiddleware from "next-intl/middleware";
+
+import { routing } from "./i18n/routing";
 
 /**
- * Per-request CSP nonce.
+ * Per-request CSP nonce + locale routing.
  *
  * Why: shipping `script-src 'self' 'unsafe-inline'` in production turns the
  * CSP into theatre — any XSS sink immediately exfiltrates tokens from
@@ -10,9 +13,9 @@ import { NextRequest, NextResponse } from "next/server";
  * an attacker would inject. In development we keep `'unsafe-eval'` + nonce
  * because HMR's bundle reloads rely on eval.
  *
- * The nonce is exposed to RSC/Pages via the `x-csp-nonce` request header so
- * `app/layout.tsx` can read it from `next/headers` and attach it to inline
- * <script> elements.
+ * next-intl's middleware handles `/` → `/zh-TW` redirects and writes the
+ * `NEXT_LOCALE` cookie. We let it produce the response, then layer CSP on
+ * top so locale routing and security headers compose cleanly.
  */
 
 const isProd = process.env.NODE_ENV === "production";
@@ -40,27 +43,23 @@ function buildCsp(nonce: string): string {
   return directives.join("; ");
 }
 
+const intlMiddleware = createIntlMiddleware(routing);
+
 export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp(nonce);
 
-  // Pass the nonce to the rendered tree via a request header so RSC can read it.
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-csp-nonce", nonce);
-
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  const response = intlMiddleware(request);
   response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("x-csp-nonce", nonce);
   return response;
 }
 
 export const config = {
-  // Match everything except static assets and the Next.js internals; CSP on
+  // Match everything except static assets and the Next.js internals. CSP on
   // image bytes is meaningless and slowing every static file with a middleware
   // pass is wasteful.
   matcher: [
-    {
-      source:
-        "/((?!api|_next/static|_next/image|favicon.ico|logo.png|logo.svg).*)",
-    },
+    "/((?!api|_next/static|_next/image|favicon.ico|logo.png|logo.svg).*)",
   ],
 };

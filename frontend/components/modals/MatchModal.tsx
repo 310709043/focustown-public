@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { findCharacter } from "@/lib/data/characters";
 import { useEffect, useState } from "react";

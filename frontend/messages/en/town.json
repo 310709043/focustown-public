@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "awards": "🏆 Awards",
+    "myRoom": "🏠 My room",
+    "shop": "🛒 Shop",
+    "signout": "Sign out",
+    "library": "🎵 Music library"
+  },
+  "presence": {
+    "online": "{count, plural, =0 {No one online right now} one {# person online} other {# people online}}"
+  },
+  "shopBadge": {
+    "unlocked": "🔓 {count} unlocked"
+  },
+  "greeting": {
+    "welcome": "Welcome back, {name}"
+  },
+  "emptyRoom": {
+    "enterHint": "Enter your room"
+  }
+}

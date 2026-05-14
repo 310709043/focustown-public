@@ -1,0 +1,23 @@
+{
+  "password_must_contain_letter_and_digit": "密碼需要同時包含英文字母與數字，請再調整一下。",
+  "missing_bearer_token": "您的登入似乎已過期，請重新登入後再試一次。",
+  "terms_must_be_accepted": "請先閱讀並同意服務條款後再繼續。",
+  "invalid_credentials": "電子郵件或密碼不正確，請再確認一次。",
+  "item_not_found": "找不到這個項目，可能已被移除。",
+  "session_not_active": "這個專注時段目前無法進行此操作。",
+  "cannot_match_self": "您無法與自己配對哦。",
+  "invalid_or_expired_reset_token": "這個重設連結已失效或過期，請重新申請一次。",
+  "already_owned": "您已擁有這個道具。",
+  "invalid_room_name": "房間名稱不符合規範，請換一個試試。",
+  "insufficient_funds": "T 幣不足，您可以稍後再來看看。",
+  "rate_limited": "您嘗試的次數有些多，請稍後再試一次。",
+  "unsupported_media_type": "目前不支援這個檔案格式。",
+  "invalid_room_id": "找不到這個房間。",
+  "focustown_error": "發生未預期的狀況，請稍後再試一次。",
+  "generic": {
+    "network": "您目前似乎沒有連線，請確認網路後再試一次。",
+    "server": "伺服器暫時無法回應，請稍後再試一次。",
+    "unknown": "發生未預期的狀況，請稍後再試一次。",
+    "unauthorized": "您需要重新登入才能繼續。"
+  }
+}

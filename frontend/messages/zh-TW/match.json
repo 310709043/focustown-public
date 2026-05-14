@@ -1,0 +1,16 @@
+{
+  "modal": {
+    "title": "✦ 今晚為您推薦的夥伴 ✦",
+    "matchPercent": "契合度 {percent}%",
+    "acceptCta": "✦ 一起專注",
+    "nextCta": "看下一位 →",
+    "roleLabel": "身份",
+    "onlineStatus": "已在線 {hours} 小時",
+    "reasonsHeader": "為什麼我們覺得您們適合"
+  },
+  "empty": {
+    "title": "目前還沒有合適的夥伴",
+    "subtitle": "我們會持續為您留意，您可以稍後再回來看看。",
+    "retryCta": "再找一次"
+  }
+}

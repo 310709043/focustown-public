@@ -1,0 +1,23 @@
+{
+  "password_must_contain_letter_and_digit": "Your password should include both letters and numbers.",
+  "missing_bearer_token": "Your session has ended. Please sign in again.",
+  "terms_must_be_accepted": "Please review and accept the terms before continuing.",
+  "invalid_credentials": "That email or password does not match. Please check and try again.",
+  "item_not_found": "We could not find that item. It may have been removed.",
+  "session_not_active": "This focus session is not active right now.",
+  "cannot_match_self": "You cannot match with yourself.",
+  "invalid_or_expired_reset_token": "This reset link is invalid or has expired. Please request a new one.",
+  "already_owned": "You already own this item.",
+  "invalid_room_name": "This room name is not allowed. Please try another.",
+  "insufficient_funds": "You do not have enough T coins yet. You can save up and come back.",
+  "rate_limited": "That is a lot of attempts. Please wait a little while and try again.",
+  "unsupported_media_type": "This file format is not supported.",
+  "invalid_room_id": "We could not find that room.",
+  "focustown_error": "Something unexpected happened. Please try again in a little while.",
+  "generic": {
+    "network": "You seem to be offline. Please check your connection and try again.",
+    "server": "Our server is not responding right now. Please try again in a moment.",
+    "unknown": "Something unexpected happened. Please try again in a little while.",
+    "unauthorized": "Please sign in again to continue."
+  }
+}

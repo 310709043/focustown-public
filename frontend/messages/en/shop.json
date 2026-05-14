@@ -1,0 +1,23 @@
+{
+  "section": {
+    "carSkin": "🚗 Car skins",
+    "sceneSkin": "🌆 Scene skins",
+    "effects": "✨ Effects"
+  },
+  "status": {
+    "unavailable": "Not available right now",
+    "insufficientFunds": "Not enough T coins yet. You can save up and come back.",
+    "alreadyOwned": "Already owned",
+    "purchaseFailed": "The purchase could not be completed. Please try again.",
+    "purchaseSuccess": "All set — thank you for the support!"
+  },
+  "balance": {
+    "label": "Balance",
+    "currency": "T coins"
+  },
+  "item": {
+    "priceLabel": "Price",
+    "ownedBadge": "Owned",
+    "buyCta": "Get it"
+  }
+}

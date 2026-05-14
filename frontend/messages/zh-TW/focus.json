@@ -1,0 +1,26 @@
+{
+  "timer": {
+    "header": "專注時段",
+    "startCta": "▶ 開始專注",
+    "pauseCta": "⏸ 暫停",
+    "resumeCta": "▶ 繼續",
+    "resetCta": "↺ 重新開始",
+    "taskPlaceholder": "您今晚想專注在什麼？",
+    "remainingLabel": "剩餘時間",
+    "modeFocus": "專注",
+    "modeShortBreak": "短休息",
+    "modeLongBreak": "長休息"
+  },
+  "chat": {
+    "header": "💬 房間 #{roomId}",
+    "placeholder": "說點什麼吧…",
+    "sendCta": "送出",
+    "systemJoined": "{name} 加入了房間",
+    "systemLeft": "{name} 離開了房間"
+  },
+  "session": {
+    "completing": "正在結算這次的專注…",
+    "completed": "這次專注已完成，辛苦您了！",
+    "abandonedConfirm": "確定要結束目前的專注嗎？您可以隨時再開始一次。"
+  }
+}

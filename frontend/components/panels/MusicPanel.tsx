@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { clsx } from "clsx";
 import { ApiError } from "@/lib/api/client";
 import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";

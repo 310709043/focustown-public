@@ -1,0 +1,26 @@
+{
+  "timer": {
+    "header": "Focus session",
+    "startCta": "▶ Start focus",
+    "pauseCta": "⏸ Pause",
+    "resumeCta": "▶ Resume",
+    "resetCta": "↺ Reset",
+    "taskPlaceholder": "What would you like to focus on tonight?",
+    "remainingLabel": "Time remaining",
+    "modeFocus": "Focus",
+    "modeShortBreak": "Short break",
+    "modeLongBreak": "Long break"
+  },
+  "chat": {
+    "header": "💬 Room #{roomId}",
+    "placeholder": "Say something gentle…",
+    "sendCta": "Send",
+    "systemJoined": "{name} joined the room",
+    "systemLeft": "{name} left the room"
+  },
+  "session": {
+    "completing": "Wrapping up your focus session…",
+    "completed": "Nice work. This session is complete.",
+    "abandonedConfirm": "End the current session now? You can always start a new one when you are ready."
+  }
+}

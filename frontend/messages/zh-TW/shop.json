@@ -1,0 +1,23 @@
+{
+  "section": {
+    "carSkin": "🚗 車車外觀",
+    "sceneSkin": "🌆 場景皮膚",
+    "effects": "✨ 特效道具"
+  },
+  "status": {
+    "unavailable": "目前無法購買",
+    "insufficientFunds": "T 幣不足，您可以稍後再來看看",
+    "alreadyOwned": "已擁有",
+    "purchaseFailed": "購買沒有完成，請稍後再試一次",
+    "purchaseSuccess": "已成功購買，感謝您的支持！"
+  },
+  "balance": {
+    "label": "餘額",
+    "currency": "T 幣"
+  },
+  "item": {
+    "priceLabel": "價格",
+    "ownedBadge": "已擁有",
+    "buyCta": "購買"
+  }
+}

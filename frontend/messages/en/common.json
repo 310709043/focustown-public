@@ -1,0 +1,37 @@
+{
+  "buttons": {
+    "signin": "Sign in",
+    "signup": "Create account",
+    "signout": "Sign out",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "retry": "Try again",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "status": {
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "uploading": "Uploading…",
+    "success": "Done",
+    "error": "Something went wrong",
+    "empty": "Nothing here yet",
+    "offline": "You are offline. Please check your connection and try again."
+  },
+  "placeholders": {
+    "email": "your.email@example.com",
+    "password": "Your password",
+    "search": "Search…"
+  },
+  "units": {
+    "minutes": "minutes",
+    "seconds": "seconds",
+    "hours": "hours",
+    "celsius": "°C"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "modal": {
+    "title": "✦ A focus partner suggestion for tonight ✦",
+    "matchPercent": "{percent}% MATCH",
+    "acceptCta": "✦ Focus together",
+    "nextCta": "See another →",
+    "roleLabel": "Role",
+    "onlineStatus": "Online for {hours}h",
+    "reasonsHeader": "Why we think you two might match"
+  },
+  "empty": {
+    "title": "No matches just yet",
+    "subtitle": "We will keep an eye out for you. Check back in a little while.",
+    "retryCta": "Try again"
+  }
+}
