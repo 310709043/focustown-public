@@ -10,26 +10,39 @@ from app.api.v1.rooms.schemas import (
     RoomItemResponse,
     RoomResponse,
     RoomTrackResponse,
+    RoomVisitResponse,
     UpdateRoomRequest,
 )
 from app.api.v1.tracks.schemas import TrackResponse
-from app.core.deps import CurrentUserId, DbDep, IdGenDep
+from app.core.deps import (
+    CurrentUserId,
+    DbDep,
+    IdGenDep,
+    PresenceTrackerDep,
+    RealtimePublisherDep,
+)
 from app.core.exceptions import BusinessError
 from app.core.ids import IIdGenerator
 from app.core.sentinels import UNSET
 from app.domain.models.room import Room
 from app.domain.models.room_item import RoomItem
+from app.domain.models.room_visit import RoomVisit
+from app.domain.repositories.presence import IPresenceTracker
+from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.track_repo import TrackRecord
+from app.domain.services.presence_service import PresenceService
 from app.domain.services.room_decoration_service import RoomDecorationService
 from app.domain.services.room_service import RoomService
 from app.domain.services.room_track_service import (
     RoomTrackEntry,
     RoomTrackService,
 )
+from app.domain.services.room_visit_service import RoomVisitService
 from app.infrastructure.db.repositories import (
     SqlRoomItemRepo,
     SqlRoomRepo,
     SqlRoomTrackRepo,
+    SqlRoomVisitRepo,
     SqlTrackRepo,
     SqlUserItemRepo,
     SqlUserRepo,
@@ -76,6 +89,44 @@ def _room_track_service(db: AsyncSession, id_gen: IIdGenerator) -> RoomTrackServ
         room_tracks=SqlRoomTrackRepo(db),
         tracks=SqlTrackRepo(db),
         ids=id_gen,
+    )
+
+
+def _room_visit_service(
+    db: AsyncSession,
+    id_gen: IIdGenerator,
+    tracker: IPresenceTracker,
+    publisher: IRealtimePublisher,
+) -> RoomVisitService:
+    """Wires the concrete adapters to the visit service.
+
+    ``SqlRoomVisitRepo`` implements both ``IRoomVisitReader`` and
+    ``IRoomVisitWriter``; the same instance is passed to both slots so
+    the service can declare its narrowed dependencies (ISP) without us
+    duplicating the SQL backend.
+
+    ``PresenceService`` is composed here so the visit service doesn't
+    take ``IPresenceTracker`` directly — the presence mutation path
+    stays funneled through the existing facade (single source of truth
+    for state-change broadcasts).
+    """
+    visits = SqlRoomVisitRepo(db)
+    return RoomVisitService(
+        rooms=SqlRoomRepo(db),
+        visit_reader=visits,
+        visit_writer=visits,
+        presence=PresenceService(tracker=tracker, publisher=publisher),
+        realtime=publisher,
+        id_gen=id_gen,
+    )
+
+
+def _to_visit_response(visit: RoomVisit) -> RoomVisitResponse:
+    return RoomVisitResponse(
+        id=visit.id,
+        room_id=visit.room_id,
+        visitor_user_id=visit.visitor_user_id,
+        joined_at=visit.joined_at,
     )
 
 
@@ -305,3 +356,79 @@ async def remove_my_room_track(
         raise BusinessError("invalid_track_id")
     svc = _room_track_service(db, id_gen)
     await svc.remove_for_user(user_id=user_id, track_id=track_id)
+
+
+# ── Per-room visitor sessions (Phase 8) ─────────────────────────────────────
+# All three endpoints live on ``rooms_router`` (not ``me_room_router``)
+# because the room_id is the path-level subject — even the visitor's "I am
+# entering room X" call goes through ``/rooms/{room_id}/visit``.
+
+
+@rooms_router.post(
+    "/{room_id}/visit",
+    response_model=RoomVisitResponse,
+    status_code=201,
+)
+async def visit_room(
+    room_id: str,
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+    tracker: PresenceTrackerDep,
+    publisher: RealtimePublisherDep,
+) -> RoomVisitResponse:
+    """Start a visitor session in a room.
+
+    Returns 404 if the room doesn't exist, 403 for non-owners on
+    ``invite_only`` rooms, 400 ``room_full`` when ``max_visitors`` is
+    reached (owner bypasses the cap). Visiting a second room while
+    already in one auto-leaves the first.
+    """
+    if not room_id or len(room_id) > 36:
+        raise BusinessError("invalid_room_id")
+    svc = _room_visit_service(db, id_gen, tracker, publisher)
+    visit = await svc.visit(room_id=room_id, user_id=user_id)
+    return _to_visit_response(visit)
+
+
+@rooms_router.post("/{room_id}/leave", status_code=204)
+async def leave_room(
+    room_id: str,
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+    tracker: PresenceTrackerDep,
+    publisher: RealtimePublisherDep,
+) -> None:
+    """End the caller's session in this room.
+
+    Idempotent: silently returns 204 if the caller is not currently in
+    this room.
+    """
+    if not room_id or len(room_id) > 36:
+        raise BusinessError("invalid_room_id")
+    svc = _room_visit_service(db, id_gen, tracker, publisher)
+    await svc.leave(room_id=room_id, user_id=user_id)
+
+
+@rooms_router.get(
+    "/{room_id}/visitors",
+    response_model=list[RoomVisitResponse],
+)
+async def list_room_visitors(
+    room_id: str,
+    user_id: CurrentUserId,
+    db: DbDep,
+    id_gen: IdGenDep,
+    tracker: PresenceTrackerDep,
+    publisher: RealtimePublisherDep,
+) -> list[RoomVisitResponse]:
+    """List active visitors. Visitor-readable on public rooms; invite-only
+    returns 403 unless the caller is the owner."""
+    if not room_id or len(room_id) > 36:
+        raise BusinessError("invalid_room_id")
+    svc = _room_visit_service(db, id_gen, tracker, publisher)
+    visits = await svc.list_visitors(
+        room_id=room_id, requester_user_id=user_id
+    )
+    return [_to_visit_response(v) for v in visits]
