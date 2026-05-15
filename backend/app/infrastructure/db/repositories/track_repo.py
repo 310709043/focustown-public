@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ForbiddenError, NotFoundError
 from app.domain.repositories.track_repo import ITrackRepo, TrackRecord
 from app.infrastructure.db.models.track import TrackORM
 
@@ -48,12 +47,6 @@ class SqlTrackRepo(ITrackRepo):
         row = await self._s.get(TrackORM, track_id)
         return _to_record(row) if row else None
 
-    async def count_by_uploader(self, user_id: str) -> int:
-        stmt = select(func.count()).select_from(TrackORM).where(
-            TrackORM.uploaded_by_user_id == user_id
-        )
-        return int((await self._s.execute(stmt)).scalar() or 0)
-
     async def insert(
         self,
         *,
@@ -85,12 +78,3 @@ class SqlTrackRepo(ITrackRepo):
         self._s.add(row)
         await self._s.flush()
         return _to_record(row)
-
-    async def delete(self, *, track_id: str, user_id: str) -> None:
-        row = await self._s.get(TrackORM, track_id)
-        if row is None:
-            raise NotFoundError("track_not_found")
-        if row.uploaded_by_user_id != user_id:
-            raise ForbiddenError("track_not_owned")
-        stmt = delete(TrackORM).where(TrackORM.id == track_id)
-        await self._s.execute(stmt)

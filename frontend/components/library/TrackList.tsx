@@ -9,11 +9,11 @@ import type { Track } from "@/lib/api/types.gen";
 
 type Props = {
   tracks: Track[];
-  currentUserId: string | null;
-  onDeleted: (trackId: string) => void;
   /** Track ids currently in the signed-in user's room playlist. Empty
    *  set when not logged in. */
   inPlaylist: Set<string>;
+  /** When null the playlist toggle is hidden (anonymous viewer). */
+  canCurateRoom: boolean;
   onAddToRoom: (trackId: string) => void | Promise<void>;
   onRemoveFromRoom: (trackId: string) => void | Promise<void>;
 };
@@ -26,14 +26,12 @@ function formatBytes(n: number): string {
 
 export function TrackList({
   tracks,
-  currentUserId,
-  onDeleted,
   inPlaylist,
+  canCurateRoom,
   onAddToRoom,
   onRemoveFromRoom,
 }: Props) {
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [playlistBusyId, setPlaylistBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
@@ -53,24 +51,6 @@ export function TrackList({
     } else {
       el.pause();
       setPlayingId(null);
-    }
-  }
-
-  async function handleDelete(track: Track) {
-    if (deletingId) return;
-    const el = audioRefs.current[track.id];
-    if (el) el.pause();
-    setDeletingId(track.id);
-    setError(null);
-    try {
-      await tracksApi.remove(track.id);
-      onDeleted(track.id);
-      if (playingId === track.id) setPlayingId(null);
-    } catch (e) {
-      const msg = e instanceof ApiError ? e.message : "delete_failed";
-      setError(msg);
-    } finally {
-      setDeletingId(null);
     }
   }
 
@@ -109,7 +89,6 @@ export function TrackList({
       )}
       <ul className="flex flex-col gap-1.5">
         {tracks.map((track) => {
-          const mine = currentUserId !== null && track.uploaded_by_user_id === currentUserId;
           const isPlaying = playingId === track.id;
           return (
             <li
@@ -134,7 +113,7 @@ export function TrackList({
                   {track.mood} · {formatBytes(track.file_size_bytes)}
                 </div>
               </div>
-              {currentUserId !== null && (
+              {canCurateRoom && (
                 <button
                   type="button"
                   onClick={() => handleTogglePlaylist(track.id)}
@@ -152,16 +131,6 @@ export function TrackList({
                     : inPlaylist.has(track.id)
                       ? t("inRoom")
                       : t("addToRoom")}
-                </button>
-              )}
-              {mine && (
-                <button
-                  type="button"
-                  onClick={() => handleDelete(track)}
-                  disabled={deletingId === track.id}
-                  className="text-[10px] px-2 py-1.5 touch:px-3 touch:py-2 touch:min-h-[36px] md:px-1.5 md:py-0.5 border border-border rounded text-muted hover:border-red-400 hover:text-red-400 active:border-red-400 active:text-red-400 disabled:opacity-50"
-                >
-                  {deletingId === track.id ? t("deleting") : t("delete")}
                 </button>
               )}
               <audio

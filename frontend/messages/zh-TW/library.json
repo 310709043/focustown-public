@@ -10,10 +10,10 @@
     "ambientTab": "ambient",
     "spotifyTab": "Spotify",
     "spotifyTabLabel": "🎵 Spotify",
-    "empty": "（音樂庫是空的）",
+    "empty": "（音樂庫整理中，請稍候片刻）",
     "trackCount": "♪ {current}/{total} · {mood}",
-    "uploadHint": "前往音樂庫上傳第一首 →",
-    "phaseNote": "Phase 6b 規劃中"
+    "uploadHint": "探索 Focus Town 嚴選歌單 →",
+    "phaseNote": "由 Focus Town 嚴選"
   },
   "moods": {
     "all": "全部",
@@ -23,58 +23,19 @@
     "ambient": "ambient"
   },
   "tracks": {
-    "empty": "目前還沒有任何曲目，歡迎您上傳第一首試試。",
+    "empty": "歌單還在整理中，請稍候片刻再回來看看。",
     "playAria": "播放",
     "pauseAria": "暫停",
     "inRoom": "✓ 房間",
-    "addToRoom": "+ 加入房間",
-    "deleting": "刪除中…",
-    "delete": "刪除"
-  },
-  "upload": {
-    "title": "上傳新曲（最多 10 首，每首 15 MB）",
-    "titleField": "標題",
-    "titlePlaceholder": "標題",
-    "artistField": "演出者（選填）",
-    "artistPlaceholder": "演出者（選填）",
-    "fileField": "音樂檔案",
-    "moodLabel": "mood",
-    "submitCta": "上傳",
-    "uploadingCta": "上傳中…",
-    "successMessage": "✓ 已上傳「{title}」",
-    "errors": {
-      "file_too_large": "檔案超過 15 MB，請選擇較小的檔案。",
-      "limit_reached": "您的音樂庫已達 10 首上限，請先移除一首再上傳。",
-      "track_quota_exceeded": "已達 10 首上限，請先刪除一些舊的",
-      "empty_file": "選到空檔案",
-      "not_an_mp3": "只接受 MP3（檔案開頭看起來不是 MP3 header）",
-      "unsupported_format": "目前僅支援 MP3 與 M4A 兩種格式。",
-      "unsupported_media_type": "只接受 audio/mpeg",
-      "title_required": "請為這首曲子輸入一個標題。",
-      "title_missing": "請輸入歌曲標題",
-      "title_too_long": "標題請控制在 80 個字以內。",
-      "file_missing": "請選擇一個 MP3 檔案",
-      "network_error": "連線似乎不太穩定，請確認網路後再試一次。",
-      "server_error": "伺服器目前無法處理，請稍後再試一次。",
-      "upload_failed": "上傳沒有完成，請稍後再試一次。",
-      "invalid_file": "這個檔案似乎無法讀取，請換一個試試。",
-      "duplicate_title": "您已上傳過相同名稱的曲子，請換一個名稱。",
-      "quota_exceeded": "您的儲存空間已用盡，請先整理音樂庫。",
-      "processing_failed": "我們暫時無法處理這個檔案，請稍後再試一次。",
-      "unauthorized": "您需要登入才能上傳，請重新登入後再試一次。",
-      "request_failed": "無法完成請求，請稍後再試一次。",
-      "unknown": "發生未預期的狀況，請稍後再試一次。"
-    }
+    "addToRoom": "+ 加入房間"
   },
   "page": {
     "breadcrumb": "FOCUS TOWN / LIBRARY",
-    "title": "音樂庫",
+    "title": "Focus Town 嚴選音樂庫",
     "backCta": "← 回小鎮",
-    "intro": "所有使用者共享的音樂庫。Phase 6 Tier-2：可上傳 MP3，未來",
-    "introRoomLink": "房間音樂庫",
-    "introSuffix": "會從這裡挑歌加入自己房間（Phase 7）。",
-    "signedOutHint": "登入後即可上傳音樂。",
+    "intro": "我們為您嚴選了一系列陪伴專注的溫柔曲目。登入後，您可以挑選喜歡的歌加入自己的房間。",
+    "signedOutHint": "登入後，您就能把喜歡的曲目加入自己的房間音樂庫。",
     "loading": "載入中…",
-    "loadFailedPrefix": "載入失敗："
+    "loadFailedPrefix": "目前無法載入，請稍後再試： "
   }
 }

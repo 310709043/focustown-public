@@ -1,5 +1,5 @@
-"""Unit tests for the byte-range parser and MP3 magic sniffer used by the
-tracks streaming endpoint. Pure functions; no DB / FastAPI involvement."""
+"""Unit tests for the byte-range parser used by the tracks streaming
+endpoint. Pure functions; no DB / FastAPI involvement."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import tempfile
 import pytest
 from fastapi import HTTPException
 
-from app.api.v1.tracks.router import _iter_file_range, _looks_like_mp3, _parse_range
+from app.api.v1.tracks.router import _iter_file_range, _parse_range
 
 # ── _parse_range ──────────────────────────────────────────────────────────
 
@@ -59,26 +59,6 @@ def test_parse_range_rejects_inverted_range():
 def test_parse_range_rejects_empty_spec():
     with pytest.raises(HTTPException):
         _parse_range("bytes=-", file_size=10_000)
-
-
-# ── _looks_like_mp3 ───────────────────────────────────────────────────────
-
-
-def test_mp3_magic_id3():
-    assert _looks_like_mp3(b"ID3\x03") is True
-
-
-def test_mp3_magic_mpeg_sync_ffe3():
-    assert _looks_like_mp3(b"\xff\xfb\x90\x00") is True
-    assert _looks_like_mp3(b"\xff\xfa\x90\x00") is True
-
-
-def test_mp3_magic_rejects_png():
-    assert _looks_like_mp3(b"\x89PNG") is False
-
-
-def test_mp3_magic_rejects_empty():
-    assert _looks_like_mp3(b"") is False
 
 
 # ── _iter_file_range ──────────────────────────────────────────────────────

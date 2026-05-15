@@ -32,7 +32,7 @@ from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM  # noq
 from app.infrastructure.db.models.track import TrackORM  # noqa: E402
 from app.infrastructure.db.models.user import UserORM  # noqa: E402
 from app.infrastructure.db.session import get_session_factory  # noqa: E402
-from app.infrastructure.storage.local import LocalFSStorage  # noqa: E402
+from app.infrastructure.storage.factory import make_storage  # noqa: E402
 
 ACHIEVEMENTS = [
     {"code": "streak_7", "icon": "🔥", "title": "連續 7 天", "description": "每天都有專注"},
@@ -70,18 +70,20 @@ SHOP_ITEMS = [
     {"category": "effect", "icon": "💫", "name": "完成爆炸", "description": "番茄完成時的煙火特效", "price_cT": 80, "price_cents": 4900, "featured": False},
 ]
 
-# Phase 6 Tier-2 — track library seeds.
+# V1 official-only track library.
 #
-# Real audio data isn't shipped in git. Drop any royalty-free MP3 file at
-# backend/assets/seed-tracks/<name>.mp3 to enable seeding; the script picks
-# them up by filename and seeds rows with default mood lofi (override via the
-# inline mapping below). If the directory is empty, track seeding is skipped
-# silently. Users can also upload via /town/library once registered.
+# Real audio is not shipped in git — drop royalty-free MP3 files into
+# backend/assets/seed-tracks/<name>.mp3 (gitignored) and this seeder will
+# publish them as official tracks owned by the seed system user. Files
+# missing from the mapping below still get seeded with mood=lofi and a
+# title derived from the filename, but explicit entries are preferred so
+# the curated set is reproducible across developers.
 SEED_TRACK_MOOD_BY_FILENAME: dict[str, dict[str, str]] = {
-    # filename -> overrides; everything else defaults to lofi / artist None.
-    "midnight-city-lofi.mp3": {"title": "Midnight City — Lofi", "mood": "lofi"},
-    "tokyo-rain.mp3": {"title": "Tokyo Rain", "mood": "rain"},
-    "late-night-drive.mp3": {"title": "Late Night Drive", "mood": "jazz"},
+    "cold-ceramics.mp3": {"title": "Cold Ceramics", "mood": "ambient"},
+    "sunlight-on-the-floor.mp3": {"title": "Sunlight on the Floor", "mood": "lofi"},
+    "cold-windowpane.mp3": {"title": "Cold Windowpane", "mood": "ambient"},
+    "midnight-at-the-overpass.mp3": {"title": "Midnight at the Overpass", "mood": "jazz"},
+    "sunday-window.mp3": {"title": "Sunday Window", "mood": "lofi"},
 }
 
 SEED_SYSTEM_USER_EMAIL = "seed-system@focustown.local"
@@ -162,8 +164,16 @@ async def _seed_tracks(db, settings, ids) -> None:
         print(f"  (track seed) no MP3s found in {assets_dir}; skipping")
         return
 
-    # Reuse storage backend so AWS swap doesn't break the seeder.
-    storage = LocalFSStorage(settings.storage_root)
+    # Reuse the configured storage backend so the seeder works for both
+    # local FS and S3 / MinIO. When S3 is configured we also need to make
+    # sure the target bucket exists — bucket creation is backend-specific
+    # and lives outside the IFileStorage protocol on purpose.
+    storage = make_storage(settings)
+    if settings.storage_backend == "s3":
+        from app.infrastructure.storage.s3 import S3Storage
+
+        if isinstance(storage, S3Storage):
+            storage.ensure_bucket()
 
     system_user = (
         await db.execute(_select(UserORM).where(UserORM.email == SEED_SYSTEM_USER_EMAIL))

@@ -10,10 +10,10 @@
     "ambientTab": "ambient",
     "spotifyTab": "Spotify",
     "spotifyTabLabel": "🎵 Spotify",
-    "empty": "(Your library is empty)",
+    "empty": "(Curating your library — please bear with us)",
     "trackCount": "♪ {current}/{total} · {mood}",
-    "uploadHint": "Upload your first track →",
-    "phaseNote": "Coming in Phase 6b"
+    "uploadHint": "Explore our curated library →",
+    "phaseNote": "Curated by Focus Town"
   },
   "moods": {
     "all": "All",
@@ -23,58 +23,19 @@
     "ambient": "ambient"
   },
   "tracks": {
-    "empty": "No tracks yet. You can upload your first one to get started.",
+    "empty": "The library is still being prepared. Please check back in a moment.",
     "playAria": "Play",
     "pauseAria": "Pause",
     "inRoom": "✓ Room",
-    "addToRoom": "+ Add to room",
-    "deleting": "Removing…",
-    "delete": "Delete"
-  },
-  "upload": {
-    "title": "Upload a new track (up to 10 tracks · 15 MB each)",
-    "titleField": "Title",
-    "titlePlaceholder": "Title",
-    "artistField": "Artist (optional)",
-    "artistPlaceholder": "Artist (optional)",
-    "fileField": "Audio file",
-    "moodLabel": "mood",
-    "submitCta": "Upload",
-    "uploadingCta": "Uploading…",
-    "successMessage": "✓ \"{title}\" is uploaded",
-    "errors": {
-      "file_too_large": "This file is over 15 MB. Please choose a smaller one.",
-      "limit_reached": "You have reached the 10-track limit. Please remove an older track first.",
-      "track_quota_exceeded": "You have reached the 10-track limit. Please remove an older track first.",
-      "empty_file": "The selected file is empty.",
-      "not_an_mp3": "Only MP3 files are supported (the file header does not look like MP3).",
-      "unsupported_format": "We currently support MP3 and M4A files.",
-      "unsupported_media_type": "Only audio/mpeg files are accepted.",
-      "title_required": "Please give this track a title.",
-      "title_missing": "Please enter a track title.",
-      "title_too_long": "Titles can be up to 80 characters.",
-      "file_missing": "Please choose an MP3 file.",
-      "network_error": "Your connection seems unstable. Please check it and try again.",
-      "server_error": "Our server could not process this. Please try again in a moment.",
-      "upload_failed": "The upload did not finish. Please try again.",
-      "invalid_file": "We could not read this file. Please try a different one.",
-      "duplicate_title": "You have already uploaded a track with this title. Please choose another name.",
-      "quota_exceeded": "You have used up your storage. Please tidy up your library first.",
-      "processing_failed": "We could not process this file right now. Please try again later.",
-      "unauthorized": "Please sign in again before uploading.",
-      "request_failed": "Could not complete the request. Please try again.",
-      "unknown": "Something unexpected happened. Please try again in a little while."
-    }
+    "addToRoom": "+ Add to room"
   },
   "page": {
     "breadcrumb": "FOCUS TOWN / LIBRARY",
-    "title": "Music library",
+    "title": "Curated music library",
     "backCta": "← Back to town",
-    "intro": "A shared library for everyone. Phase 6 Tier-2: upload MP3 files, and later",
-    "introRoomLink": "your room playlist",
-    "introSuffix": "can pull tracks from here (Phase 7).",
-    "signedOutHint": "Sign in to upload tracks.",
+    "intro": "A calm collection of tracks we have curated for focus. Sign in when you are ready, and you can save your favourites to your own room.",
+    "signedOutHint": "Sign in when you are ready, and you can add tracks to your room playlist.",
     "loading": "Loading…",
-    "loadFailedPrefix": "Could not load: "
+    "loadFailedPrefix": "We could not load the library this time. Please try again: "
   }
 }

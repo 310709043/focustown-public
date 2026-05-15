@@ -41,6 +41,10 @@ Thumbs.db
 .docker/
 docker-compose.override.yml
 
+# Seed audio assets — binary, sized in MB, sourced locally per developer.
+# Drop royalty-free MP3 files here; the seed script picks them up by name.
+backend/assets/seed-tracks/*.mp3
+
 # Generated API types are committed (regenerated via script)
 !frontend/lib/api/types.gen.ts
 

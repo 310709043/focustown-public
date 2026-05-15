@@ -23,6 +23,13 @@ class TrackRecord:
 
 
 class ITrackRepo(Protocol):
+    """V1 is a seeded-only catalog: routes read tracks (list/get/stream)
+    but never mutate them. ``insert`` stays so the dev-data seeder can
+    publish the official library; user-facing writes (upload/delete) were
+    removed when V1 closed user uploads and will return via a new
+    interface (with consent / report flow) when re-opened.
+    """
+
     async def list(self, *, mood: str | None = None) -> list[TrackRecord]: ...
     async def list_official(self) -> list[TrackRecord]:
         """Personal-radio source: all rows where ``is_official`` is true.
@@ -33,7 +40,6 @@ class ITrackRepo(Protocol):
         """
         ...
     async def get(self, track_id: str) -> TrackRecord | None: ...
-    async def count_by_uploader(self, user_id: str) -> int: ...
     async def insert(
         self,
         *,
@@ -49,4 +55,3 @@ class ITrackRepo(Protocol):
         uploaded_by_user_id: str,
         is_official: bool = False,
     ) -> TrackRecord: ...
-    async def delete(self, *, track_id: str, user_id: str) -> None: ...

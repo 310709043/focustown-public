@@ -1,28 +1,19 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 import anyio.to_thread
-from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from starlette.status import HTTP_416_RANGE_NOT_SATISFIABLE
 
-from app.api.v1.tracks.schemas import TrackResponse, TrackUploadMeta
-from app.core.deps import CurrentUserId, DbDep, IdGenDep, SettingsDep, StorageDep
-from app.core.exceptions import (
-    BusinessError,
-    ForbiddenError,
-    NotFoundError,
-    ValidationError,
-)
+from app.api.v1.tracks.schemas import TrackResponse
+from app.core.deps import DbDep, StorageDep
+from app.core.exceptions import NotFoundError
 from app.domain.repositories.track_repo import TrackRecord
 from app.infrastructure.db.repositories import SqlTrackRepo
 
 router = APIRouter()
-
-_MP3_MAGIC_PREFIXES = (b"ID3", b"\xff\xfb", b"\xff\xf3", b"\xff\xf2", b"\xff\xfa")
-_ALLOWED_CONTENT_TYPES = {"audio/mpeg", "audio/mp3"}
 
 
 def _dto(t: TrackRecord) -> TrackResponse:
@@ -38,10 +29,6 @@ def _dto(t: TrackRecord) -> TrackResponse:
         uploaded_by_user_id=t.uploaded_by_user_id,
         created_at=t.created_at,
     )
-
-
-def _looks_like_mp3(head: bytes) -> bool:
-    return any(head.startswith(magic) for magic in _MP3_MAGIC_PREFIXES)
 
 
 def _parse_range(header: str, file_size: int) -> tuple[int, int]:
@@ -171,89 +158,3 @@ async def stream_track(
         media_type=rec.content_type or "audio/mpeg",
         headers={"Accept-Ranges": "bytes"},
     )
-
-
-@router.post("", response_model=TrackResponse, status_code=201)
-async def upload_track(
-    user_id: CurrentUserId,
-    db: DbDep,
-    ids: IdGenDep,
-    settings: SettingsDep,
-    storage: StorageDep,
-    title: str = Form(..., min_length=1, max_length=255),
-    mood: str = Form(..., min_length=1, max_length=32),
-    artist: str | None = Form(default=None, max_length=255),
-    license: str | None = Form(default=None, max_length=64),
-    file: UploadFile = File(...),  # noqa: B008
-) -> TrackResponse:
-    # Schema-level validation (re-uses pydantic constraints).
-    meta = TrackUploadMeta(title=title, artist=artist, mood=mood, license=license)
-
-    if file.content_type and file.content_type not in _ALLOWED_CONTENT_TYPES:
-        raise HTTPException(status_code=415, detail="unsupported_media_type")
-
-    # Quota: count first to fail fast before any disk I/O.
-    repo = SqlTrackRepo(db)
-    existing = await repo.count_by_uploader(user_id)
-    if existing >= settings.tracks_max_per_user:
-        raise BusinessError("track_quota_exceeded")
-
-    # Read with a hard cap to avoid OOM on hostile payloads.
-    max_bytes = settings.tracks_max_file_size_mb * 1024 * 1024
-    # +1 so we can detect "exactly at limit + 1 byte" without ambiguity.
-    data = await file.read(max_bytes + 1)
-    if len(data) > max_bytes:
-        raise ValidationError("file_too_large")
-    if not data:
-        raise ValidationError("empty_file")
-    if not _looks_like_mp3(data[:4]):
-        raise HTTPException(status_code=415, detail="not_an_mp3")
-
-    track_id = ids.new_id()
-    file_key = f"tracks/{track_id}.mp3"
-    await storage.put(
-        key=file_key,
-        data=data,
-        content_type=file.content_type or "audio/mpeg",
-    )
-
-    rec = await repo.insert(
-        track_id=track_id,
-        title=meta.title,
-        artist=meta.artist,
-        mood=meta.mood,
-        duration_ms=None,
-        file_key=file_key,
-        content_type=file.content_type or "audio/mpeg",
-        file_size_bytes=len(data),
-        license=meta.license,
-        uploaded_by_user_id=user_id,
-    )
-    return _dto(rec)
-
-
-@router.delete("/{track_id}", status_code=204)
-async def delete_track(
-    track_id: str,
-    user_id: CurrentUserId,
-    db: DbDep,
-    storage: StorageDep,
-) -> None:
-    repo = SqlTrackRepo(db)
-    rec = await repo.get(track_id)
-    if rec is None:
-        raise NotFoundError("track_not_found")
-    if rec.uploaded_by_user_id != user_id:
-        raise ForbiddenError("track_not_owned")
-    await repo.delete(track_id=track_id, user_id=user_id)
-    # Best-effort cleanup of the underlying file. We swallow errors so a
-    # missing/relocated blob can't block DB deletion.
-    local_path = storage.path_for(rec.file_key)
-    if local_path:
-        def _unlink(p: str) -> None:
-            try:
-                Path(p).unlink(missing_ok=True)
-            except OSError:
-                pass
-
-        await anyio.to_thread.run_sync(_unlink, local_path)
