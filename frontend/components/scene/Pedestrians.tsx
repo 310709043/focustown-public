@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
 import { statusByCode, type StatusCode } from "@/lib/data/statuses";
@@ -18,20 +19,30 @@ const POSITIONS = [4, 13, 22, 32, 42, 52, 62, 72, 82, 91];
 
 const pickPos = () => POSITIONS[Math.floor(Math.random() * POSITIONS.length)];
 
+// Deterministic hash from a string — small djb2 variant. Used to pick a
+// SSR-stable initial position + leg-phase per user so server and client
+// render identical HTML before the post-mount randomisation kicks in.
+const stableHash = (s: string): number => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+};
+
 const fallbackCharacter = (userId: string): CharacterDef => {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = (hash * 31 + userId.charCodeAt(i)) | 0;
-  }
-  return CHARACTERS[Math.abs(hash) % CHARACTERS.length];
+  return CHARACTERS[stableHash(userId) % CHARACTERS.length];
 };
 
 function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
-  const [x, setX] = useState<number>(() => pickPos());
-  // Each pedestrian gets a stable leg-phase so they don't all stomp in sync.
-  const walkPhase = useMemo(() => Math.random() * 0.5, []);
+  // SSR-stable initial values: derived from user.id so server and client
+  // agree on the first paint. Math.random() runs only inside useEffect.
+  const h = stableHash(user.id);
+  const [x, setX] = useState<number>(POSITIONS[h % POSITIONS.length]);
+  const walkPhase = useMemo(() => (h % 50) / 100, [h]); // 0.00 – 0.49
 
   useEffect(() => {
+    // First post-mount reroll so the layout doesn't look identical to
+    // every other client viewing the same user list, then keep rerolling.
+    setX(pickPos());
     const id = setInterval(
       () => setX(pickPos()),
       (3.5 + Math.random() * 2.5) * 1000,
@@ -146,7 +157,12 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 }
 
 export function Pedestrians() {
-  const users = usePresenceStore((s) => Object.values(s.byId));
+  // useShallow: without this, `Object.values(s.byId)` returns a fresh array
+  // reference every render → Zustand's useSyncExternalStore adapter compares
+  // with Object.is, sees a snapshot change every time, and re-renders forever
+  // (React surfaces this as "getSnapshot should be cached" +
+  // "Cannot update a component while rendering").
+  const users = usePresenceStore(useShallow((s) => Object.values(s.byId)));
   const selfId = useAuthStore((s) => s.user?.id ?? null);
 
   return (
