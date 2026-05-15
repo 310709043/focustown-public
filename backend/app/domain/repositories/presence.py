@@ -37,7 +37,7 @@ class IPresenceTracker(Protocol):
         user_id: str,
         *,
         state: PresenceState = "on_street",
-        status: str = "focus",
+        status: str = "afk",
     ) -> None: ...
 
     async def offline(self, user_id: str) -> None: ...
@@ -55,3 +55,17 @@ class IPresenceTracker(Protocol):
     async def list(
         self, *, state: PresenceState | None = None
     ) -> list[PresenceEntry]: ...
+
+
+class IPresenceStatusWriter(Protocol):
+    """Narrow Writer port for components that only need to publish a status
+    change (e.g. the EventBus → presence subscriber).
+
+    Interface Segregation: depending on this Protocol (rather than the full
+    ``PresenceService``) means subscribers cannot accidentally call
+    ``connect`` / ``disconnect`` / ``list_street`` — methods outside their
+    responsibility. ``PresenceService.set_status`` already satisfies the
+    contract structurally; no explicit subclassing is required.
+    """
+
+    async def set_status(self, user_id: str, status: str) -> None: ...

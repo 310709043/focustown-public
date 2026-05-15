@@ -18,6 +18,8 @@ from app.domain.services.coin_award_service import (
     CoinAwardService,
     _WalletServiceAcquired,
 )
+from app.domain.services.presence_service import PresenceService
+from app.domain.services.session_presence_subscriber import SessionPresenceLink
 from app.domain.services.wallet_service import WalletService
 from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
 from app.infrastructure.db.repositories import (
@@ -26,6 +28,7 @@ from app.infrastructure.db.repositories import (
 )
 from app.infrastructure.db.session import dispose_engine, get_session_factory
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
+from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
 
 log = get_logger(__name__)
 
@@ -63,6 +66,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     coin_award = CoinAwardService(factory=_wallet_acquire)
     coin_award.register(_event_bus)
+
+    # Bridge focus-session lifecycle to presence status. Redis tracker +
+    # publisher are process-singletons, so no per-event DB session is needed.
+    presence_writer: PresenceService = PresenceService(
+        tracker=RedisPresenceTracker(get_redis(), clock),
+        publisher=RedisPubSubPublisher(get_redis()),
+    )
+    SessionPresenceLink(writer=presence_writer).register(_event_bus)
+
     log.info("subscribers_registered")
 
     try:

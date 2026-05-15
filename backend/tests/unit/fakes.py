@@ -43,6 +43,7 @@ from app.domain.repositories.password_reset_token_repo import (
     ResetTokenRecord,
 )
 from app.domain.repositories.presence import (
+    IPresenceStatusWriter,
     IPresenceTracker,
     PresenceEntry,
     PresenceState,
@@ -524,7 +525,7 @@ class FakePresenceTracker(IPresenceTracker):
         user_id: str,
         *,
         state: PresenceState = "on_street",
-        status: str = "focus",
+        status: str = "afk",
     ) -> None:
         self.rows[user_id] = PresenceEntry(
             user_id=user_id,
@@ -563,6 +564,16 @@ class FakePresenceTracker(IPresenceTracker):
         if state is not None:
             rows = [r for r in rows if r.state == state]
         return rows
+
+
+@dataclass
+class FakePresenceStatusWriter(IPresenceStatusWriter):
+    """Records every set_status call. Used by SessionPresenceLink tests."""
+
+    calls: list[tuple[str, str]] = field(default_factory=list)
+
+    async def set_status(self, user_id: str, status: str) -> None:
+        self.calls.append((user_id, status))
 
 
 @dataclass
