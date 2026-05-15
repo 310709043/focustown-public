@@ -51,6 +51,30 @@ ignore = ["S101"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# Coverage is reported, not gated. A fail-under threshold will be added
+# only after the meaningful test set is in place (see plan: PR2/PR4).
+addopts = "--cov=app --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+omit = [
+  # AWS stubs — raise NotImplementedError until adapters are real
+  "app/infrastructure/auth/providers/cognito.py",
+  "app/infrastructure/storage/s3.py",
+  # Logging-only notifier; no behaviour
+  "app/infrastructure/notifications/log_notifier.py",
+  # Alembic migrations
+  "alembic/*",
+]
+
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "@overload",
+  "\\.\\.\\.",
+]
 
 [tool.mypy]
 python_version = "3.12"

@@ -19,7 +19,7 @@ from app.domain.services.purchase_service import PurchaseService
 from app.domain.services.wallet_service import WalletService
 
 # Reuse the WalletService fakes from the wallet test module.
-from tests.unit.test_wallet_service import (
+from tests.unit.domain.services.test_wallet_service import (
     FakeWalletRepo,
     FakeWalletTransactionRepo,
     RecordingPublisher,
