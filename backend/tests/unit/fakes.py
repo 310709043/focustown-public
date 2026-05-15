@@ -25,21 +25,19 @@ from app.domain.models import (
 )
 from app.domain.models.room import Room, RoomVisibility
 from app.domain.models.room_item import RoomItem
+from app.domain.models.room_playback import RoomPlayback
+from app.domain.models.room_visit import RoomVisit
+from app.domain.notifications import INotificationService
 from app.domain.repositories.achievement_repo import (
     AchievementRecord,
     IAchievementRepo,
 )
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
-from app.domain.repositories.match_repo import IMatchRepo
-from app.domain.services.strategies.compatibility import (
-    CompatibilityScore,
-    ICompatibilityStrategy,
-)
-from app.domain.notifications import INotificationService
 from app.domain.repositories.leaderboard_snapshot_repo import (
     ILeaderboardSnapshotRepo,
     LeaderboardSnapshotRecord,
 )
+from app.domain.repositories.match_repo import IMatchRepo
 from app.domain.repositories.password_reset_token_repo import (
     IPasswordResetTokenRepo,
     ResetTokenRecord,
@@ -50,19 +48,21 @@ from app.domain.repositories.presence import (
     PresenceState,
 )
 from app.domain.repositories.room_item_repo import IRoomItemRepo
-from app.domain.models.room_playback import RoomPlayback
-from app.domain.models.room_visit import RoomVisit
 from app.domain.repositories.room_playback_repo import IRoomPlaybackRepo
-from app.domain.repositories.room_visit_repo import IRoomVisitRepo
 from app.domain.repositories.room_repo import IRoomRepo, RoomAlreadyExistsError
 from app.domain.repositories.room_track_repo import (
     IRoomTrackRepo,
     RoomTrackRecord,
 )
+from app.domain.repositories.room_visit_repo import IRoomVisitRepo
 from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
 from app.domain.repositories.track_repo import ITrackRepo, TrackRecord
 from app.domain.repositories.user_item_repo import IUserItemRepo, UserItem
 from app.domain.repositories.user_repo import IUserRepo, UserCredentials
+from app.domain.services.strategies.compatibility import (
+    CompatibilityScore,
+    ICompatibilityStrategy,
+)
 from app.infrastructure.auth.providers.base import AuthProvider, Principal, TokenPair
 
 
@@ -713,6 +713,12 @@ class FakeTrackRepo(ITrackRepo):
             rows = [t for t in rows if t.mood == mood]
         return rows
 
+    async def list_official(self) -> list[TrackRecord]:
+        return sorted(
+            (t for t in self.tracks.values() if t.is_official),
+            key=lambda t: t.id,
+        )
+
     async def get(self, track_id: str) -> TrackRecord | None:
         return self.tracks.get(track_id)
 
@@ -732,6 +738,7 @@ class FakeTrackRepo(ITrackRepo):
         file_size_bytes: int,
         license: str | None,
         uploaded_by_user_id: str,
+        is_official: bool = False,
     ) -> TrackRecord:
         now = datetime.now(UTC)
         record = TrackRecord(
@@ -747,6 +754,7 @@ class FakeTrackRepo(ITrackRepo):
             uploaded_by_user_id=uploaded_by_user_id,
             created_at=now,
             updated_at=now,
+            is_official=is_official,
         )
         self.tracks[track_id] = record
         return record

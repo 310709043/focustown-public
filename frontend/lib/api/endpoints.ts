@@ -105,15 +105,35 @@ export const sessionsApi = {
 };
 
 // ── notes ──────────────────────────────────────────────
+// ``Note`` is generated from the OpenAPI schema without
+// ``shared_in_match_id`` yet (regenerate ``types.gen.ts`` after the
+// 0012 migration is deployed). Treat the field as optional locally
+// so consumers can read it before regeneration.
+export type NoteWithShare = Note & {
+  user_id: string;
+  shared_in_match_id?: string | null;
+};
+
 export const notesApi = {
-  list() {
-    return apiFetch<Note[]>("/api/v1/notes", { method: "GET" });
+  list(opts: { matchId?: string } = {}) {
+    const qs = opts.matchId
+      ? `?match_id=${encodeURIComponent(opts.matchId)}`
+      : "";
+    return apiFetch<NoteWithShare[]>(`/api/v1/notes${qs}`, { method: "GET" });
   },
-  create(input: { title?: string; body?: string }) {
-    return apiFetch<Note>("/api/v1/notes", { method: "POST", body: input });
+  create(input: { title?: string; body?: string; shared_in_match_id?: string | null }) {
+    return apiFetch<NoteWithShare>("/api/v1/notes", { method: "POST", body: input });
   },
-  update(id: string, input: { title?: string; body?: string; done?: boolean }) {
-    return apiFetch<Note>(`/api/v1/notes/${id}`, { method: "PATCH", body: input });
+  update(
+    id: string,
+    input: {
+      title?: string;
+      body?: string;
+      done?: boolean;
+      shared_in_match_id?: string | null;
+    },
+  ) {
+    return apiFetch<NoteWithShare>(`/api/v1/notes/${id}`, { method: "PATCH", body: input });
   },
   remove(id: string) {
     return apiFetch<void>(`/api/v1/notes/${id}`, { method: "DELETE" });
@@ -288,6 +308,42 @@ export const tracksApi = {
    *  unauthenticated by design; tokens aren't needed for playback. */
   streamUrl(id: string) {
     return `${config.apiBaseUrl}/api/v1/tracks/${id}/stream`;
+  },
+};
+
+// ── personal radio (per-user random playlist) ─────────────
+// Independent per (user, context, day). Two users in the same room
+// see different orderings.
+export type PersonalPlaylistContext = "city" | "focus" | "room";
+
+export interface PersonalPlaylistTrack {
+  id: string;
+  title: string;
+  artist: string | null;
+  mood: string;
+  duration_ms: number | null;
+  content_type: string;
+}
+
+export interface PersonalPlaylistResponse {
+  context: PersonalPlaylistContext;
+  context_id: string | null;
+  day: string;
+  tracks: PersonalPlaylistTrack[];
+}
+
+export const personalRadioApi = {
+  getPlaylist(opts: {
+    context: PersonalPlaylistContext;
+    contextId?: string | null;
+  }) {
+    const params = new URLSearchParams();
+    params.set("context", opts.context);
+    if (opts.contextId) params.set("context_id", opts.contextId);
+    return apiFetch<PersonalPlaylistResponse>(
+      `/api/v1/playback/playlist?${params.toString()}`,
+      { method: "GET" },
+    );
   },
 };
 

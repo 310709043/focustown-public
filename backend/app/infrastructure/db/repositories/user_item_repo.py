@@ -8,7 +8,6 @@ from app.core.exceptions import IdempotencyViolationError
 from app.domain.repositories.user_item_repo import IUserItemRepo, UserItem
 from app.infrastructure.db.models.user_item import UserItemORM
 
-
 __all__ = ["SqlUserItemRepo"]
 
 

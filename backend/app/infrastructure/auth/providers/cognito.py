@@ -15,11 +15,11 @@ class CognitoProvider(AuthProvider):
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
 
-    async def issue_tokens(self, *, user_id: str) -> TokenPair:  # noqa: ARG002
+    async def issue_tokens(self, *, user_id: str) -> TokenPair:
         raise NotImplementedError("CognitoProvider.issue_tokens — implement in v2")
 
-    async def refresh(self, refresh_token: str) -> TokenPair:  # noqa: ARG002
+    async def refresh(self, refresh_token: str) -> TokenPair:
         raise NotImplementedError("CognitoProvider.refresh — implement in v2")
 
-    async def verify_access_token(self, token: str) -> Principal:  # noqa: ARG002
+    async def verify_access_token(self, token: str) -> Principal:
         raise NotImplementedError("CognitoProvider.verify_access_token — implement in v2")

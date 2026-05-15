@@ -34,7 +34,7 @@ import { LockedRoom } from "@/components/town/room/LockedRoom";
 import { MissingRoom } from "@/components/town/room/MissingRoom";
 import { DecorationCanvas } from "@/components/town/room/DecorationCanvas";
 import { VisitorPanel } from "@/components/town/room/VisitorPanel";
-import { RoomAudio } from "@/components/town/room/RoomAudio";
+import { PersonalRadio } from "@/components/audio/PersonalRadio";
 
 const THEME_KEYS: Array<{ key: RoomTheme; chip: string }> = [
   { key: "dawn", chip: "🌅" },
@@ -235,7 +235,16 @@ export default function RoomPage() {
           ownerUserId={room.owner_user_id}
           currentUserId={user?.id ?? null}
         />
-        <RoomAudio roomId={roomId} isOwner={isOwner} />
+        {/* Each visitor hears their own randomized shuffle of the
+            official catalog — deliberately NOT synchronized to the
+            owner's playback. Phase 9's room_playback table stays in
+            place server-side but is no longer wired to the UI. */}
+        <div
+          className="absolute z-10 hidden md:block"
+          style={{ right: 24, top: 24, width: 244 }}
+        >
+          <PersonalRadio context="room" contextId={roomId} label="房間音樂" />
+        </div>
 
         {isOwner && (
           <div

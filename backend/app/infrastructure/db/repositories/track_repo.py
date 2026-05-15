@@ -22,6 +22,7 @@ def _to_record(row: TrackORM) -> TrackRecord:
         uploaded_by_user_id=row.uploaded_by_user_id,
         created_at=row.created_at,
         updated_at=row.updated_at,
+        is_official=row.is_official,
     )
 
 
@@ -33,6 +34,14 @@ class SqlTrackRepo(ITrackRepo):
         stmt = select(TrackORM).order_by(TrackORM.created_at.desc())
         if mood is not None:
             stmt = stmt.where(TrackORM.mood == mood)
+        return [_to_record(r) for r in (await self._s.execute(stmt)).scalars().all()]
+
+    async def list_official(self) -> list[TrackRecord]:
+        stmt = (
+            select(TrackORM)
+            .where(TrackORM.is_official.is_(True))
+            .order_by(TrackORM.id.asc())
+        )
         return [_to_record(r) for r in (await self._s.execute(stmt)).scalars().all()]
 
     async def get(self, track_id: str) -> TrackRecord | None:
@@ -58,6 +67,7 @@ class SqlTrackRepo(ITrackRepo):
         file_size_bytes: int,
         license: str | None,
         uploaded_by_user_id: str,
+        is_official: bool = False,
     ) -> TrackRecord:
         row = TrackORM(
             id=track_id,
@@ -70,6 +80,7 @@ class SqlTrackRepo(ITrackRepo):
             file_size_bytes=file_size_bytes,
             license=license,
             uploaded_by_user_id=uploaded_by_user_id,
+            is_official=is_official,
         )
         self._s.add(row)
         await self._s.flush()
