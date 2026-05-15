@@ -44,13 +44,26 @@ class Settings(BaseSettings):
     reset_url_base: str = "http://localhost:3000/reset-password"
     terms_current_version: str = "2026-05-14"
 
-    # Phase 6 — Track library + uploads.
-    # storage_backend dispatches IFileStorage adapter in deps.py
-    # ("local" → LocalFSStorage, "s3" → S3Storage stub).
+    # Track library storage. V1 ships a seeded-only catalog (no user
+    # uploads), but the storage abstraction stays: the dev-data seeder
+    # writes through IFileStorage, and the streaming endpoint serves
+    # bytes back via FileResponse / S3 presigned redirect.
+    # storage_backend dispatches IFileStorage adapter via
+    # infrastructure.storage.factory.make_storage().
     storage_backend: Literal["local", "s3"] = "local"
     storage_root: str = "/app/data/storage"
-    tracks_max_per_user: int = 10
-    tracks_max_file_size_mb: int = 15
+
+    # S3 / MinIO settings. All blank by default so production deploys with
+    # IAM role + boto3 default endpoint work unchanged. For local MinIO see
+    # docker-compose.s3.yml: endpoint_url=http://minio:9000 (in-cluster),
+    # public_endpoint_url=http://localhost:9000 (presigned URL host used by
+    # the browser — MinIO does not sign the Host header, so a different
+    # host in the signed URL is still valid).
+    s3_endpoint_url: str = ""
+    s3_public_endpoint_url: str = ""
+    s3_access_key: str = ""
+    s3_secret_key: str = ""
+    s3_presign_ttl_seconds: int = 3600
 
     # Auth-endpoint rate limits. Centralised here so an operator can tune
     # them per environment (e.g. relax in dev, tighten in prod) without
