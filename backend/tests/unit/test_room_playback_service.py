@@ -20,7 +20,6 @@ from tests.unit.fakes import (
     RecordingPublisher,
 )
 
-
 # ── Lightweight track-repo fake (only get() is exercised here) ──────────────
 
 
@@ -31,16 +30,16 @@ class FakeTrackRepoForPlayback(ITrackRepo):
     async def list(self, *, mood: str | None = None) -> list[TrackRecord]:
         return list(self.rows.values())
 
+    async def list_official(self) -> list[TrackRecord]:
+        return sorted(
+            (t for t in self.rows.values() if t.is_official),
+            key=lambda t: t.id,
+        )
+
     async def get(self, track_id: str) -> TrackRecord | None:
         return self.rows.get(track_id)
 
-    async def count_by_uploader(self, user_id: str) -> int:
-        return 0
-
     async def insert(self, **_: object) -> TrackRecord:  # type: ignore[override]
-        raise NotImplementedError
-
-    async def delete(self, *, track_id: str, user_id: str) -> None:
         raise NotImplementedError
 
 

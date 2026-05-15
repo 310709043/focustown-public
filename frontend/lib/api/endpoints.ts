@@ -275,15 +275,10 @@ export const decorationApi = {
   },
 };
 
-// ── tracks (Phase 6 Tier-2) ────────────────────────────
-export type TrackUploadInput = {
-  file: File;
-  title: string;
-  mood: string;
-  artist?: string;
-  license?: string;
-};
-
+// ── tracks (V1: seeded-only library) ───────────────────
+// V1 ships a curated official library only — no user upload / delete.
+// The streaming endpoint stays unauthenticated so <audio src> can follow
+// the 302 redirect into S3 / MinIO presigned URLs without bearer tokens.
 export const tracksApi = {
   list(mood?: string) {
     const qs = mood ? `?mood=${encodeURIComponent(mood)}` : "";
@@ -292,20 +287,7 @@ export const tracksApi = {
   get(id: string) {
     return apiFetch<Track>(`/api/v1/tracks/${id}`, { method: "GET", auth: false });
   },
-  upload(input: TrackUploadInput) {
-    const form = new FormData();
-    form.append("file", input.file);
-    form.append("title", input.title);
-    form.append("mood", input.mood);
-    if (input.artist) form.append("artist", input.artist);
-    if (input.license) form.append("license", input.license);
-    return apiFetch<Track>("/api/v1/tracks", { method: "POST", body: form });
-  },
-  remove(id: string) {
-    return apiFetch<void>(`/api/v1/tracks/${id}`, { method: "DELETE" });
-  },
-  /** Absolute URL suitable for `<audio src={...}>`. Stream endpoint is
-   *  unauthenticated by design; tokens aren't needed for playback. */
+  /** Absolute URL suitable for `<audio src={...}>`. */
   streamUrl(id: string) {
     return `${config.apiBaseUrl}/api/v1/tracks/${id}/stream`;
   },

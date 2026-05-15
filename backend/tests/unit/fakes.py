@@ -733,9 +733,6 @@ class FakeTrackRepo(ITrackRepo):
     async def get(self, track_id: str) -> TrackRecord | None:
         return self.tracks.get(track_id)
 
-    async def count_by_uploader(self, user_id: str) -> int:
-        return sum(1 for t in self.tracks.values() if t.uploaded_by_user_id == user_id)
-
     async def insert(
         self,
         *,
@@ -769,9 +766,6 @@ class FakeTrackRepo(ITrackRepo):
         )
         self.tracks[track_id] = record
         return record
-
-    async def delete(self, *, track_id: str, user_id: str) -> None:
-        self.tracks.pop(track_id, None)
 
 
 @dataclass

@@ -1,8 +1,8 @@
 """Unit tests for ITrackRepo behaviour using an in-memory fake.
 
-The fake mirrors SqlTrackRepo's contract (list filter, count, ownership-checked
-delete). It keeps tests fast and DB-free; the SQL repo is exercised by
-integration smoke tests separately.
+V1 narrows ITrackRepo to a reader + seed-only writer: ``list`` / ``get`` /
+``list_official`` for read paths (personal radio, library browse, stream
+endpoint) and ``insert`` for the dev-data seeder. Tests follow suit.
 """
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ from typing import cast
 
 import pytest
 
-from app.core.exceptions import ForbiddenError, NotFoundError
 from app.domain.repositories.track_repo import ITrackRepo, TrackRecord
 
 
@@ -27,11 +26,14 @@ class FakeTrackRepo(ITrackRepo):
         rows.sort(key=lambda r: r.created_at, reverse=True)
         return rows
 
+    async def list_official(self) -> list[TrackRecord]:
+        return sorted(
+            (r for r in self._rows.values() if r.is_official),
+            key=lambda r: r.id,
+        )
+
     async def get(self, track_id: str) -> TrackRecord | None:
         return self._rows.get(track_id)
-
-    async def count_by_uploader(self, user_id: str) -> int:
-        return sum(1 for r in self._rows.values() if r.uploaded_by_user_id == user_id)
 
     async def insert(
         self,
@@ -46,6 +48,7 @@ class FakeTrackRepo(ITrackRepo):
         file_size_bytes: int,
         license: str | None,
         uploaded_by_user_id: str,
+        is_official: bool = False,
     ) -> TrackRecord:
         now = datetime.now(UTC)
         rec = TrackRecord(
@@ -61,17 +64,10 @@ class FakeTrackRepo(ITrackRepo):
             uploaded_by_user_id=uploaded_by_user_id,
             created_at=now,
             updated_at=now,
+            is_official=is_official,
         )
         self._rows[track_id] = rec
         return rec
-
-    async def delete(self, *, track_id: str, user_id: str) -> None:
-        row = self._rows.get(track_id)
-        if row is None:
-            raise NotFoundError("track_not_found")
-        if row.uploaded_by_user_id != user_id:
-            raise ForbiddenError("track_not_owned")
-        del self._rows[track_id]
 
 
 async def _insert_demo(repo: ITrackRepo, **kwargs) -> TrackRecord:
@@ -117,40 +113,14 @@ async def test_list_filters_by_mood():
 
 
 @pytest.mark.asyncio
-async def test_count_by_uploader():
+async def test_list_official_filters_and_sorts():
     repo = FakeTrackRepo()
-    await _insert_demo(repo, track_id="a1", uploaded_by_user_id="u-1", file_key="a1")
-    await _insert_demo(repo, track_id="a2", uploaded_by_user_id="u-1", file_key="a2")
-    await _insert_demo(repo, track_id="b1", uploaded_by_user_id="u-2", file_key="b1")
+    await _insert_demo(repo, track_id="t-b", file_key="b", is_official=True)
+    await _insert_demo(repo, track_id="t-a", file_key="a", is_official=True)
+    await _insert_demo(repo, track_id="t-c", file_key="c", is_official=False)
 
-    assert await repo.count_by_uploader("u-1") == 2
-    assert await repo.count_by_uploader("u-2") == 1
-    assert await repo.count_by_uploader("u-3") == 0
-
-
-@pytest.mark.asyncio
-async def test_delete_owned_succeeds():
-    repo = FakeTrackRepo()
-    rec = await _insert_demo(repo)
-    await repo.delete(track_id=rec.id, user_id="u-1")
-    assert await repo.get(rec.id) is None
-
-
-@pytest.mark.asyncio
-async def test_delete_other_users_track_forbidden():
-    repo = FakeTrackRepo()
-    rec = await _insert_demo(repo)
-    with pytest.raises(ForbiddenError):
-        await repo.delete(track_id=rec.id, user_id="u-other")
-    # Still present
-    assert await repo.get(rec.id) is not None
-
-
-@pytest.mark.asyncio
-async def test_delete_missing_track_not_found():
-    repo = FakeTrackRepo()
-    with pytest.raises(NotFoundError):
-        await repo.delete(track_id="does-not-exist", user_id="u-1")
+    official = await repo.list_official()
+    assert [r.id for r in official] == ["t-a", "t-b"]
 
 
 @pytest.mark.asyncio

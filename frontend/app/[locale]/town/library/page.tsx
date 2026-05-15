@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { Link, useRouter } from "@/i18n/routing";
+import { useRouter } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/client";
 import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";
 import type { Track } from "@/lib/api/types.gen";
 import { useAuthStore } from "@/lib/state/authStore";
 import { MoodTabs, type MoodKey } from "@/components/library/MoodTabs";
 import { TrackList } from "@/components/library/TrackList";
-import { UploadForm } from "@/components/library/UploadForm";
 
 export default function LibraryPage() {
   const router = useRouter();
@@ -67,20 +66,6 @@ export default function LibraryPage() {
     };
   }, [user]);
 
-  function handleUploaded(track: Track) {
-    setTracks((prev) => [track, ...prev]);
-  }
-
-  function handleDeleted(trackId: string) {
-    setTracks((prev) => prev.filter((tr) => tr.id !== trackId));
-    setInPlaylist((prev) => {
-      if (!prev.has(trackId)) return prev;
-      const next = new Set(prev);
-      next.delete(trackId);
-      return next;
-    });
-  }
-
   async function handleAddToRoom(trackId: string) {
     await roomTracksApi.add(trackId);
     setInPlaylist((prev) => new Set(prev).add(trackId));
@@ -111,19 +96,11 @@ export default function LibraryPage() {
         </button>
       </header>
 
-      <p className="text-[11px] text-muted leading-relaxed">
-        {t("intro")}
-        <Link className="text-accent-1 ml-1" href="/town">
-          {t("introRoomLink")}
-        </Link>
-        {t("introSuffix")}
-      </p>
+      <p className="text-[11px] text-muted leading-relaxed">{t("intro")}</p>
 
       <MoodTabs value={mood} onChange={setMood} />
 
-      {user ? (
-        <UploadForm onUploaded={handleUploaded} />
-      ) : (
+      {!user && (
         <div className="text-[11px] text-muted border border-border rounded p-3">
           {t("signedOutHint")}
         </div>
@@ -138,8 +115,7 @@ export default function LibraryPage() {
       ) : (
         <TrackList
           tracks={tracks}
-          currentUserId={user?.id ?? null}
-          onDeleted={handleDeleted}
+          canCurateRoom={user !== null}
           inPlaylist={inPlaylist}
           onAddToRoom={handleAddToRoom}
           onRemoveFromRoom={handleRemoveFromRoom}
