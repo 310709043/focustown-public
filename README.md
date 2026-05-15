@@ -30,8 +30,44 @@ docker compose exec backend python /tmp/seed.py
 
 **現成測試帳號**（seed 不會建立，需自己註冊或用這組）：
 
-- email: `smoke@example.com`　密碼: `smoketestpass`
+- email: `smoke@example.com`　密碼: `Smoketest123`
 - ⚠ 註冊 email 不可用 `.local` / `.test` 等保留 TLD；用 `.com` / `.dev` / `.io`
+
+---
+
+## 音樂庫設定（V1 官方歌庫）
+
+V1 為策展型歌庫，**不開放使用者上傳**。歌曲由 seed 從本機 MP3 灌入（檔案 gitignored，每位開發者自備）。
+
+1. 把 5 首 royalty-free MP3 放進 `backend/assets/seed-tracks/`，檔名須對齊下表（其他檔名也會被 seed，但 mood 預設 `lofi`、title 由檔名推導）：
+
+   | 檔名 | Title | Mood |
+   |---|---|---|
+   | `cold-ceramics.mp3` | Cold Ceramics | ambient |
+   | `sunlight-on-the-floor.mp3` | Sunlight on the Floor | lofi |
+   | `cold-windowpane.mp3` | Cold Windowpane | ambient |
+   | `midnight-at-the-overpass.mp3` | Midnight at the Overpass | jazz |
+   | `sunday-window.mp3` | Sunday Window | lofi |
+
+2. 跑 seed（與「30 秒啟動」第 4 步相同指令，會把檔案複製到 `LocalFSStorage` 或 PUT 到 MinIO bucket）。seed 為 idempotent，重跑會跳過已存在的 title。
+
+3. 想驗證 S3 串接行為（presigned URL + 302 redirect + Range），加上 `docker-compose.s3.yml` override：
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d --build
+   docker compose exec backend alembic upgrade head
+   docker compose cp scripts/seed-dev-data.py backend:/tmp/seed.py
+   docker compose exec backend python /tmp/seed.py
+   ```
+
+   | URL | 用途 |
+   |---|---|
+   | http://localhost:9001 | MinIO console（帳密 `minioadmin` / `minioadmin`） |
+   | http://localhost:9000 | MinIO S3 API（瀏覽器走 presigned URL 進這裡） |
+
+   驗收：MinIO console 內 `focustown-dev` bucket 應有 `tracks/<uuid>.mp3` × 5；前端 `/town` 的 PersonalRadio 播放時 DevTools Network 看到 `/api/v1/tracks/<id>/stream` 回 302 → `localhost:9000/...?X-Amz-Signature=...`。
+
+切回預設 local-fs：`docker compose down && docker compose up -d`（不帶 override）。
 
 ---
 
@@ -127,6 +163,7 @@ focustwon/
 
 - 配對演算法：新增 `ICompatibilityStrategy` impl → `backend/app/domain/services/strategies/`
 - 真實 Auth：填 `backend/app/infrastructure/auth/providers/cognito.py`，env 設 `AUTH_PROVIDER=cognito`
-- 真實 Storage：填 `backend/app/infrastructure/storage/s3.py`（boto3 presigned）
+- 真實 AWS S3：`S3Storage`（`backend/app/infrastructure/storage/s3.py`）已實作，本機透過 MinIO 驗證；正式環境留空 `S3_ENDPOINT_URL` / `S3_PUBLIC_ENDPOINT_URL` 走 IAM role + AWS 預設 endpoint，並把 `STORAGE_BACKEND=s3` 與 `S3_BUCKET` 帶入
+- 重啟使用者上傳：恢復 `ITrackRepo.delete` / `count_by_uploader` + 後端 `POST/DELETE /api/v1/tracks` + 前端 `UploadForm`；需先補版權聲明與檢舉流程（見 PR #29 描述）
 - 新背景任務：在 `backend/app/worker.py` 加 coroutine + `scheduler.schedule_interval(...)`
 - AWS 部署：見 [`infra/README.md`](./infra/README.md)（CDK stack 規劃 + 成本估算）
