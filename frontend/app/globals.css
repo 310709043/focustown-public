@@ -325,6 +325,11 @@ body {
   to   { transform: translateX(110vw); }
 }
 
+@keyframes roadDash {
+  from { background-position-x: 0; }
+  to   { background-position-x: -96px; }
+}
+
 @keyframes legs {
   0%   { gap: 1px; }
   50%  { gap: 3px; }

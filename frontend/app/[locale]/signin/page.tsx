@@ -7,7 +7,6 @@ import { Link, useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { AppFooter } from "@/components/AppFooter";
-import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -35,9 +34,6 @@ export default function SignInPage() {
           "linear-gradient(155deg,#060120 0%,#0d0435 55%,#060120 100%)",
       }}
     >
-      <div className="absolute top-4 right-4 z-10">
-        <LocaleSwitcher className="flex gap-1 bg-glass border border-border rounded px-2 py-1 touch:px-3 touch:py-2 backdrop-blur-md" />
-      </div>
       <form
         data-testid="signin-form"
         onSubmit={onSubmit}
