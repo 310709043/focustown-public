@@ -115,12 +115,14 @@ export function SharedNotesPanel({ matchId, myUserId }: Props) {
       </div>
       <div className="px-3 py-2 border-t border-border flex flex-col gap-1">
         <input
+          data-testid="shared-note-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t("titlePlaceholder")}
           className="bg-[rgba(12,5,35,.9)] border border-border rounded-t text-[11px] px-2.5 py-1.5 outline-none focus:border-accent-1"
         />
         <textarea
+          data-testid="shared-note-body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder={t("bodyPlaceholder")}

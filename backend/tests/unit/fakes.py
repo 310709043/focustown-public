@@ -25,21 +25,19 @@ from app.domain.models import (
 )
 from app.domain.models.room import Room, RoomVisibility
 from app.domain.models.room_item import RoomItem
+from app.domain.models.room_playback import RoomPlayback
+from app.domain.models.room_visit import RoomVisit
+from app.domain.notifications import INotificationService
 from app.domain.repositories.achievement_repo import (
     AchievementRecord,
     IAchievementRepo,
 )
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
-from app.domain.repositories.match_repo import IMatchRepo
-from app.domain.services.strategies.compatibility import (
-    CompatibilityScore,
-    ICompatibilityStrategy,
-)
-from app.domain.notifications import INotificationService
 from app.domain.repositories.leaderboard_snapshot_repo import (
     ILeaderboardSnapshotRepo,
     LeaderboardSnapshotRecord,
 )
+from app.domain.repositories.match_repo import IMatchRepo
 from app.domain.repositories.password_reset_token_repo import (
     IPasswordResetTokenRepo,
     ResetTokenRecord,
@@ -50,19 +48,21 @@ from app.domain.repositories.presence import (
     PresenceState,
 )
 from app.domain.repositories.room_item_repo import IRoomItemRepo
-from app.domain.models.room_playback import RoomPlayback
-from app.domain.models.room_visit import RoomVisit
 from app.domain.repositories.room_playback_repo import IRoomPlaybackRepo
-from app.domain.repositories.room_visit_repo import IRoomVisitRepo
 from app.domain.repositories.room_repo import IRoomRepo, RoomAlreadyExistsError
 from app.domain.repositories.room_track_repo import (
     IRoomTrackRepo,
     RoomTrackRecord,
 )
+from app.domain.repositories.room_visit_repo import IRoomVisitRepo
 from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
 from app.domain.repositories.track_repo import ITrackRepo, TrackRecord
 from app.domain.repositories.user_item_repo import IUserItemRepo, UserItem
 from app.domain.repositories.user_repo import IUserRepo, UserCredentials
+from app.domain.services.strategies.compatibility import (
+    CompatibilityScore,
+    ICompatibilityStrategy,
+)
 from app.infrastructure.auth.providers.base import AuthProvider, Principal, TokenPair
 
 

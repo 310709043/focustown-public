@@ -216,8 +216,8 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
 
     // Back to shared, then author + submit a shared note.
     await page.getByRole("button", { name: "共享" }).click();
-    await page.getByPlaceholder("筆記標題").fill("E2E shared title");
-    await page.getByPlaceholder("筆記內容").fill("E2E shared body");
+    await page.getByTestId("shared-note-title").fill("E2E shared title");
+    await page.getByTestId("shared-note-body").fill("E2E shared body");
     // 「與夥伴共享」 checkbox defaults to checked, so we don't toggle it.
 
     // The add button's label comes from i18n; match by surrounding text rather
