@@ -52,4 +52,7 @@ export const handlers = [
 
   // shop
   http.get(`${BASE}/api/v1/shop`, async () => HttpResponse.json([])),
+
+  // user items (inventory)
+  http.get(`${BASE}/api/v1/me/items`, async () => HttpResponse.json([])),
 ];
