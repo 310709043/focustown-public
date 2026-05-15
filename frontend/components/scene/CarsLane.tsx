@@ -2,11 +2,11 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
+import { hashUserId } from "@/lib/data/hash";
 import { useAuthStore } from "@/lib/state/authStore";
-import { usePresenceStore } from "@/lib/state/presenceStore";
+import { usePresenceByKind } from "@/lib/state/usePresenceByKind";
 
 import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
 import { buildCar } from "@/lib/pixel/sprites/world";
@@ -26,19 +26,8 @@ import { buildCar } from "@/lib/pixel/sprites/world";
  * every render.
  */
 
-const fallbackCharacter = (userId: string): CharacterDef => {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = (hash * 31 + userId.charCodeAt(i)) | 0;
-  }
-  return CHARACTERS[Math.abs(hash) % CHARACTERS.length];
-};
-
-const hashCode = (s: string): number => {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return h;
-};
+const fallbackCharacter = (userId: string): CharacterDef =>
+  CHARACTERS[hashUserId(userId) % CHARACTERS.length];
 
 function Car({
   user,
@@ -61,8 +50,8 @@ function Car({
 
   // Stable per-user motion params so reflows from list reorders don't reset.
   const params = useMemo(() => {
-    const h = Math.abs(hashCode(user.id));
-    const dur = 4.4 + (h % 28) / 10; // 4.4 .. 7.2 seconds (matches original feel)
+    const h = hashUserId(user.id);
+    const dur = 14 + (h % 80) / 10; // 14 .. 22 seconds — calmer afternoon pace
     const delay = -((h % 100) / 100) * dur;
     return { dur, delay };
   }, [user.id]);
@@ -127,9 +116,8 @@ function Car({
 }
 
 export function CarsLane() {
-  // Same SSR-snapshot caveat as Pedestrians: useShallow keeps the array
-  // reference stable across reads when nothing changed.
-  const users = usePresenceStore(useShallow((s) => Object.values(s.byId)));
+  // Only users whose entity assignment is "car" appear here.
+  const users = usePresenceByKind("car");
   const selfId = useAuthStore((s) => s.user?.id ?? null);
 
   return (

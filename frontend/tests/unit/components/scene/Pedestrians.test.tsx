@@ -33,19 +33,24 @@ import { Pedestrians } from "@/components/scene/Pedestrians";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 
+// Both IDs deterministically hash to entityKind="walker" via
+// `entityKindFor`. Pedestrians now filters by that bucket, so a regression
+// test about the *selector* must pick IDs in the same bucket — otherwise
+// the entity-routing filter, not the selector, would explain why they're
+// missing from the DOM. (verified by running entityKindFor on each.)
 const alice: StreetUser = {
   id: "u-alice",
   display_name: "Alice",
   character_key: null,
-  status: "focus",
+  status: "afk",
   vehicle: null,
 };
 
-const bob: StreetUser = {
-  id: "u-bob",
-  display_name: "Bob",
+const eve: StreetUser = {
+  id: "u-eve",
+  display_name: "Eve",
   character_key: null,
-  status: "focus",
+  status: "afk",
   vehicle: null,
 };
 
@@ -97,7 +102,7 @@ test("new presence entry causes a clean re-render", () => {
   expect(container.querySelectorAll(".animate-userPop")).toHaveLength(1);
 
   act(() => {
-    usePresenceStore.setState({ byId: { "u-alice": alice, "u-bob": bob } });
+    usePresenceStore.setState({ byId: { "u-alice": alice, "u-eve": eve } });
   });
 
   expect(container.querySelectorAll(".animate-userPop")).toHaveLength(2);

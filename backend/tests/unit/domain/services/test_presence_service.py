@@ -50,7 +50,9 @@ async def test_connect_marks_online_and_broadcasts():
     entry = await tracker.get("u1")
     assert entry is not None
     assert entry.state == "on_street"
-    assert entry.status == "focus"
+    # Default status on connect is "afk" — a fresh connection is idle until
+    # SessionPresenceLink flips it to "focus" on SessionStarted.
+    assert entry.status == "afk"
 
     assert pub.published == [
         (
@@ -59,7 +61,7 @@ async def test_connect_marks_online_and_broadcasts():
                 "type": "presence.changed",
                 "user_id": "u1",
                 "state": "on_street",
-                "status": "focus",
+                "status": "afk",
             },
         )
     ]

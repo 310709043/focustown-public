@@ -72,6 +72,52 @@ export const WALKERS: readonly AnimatedSpriteDef[] = [
   buildWalker({ H: "#0a0524", F: "#f4c7a8", N: "#0a0524", C: "#f0abfc", B: "#f0abfc", L: "#3f3a5a", S: "#0a0524" }),
 ];
 
+// ---------- Companion dog (10×8, 2-frame walk cycle) ----------
+// Side-view; body slightly longer than the cat, tail held high so a glance
+// distinguishes the two. Palette key: B = outline, T = tan body.
+
+export const DOG_WALK: AnimatedSpriteDef = {
+  frames: [`
+.....BBBB.
+....BBTTBB
+BBBBBBTTTB
+BTTTBBTTTB
+BTTTTTTTTB
+BTTTTTTTTB
+BBBBBBBBBB
+B.B....B.B
+`, `
+.....BBBB.
+....BBTTBB
+BBBBBBTTTB
+BTTTBBTTTB
+BTTTTTTTTB
+BTTTTTTTTB
+BBBBBBBBBB
+.B.B..B.B.
+`],
+  palette: { B: "#0a0524", T: "#c2a479" },
+};
+
+// ---------- Songbird (6×4, 2-frame wing flap) ----------
+// Tiny silhouette so it reads as flying past at altitude; the wing position
+// flips between frames to suggest a continuous flap.
+
+export const BIRD_FLY: AnimatedSpriteDef = {
+  frames: [`
+W....W
+.W.BW.
+.BBBB.
+......
+`, `
+......
+.W.BW.
+.BBBB.
+W....W
+`],
+  palette: { W: "#94a3b8", B: "#1e40af" },
+};
+
 // ---------- Companion cat ----------
 
 export const CAT_WALK: AnimatedSpriteDef = {

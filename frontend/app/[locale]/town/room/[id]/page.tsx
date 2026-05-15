@@ -238,17 +238,19 @@ export default function RoomPage() {
         {/* Each visitor hears their own randomized shuffle of the
             official catalog — deliberately NOT synchronized to the
             owner's playback. Phase 9's room_playback table stays in
-            place server-side but is no longer wired to the UI. */}
+            place server-side but is no longer wired to the UI.
+            Position mirrors /town and /focus: bottom-right, 16px from
+            each edge, 244px wide. */}
         <div
           className="absolute z-10 hidden md:block"
-          style={{ right: 24, top: 24, width: 244 }}
+          style={{ right: 16, bottom: 16, width: 244 }}
         >
           <PersonalRadio context="room" contextId={roomId} label="房間音樂" />
         </div>
 
         {isOwner && (
           <div
-            className="absolute z-10 flex items-center gap-1.5 px-3 py-2 rounded-md flex-wrap right-3 bottom-3 md:right-6 md:bottom-6 max-w-[calc(100%-1.5rem)]"
+            className="absolute z-10 flex items-center gap-1.5 px-3 py-2 rounded-md flex-wrap right-3 bottom-3 md:right-4 md:bottom-[148px] max-w-[calc(100%-1.5rem)]"
             style={{
               background: "rgba(8,3,25,0.85)",
               border: "1px solid var(--border2)",

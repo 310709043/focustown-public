@@ -174,10 +174,11 @@ export default function FocusRoomPage() {
       {/* Per-user random radio — paired and solo sessions both get
           their own private shuffle of the official catalog. Tablet+
           only because phones already need every vertical pixel for
-          the timer + notes split. */}
+          the timer + notes split. Position matches /town and /room:
+          bottom-right, 16px from each edge, 244px wide. */}
       <div
         className="absolute z-10 hidden md:block"
-        style={{ left: 16, top: 60, width: 244 }}
+        style={{ right: 16, bottom: 16, width: 244 }}
       >
         <PersonalRadio
           context="focus"

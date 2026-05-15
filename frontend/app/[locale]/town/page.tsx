@@ -22,6 +22,8 @@ import { Buildings } from "@/components/scene/Buildings";
 import { Billboard } from "@/components/scene/Billboard";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
+import { Dogs } from "@/components/scene/Dogs";
+import { Birds } from "@/components/scene/Birds";
 import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
 import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
@@ -30,6 +32,7 @@ import { TownNavbar } from "@/components/chrome/TownNavbar";
 import { TickerBar } from "@/components/chrome/TickerBar";
 import { VenueCards } from "@/components/scene/VenueCards";
 import { StreetProps } from "@/components/scene/StreetProps";
+import { Road } from "@/components/scene/Road";
 import { SCENES } from "@/lib/data/scenes";
 
 import { TimerPanel } from "@/components/panels/TimerPanel";
@@ -181,6 +184,9 @@ export default function TownPage() {
         <Airplane intervalSeconds={22} delaySeconds={0} />
         <Airplane intervalSeconds={28} delaySeconds={-14} />
 
+        {/* per-user songbirds — fly under the airplane silhouettes */}
+        <Birds />
+
         <WeatherBadge />
         <TownClock />
 
@@ -191,8 +197,14 @@ export default function TownPage() {
         {/* sidewalk props (lamps/trees/bench/cat) sit under moving crowd */}
         <StreetProps />
 
-        {/* ground crowd */}
+        {/* neon pixel asphalt — sits between pedestrians (sidewalk above)
+            and cars (driving on top). Pure CSS; respects reduced-motion. */}
+        <Road />
+
+        {/* ground crowd — every moving entity is a real online user;
+            entityKindFor() routes each user to exactly one of these four. */}
         <Pedestrians />
+        <Dogs />
         <CarsLane />
 
         {/* central billboard */}
@@ -210,28 +222,32 @@ export default function TownPage() {
           />
         ) : null}
 
-        {/* bottom-left: BigFocusCTA stacked above TimerPanel.
-            Mobile: full-width minus 12px gutter so the panel doesn't fight
-            with MatchCTA in the centre. Tablet+: fixed 244px pinned left. */}
+        {/* Mobile bottom-left: BigFocusCTA stacked above TimerPanel.
+            Phones don't get the shared rail because there's not enough
+            horizontal room beside the centred MatchCTA. */}
         <div
           className="absolute z-[9] flex flex-col gap-2 items-stretch
                      left-3 right-3 bottom-[120px] xs:bottom-[140px]
-                     md:left-4 md:right-auto md:bottom-4 md:w-[244px]"
+                     md:hidden"
         >
           <BigFocusCTA />
           <TimerPanel />
         </div>
 
-        {/* bottom-right: personal city radio. Each user gets their own
-            randomized shuffle of the official catalog; no cross-user
-            sync. Hidden on phones — same rationale as the legacy
-            MusicPanel: not enough horizontal real estate beside the
-            left HUD. */}
+        {/* Tablet+ shared bottom rail: timer cluster (left) and city
+            radio (right) on one baseline, 16px from each edge. Each
+            cluster is 244px wide so they read as a matched pair. */}
         <div
-          className="absolute z-[9] hidden md:block"
-          style={{ right: 16, bottom: 16, width: 244 }}
+          className="absolute inset-x-0 bottom-0 z-[9] hidden md:flex
+                     items-end justify-between px-4 pb-4 pointer-events-none"
         >
-          <PersonalRadio context="city" contextId="city" />
+          <div className="pointer-events-auto w-[244px] flex flex-col gap-2">
+            <BigFocusCTA />
+            <TimerPanel />
+          </div>
+          <div className="pointer-events-auto w-[244px]">
+            <PersonalRadio context="city" contextId="city" />
+          </div>
         </div>
 
         {/* news ticker — drifts above the bottom HUD */}

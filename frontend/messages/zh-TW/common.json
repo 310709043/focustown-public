@@ -52,7 +52,10 @@
     "version": "版本：{version}"
   },
   "locale": {
-    "aria": "語言"
+    "aria": "語言",
+    "switchTo": "切換到 {label}",
+    "zhTW": "中文",
+    "en": "EN"
   },
   "misc": {
     "or": "or"
