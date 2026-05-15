@@ -10,9 +10,9 @@ venv/
 .coverage
 htmlcov/
 coverage/
-playwright/.auth/
-test-results/
-playwright-report/
+**/playwright/.auth/
+**/test-results/
+**/playwright-report/
 
 # Node
 node_modules/
