@@ -60,15 +60,20 @@ class RoomTrackService:
         if room is None:
             raise NotFoundError("user_has_no_room")
         rows = await self._room_tracks.list_by_room(room.id)
-        entries: list[RoomTrackEntry] = []
-        for r in rows:
-            track = await self._tracks.get(r.track_id)
-            if track is None:
-                # Track was hard-deleted but FK CASCADE should have
-                # removed this row — defensive skip.
-                continue
-            entries.append(RoomTrackEntry(room_track=r, track=track))
-        return entries
+        if not rows:
+            return []
+        # Batch-load all referenced tracks in one query instead of one per
+        # playlist row. Rows whose track was hard-deleted (FK CASCADE
+        # should have cleaned them up, but be defensive) drop out.
+        track_ids = [r.track_id for r in rows]
+        tracks_by_id = {
+            t.id: t for t in await self._tracks.get_many_by_ids(track_ids)
+        }
+        return [
+            RoomTrackEntry(room_track=r, track=tracks_by_id[r.track_id])
+            for r in rows
+            if r.track_id in tracks_by_id
+        ]
 
     async def add_for_user(
         self, *, user_id: str, track_id: str

@@ -47,6 +47,13 @@ class SqlTrackRepo(ITrackRepo):
         row = await self._s.get(TrackORM, track_id)
         return _to_record(row) if row else None
 
+    async def get_many_by_ids(self, track_ids: list[str]) -> list[TrackRecord]:
+        if not track_ids:
+            return []
+        stmt = select(TrackORM).where(TrackORM.id.in_(track_ids))
+        rows = (await self._s.execute(stmt)).scalars().all()
+        return [_to_record(r) for r in rows]
+
     async def insert(
         self,
         *,

@@ -35,6 +35,9 @@ class FakeTrackRepo(ITrackRepo):
     async def get(self, track_id: str) -> TrackRecord | None:
         return self._rows.get(track_id)
 
+    async def get_many_by_ids(self, track_ids: list[str]) -> list[TrackRecord]:
+        return [self._rows[tid] for tid in track_ids if tid in self._rows]
+
     async def insert(
         self,
         *,
