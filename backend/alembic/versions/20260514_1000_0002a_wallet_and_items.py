@@ -1,7 +1,7 @@
 """wallet, ledger, prices, user items
 
-Revision ID: 0002
-Revises: 0001
+Revision ID: 0002a
+Revises: 0002
 Create Date: 2026-05-14 10:00:00
 
 Phase 2: introduces the T-coin economy.
@@ -13,6 +13,11 @@ Phase 2: introduces the T-coin economy.
 
 Hand-written (autogenerate doesn't know how to express the partial unique
 index that backs idempotency).
+
+NOTE: this file's revision was changed from "0002" to "0002a" to resolve a
+duplicate-revision branch (consent_and_reset also claims "0002"). The two
+migrations touch disjoint tables, so linearising them as 0002 → 0002a is
+schema-equivalent to running them on the original branch.
 """
 from __future__ import annotations
 
@@ -21,8 +26,8 @@ from typing import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0002"
-down_revision: str | Sequence[str] | None = "0001"
+revision: str = "0002a"
+down_revision: str | Sequence[str] | None = "0002"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
