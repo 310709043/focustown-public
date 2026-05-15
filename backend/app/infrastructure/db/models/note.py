@@ -15,3 +15,12 @@ class NoteORM(Base, IdMixin, TimestampMixin):
     title: Mapped[str] = mapped_column(String(128), nullable=False, default="")
     body: Mapped[str] = mapped_column(Text, nullable=False, default="")
     done: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    # NULL = private to ``user_id``. When set, the note is visible to
+    # both members of the match (private/shared notepad toggle in the
+    # matched focus room). ON DELETE SET NULL — closing the match
+    # silently demotes the note back to private.
+    shared_in_match_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("matches.id", ondelete="SET NULL"),
+        nullable=True,
+    )

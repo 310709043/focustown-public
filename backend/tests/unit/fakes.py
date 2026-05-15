@@ -713,6 +713,12 @@ class FakeTrackRepo(ITrackRepo):
             rows = [t for t in rows if t.mood == mood]
         return rows
 
+    async def list_official(self) -> list[TrackRecord]:
+        return sorted(
+            (t for t in self.tracks.values() if t.is_official),
+            key=lambda t: t.id,
+        )
+
     async def get(self, track_id: str) -> TrackRecord | None:
         return self.tracks.get(track_id)
 
@@ -732,6 +738,7 @@ class FakeTrackRepo(ITrackRepo):
         file_size_bytes: int,
         license: str | None,
         uploaded_by_user_id: str,
+        is_official: bool = False,
     ) -> TrackRecord:
         now = datetime.now(UTC)
         record = TrackRecord(
@@ -747,6 +754,7 @@ class FakeTrackRepo(ITrackRepo):
             uploaded_by_user_id=uploaded_by_user_id,
             created_at=now,
             updated_at=now,
+            is_official=is_official,
         )
         self.tracks[track_id] = record
         return record

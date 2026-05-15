@@ -185,6 +185,10 @@ async def _seed_tracks(db, settings, ids) -> None:
             await db.execute(_select(TrackORM).where(TrackORM.title == _seed_title(filename)))
         ).scalar_one_or_none()
         if existing is not None:
+            # Backfill is_official on rows seeded before the
+            # 0012 migration introduced the column.
+            if not existing.is_official:
+                existing.is_official = True
             continue
         data = path.read_bytes()
         track_id = ids.new_id()
@@ -203,6 +207,7 @@ async def _seed_tracks(db, settings, ids) -> None:
                 file_size_bytes=len(data),
                 license="royalty-free-seed",
                 uploaded_by_user_id=system_user.id,
+                is_official=True,
             )
         )
 

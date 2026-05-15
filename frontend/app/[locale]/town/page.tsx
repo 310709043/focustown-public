@@ -33,7 +33,7 @@ import { StreetProps } from "@/components/scene/StreetProps";
 import { SCENES } from "@/lib/data/scenes";
 
 import { TimerPanel } from "@/components/panels/TimerPanel";
-import { MusicPanel } from "@/components/panels/MusicPanel";
+import { PersonalRadio } from "@/components/audio/PersonalRadio";
 import { MatchModal } from "@/components/modals/MatchModal";
 import { BigFocusCTA } from "@/components/town/BigFocusCTA";
 import { MatchCTA } from "@/components/town/MatchCTA";
@@ -220,14 +220,16 @@ export default function TownPage() {
           <TimerPanel />
         </div>
 
-        {/* bottom-right: MusicPanel floating card. Hidden on phones (use
-            /town/library or wait for /focus room playback); shown from
-            tablet upwards where there's room next to the left HUD. */}
+        {/* bottom-right: personal city radio. Each user gets their own
+            randomized shuffle of the official catalog; no cross-user
+            sync. Hidden on phones — same rationale as the legacy
+            MusicPanel: not enough horizontal real estate beside the
+            left HUD. */}
         <div
           className="absolute z-[9] hidden md:block"
           style={{ right: 16, bottom: 16, width: 244 }}
         >
-          <MusicPanel />
+          <PersonalRadio context="city" contextId="city" />
         </div>
 
         {/* news ticker — drifts above the bottom HUD */}

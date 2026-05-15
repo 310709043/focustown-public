@@ -8,7 +8,8 @@ import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { FocusTimer } from "@/components/focus-room/FocusTimer";
 import { NotesPanel } from "@/components/focus-room/NotesPanel";
-import { ChatPanel } from "@/components/focus-room/ChatPanel";
+import { SharedNotesPanel } from "@/components/focus-room/SharedNotesPanel";
+import { PersonalRadio } from "@/components/audio/PersonalRadio";
 import { Airplane } from "@/components/scene/Airplane";
 
 /** Deep-purple pixel city silhouette: calm horizon, no window detail. */
@@ -162,8 +163,26 @@ export default function FocusRoomPage() {
           className="border-t border-border md:border-l md:border-t-0 flex flex-col min-h-0"
           style={{ background: "rgba(5,1,20,0.6)", backdropFilter: "blur(8px)" }}
         >
-          {paired && user ? <ChatPanel roomId={id} myUserId={user.id} /> : <NotesPanel />}
+          {paired && user ? (
+            <SharedNotesPanel matchId={id} myUserId={user.id} />
+          ) : (
+            <NotesPanel />
+          )}
         </aside>
+      </div>
+
+      {/* Per-user random radio — paired and solo sessions both get
+          their own private shuffle of the official catalog. Tablet+
+          only because phones already need every vertical pixel for
+          the timer + notes split. */}
+      <div
+        className="absolute z-10 hidden md:block"
+        style={{ left: 16, top: 60, width: 244 }}
+      >
+        <PersonalRadio
+          context="focus"
+          contextId={paired ? id : "solo"}
+        />
       </div>
     </main>
   );
