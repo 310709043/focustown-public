@@ -48,6 +48,8 @@ export default function TownPage() {
   const advanceScene = useSceneStore((s) => s.advance);
   const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
   const [matchOpen, setMatchOpen] = useState(false);
+  const requestAutoMatch = useMatchStore((s) => s.requestAuto);
+  const matchProposing = useMatchStore((s) => s.proposing);
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -251,8 +253,15 @@ export default function TownPage() {
         {/* news ticker — drifts above the bottom HUD */}
         <TickerBar />
 
-        {/* bottom-center: match CTA */}
-        <MatchCTA onClick={() => setMatchOpen(true)} />
+        {/* bottom-center: match CTA — fetches a candidate via /matches/auto
+            (real-first, bot fallback), then opens the modal with the result */}
+        <MatchCTA
+          disabled={matchProposing}
+          onClick={async () => {
+            const m = await requestAutoMatch();
+            if (m) setMatchOpen(true);
+          }}
+        />
       </div>
 
       <MatchModal open={matchOpen} onClose={() => setMatchOpen(false)} />

@@ -42,6 +42,7 @@ export function makeMatch(overrides: Partial<Match> = {}): Match {
     id: "m-1",
     requester_id: "u-1",
     candidate_id: "u-2",
+    candidate_character_key: null,
     compatibility: 80,
     reason: "compatible",
     status: "pending",

@@ -148,6 +148,13 @@ export const matchesApi = {
       body: { candidate_id },
     });
   },
+  /** One-shot matchmaking. Server picks a candidate (real human first,
+   *  bot fallback) and, for bots, auto-accepts on the bot's behalf so
+   *  the returned match is already ``accepted``. The frontend just
+   *  navigates to the focus room. */
+  auto() {
+    return apiFetch<Match>("/api/v1/matches/auto", { method: "POST" });
+  },
   accept(id: string) {
     return apiFetch<Match>(`/api/v1/matches/${id}/accept`, { method: "POST" });
   },

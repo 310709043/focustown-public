@@ -15,6 +15,7 @@ class MatchResponse(BaseModel):
     id: str
     requester_id: str
     candidate_id: str
+    candidate_character_key: str | None = None
     compatibility: int
     reason: str
     status: MatchStatus

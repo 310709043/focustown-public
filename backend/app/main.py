@@ -23,11 +23,13 @@ from app.domain.services.session_presence_subscriber import SessionPresenceLink
 from app.domain.services.wallet_service import WalletService
 from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
 from app.infrastructure.db.repositories import (
+    SqlUserRepo,
     SqlWalletRepo,
     SqlWalletTransactionRepo,
 )
 from app.infrastructure.db.session import dispose_engine, get_session_factory
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
+from app.infrastructure.presence.bot_seeder import refresh_bot_presence
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
 
 log = get_logger(__name__)
@@ -76,6 +78,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     SessionPresenceLink(writer=presence_writer).register(_event_bus)
 
     log.info("subscribers_registered")
+
+    # Seed bot presence so the town street isn't empty on a fresh boot.
+    # The worker refreshes the 90s TTL every 60s; this initial write
+    # makes bots visible immediately rather than waiting one tick.
+    try:
+        async with factory() as session:
+            await refresh_bot_presence(
+                reader=SqlUserRepo(session),
+                tracker=RedisPresenceTracker(get_redis(), clock),
+            )
+    except Exception:  # don't block startup on bot seeding
+        log.exception("bot_presence_seed_failed")
 
     try:
         yield

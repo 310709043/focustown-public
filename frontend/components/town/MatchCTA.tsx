@@ -9,7 +9,13 @@ const WAITING_PLACEHOLDER_COUNT = 12;
  * CTA) so the two main CTAs are visually distinct. Pulses + shimmers + sparkles
  * to read as the primary nightly action.
  */
-export function MatchCTA({ onClick }: { onClick: () => void }) {
+export function MatchCTA({
+  onClick,
+  disabled = false,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   const t = useTranslations("match.cta");
   return (
     <div
@@ -18,7 +24,8 @@ export function MatchCTA({ onClick }: { onClick: () => void }) {
     >
       <button
         onClick={onClick}
-        className="pixel-btn animate-bigPulse group relative w-full md:w-[320px]"
+        disabled={disabled}
+        className="pixel-btn animate-bigPulse group relative w-full md:w-[320px] disabled:opacity-60 disabled:cursor-progress"
         style={{
           height: 78,
           background:

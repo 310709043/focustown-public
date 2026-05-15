@@ -20,6 +20,7 @@ class User:
     terms_version: str | None = None
     marketing_opt_in: bool = False
     marketing_opt_in_at: datetime | None = None
+    is_bot: bool = False
 
     def public_name(self) -> str:
         return self.display_name or self.email.split("@", 1)[0]

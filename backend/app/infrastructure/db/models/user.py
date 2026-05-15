@@ -17,6 +17,9 @@ class UserORM(Base, IdMixin, TimestampMixin):
     character_key: Mapped[str | None] = mapped_column(String(32), nullable=True)
     role_label: Mapped[str | None] = mapped_column(String(64), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_bot: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, index=True
+    )
     terms_accepted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

@@ -5,6 +5,9 @@ Worth testing:
 - accept by a stranger → 409
 - recent returns matches the user participates in
 - propose without bearer → 401
+- candidate_character_key is hydrated on propose & accept responses so
+  the frontend MatchModal can render the candidate sprite without a
+  second round-trip
 
 NOT worth testing:
 - The compatibility score value — covered by SimpleOverlapStrategy unit
@@ -79,3 +82,67 @@ async def test_propose_requires_bearer(client):
         "/api/v1/matches", json={"candidate_id": "anything"}
     )
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_propose_response_hydrates_candidate_character_key(
+    client, auth_headers
+):
+    """The MatchResponse must carry the candidate's character_key so the
+    frontend modal can render the sprite without a second user lookup.
+    """
+    await _signup(client, email="dave@example.com", name="Dave")
+    dave_signin = await client.post(
+        "/api/v1/auth/signin",
+        json={"email": "dave@example.com", "password": "Sup3rSecret-zzz"},
+    )
+    dave_token = dave_signin.json()["tokens"]["access_token"]
+    dave_id = dave_signin.json()["user"]["id"]
+    # Pick a character on Dave's profile so we have something to assert.
+    await client.patch(
+        "/api/v1/users/me",
+        json={"character_key": "luna"},
+        headers={"Authorization": f"Bearer {dave_token}"},
+    )
+
+    propose = await client.post(
+        "/api/v1/matches",
+        json={"candidate_id": dave_id},
+        headers=auth_headers,
+    )
+
+    assert propose.status_code == 201
+    assert propose.json()["candidate_character_key"] == "luna"
+
+
+@pytest.mark.asyncio
+async def test_accept_response_hydrates_candidate_character_key(
+    client, auth_headers
+):
+    await _signup(client, email="erin@example.com", name="Erin")
+    erin_signin = await client.post(
+        "/api/v1/auth/signin",
+        json={"email": "erin@example.com", "password": "Sup3rSecret-zzz"},
+    )
+    erin_token = erin_signin.json()["tokens"]["access_token"]
+    erin_id = erin_signin.json()["user"]["id"]
+    await client.patch(
+        "/api/v1/users/me",
+        json={"character_key": "kai"},
+        headers={"Authorization": f"Bearer {erin_token}"},
+    )
+
+    propose = await client.post(
+        "/api/v1/matches",
+        json={"candidate_id": erin_id},
+        headers=auth_headers,
+    )
+    match_id = propose.json()["id"]
+
+    accept = await client.post(
+        f"/api/v1/matches/{match_id}/accept",
+        headers={"Authorization": f"Bearer {erin_token}"},
+    )
+
+    assert accept.status_code == 200
+    assert accept.json()["candidate_character_key"] == "kai"
