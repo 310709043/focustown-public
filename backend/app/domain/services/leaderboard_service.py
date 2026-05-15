@@ -34,12 +34,17 @@ class LeaderboardService:
     async def today(self, *, limit: int = 10) -> list[LeaderboardEntry]:
         day_start = self._day_start(self._clock.now())
         rows = await self._sessions.daily_leaderboard(day_start=day_start, limit=limit)
-        result: list[LeaderboardEntry] = []
-        for user_id, count in rows:
-            user = await self._users.get_by_id(user_id)
-            if user is not None:
-                result.append(LeaderboardEntry(user=user, completed_count=count))
-        return result
+        if not rows:
+            return []
+        # Batch-load the users in one query instead of one-per-row; preserves
+        # the rank order returned by daily_leaderboard.
+        user_ids = [user_id for user_id, _ in rows]
+        users_by_id = {u.id: u for u in await self._users.get_many_by_ids(user_ids)}
+        return [
+            LeaderboardEntry(user=users_by_id[user_id], completed_count=count)
+            for user_id, count in rows
+            if user_id in users_by_id
+        ]
 
     @staticmethod
     def _day_start(now: datetime) -> datetime:
