@@ -62,7 +62,7 @@ function Car({
   // Stable per-user motion params so reflows from list reorders don't reset.
   const params = useMemo(() => {
     const h = Math.abs(hashCode(user.id));
-    const dur = 4.4 + (h % 28) / 10; // 4.4 .. 7.2 seconds (matches original feel)
+    const dur = 14 + (h % 80) / 10; // 14 .. 22 seconds — calmer afternoon pace
     const delay = -((h % 100) / 100) * dur;
     return { dur, delay };
   }, [user.id]);

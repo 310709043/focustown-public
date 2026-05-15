@@ -56,7 +56,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
   useEffect(() => {
     const id = setInterval(
       () => setX(pickPos()),
-      (3.5 + Math.random() * 2.5) * 1000,
+      (8 + Math.random() * 6) * 1000,
     );
     return () => clearInterval(id);
   }, []);
@@ -84,7 +84,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
       style={{
         left: `${x}%`,
         bottom: 104,
-        transition: "left 3.5s ease-in-out",
+        transition: "left 9s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       {/* status bubble — keyed by status code so it re-mounts and pops on change */}
