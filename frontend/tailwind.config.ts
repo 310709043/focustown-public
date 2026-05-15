@@ -8,8 +8,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // CSS variables defined in app/globals.css — keeping these as Tailwind
-      // tokens lets components compose with `bg-bg`, `text-accent-2`, etc.
+      screens: {
+        // Mobile-first tier: phones <480px, large phones xs:480-767, tablets
+        // md:768-1023, laptops lg:1024+. Input-type media queries let us
+        // split hover-only visuals from active-press feedback without JS.
+        xs: "480px",
+        mouse: { raw: "(hover: hover)" },
+        touch: { raw: "(hover: none)" },
+      },
       colors: {
         bg: "var(--bg)",
         text: "var(--text)",
@@ -37,6 +43,7 @@ const config: Config = {
         japan: ["'DotGothic16'", "monospace"],
         mono: ["'VT323'", "monospace"],
         body: ["'Noto Sans TC'", "sans-serif"],
+        silkscreen: ["'Silkscreen'", "'Press Start 2P'", "monospace"],
       },
       fontSize: {
         // V2 type scale (mirrors --t-* CSS vars in globals.css)
@@ -76,6 +83,10 @@ const config: Config = {
         roomShutterOpen: "roomShutterOpen 600ms cubic-bezier(0.16,1,0.3,1) both",
         themeCrossfade:  "themeCrossfade 300ms ease-out both",
         plaqueFlicker:   "plaqueFlicker 6s infinite",
+        drift:           "drift var(--drift-dur, 60s) linear infinite",
+        blink:           "blink 1s steps(2) infinite",
+        shimmer:         "shimmer 2.5s ease-in-out infinite",
+        pixelFloat:      "pixelFloat 2s steps(4) infinite",
       },
       keyframes: {
         tw: {

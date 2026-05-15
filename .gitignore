@@ -43,3 +43,8 @@ docker-compose.override.yml
 
 # Generated API types are committed (regenerated via script)
 !frontend/lib/api/types.gen.ts
+
+# Playwright
+frontend/playwright-report/
+frontend/test-results/
+frontend/.playwright/

@@ -1,6 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+
+import { useRouter } from "@/i18n/routing";
 
 /**
  * Secondary marquee CTA — "enter focus mode". Used to sit absolute bottom-center
@@ -10,12 +12,12 @@ import { useRouter } from "next/navigation";
  */
 export function BigFocusCTA() {
   const router = useRouter();
+  const t = useTranslations("focus.enter");
   return (
     <button
       onClick={() => router.push("/focus/solo")}
-      className="pixel-btn animate-bigPulse group relative"
+      className="pixel-btn animate-bigPulse group relative w-full max-w-[240px] mx-auto"
       style={{
-        width: 240,
         height: 64,
         background:
           "linear-gradient(135deg, rgba(124,58,237,0.85), rgba(76,29,149,0.85))",
@@ -33,7 +35,7 @@ export function BigFocusCTA() {
             "0 0 8px var(--a2), 0 0 22px var(--a1), 0 0 38px var(--a3)",
         }}
       >
-        ✦ 進入專注模式 ✦
+        {t("cta")}
       </span>
 
       {/* shimmer sweep */}

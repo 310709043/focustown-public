@@ -11,6 +11,11 @@ from app.core.security import hash_password, validate_password_strength
 from app.domain.notifications import INotificationService
 from app.domain.repositories.password_reset_token_repo import IPasswordResetTokenRepo
 from app.domain.repositories.user_repo import IUserRepo
+from app.domain.services.email_templates import (
+    DEFAULT_LOCALE,
+    Locale,
+    render_password_reset_email,
+)
 
 _CONTROL_CHARS = "".join(chr(c) for c in range(0x20)) + "\x7f"
 
@@ -65,6 +70,7 @@ class PasswordResetService:
         *,
         email: str,
         requested_ip: str | None = None,
+        locale: Locale = DEFAULT_LOCALE,
     ) -> None:
         normalized = email.strip().lower()
         user = await self._users.get_by_email(normalized)
@@ -87,18 +93,14 @@ class PasswordResetService:
         reset_link = f"{self._reset_url_base}?token={raw_token}"
         ttl_minutes = int(self._token_ttl.total_seconds() // 60)
         safe_name = _sanitize_for_email(user.public_name())
-        # Chinese punctuation is intentional in the user-facing email body.
-        body = (
-            f"您好 {safe_name},\n\n"
-            f"我們收到了重設密碼的請求。請點擊以下連結重設密碼:\n"
-            f"{reset_link}\n\n"
-            f"此連結將於 {ttl_minutes} 分鐘後失效。\n"
-            f"若您並未提出此請求, 請忽略本郵件。\n"
+        email_payload = render_password_reset_email(
+            locale,
+            {"name": safe_name, "reset_link": reset_link, "ttl_minutes": ttl_minutes},
         )
         await self._notifier.send_email(
             to=user.email,
-            subject="Focus Town — 重設您的密碼",
-            body=body,
+            subject=email_payload["subject"],
+            body=email_payload["body"],
         )
 
     async def reset_password(

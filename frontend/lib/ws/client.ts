@@ -26,6 +26,40 @@ export type WsMessage =
       delta_minor: number;
       reason: string;
     }
+  // Phase 8: visitor session lifecycle. Broadcast on the ``room:{id}``
+  // channel — VisitorPanel subscribes after sending the ``join`` frame
+  // that follows a successful HTTP visit.
+  | {
+      type: "room.visitor_joined";
+      room_id: string;
+      user_id: string;
+      joined_at: string;
+    }
+  | {
+      type: "room.visitor_left";
+      room_id: string;
+      user_id: string;
+    }
+  // Phase 9: shared playback timeline. Broadcast on the ``room:{id}``
+  // channel; subscribers compute the expected currentTime from
+  // started_at_ms and drift-correct their local <audio>.
+  | {
+      type: "music.play";
+      room_id: string;
+      track_id: string | null;
+      started_at_ms: number | null;
+    }
+  | {
+      type: "music.pause";
+      room_id: string;
+      paused_at_ms: number;
+    }
+  | {
+      type: "music.change";
+      room_id: string;
+      track_id: string;
+      started_at_ms: number;
+    }
   | { type: string; [k: string]: unknown };
 
 type Listener = (msg: WsMessage) => void;

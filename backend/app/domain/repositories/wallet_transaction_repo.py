@@ -33,10 +33,13 @@ class IWalletTransactionRepo(Protocol):
     ) -> WalletTransaction:
         """Insert a ledger row.
 
-        Raises the underlying ``IntegrityError`` if the partial unique index
+        Raises ``IdempotencyViolationError`` if the partial unique index
         (user_id, currency_code, reason, ref_type, ref_id) WHERE
-        reason IN ('session_complete', 'purchase') trips — callers use that
-        as the idempotency signal.
+        reason IN ('session_complete', 'purchase') trips. Adapter
+        implementations are responsible for translating their
+        storage-native uniqueness exception (e.g. SQL ``IntegrityError``)
+        into the domain exception — callers must never have to look at
+        constraint names.
         """
 
     async def list_for_user(

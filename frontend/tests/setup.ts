@@ -1,9 +1,30 @@
 import "@testing-library/jest-dom/vitest";
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { setupServer } from "msw/node";
 
 import { handlers } from "./fixtures/handlers";
+
+// Stub next-intl globally — component tests don't render through the
+// NextIntlClientProvider, so `useTranslations` would otherwise throw.
+// Tests that care about specific translated copy mock this per-file.
+vi.mock("next-intl", () => ({
+  useTranslations:
+    (ns?: string) =>
+    (key: string, vars?: Record<string, unknown>) => {
+      const base = ns ? `${ns}.${key}` : key;
+      if (!vars) return base;
+      return `${base}(${JSON.stringify(vars)})`;
+    },
+  useLocale: () => "zh-TW",
+  useFormatter: () => ({
+    dateTime: (d: Date) => d.toISOString(),
+    number: (n: number) => String(n),
+    relativeTime: () => "",
+  }),
+  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) =>
+    children as unknown as JSX.Element,
+}));
 
 // jsdom doesn't implement Element.scrollTo. Components that auto-scroll
 // (e.g. ChatPanel) call it inside useEffect, so a missing impl throws and

@@ -4,10 +4,14 @@ import itertools
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from app.core.clock import SystemClock
-from app.core.exceptions import ConflictError, InsufficientFundsError, NotFoundError
+from app.core.exceptions import (
+    ConflictError,
+    IdempotencyViolationError,
+    InsufficientFundsError,
+    NotFoundError,
+)
 from app.core.ids import IIdGenerator
 from app.domain.repositories.shop_item_price_repo import (
     IShopItemPriceRepo,
@@ -79,11 +83,7 @@ class FakeUserItemRepo(IUserItemRepo):
                      wallet_transaction_id):
         for r in self._rows:
             if r.user_id == user_id and r.shop_item_id == shop_item_id:
-                raise IntegrityError(
-                    statement="INSERT",
-                    params=None,
-                    orig=Exception("uq_user_items_user_item"),
-                )
+                raise IdempotencyViolationError("user_item_already_owned")
         ui = UserItem(
             id=item_id, user_id=user_id, shop_item_id=shop_item_id,
             acquired_via=acquired_via,

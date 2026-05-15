@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1.matches.schemas import MatchResponse, ProposeMatchRequest
-from app.core.deps import CurrentUserId, DbDep, EventBusDep, IdGenDep
+from app.core.deps import ClockDep, CurrentUserId, DbDep, EventBusDep, IdGenDep
 from app.domain.models import Match
 from app.domain.services.matching_service import MatchingService
 from app.domain.services.strategies import SimpleOverlapStrategy
@@ -28,7 +28,7 @@ def _dto(m: Match) -> MatchResponse:
     )
 
 
-def _service(db, ids, events) -> MatchingService:
+def _service(db, ids, events, clock) -> MatchingService:
     return MatchingService(
         users=SqlUserRepo(db),
         matches=SqlMatchRepo(db),
@@ -36,6 +36,7 @@ def _service(db, ids, events) -> MatchingService:
         strategy=SimpleOverlapStrategy(),
         events=events,
         ids=ids,
+        clock=clock,
     )
 
 
@@ -46,8 +47,9 @@ async def propose_match(
     db: DbDep,
     ids: IdGenDep,
     events: EventBusDep,
+    clock: ClockDep,
 ) -> MatchResponse:
-    svc = _service(db, ids, events)
+    svc = _service(db, ids, events, clock)
     match = await svc.propose(requester_id=user_id, candidate_id=payload.candidate_id)
     return _dto(match)
 
@@ -59,8 +61,9 @@ async def accept_match(
     db: DbDep,
     ids: IdGenDep,
     events: EventBusDep,
+    clock: ClockDep,
 ) -> MatchResponse:
-    svc = _service(db, ids, events)
+    svc = _service(db, ids, events, clock)
     return _dto(await svc.accept(match_id=match_id, user_id=user_id))
 
 
@@ -71,8 +74,9 @@ async def skip_match(
     db: DbDep,
     ids: IdGenDep,
     events: EventBusDep,
+    clock: ClockDep,
 ) -> MatchResponse:
-    svc = _service(db, ids, events)
+    svc = _service(db, ids, events, clock)
     return _dto(await svc.skip(match_id=match_id, user_id=user_id))
 
 

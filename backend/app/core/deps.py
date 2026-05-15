@@ -15,14 +15,18 @@ from app.core.ids import IIdGenerator, UUID4Generator
 from app.domain.notifications import INotificationService
 from app.domain.rate_limit import IRateLimiter
 from app.domain.repositories.presence import IPresenceTracker
+from app.domain.repositories.realtime import IRealtimePublisher
 from app.infrastructure.auth.providers.base import AuthProvider
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.session import get_session_factory
+from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.messaging.ws_manager import WSManager
 from app.infrastructure.notifications.log_notifier import LogNotifier
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
 from app.infrastructure.rate_limit.redis_limiter import RedisRateLimiter
+from app.infrastructure.storage.base import IFileStorage
+from app.infrastructure.storage.local import LocalFSStorage
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
@@ -95,6 +99,19 @@ def get_presence_tracker(clock: ClockDep) -> IPresenceTracker:
 PresenceTrackerDep = Annotated[IPresenceTracker, Depends(get_presence_tracker)]
 
 
+def get_realtime_publisher() -> IRealtimePublisher:
+    """Single wire point for realtime publishing.
+
+    Routers / services depend on the ``IRealtimePublisher`` Protocol so
+    swapping the backend (Redis → Kafka / NATS / ...) only touches this
+    factory.
+    """
+    return RedisPubSubPublisher(get_redis())
+
+
+RealtimePublisherDep = Annotated[IRealtimePublisher, Depends(get_realtime_publisher)]
+
+
 async def get_current_user_id(
     auth: AuthProviderDep,
     authorization: Annotated[str | None, Header()] = None,
@@ -122,6 +139,21 @@ def get_rate_limiter() -> IRateLimiter:
 
 
 RateLimiterDep = Annotated[IRateLimiter, Depends(get_rate_limiter)]
+
+
+def get_storage(settings: SettingsDep) -> IFileStorage:
+    """Dispatch to the configured storage backend. S3 stub is reserved for
+    Phase 6b / Phase 10; local is the default for dev + docker compose."""
+    if settings.storage_backend == "local":
+        return LocalFSStorage(settings.storage_root)
+    if settings.storage_backend == "s3":
+        from app.infrastructure.storage.s3 import S3Storage
+
+        return S3Storage(settings.s3_bucket, settings.aws_region)
+    raise RuntimeError(f"unsupported storage_backend: {settings.storage_backend}")
+
+
+StorageDep = Annotated[IFileStorage, Depends(get_storage)]
 
 
 def _parse_ip(raw: str | None) -> str | None:

@@ -56,7 +56,7 @@ def strategy() -> FakeCompatibilityStrategy:
 
 
 @pytest.fixture
-def service(users, matches, sessions, strategy, events, ids) -> MatchingService:
+def service(users, matches, sessions, strategy, events, ids, clock) -> MatchingService:
     return MatchingService(
         users=users,
         matches=matches,
@@ -64,6 +64,7 @@ def service(users, matches, sessions, strategy, events, ids) -> MatchingService:
         strategy=strategy,
         events=events,
         ids=ids,
+        clock=clock,
     )
 
 

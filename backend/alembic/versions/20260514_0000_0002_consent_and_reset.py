@@ -1,9 +1,13 @@
 """consent fields + password reset tokens
 
-Revision ID: 0002
+Revision ID: 0002_consent
 Revises: 0001
 Create Date: 2026-05-14 00:00:00
 
+Renamed from ``revision = "0002"`` to ``"0002_consent"`` to resolve a
+duplicate-revision collision with ``20260514_0000_0002_wallet_and_items``
+(both ship as Phase-2 work). The two siblings now merge implicitly at
+``0003.down_revision = ("0002", "0002_consent")``.
 """
 from __future__ import annotations
 
@@ -13,7 +17,7 @@ import sqlalchemy as sa
 
 from alembic import op
 
-revision: str = "0002"
+revision: str = "0002_consent"
 down_revision: str | Sequence[str] | None = "0001"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

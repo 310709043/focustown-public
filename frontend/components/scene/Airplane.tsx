@@ -14,23 +14,22 @@ type Props = {
   delaySeconds?: number;     // pre-roll
 };
 
-// Deterministic default vertical offset. Picking a random value during the
-// initial render breaks SSR hydration (server and client roll different
-// numbers). We start at a fixed mid-air position and reroll in useEffect
-// after mount, where divergence is allowed.
-const DEFAULT_TOP_PERCENT = 20;
-
 export function Airplane({
   topPercent,
   intervalSeconds = 22,
   delaySeconds = 0,
 }: Props) {
-  const [top, setTop] = useState<number>(topPercent ?? DEFAULT_TOP_PERCENT);
+  // Start with a stable, deterministic value so SSR + CSR initial renders
+  // agree. The client randomises in the effect below, which never runs on
+  // the server. This avoids hydration mismatches that would otherwise fire
+  // on every page load (Math.random() returns different values per call).
+  const initialTop = topPercent ?? 20;
+  const [top, setTop] = useState<number>(initialTop);
 
+  // Reroll vertical offset each loop for variety. First reroll happens on
+  // mount so the random plane heights still kick in immediately.
   useEffect(() => {
     if (topPercent !== undefined) return;
-    // Initial post-mount randomise so the first loop isn't identical
-    // across page loads, then keep rerolling each loop.
     setTop(8 + Math.random() * 24);
     const id = setInterval(
       () => setTop(8 + Math.random() * 24),
@@ -46,8 +45,8 @@ export function Airplane({
         {
           top: `${top}%`,
           // String "0%" rather than number 0 — React serialises numeric 0
-          // without a unit but Next's SSR emits "0px", which triggers a
-          // hydration mismatch on this attribute.
+          // without a unit but Next's SSR emits "0px", which produces a
+          // hydration mismatch on this attribute even when `top` is stable.
           left: "0%",
           ["--ap-dur" as string]: `${intervalSeconds}s`,
           ["--ap-delay" as string]: `${delaySeconds}s`,

@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 from sqlalchemy import exists, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import IdempotencyViolationError
 from app.domain.repositories.user_item_repo import IUserItemRepo, UserItem
 from app.infrastructure.db.models.user_item import UserItemORM
+
+
+__all__ = ["SqlUserItemRepo"]
 
 
 def _to_domain(row: UserItemORM) -> UserItem:
@@ -39,9 +44,12 @@ class SqlUserItemRepo(IUserItemRepo):
             wallet_transaction_id=wallet_transaction_id,
         )
         self._s.add(row)
-        # IntegrityError on duplicate (user_id, shop_item_id) propagates up to
-        # PurchaseService where it becomes ConflictError("already_owned").
-        await self._s.flush()
+        try:
+            await self._s.flush()
+        except IntegrityError as exc:
+            # user_items has a single UNIQUE (user_id, shop_item_id); any
+            # IntegrityError on this row is the "already owned" case.
+            raise IdempotencyViolationError("user_item_already_owned") from exc
         return _to_domain(row)
 
     async def list_for_user(self, user_id: str) -> list[UserItem]:
@@ -61,3 +69,13 @@ class SqlUserItemRepo(IUserItemRepo):
             )
         )
         return bool((await self._s.execute(stmt)).scalar())
+
+    async def get_by_id_and_owner(
+        self, *, user_item_id: str, owner_user_id: str
+    ) -> UserItem | None:
+        stmt = select(UserItemORM).where(
+            UserItemORM.id == user_item_id,
+            UserItemORM.user_id == owner_user_id,
+        )
+        row = (await self._s.execute(stmt)).scalar_one_or_none()
+        return _to_domain(row) if row else None

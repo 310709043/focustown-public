@@ -1,0 +1,24 @@
+{
+  "modal": {
+    "title": "✦ 今晚的配對推薦 ✦",
+    "matchPercent": "{percent}% MATCH",
+    "acceptCta": "✦ 一起專注",
+    "nextCta": "下一個 →",
+    "roleLabel": "身份",
+    "onlineStatus": "在線 {hours}h",
+    "reasonsHeader": "為什麼我們覺得您們適合",
+    "reasonFallback": "新的配對請求 — 點擊「一起專注」開始本場 25 分鐘 Pomodoro。",
+    "candidateAnonymous": "匿名 #{id}",
+    "candidatePending": "配對中…",
+    "closeAria": "關閉"
+  },
+  "cta": {
+    "label": "✦ 配對今晚的專注夥伴 ✦",
+    "waiting": "{count, plural, =0 {目前沒有人在等夥伴} other {# 人正在等待夥伴}}"
+  },
+  "empty": {
+    "title": "目前還沒有合適的夥伴",
+    "subtitle": "我們會持續為您留意，您可以稍後再回來看看。",
+    "retryCta": "再找一次"
+  }
+}

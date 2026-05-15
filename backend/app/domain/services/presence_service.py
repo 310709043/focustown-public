@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from app.domain.repositories.presence import IPresenceTracker, PresenceState
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.shop_repo import IShopRepo
-from app.domain.repositories.user_repo import IUserRepo
+from app.domain.repositories.user_repo import IUserReader
 
 STREET_CHANNEL = "street"
 
@@ -36,7 +36,7 @@ class PresenceService:
     """Orchestrates presence state mutations and realtime broadcast.
 
     Construction depends only on the two ports actually used by every method
-    (tracker + publisher). The DB-backed ``IUserRepo`` / ``IShopRepo`` are
+    (tracker + publisher). The DB-backed ``IUserReader`` / ``IShopRepo`` are
     taken as method parameters on ``list_street`` so the WS lifecycle
     (which has no per-request DB session) can use this same service
     without carrying unused deps.
@@ -104,7 +104,7 @@ class PresenceService:
 
     async def list_street(
         self,
-        users: IUserRepo,
+        users: IUserReader,
         shop: IShopRepo,
         *,
         cap: int,

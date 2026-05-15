@@ -1,9 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+
+import { useRouter } from "@/i18n/routing";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { findCharacter } from "@/lib/data/characters";
-import { useEffect, useState } from "react";
 
 const SEGMENTS = 10; // 10 boxes; each represents 10% compatibility
 
@@ -12,6 +14,8 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
   const current = useMatchStore((s) => s.current);
   const acceptMatch = useMatchStore((s) => s.accept);
   const skipMatch = useMatchStore((s) => s.skip);
+  const t = useTranslations("match.modal");
+  const tCommon = useTranslations("common.buttons");
 
   // Stagger the segment fill so the bar lights up box-by-box.
   const [litCount, setLitCount] = useState(0);
@@ -33,16 +37,17 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
 
   if (!open || !current) return null;
 
-  // Fallback fake candidate when backend hasn't returned one (MVP demo).
-  const candidate =
-    findCharacter("milo") ?? {
-      key: "milo",
-      emoji: "🐸",
-      name: "Milo",
-      role: "小說作家",
-      bodyColor: "#065f46",
-      roofColor: "#064e3b",
-    };
+  // The Match HTTP/WS schema only carries `candidate_id` (a user UUID), not
+  // a character_key — so this lookup misses for now. When backend extends
+  // Match with `candidate_character_key`, the hit path will start working;
+  // until then we render a neutral placeholder.
+  const character = findCharacter(current.candidate_id);
+  const candidate = {
+    emoji: character?.emoji ?? "❓",
+    name: character?.name ?? t("candidateAnonymous", { id: current.candidate_id.slice(0, 6) }),
+    role: character?.role ?? t("candidatePending"),
+    bodyColor: character?.bodyColor ?? "#1a0e2a",
+  };
 
   return (
     <div
@@ -64,8 +69,8 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
       >
         <button
           onClick={onClose}
-          aria-label="Close"
-          className="absolute top-3 right-4 text-muted hover:text-text"
+          aria-label={tCommon("closeAria")}
+          className="absolute top-2 right-2 text-muted hover:text-text active:text-text flex items-center justify-center w-10 h-10 rounded"
           style={{ fontSize: 18 }}
         >
           ✕
@@ -80,7 +85,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             textShadow: "0 0 10px var(--a1), 0 0 22px var(--a3)",
           }}
         >
-          ✦ 今晚的配對推薦 ✦
+          {t("title")}
         </h2>
 
         {/* Avatar with rotating halo */}
@@ -131,12 +136,13 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
           className="text-center mb-4"
           style={{ fontSize: 12, color: "var(--muted)" }}
         >
-          {candidate.role} · 在線 2h
+          {candidate.role} · {t("onlineStatus", { hours: 2 })}
         </div>
 
-        {/* Segmented compatibility bar */}
+        {/* Segmented compatibility bar — wraps to two rows on very narrow
+            viewports so the 10 boxes always read at one glance. */}
         <div className="flex flex-col items-center gap-2 mb-4">
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap justify-center max-w-full">
             {Array.from({ length: SEGMENTS }).map((_, i) => {
               const lit = i < litCount;
               return (
@@ -165,7 +171,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
               letterSpacing: 2,
             }}
           >
-            {current.compatibility}% MATCH
+            {t("matchPercent", { percent: current.compatibility })}
           </div>
         </div>
 
@@ -179,12 +185,12 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             lineHeight: 1.7,
           }}
         >
-          {current.reason}
+          {current.reason || t("reasonFallback")}
         </div>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center flex-wrap">
           <button
-            className="pixel-btn"
+            className="pixel-btn touch:min-h-[48px]"
             style={{ fontSize: 11, padding: "12px 24px", letterSpacing: 2 }}
             onClick={async () => {
               const m = await acceptMatch();
@@ -192,10 +198,10 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
               if (m) router.push(`/focus/${m.id}`);
             }}
           >
-            ✦ 一起專注
+            {t("acceptCta")}
           </button>
           <button
-            className="pixel-btn"
+            className="pixel-btn touch:min-h-[48px]"
             style={{
               fontSize: 11,
               padding: "12px 24px",
@@ -208,7 +214,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             }}
             onClick={() => void skipMatch()}
           >
-            下一個 →
+            {t("nextCta")}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRealtime } from "@/lib/ws/useRealtime";
 
 type Msg = { from: "me" | "them"; text: string; ts: string };
@@ -9,6 +10,7 @@ export function ChatPanel({ roomId, myUserId }: { roomId: string; myUserId: stri
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("focus.chat");
 
   const realtime = useRealtime((msg) => {
     if (msg.type !== "chat" || msg.room_id !== roomId) return;
@@ -38,7 +40,7 @@ export function ChatPanel({ roomId, myUserId }: { roomId: string; myUserId: stri
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-[rgba(5,1,20,.6)] backdrop-blur-md">
       <div className="px-3.5 py-2.5 border-b border-border text-[10px] text-muted">
-        💬 房間 #{roomId.slice(0, 6)}
+        {t("header", { roomId: roomId.slice(0, 6) })}
       </div>
       <div ref={listRef} className="flex-1 overflow-y-auto p-3.5 flex flex-col gap-2 min-h-0">
         {msgs.map((m, i) => (
@@ -66,14 +68,14 @@ export function ChatPanel({ roomId, myUserId }: { roomId: string; myUserId: stri
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="說點什麼..."
+          placeholder={t("placeholder")}
           className="flex-1 bg-[rgba(12,5,35,.9)] border border-border rounded text-[12px] px-3 py-2 outline-none focus:border-accent-1"
         />
         <button
           onClick={send}
           className="bg-transparent border border-accent-1 text-accent-1 text-[12px] px-3 py-1.5 rounded hover:bg-accent-1/10"
         >
-          送出
+          {t("sendCta")}
         </button>
       </div>
     </div>

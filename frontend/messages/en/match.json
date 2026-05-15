@@ -1,0 +1,24 @@
+{
+  "modal": {
+    "title": "✦ Tonight's focus partner ✦",
+    "matchPercent": "{percent}% MATCH",
+    "acceptCta": "✦ Focus together",
+    "nextCta": "See another →",
+    "roleLabel": "Role",
+    "onlineStatus": "Online {hours}h",
+    "reasonsHeader": "Why we think you two might match",
+    "reasonFallback": "New match invitation — tap “Focus together” to start a 25-minute Pomodoro.",
+    "candidateAnonymous": "Anonymous #{id}",
+    "candidatePending": "Pairing…",
+    "closeAria": "Close"
+  },
+  "cta": {
+    "label": "✦ Find a focus partner ✦",
+    "waiting": "{count, plural, =0 {No one waiting right now} one {# person waiting for a partner} other {# people waiting for a partner}}"
+  },
+  "empty": {
+    "title": "No matches just yet",
+    "subtitle": "We will keep an eye out for you. Check back in a little while.",
+    "retryCta": "Try again"
+  }
+}

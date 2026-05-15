@@ -20,11 +20,14 @@ class RoomService:
     """Owns the room lifecycle: lazy-create, owner updates, owner-only reads.
 
     SOLID:
-    - S: only handles rooms; doesn't touch presence, wallet, or items
-    - D: depends on ``IRoomRepo`` + ``IUserRepo`` Protocols; no SQLAlchemy
-    - O: Phase 8 will widen ``get_by_id`` to accept visitors without
-      changing this Protocol — the access decision lives here, not in
-      the repo.
+    - S: only handles rooms; doesn't touch presence, wallet, or items.
+      Item placement lives in ``RoomDecorationService``.
+    - D: depends on ``IRoomRepo`` + ``IUserRepo`` Protocols; no SQLAlchemy.
+    - O: Phase 5 widened ``get_by_id`` to allow visitor reads on public
+      rooms. The access decision lives here, not in the repo, so adding
+      a new visibility (e.g. ``"followers_only"``) only edits this gate.
+      Phase 8 will layer visit/leave session lifecycle on top — separate
+      from visibility, which is what this gate enforces.
     """
 
     rooms: IRoomRepo
@@ -83,8 +86,12 @@ class RoomService:
         room = await self.rooms.get_by_id(room_id)
         if room is None:
             raise NotFoundError("room_not_found")
-        # Phase 4: owner-only. Phase 8 will introduce visitor admission +
-        # max_visitors enforcement here.
-        if room.owner_user_id != requester_user_id:
+        # Phase 5: visitors can read public rooms; invite_only stays
+        # owner-only. Phase 8's visit/leave is layered on top of this
+        # (presence transitions inside an admitted read), not a substitute.
+        if (
+            room.owner_user_id != requester_user_id
+            and room.visibility == "invite_only"
+        ):
             raise ForbiddenError("room_not_accessible")
         return room

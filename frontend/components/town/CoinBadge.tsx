@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { formatMinor, useWalletStore } from "@/lib/state/walletStore";
 
 /**
@@ -12,9 +14,11 @@ import { formatMinor, useWalletStore } from "@/lib/state/walletStore";
  */
 export function CoinBadge() {
   const balanceMinor = useWalletStore((s) => s.balanceMinor("T"));
+  const t = useTranslations("town.coin");
+  const formatted = formatMinor("T", balanceMinor);
   return (
     <span
-      title={`T 幣餘額：${formatMinor("T", balanceMinor)} T`}
+      title={t("balanceTooltip", { amount: formatted })}
       style={{
         background: "rgba(252,211,77,0.07)",
         border: "1px solid rgba(252,211,77,0.45)",
@@ -33,8 +37,8 @@ export function CoinBadge() {
       }}
     >
       <span style={{ fontSize: 13 }}>💰</span>
-      <span>{formatMinor("T", balanceMinor)}</span>
-      <span style={{ fontSize: 10, opacity: 0.7 }}>T</span>
+      <span>{formatted}</span>
+      <span style={{ fontSize: 10, opacity: 0.7 }}>{t("unit")}</span>
     </span>
   );
 }

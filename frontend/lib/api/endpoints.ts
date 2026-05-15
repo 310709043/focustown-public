@@ -1,3 +1,4 @@
+import { config } from "../config";
 import { apiFetch, tokenStore } from "./client";
 import type {
   Achievement,
@@ -7,12 +8,19 @@ import type {
   FocusSessionMode,
   LeaderboardEntry,
   Match,
+  MoveRoomItemInput,
   Note,
+  PlaceRoomItemInput,
   PurchaseResponse,
   Room,
+  RoomItem,
+  RoomPlayback,
   RoomTheme,
+  RoomTrack,
+  RoomVisit,
   ShopItem,
   StreetUser,
+  Track,
   User,
   UserItem,
   Wallet,
@@ -49,10 +57,10 @@ export const authApi = {
   async me() {
     return apiFetch<User>("/api/v1/auth/me", { method: "GET" });
   },
-  async forgotPassword(input: { email: string }) {
+  async forgotPassword(input: { email: string; locale?: "en" | "zh-TW" }) {
     return apiFetch<{ ok: boolean }>("/api/v1/auth/forgot-password", {
       method: "POST",
-      body: input,
+      body: { email: input.email, locale: input.locale ?? "zh-TW" },
       auth: false,
     });
   },
@@ -211,8 +219,148 @@ export const roomApi = {
   updateMine(patch: { name?: string; theme?: RoomTheme }) {
     return apiFetch<Room>("/api/v1/me/room", { method: "PUT", body: patch });
   },
-  /** Read any room by id. Phase 4 returns 403 unless caller is the owner. */
+  /** Read any room by id. After Phase 5, public rooms are readable by any
+   *  authenticated user; invite_only rooms still return 403 to non-owners. */
   getById(roomId: string) {
     return apiFetch<Room>(`/api/v1/rooms/${roomId}`, { method: "GET" });
+  },
+};
+
+// ── room decorations (Phase 5) ─────────────────────────
+// Reads are visitor-eligible on public rooms; mutations are owner-only and
+// scoped to ``/me/room/items`` (no room id in the path — derived from the
+// caller's owned room server-side).
+export const decorationApi = {
+  list(roomId: string) {
+    return apiFetch<RoomItem[]>(`/api/v1/rooms/${roomId}/items`, {
+      method: "GET",
+    });
+  },
+  place(input: PlaceRoomItemInput) {
+    return apiFetch<RoomItem>("/api/v1/me/room/items", {
+      method: "POST",
+      body: input,
+    });
+  },
+  move(itemId: string, input: MoveRoomItemInput) {
+    return apiFetch<RoomItem>(`/api/v1/me/room/items/${itemId}`, {
+      method: "PUT",
+      body: input,
+    });
+  },
+  remove(itemId: string) {
+    return apiFetch<void>(`/api/v1/me/room/items/${itemId}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+// ── tracks (Phase 6 Tier-2) ────────────────────────────
+export type TrackUploadInput = {
+  file: File;
+  title: string;
+  mood: string;
+  artist?: string;
+  license?: string;
+};
+
+export const tracksApi = {
+  list(mood?: string) {
+    const qs = mood ? `?mood=${encodeURIComponent(mood)}` : "";
+    return apiFetch<Track[]>(`/api/v1/tracks${qs}`, { method: "GET", auth: false });
+  },
+  get(id: string) {
+    return apiFetch<Track>(`/api/v1/tracks/${id}`, { method: "GET", auth: false });
+  },
+  upload(input: TrackUploadInput) {
+    const form = new FormData();
+    form.append("file", input.file);
+    form.append("title", input.title);
+    form.append("mood", input.mood);
+    if (input.artist) form.append("artist", input.artist);
+    if (input.license) form.append("license", input.license);
+    return apiFetch<Track>("/api/v1/tracks", { method: "POST", body: form });
+  },
+  remove(id: string) {
+    return apiFetch<void>(`/api/v1/tracks/${id}`, { method: "DELETE" });
+  },
+  /** Absolute URL suitable for `<audio src={...}>`. Stream endpoint is
+   *  unauthenticated by design; tokens aren't needed for playback. */
+  streamUrl(id: string) {
+    return `${config.apiBaseUrl}/api/v1/tracks/${id}/stream`;
+  },
+};
+
+// ── per-room playlist (Phase 7) ────────────────────────
+// add(): pass the body object — apiFetch JSON-stringifies for us. Earlier
+// versions of this module called JSON.stringify here too, which
+// double-encoded the payload and made the backend see track_id=undefined.
+export const roomTracksApi = {
+  list() {
+    return apiFetch<RoomTrack[]>("/api/v1/me/room/tracks", { method: "GET" });
+  },
+  add(track_id: string) {
+    return apiFetch<RoomTrack>("/api/v1/me/room/tracks", {
+      method: "POST",
+      body: { track_id },
+    });
+  },
+  remove(track_id: string) {
+    return apiFetch<void>(`/api/v1/me/room/tracks/${track_id}`, { method: "DELETE" });
+  },
+};
+
+// ── room shared playback timeline (Phase 9) ────────────
+// Owner mutations live under ``/me/room/playback/*`` (no room id in the
+// path — derived from the caller's owned room). Visitor read uses
+// ``/rooms/{room_id}/playback`` for the snapshot a freshly-joining
+// listener needs to hydrate their <audio> and start drift-correcting.
+export const roomPlaybackApi = {
+  play() {
+    return apiFetch<RoomPlayback>("/api/v1/me/room/playback/play", {
+      method: "POST",
+    });
+  },
+  pause() {
+    return apiFetch<RoomPlayback | null>("/api/v1/me/room/playback/pause", {
+      method: "POST",
+    });
+  },
+  change(track_id: string) {
+    return apiFetch<RoomPlayback>("/api/v1/me/room/playback/change", {
+      method: "POST",
+      body: { track_id },
+    });
+  },
+  getByRoom(roomId: string) {
+    return apiFetch<RoomPlayback | null>(
+      `/api/v1/rooms/${roomId}/playback`,
+      { method: "GET" },
+    );
+  },
+};
+
+// ── room visitor sessions (Phase 8) ────────────────────
+// ``visit`` starts a session in a room; ``leave`` ends it. Both endpoints
+// route through ``/rooms/{room_id}/...`` because the room_id is the
+// path-level subject (unlike /me/room/* which is owner-scoped). Server
+// publishes ``room.visitor_joined`` / ``room.visitor_left`` events on the
+// ``room:{room_id}`` channel — frontend subscribes by sending a WS
+// ``join`` frame after a successful HTTP visit.
+export const roomVisitApi = {
+  visit(roomId: string) {
+    return apiFetch<RoomVisit>(`/api/v1/rooms/${roomId}/visit`, {
+      method: "POST",
+    });
+  },
+  leave(roomId: string) {
+    return apiFetch<void>(`/api/v1/rooms/${roomId}/leave`, {
+      method: "POST",
+    });
+  },
+  listVisitors(roomId: string) {
+    return apiFetch<RoomVisit[]>(`/api/v1/rooms/${roomId}/visitors`, {
+      method: "GET",
+    });
   },
 };

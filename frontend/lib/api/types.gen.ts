@@ -172,3 +172,88 @@ export type Room = {
   created_at: string;
   updated_at: string;
 };
+
+// ── Phase 5: room decoration items ─────────────────────────────────────────
+// One row per placement inside a room. `x` and `y` are integer percentages
+// (0–100) of the room interior bounding box, kept resolution-independent so
+// the same data renders identically across viewport sizes.
+export type RoomItem = {
+  id: string;
+  room_id: string;
+  user_item_id: string;
+  x: number;
+  y: number;
+  z_index: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlaceRoomItemInput = {
+  user_item_id: string;
+  x: number;
+  y: number;
+};
+
+export type MoveRoomItemInput = {
+  x: number;
+  y: number;
+};
+
+// ── Phase 9: shared playback timeline ──────────────────────────────────────
+// Server-authoritative timeline; timestamps are epoch milliseconds so the
+// frontend's drift loop can do plain Date.now() arithmetic. ``track`` is
+// denormalized so a freshly-joining visitor doesn't have to round-trip to
+// the track lookup endpoint just to render "Now playing — {title}".
+export type RoomPlayback = {
+  id: string;
+  room_id: string;
+  current_track_id: string | null;
+  started_at_ms: number | null;
+  paused_at_ms: number | null;
+  is_playing: boolean;
+  track: Track | null;
+};
+
+export type PlaybackChangeInput = {
+  track_id: string;
+};
+
+// ── Phase 8: room visitor sessions ─────────────────────────────────────────
+// One row per active "user X is currently in room Y". Server enforces
+// max_visitors (visibility-aware: owner bypasses the cap). The frontend
+// drives visit/leave on room page mount/unmount; abrupt browser-close
+// scenarios leave a stale row for a future cleanup job to reap.
+export type RoomVisit = {
+  id: string;
+  room_id: string;
+  visitor_user_id: string;
+  joined_at: string;
+};
+
+// ── Phase 6 Tier-2: track library ───────────────────────────────────────────
+export type TrackMood = "lofi" | "jazz" | "rain" | "ambient";
+
+export type Track = {
+  id: string;
+  title: string;
+  artist: string | null;
+  mood: string;                 // TrackMood at the edge; string in transport
+  duration_ms: number | null;
+  content_type: string;
+  file_size_bytes: number;
+  license: string | null;
+  uploaded_by_user_id: string;
+  created_at: string;
+};
+
+export type AddRoomTrackRequest = {
+  track_id: string;
+};
+
+export type RoomTrack = {
+  id: string;
+  room_id: string;
+  track_id: string;
+  position: number;
+  track: Track;
+};

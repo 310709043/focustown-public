@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+
+import { Link } from "@/i18n/routing";
 import { TocSidebar, TocItem } from "./TocSidebar";
 
 type Props = {
@@ -8,13 +10,14 @@ type Props = {
   children: ReactNode;
 };
 
-const RELATED = [
-  { href: "/legal/terms", label: "服務條款", key: "terms" },
-  { href: "/legal/privacy", label: "隱私政策", key: "privacy" },
-  { href: "/legal/refund", label: "退款政策", key: "refund" },
-] as const;
+const RELATED: Array<{ href: string; key: "terms" | "privacy" | "refund" }> = [
+  { href: "/legal/terms", key: "terms" },
+  { href: "/legal/privacy", key: "privacy" },
+  { href: "/legal/refund", key: "refund" },
+];
 
-export function LegalLayout({ active, toc, children }: Props) {
+export async function LegalLayout({ active, toc, children }: Props) {
+  const t = await getTranslations("common.legal");
   return (
     <main
       className="min-h-screen px-4 md:px-10 py-10"
@@ -28,15 +31,21 @@ export function LegalLayout({ active, toc, children }: Props) {
           items={toc}
           related={RELATED.map((r) => ({
             href: r.href,
-            label: r.label,
+            label: t(r.key),
             active: r.key === active,
           }))}
         />
         <article className="flex-1 max-w-3xl bg-card border border-border rounded-lg p-6 md:p-10">
           {children}
-          <footer className="mt-12 pt-6 border-t border-border text-[11px] text-muted">
+          <footer
+            className="mt-12 pt-6 border-t border-border text-muted"
+            style={{
+              fontSize: "var(--font-size-label)",
+              lineHeight: 1.5,
+            }}
+          >
             <Link href="/" className="hover:text-accent-2">
-              ← 返回首頁
+              {t("backHome")}
             </Link>
           </footer>
         </article>

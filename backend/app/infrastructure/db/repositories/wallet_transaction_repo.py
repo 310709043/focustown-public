@@ -1,13 +1,25 @@
 from __future__ import annotations
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import IdempotencyViolationError
 from app.domain.repositories.wallet_transaction_repo import (
     IWalletTransactionRepo,
     WalletTransaction,
 )
 from app.infrastructure.db.models.wallet_transaction import WalletTransactionORM
+
+# Name of the partial unique index defined in the wallet_transactions
+# migration. Knowing it lets us distinguish the idempotency case from any
+# other IntegrityError (FK, NOT NULL, ...) which must propagate as-is.
+_IDEMPOTENCY_CONSTRAINT = "ux_wallet_txn_idempotent"
+
+
+def _is_idempotency_violation(exc: IntegrityError) -> bool:
+    msg = str(exc.orig) if exc.orig is not None else str(exc)
+    return _IDEMPOTENCY_CONSTRAINT in msg
 
 
 def _to_domain(row: WalletTransactionORM) -> WalletTransaction:
@@ -51,9 +63,12 @@ class SqlWalletTransactionRepo(IWalletTransactionRepo):
             balance_after_minor=balance_after_minor,
         )
         self._s.add(row)
-        # flush() raises IntegrityError on dup partial-unique-index hit; the
-        # service layer translates that into idempotency-skip / 409 / etc.
-        await self._s.flush()
+        try:
+            await self._s.flush()
+        except IntegrityError as exc:
+            if _is_idempotency_violation(exc):
+                raise IdempotencyViolationError("wallet_ledger_idempotent") from exc
+            raise
         return _to_domain(row)
 
     async def list_for_user(

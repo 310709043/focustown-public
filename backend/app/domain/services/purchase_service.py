@@ -2,15 +2,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from sqlalchemy.exc import IntegrityError
-
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.exceptions import (
+    ConflictError,
+    IdempotencyViolationError,
+    NotFoundError,
+)
 from app.core.ids import IIdGenerator
 from app.domain.repositories.shop_item_price_repo import IShopItemPriceRepo
 from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
-from app.domain.repositories.user_item_repo import IUserItemRepo
+from app.domain.repositories.user_item_repo import IUserItemWriter
 from app.domain.repositories.wallet_transaction_repo import WalletTransaction
-from app.domain.services.wallet_service import WalletService, is_idempotency_violation
+from app.domain.services.wallet_service import WalletService
 
 
 @dataclass(slots=True, frozen=True)
@@ -38,7 +40,7 @@ class PurchaseService:
         *,
         shop: IShopRepo,
         prices: IShopItemPriceRepo,
-        user_items: IUserItemRepo,
+        user_items: IUserItemWriter,
         wallet_service: WalletService,
         ids: IIdGenerator,
     ) -> None:
@@ -81,10 +83,8 @@ class PurchaseService:
                 ref_type="shop_item",
                 ref_id=shop_item_id,
             )
-        except IntegrityError as exc:
-            if is_idempotency_violation(exc):
-                raise ConflictError("already_owned") from exc
-            raise
+        except IdempotencyViolationError as exc:
+            raise ConflictError("already_owned") from exc
 
         try:
             await self._user_items.insert(
@@ -94,7 +94,7 @@ class PurchaseService:
                 acquired_via="purchase",
                 wallet_transaction_id=txn.id,
             )
-        except IntegrityError as exc:
+        except IdempotencyViolationError as exc:
             raise ConflictError("already_owned") from exc
 
         return PurchaseResult(

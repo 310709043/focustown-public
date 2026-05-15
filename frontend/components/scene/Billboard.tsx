@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { leaderboardApi } from "@/lib/api/endpoints";
 import { findCharacter } from "@/lib/data/characters";
 import type { LeaderboardEntry } from "@/lib/api/types.gen";
@@ -12,6 +13,7 @@ import type { LeaderboardEntry } from "@/lib/api/types.gen";
  */
 export function Billboard() {
   const [rows, setRows] = useState<LeaderboardEntry[]>([]);
+  const t = useTranslations("town.scene");
 
   useEffect(() => {
     let cancelled = false;
@@ -74,9 +76,9 @@ export function Billboard() {
               className="text-center self-center my-3"
               style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.6 }}
             >
-              還沒有完成記錄
+              {t("billboardEmptyLine1")}
               <br />
-              <span style={{ color: "var(--a2)" }}>第一個專注的就是你 ✦</span>
+              <span style={{ color: "var(--a2)" }}>{t("billboardEmptyLine2")}</span>
             </div>
           ) : (
             rows.map((r, i) => {
