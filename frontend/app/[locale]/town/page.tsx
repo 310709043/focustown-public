@@ -22,6 +22,8 @@ import { Buildings } from "@/components/scene/Buildings";
 import { Billboard } from "@/components/scene/Billboard";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
+import { Dogs } from "@/components/scene/Dogs";
+import { Birds } from "@/components/scene/Birds";
 import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
 import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
@@ -180,6 +182,9 @@ export default function TownPage() {
         <Airplane intervalSeconds={22} delaySeconds={0} />
         <Airplane intervalSeconds={28} delaySeconds={-14} />
 
+        {/* per-user songbirds — fly under the airplane silhouettes */}
+        <Birds />
+
         <WeatherBadge />
         <TownClock />
 
@@ -194,8 +199,10 @@ export default function TownPage() {
             and cars (driving on top). Pure CSS; respects reduced-motion. */}
         <Road />
 
-        {/* ground crowd */}
+        {/* ground crowd — every moving entity is a real online user;
+            entityKindFor() routes each user to exactly one of these four. */}
         <Pedestrians />
+        <Dogs />
         <CarsLane />
 
         {/* central billboard */}

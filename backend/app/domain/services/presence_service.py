@@ -58,6 +58,10 @@ class PresenceService:
     async def connect(
         self, user_id: str, *, state: PresenceState = "on_street"
     ) -> None:
+        # New connections default to "afk" — a user is idle until a focus
+        # session actually starts. The SessionPresenceLink subscriber flips
+        # this to "focus" on SessionStarted and back to "afk" on
+        # SessionCompleted / SessionAbandoned.
         await self._tracker.online(user_id, state=state)
         await self._pub.publish(
             STREET_CHANNEL,
@@ -65,7 +69,7 @@ class PresenceService:
                 "type": "presence.changed",
                 "user_id": user_id,
                 "state": state,
-                "status": "focus",
+                "status": "afk",
             },
         )
 
@@ -136,7 +140,7 @@ class PresenceService:
                     id=user.id,
                     display_name=user.public_name(),
                     character_key=user.character_key,
-                    status=status_by_id.get(user.id, "focus"),
+                    status=status_by_id.get(user.id, "afk"),
                     vehicle=vehicle,
                 )
             )

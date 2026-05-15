@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useShallow } from "zustand/react/shallow";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
+import { hashUserId } from "@/lib/data/hash";
 import { statusByCode, type StatusCode } from "@/lib/data/statuses";
 import { useAuthStore } from "@/lib/state/authStore";
-import { usePresenceStore } from "@/lib/state/presenceStore";
+import { usePresenceByKind } from "@/lib/state/usePresenceByKind";
 
 import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
 import { WALKERS } from "@/lib/pixel/sprites/world";
@@ -25,15 +25,6 @@ import { WALKERS } from "@/lib/pixel/sprites/world";
 const POSITIONS = [4, 13, 22, 32, 42, 52, 62, 72, 82, 91];
 
 const pickPos = () => POSITIONS[Math.floor(Math.random() * POSITIONS.length)];
-
-// Deterministic hash → integer (stable across SSR + CSR + reorders).
-const hashUserId = (userId: string): number => {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = (hash * 31 + userId.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
-};
 
 const fallbackCharacter = (userId: string): CharacterDef =>
   CHARACTERS[hashUserId(userId) % CHARACTERS.length];
@@ -153,11 +144,9 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 }
 
 export function Pedestrians() {
-  // `Object.values` would return a fresh array on every store read and
-  // break Zustand's SSR snapshot caching ("getServerSnapshot infinite
-  // loop"). useShallow gives us a stable reference until the underlying
-  // map changes element-wise.
-  const users = usePresenceStore(useShallow((s) => Object.values(s.byId)));
+  // Only users whose entity assignment is "walker" appear here; cars / dogs /
+  // birds are rendered by their respective components from the same store.
+  const users = usePresenceByKind("walker");
   const selfId = useAuthStore((s) => s.user?.id ?? null);
 
   return (
