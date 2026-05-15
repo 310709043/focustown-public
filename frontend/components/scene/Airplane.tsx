@@ -44,7 +44,10 @@ export function Airplane({
       style={
         {
           top: `${top}%`,
-          left: 0,
+          // String "0%" rather than number 0 — React serialises numeric 0
+          // without a unit but Next's SSR emits "0px", which produces a
+          // hydration mismatch on this attribute even when `top` is stable.
+          left: "0%",
           ["--ap-dur" as string]: `${intervalSeconds}s`,
           ["--ap-delay" as string]: `${delaySeconds}s`,
         } as React.CSSProperties

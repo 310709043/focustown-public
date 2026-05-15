@@ -9,6 +9,10 @@ venv/
 .ruff_cache/
 .coverage
 htmlcov/
+coverage/
+**/playwright/.auth/
+**/test-results/
+**/playwright-report/
 
 # Node
 node_modules/
