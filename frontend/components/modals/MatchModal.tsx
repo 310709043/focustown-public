@@ -37,11 +37,12 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
 
   if (!open || !current) return null;
 
-  // The Match HTTP/WS schema only carries `candidate_id` (a user UUID), not
-  // a character_key — so this lookup misses for now. When backend extends
-  // Match with `candidate_character_key`, the hit path will start working;
-  // until then we render a neutral placeholder.
-  const character = findCharacter(current.candidate_id);
+  // Backend hydrates ``candidate_character_key`` on every match response,
+  // so we resolve the character sprite directly. The legacy fallback (look
+  // up by candidate_id) is kept as a last resort for old WS payloads.
+  const character =
+    findCharacter(current.candidate_character_key) ??
+    findCharacter(current.candidate_id);
   const candidate = {
     emoji: character?.emoji ?? "❓",
     name: character?.name ?? t("candidateAnonymous", { id: current.candidate_id.slice(0, 6) }),

@@ -23,10 +23,15 @@ for candidate in (ROOT / "backend", Path("/app")):
         sys.path.insert(0, str(candidate))
         break
 
+import random  # noqa: E402
+import secrets  # noqa: E402
+from datetime import datetime, timedelta, timezone  # noqa: E402
+
 from app.core.config import get_settings  # noqa: E402
 from app.core.ids import UUID4Generator  # noqa: E402
 from app.core.security import hash_password  # noqa: E402
 from app.infrastructure.db.models.achievement import AchievementORM  # noqa: E402
+from app.infrastructure.db.models.focus_session import FocusSessionORM  # noqa: E402
 from app.infrastructure.db.models.shop_item import ShopItemORM  # noqa: E402
 from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM  # noqa: E402
 from app.infrastructure.db.models.track import TrackORM  # noqa: E402
@@ -86,6 +91,23 @@ SEED_TRACK_MOOD_BY_FILENAME: dict[str, dict[str, str]] = {
 
 SEED_SYSTEM_USER_EMAIL = "seed-system@focustown.local"
 
+# Bot population. Each bot picks a character from the frontend roster
+# (frontend/lib/data/characters.ts) and a distinct hour-of-day band so the
+# SimpleOverlapStrategy's Jaccard overlap returns interesting variance per
+# (real-user, bot) pair. Without per-bot bands the strategy floors to 40.
+BOTS: list[dict] = [
+    {"key": "luna",  "name": "Luna",  "role": "UI 設計師",  "hours": [5, 6, 7, 8, 9]},
+    {"key": "kai",   "name": "Kai",   "role": "前端工程師", "hours": [11, 12, 13, 14]},
+    {"key": "milo",  "name": "Milo",  "role": "小說作家",   "hours": [14, 15, 16, 17]},
+    {"key": "aria",  "name": "Aria",  "role": "研究員",     "hours": [18, 19, 20]},
+    {"key": "zoe",   "name": "Zoe",   "role": "音樂製作人", "hours": [21, 22, 23]},
+    {"key": "rex",   "name": "Rex",   "role": "攝影師",     "hours": [0, 1, 2, 3, 4]},
+    {"key": "nyx",   "name": "Nyx",   "role": "哲學家",     "hours": [8, 12, 16, 20, 0]},
+]
+
+BOT_SESSION_COUNT = 20
+BOT_EMAIL_FMT = "bot-{key}@bots.focustown.local"
+
 
 async def main() -> None:
     settings = get_settings()
@@ -144,9 +166,74 @@ async def main() -> None:
                     row.render_meta = meta
 
         await _seed_tracks(db, settings, ids)
+        await _seed_bots(db, ids)
 
         await db.commit()
     print("✓ Seed complete")
+
+
+async def _seed_bots(db, ids) -> None:
+    """Seed 7 NPC users + per-bot 7-day focus history.
+
+    User rows are idempotent (skip if email exists). FocusSession rows
+    are **re-seeded every run** so the sliding 7-day window the matching
+    strategy uses always contains data — without this, the rows would
+    decay out of the window after one week and overlap collapses to 0.
+    """
+    rng = random.Random("focustown-bots-stable")
+    now = datetime.now(timezone.utc)
+    seeded = 0
+    for spec in BOTS:
+        email = BOT_EMAIL_FMT.format(key=spec["key"])
+        bot = (
+            await db.execute(_select(UserORM).where(UserORM.email == email))
+        ).scalar_one_or_none()
+        if bot is None:
+            bot = UserORM(
+                id=ids.new_id(),
+                email=email,
+                password_hash=hash_password(secrets.token_urlsafe(32)),
+                display_name=spec["name"],
+                character_key=spec["key"],
+                role_label=spec["role"],
+                is_active=True,
+                is_bot=True,
+                terms_accepted_at=now,
+                terms_version="v1",
+            )
+            db.add(bot)
+            await db.flush()
+            seeded += 1
+        # Drop stale focus history and rebuild inside the rolling 7-day
+        # window so the compatibility strategy always has fresh signal.
+        await db.execute(
+            _delete(FocusSessionORM).where(FocusSessionORM.user_id == bot.id)
+        )
+        for _ in range(BOT_SESSION_COUNT):
+            day_offset = rng.randint(0, 6)
+            hour = rng.choice(spec["hours"])
+            minute = rng.randint(0, 59)
+            started_at = (now - timedelta(days=day_offset)).replace(
+                hour=hour, minute=minute, second=0, microsecond=0
+            )
+            duration_seconds = 1500  # one 25-min pomodoro
+            db.add(
+                FocusSessionORM(
+                    id=ids.new_id(),
+                    user_id=bot.id,
+                    mode="focus",
+                    duration_seconds=duration_seconds,
+                    elapsed_seconds=duration_seconds,
+                    status="completed",
+                    started_at=started_at,
+                    ended_at=started_at + timedelta(seconds=duration_seconds),
+                )
+            )
+    await db.flush()
+    print(
+        f"  (bot seed) ensured {len(BOTS)} bots "
+        f"({seeded} newly created), re-seeded focus history"
+    )
 
 
 async def _seed_tracks(db, settings, ids) -> None:
@@ -220,6 +307,12 @@ def _select(model):
     from sqlalchemy import select
 
     return select(model)
+
+
+def _delete(model):
+    from sqlalchemy import delete
+
+    return delete(model)
 
 
 if __name__ == "__main__":

@@ -57,6 +57,11 @@ class SqlMatchRepo(IMatchRepo):
             raise NotFoundError("match_not_found")
         row.status = status.value
         await self._s.flush()
+        # ``updated_at`` is server-side ``onupdate=func.now()``; without an
+        # explicit refresh, later attribute access lazy-loads it and trips
+        # MissingGreenlet outside the request greenlet (e.g. when the
+        # response serializer touches the domain Match's ``updated_at``).
+        await self._s.refresh(row, ["updated_at"])
         return _to_domain(row)
 
     async def list_recent_for_user(self, *, user_id: str, limit: int) -> list[Match]:

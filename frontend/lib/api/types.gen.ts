@@ -65,6 +65,10 @@ export type Match = {
   id: string;
   requester_id: string;
   candidate_id: string;
+  // Hydrated server-side from the candidate user so the modal can render the
+  // character sprite without a second round-trip. Null when the candidate has
+  // not picked a character yet.
+  candidate_character_key: string | null;
   compatibility: number;
   reason: string;
   status: "pending" | "accepted" | "skipped" | "expired";

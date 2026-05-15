@@ -213,6 +213,9 @@ class FakeUserRepo(IUserRepo):
     async def list_recent(self, *, limit: int) -> list[User]:
         return list(self.users.values())[:limit]
 
+    async def list_bots(self) -> list[User]:
+        return [u for u in self.users.values() if u.is_bot]
+
 
 @dataclass
 class FakeResetTokenRepo(IPasswordResetTokenRepo):

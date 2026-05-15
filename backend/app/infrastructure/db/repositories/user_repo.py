@@ -28,6 +28,7 @@ def _to_domain(row: UserORM) -> User:
         terms_version=row.terms_version,
         marketing_opt_in=row.marketing_opt_in,
         marketing_opt_in_at=row.marketing_opt_in_at,
+        is_bot=row.is_bot,
     )
 
 
@@ -121,6 +122,15 @@ class SqlUserRepo(IUserRepo):
         if not user_ids:
             return []
         stmt = select(UserORM).where(UserORM.id.in_(user_ids))
+        rows = (await self._s.execute(stmt)).scalars().all()
+        return [_to_domain(r) for r in rows]
+
+    async def list_bots(self) -> list[User]:
+        stmt = (
+            select(UserORM)
+            .where(UserORM.is_bot.is_(True))
+            .order_by(UserORM.created_at.asc())
+        )
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
 
