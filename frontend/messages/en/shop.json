@@ -44,6 +44,10 @@
   "topBar": {
     "title": "SHOP"
   },
+  "comingSoon": {
+    "title": "Coming soon",
+    "body": "The shop is being polished. Check back in Phase 10."
+  },
   "page": {
     "title": "🛒 Item shop",
     "closeCta": "✕ Close",

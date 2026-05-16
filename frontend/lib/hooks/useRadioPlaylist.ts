@@ -22,6 +22,43 @@ interface UseRadioPlaylistOptions {
   initialVolume?: number;
 }
 
+// Local fallback playlist used when the backend `/playback/playlist`
+// endpoint returns an empty list or fails. Lets dev / demo / offline mode
+// play music without backend seeding. Track ids carry a `local:` prefix
+// so the bind effect can route them to static `/audio/*.mp3` files
+// instead of `tracksApi.streamUrl()`.
+const LOCAL_FALLBACK_TRACKS: PersonalPlaylistTrack[] = [
+  {
+    id: "local:lofi-1",
+    title: "Lo-fi Drift",
+    artist: "Local",
+    mood: "lofi",
+    duration_ms: 180_000,
+    content_type: "audio/mpeg",
+  },
+  {
+    id: "local:lofi-2",
+    title: "Pixel Cafe",
+    artist: "Local",
+    mood: "lofi",
+    duration_ms: 180_000,
+    content_type: "audio/mpeg",
+  },
+  {
+    id: "local:lofi-3",
+    title: "Night Commute",
+    artist: "Local",
+    mood: "lofi",
+    duration_ms: 180_000,
+    content_type: "audio/mpeg",
+  },
+];
+const LOCAL_TRACK_URL: Record<string, string> = {
+  "local:lofi-1": "/audio/lofi-1.mp3",
+  "local:lofi-2": "/audio/lofi-2.mp3",
+  "local:lofi-3": "/audio/lofi-3.mp3",
+};
+
 export interface RadioPlaylistState {
   /** Tracks from `/playback/playlist`, in playback order. Empty until fetch. */
   tracks: PersonalPlaylistTrack[];
@@ -101,10 +138,13 @@ export function useRadioPlaylist({
           contextId: contextId ?? null,
         });
         if (cancelled) return;
-        setTracks(res.tracks);
+        setTracks(res.tracks.length > 0 ? res.tracks : LOCAL_FALLBACK_TRACKS);
         setIndex(0);
       } catch {
-        if (!cancelled) setTracks([]);
+        if (!cancelled) {
+          setTracks(LOCAL_FALLBACK_TRACKS);
+          setIndex(0);
+        }
       }
     })();
     return () => {
@@ -123,7 +163,9 @@ export function useRadioPlaylist({
       el.removeAttribute("src");
       return;
     }
-    const desired = tracksApi.streamUrl(currentTrack.id);
+    const desired = currentTrack.id.startsWith("local:")
+      ? LOCAL_TRACK_URL[currentTrack.id] ?? ""
+      : tracksApi.streamUrl(currentTrack.id);
     if (el.src !== desired) {
       el.src = desired;
       el.load();

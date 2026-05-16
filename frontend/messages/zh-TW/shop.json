@@ -44,6 +44,10 @@
   "topBar": {
     "title": "商店"
   },
+  "comingSoon": {
+    "title": "即將開放",
+    "body": "商店打磨中，請於 Phase 10 再來看看。"
+  },
   "page": {
     "title": "🛒 道具商店",
     "closeCta": "✕ 關閉",

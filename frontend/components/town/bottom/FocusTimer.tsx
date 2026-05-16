@@ -38,8 +38,17 @@ const SCENE_EMOJI: Record<string, string> = {
 export function FocusTimer() {
   useTimer();
   const t = useTranslations("town.bottom.focusTimer");
-  const { mode, remaining, durationSeconds, running, tomatoCount, start, pause, reset } =
-    useTimerStore();
+  const {
+    mode,
+    remaining,
+    durationSeconds,
+    running,
+    starting,
+    tomatoCount,
+    start,
+    pause,
+    reset,
+  } = useTimerStore();
   const scene = useSceneStore((s) => s.current);
   const advanceScene = useSceneStore((s) => s.advance);
 
@@ -132,9 +141,10 @@ export function FocusTimer() {
           data-testid="bottom-timer-toggle"
           className="pixel-btn primary"
           style={{ padding: "5px 14px", fontSize: 11, minWidth: 78 }}
+          disabled={starting}
           onClick={() => (running ? pause() : void start())}
         >
-          {running ? `⏸ ${t("pauseCta")}` : `▶ ${t("startCta")}`}
+          {starting ? "…" : running ? `⏸ ${t("pauseCta")}` : `▶ ${t("startCta")}`}
         </button>
         <button
           type="button"

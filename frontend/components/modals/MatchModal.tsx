@@ -15,6 +15,8 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
   const current = useMatchStore((s) => s.current);
   const acceptMatch = useMatchStore((s) => s.accept);
   const skipMatch = useMatchStore((s) => s.skip);
+  const accepting = useMatchStore((s) => s.accepting);
+  const skipping = useMatchStore((s) => s.skipping);
   const t = useTranslations("match.modal");
 
   // Stagger the segment fill so the bar lights up box-by-box.
@@ -165,13 +167,14 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
         <button
           className="pixel-btn touch:min-h-[48px]"
           style={{ fontSize: 11, padding: "12px 24px", letterSpacing: 2 }}
+          disabled={accepting || skipping}
           onClick={async () => {
             const m = await acceptMatch();
             onClose();
             if (m) router.push(`/focus/${m.id}`);
           }}
         >
-          {t("acceptCta")}
+          {accepting ? t("acceptLoadingCta") : t("acceptCta")}
         </button>
         <button
           className="pixel-btn touch:min-h-[48px]"
@@ -185,9 +188,10 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             boxShadow: "none",
             textShadow: "none",
           }}
+          disabled={accepting || skipping}
           onClick={() => void skipMatch()}
         >
-          {t("nextCta")}
+          {skipping ? t("nextLoadingCta") : t("nextCta")}
         </button>
       </div>
     </Modal>

@@ -9,6 +9,7 @@ interface TimerState {
   durationSeconds: number;
   remaining: number;
   running: boolean;
+  starting: boolean;
   session: FocusSession | null;
   tomatoCount: number;
   setMode: (m: FocusSessionMode, seconds: number) => void;
@@ -30,6 +31,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   durationSeconds: DEFAULTS.focus,
   remaining: DEFAULTS.focus,
   running: false,
+  starting: false,
   session: null,
   tomatoCount: 0,
 
@@ -38,14 +40,20 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   },
 
   async start(taskLabel, partnerId) {
+    if (get().starting || get().running) return;
     const { mode, durationSeconds } = get();
-    const session = await sessionsApi.start({
-      mode,
-      duration_seconds: durationSeconds,
-      task_label: taskLabel ?? null,
-      partner_user_id: partnerId ?? null,
-    });
-    set({ session, running: true, remaining: session.remaining_seconds });
+    set({ starting: true });
+    try {
+      const session = await sessionsApi.start({
+        mode,
+        duration_seconds: durationSeconds,
+        task_label: taskLabel ?? null,
+        partner_user_id: partnerId ?? null,
+      });
+      set({ session, running: true, remaining: session.remaining_seconds });
+    } finally {
+      set({ starting: false });
+    }
   },
 
   tick() {

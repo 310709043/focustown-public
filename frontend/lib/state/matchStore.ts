@@ -14,6 +14,8 @@ interface MatchState {
    */
   accepted: Match | null;
   proposing: boolean;
+  accepting: boolean;
+  skipping: boolean;
   propose: (candidateId: string) => Promise<void>;
   requestAuto: () => Promise<Match | null>;
   accept: () => Promise<Match | null>;
@@ -25,6 +27,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   current: null,
   accepted: null,
   proposing: false,
+  accepting: false,
+  skipping: false,
 
   async propose(candidateId) {
     set({ proposing: true });
@@ -51,23 +55,35 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   },
 
   async accept() {
+    if (get().accepting) return null;
     const cur = get().current;
     if (!cur) return null;
-    // Bot matches return already-accepted; skip the second HTTP call.
-    if (cur.status === "accepted") {
-      set({ current: null, accepted: cur });
-      return cur;
+    set({ accepting: true });
+    try {
+      // Bot matches return already-accepted; skip the second HTTP call.
+      if (cur.status === "accepted") {
+        set({ current: null, accepted: cur });
+        return cur;
+      }
+      const updated = await matchesApi.accept(cur.id);
+      set({ current: null, accepted: updated });
+      return updated;
+    } finally {
+      set({ accepting: false });
     }
-    const updated = await matchesApi.accept(cur.id);
-    set({ current: null, accepted: updated });
-    return updated;
   },
 
   async skip() {
+    if (get().skipping) return;
     const cur = get().current;
     if (!cur) return;
-    await matchesApi.skip(cur.id);
-    set({ current: null });
+    set({ skipping: true });
+    try {
+      await matchesApi.skip(cur.id);
+      set({ current: null });
+    } finally {
+      set({ skipping: false });
+    }
   },
 
   clear() {

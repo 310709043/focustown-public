@@ -22,8 +22,17 @@ interface BigTimerProps {
  */
 export function BigTimer({ partnerId = null }: BigTimerProps) {
   useTimer();
-  const { mode, remaining, durationSeconds, running, tomatoCount, start, pause, reset } =
-    useTimerStore();
+  const {
+    mode,
+    remaining,
+    durationSeconds,
+    running,
+    starting,
+    tomatoCount,
+    start,
+    pause,
+    reset,
+  } = useTimerStore();
   const t = useTranslations("focus.solo.bigTimer");
 
   const total = Math.max(1, durationSeconds);
@@ -112,11 +121,16 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
           data-testid="timer-toggle"
           className="pixel-btn primary"
           style={{ padding: "10px 28px", fontSize: 13 }}
+          disabled={starting}
           onClick={() =>
             running ? pause() : void start(undefined, partnerId)
           }
         >
-          {running ? `⏸ ${t("pauseCta")}` : `▶ ${t("startCta")}`}
+          {starting
+            ? `… ${t("startingCta")}`
+            : running
+              ? `⏸ ${t("pauseCta")}`
+              : `▶ ${t("startCta")}`}
         </button>
         <button
           type="button"

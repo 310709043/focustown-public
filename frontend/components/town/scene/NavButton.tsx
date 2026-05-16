@@ -10,6 +10,10 @@ interface NavButtonProps {
   /** Wrap as `<a>` for routed nav (no client JS needed). */
   href?: string;
   testId?: string;
+  /** Renders the button greyed-out, ignores clicks, and skips hover styling. */
+  disabled?: boolean;
+  /** Native tooltip — used to surface "Coming soon" on disabled entries. */
+  title?: string;
 }
 
 /**
@@ -17,7 +21,15 @@ interface NavButtonProps {
  * cluster (ACHV / SHOP / FRDS) and reusable anywhere a compact pixel
  * button with optional sprite icon is needed.
  */
-export function NavButton({ icon, label, onClick, href, testId }: NavButtonProps) {
+export function NavButton({
+  icon,
+  label,
+  onClick,
+  href,
+  testId,
+  disabled,
+  title,
+}: NavButtonProps) {
   const inner = (
     <>
       {icon ? (
@@ -41,16 +53,18 @@ export function NavButton({ icon, label, onClick, href, testId }: NavButtonProps
     fontSize: 9,
     color: "var(--ink-mute)",
     letterSpacing: "0.15em",
-    cursor: "pointer",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.4 : 1,
     transition: "all 0.12s steps(2)",
     textDecoration: "none",
   } as const;
 
-  if (href) {
+  if (href && !disabled) {
     return (
       <a
         href={href}
         data-testid={testId}
+        title={title}
         className="font-silkscreen"
         style={baseStyle}
         onMouseEnter={(e) => {
@@ -69,15 +83,19 @@ export function NavButton({ icon, label, onClick, href, testId }: NavButtonProps
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      title={title}
       data-testid={testId}
       className="font-silkscreen"
       style={baseStyle}
       onMouseEnter={(e) => {
+        if (disabled) return;
         e.currentTarget.style.borderColor = "var(--accent)";
         e.currentTarget.style.color = "var(--ink)";
       }}
       onMouseLeave={(e) => {
+        if (disabled) return;
         e.currentTarget.style.borderColor = "var(--panel-stroke)";
         e.currentTarget.style.color = "var(--ink-mute)";
       }}

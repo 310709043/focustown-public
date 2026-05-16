@@ -201,7 +201,8 @@ export function TownTopHUD({
           testId="nav-shop"
           icon="🛒"
           label={tNav("shop")}
-          onClick={() => onOpenModal("shop")}
+          disabled
+          title={tNav("shopComingSoonTooltip")}
         />
         <NavButton
           testId="nav-friends"
