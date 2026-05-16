@@ -24,17 +24,13 @@ export function DailyGoalRadio({ value, onChange }: DailyGoalRadioProps) {
             key={n}
             type="button"
             data-testid={`daily-goal-${n}`}
+            data-active={value === n || undefined}
             onClick={() => onChange(n)}
-            className="pixel-btn"
+            className={value === n ? "pixel-btn primary" : "pixel-btn"}
             style={{
               flex: 1,
               padding: "8px 0",
               fontSize: 11,
-              opacity: value === n ? 1 : 0.55,
-              boxShadow:
-                value === n
-                  ? "inset 0 -3px 0 0 rgba(0, 0, 0, 0.35), 0 3px 0 0 var(--a4), 0 0 24px rgba(167, 139, 250, 0.6)"
-                  : undefined,
             }}
           >
             {n} 🍅

@@ -86,10 +86,10 @@ Branch base: `origin/main` (these files are untouched on the audit branch — ve
 
 | Discrepancy | Severity | Open follow-up PR? |
 | --- | --- | --- |
-| D1 SummaryFooter primary CTA | high | recommended — same shared CSS fix as Page 1 D1 + Page 4 D11 |
-| D2 DailyGoalRadio active toggle | high | recommended — drops the opacity hack once D1 lands |
-| D3 Back button hardcoded to `/signup` | medium | recommended — small prop refactor; deferrable until v2 deeplinks |
-| D4 Toast banner extra | low | document only — improves keyboard UX, no visible regression |
-| D5 `previewIdBlank` i18n move | low | document only — refactor, not a visual change |
+| D1 SummaryFooter primary CTA | high | ✅ fixed in Phase B — `confirm-cta` uses `pixel-btn primary` (modifier shipped in PR #41) |
+| D2 DailyGoalRadio active toggle | high | ✅ fixed in Phase B — selected button uses `pixel-btn primary`; dropped opacity 0.55 hack and inline boxShadow override |
+| D3 Back button hardcoded to `/signup` | medium | ✅ fixed in Phase B — `SelectCharacterScene` accepts `backHref?: string` (default `/signup`). OCP additive. |
+| D4 Toast banner extra | low | deferred — doc only, improves keyboard UX |
+| D5 `previewIdBlank` i18n move | low | deferred — refactor, not a visual change |
 
-**Recommendation:** bundle D1 + D2 + (Page 1) D1 + (Page 4) D11 into a single `style(global): add .pixel-btn.primary modifier` follow-up CSS PR. D3 can wait until a non-signup caller actually deep-links to `/select-character`. Pages 2's port is in great shape — the audit found very little to fix beyond the shared primary-button issue.
+**Status:** all 3 actionable items (D1, D2, D3) shipped in Phase B. D4 and D5 deferred — neither is a user-visible regression.

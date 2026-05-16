@@ -60,7 +60,7 @@ export function SummaryFooter({
       <button
         type="button"
         data-testid="confirm-cta"
-        className="pixel-btn"
+        className="pixel-btn primary"
         disabled={!canConfirm || saving}
         onClick={onConfirm}
         style={{

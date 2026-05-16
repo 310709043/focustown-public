@@ -14,6 +14,10 @@ interface SelectCharacterSceneProps {
   /** Step counter shown in the top bar (defaults to 02 / 03 per reference). */
   step?: number;
   totalSteps?: number;
+  /** Where the ◀ back button navigates. Default `/signup` matches the
+   *  primary signup flow; deep-link consumers (e.g. an "edit character"
+   *  entry from `/town`) override this. OCP — additive optional prop. */
+  backHref?: string;
 }
 
 /**
@@ -27,6 +31,7 @@ export function SelectCharacterScene({
   children,
   step = 2,
   totalSteps = 3,
+  backHref = "/signup",
 }: SelectCharacterSceneProps) {
   const t = useTranslations("characters.selectPage");
   return (
@@ -56,7 +61,7 @@ export function SelectCharacterScene({
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Link
-            href="/signup"
+            href={backHref as Parameters<typeof Link>[0]["href"]}
             className="pixel-btn"
             style={{
               padding: "6px 12px",
