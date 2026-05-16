@@ -92,6 +92,15 @@ const config: Config = {
         blink:           "blink 1s steps(2) infinite",
         shimmer:         "shimmer 2.5s ease-in-out infinite",
         pixelFloat:      "pixelFloat 2s steps(4) infinite",
+        floatMoon:       "floatMoon 8s ease-in-out infinite",
+        logoBob:         "logoBob 3.5s ease-in-out infinite",
+        floatY:          "floatY 2.2s ease-in-out infinite var(--float-delay, 0s)",
+        driftX:          "driftX var(--drift-dur, 38s) linear var(--drift-delay, 0s) infinite",
+        driftXRev:       "driftXRev var(--drift-dur, 32s) linear var(--drift-delay, 0s) infinite",
+        blinkSoft:       "blinkSoft 2.4s infinite",
+        neonFlicker:     "neonFlicker 6s steps(20) infinite",
+        caretBlink:      "caretBlink 0.9s steps(2) infinite",
+        countUp:         "countUp 0.3s",
       },
       keyframes: {
         tw: {

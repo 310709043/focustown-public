@@ -7,9 +7,11 @@ import { Link, useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { signUpSchema, type SignUpInput } from "@/lib/validation/auth";
 import { PasswordInput } from "@/components/forms/PasswordInput";
-import { Checkbox } from "@/components/forms/Checkbox";
 import { AppFooter } from "@/components/AppFooter";
 import { LEGAL } from "@/lib/config/legal";
+import { LoginScene } from "@/components/login/LoginScene";
+import { CornerDeco } from "@/components/login/CornerDeco";
+import { SsoButtons } from "@/components/login/SsoButtons";
 
 type FormErrors = Partial<Record<keyof SignUpInput, string>>;
 
@@ -23,8 +25,10 @@ export default function SignUpPage() {
     termsAccepted: false,
     marketingOptIn: false,
   });
+  const [confirmPw, setConfirmPw] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const t = useTranslations("auth.signup");
+  const tSplash = useTranslations("auth.splash");
 
   const update = <K extends keyof SignUpInput>(key: K, value: SignUpInput[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -58,59 +62,57 @@ export default function SignUpPage() {
   };
 
   return (
-    <main
-      className="absolute inset-0 flex flex-col items-center justify-center p-6"
-      style={{
-        background:
-          "linear-gradient(155deg,#060120 0%,#0d0435 55%,#060120 100%)",
-      }}
-    >
+    <LoginScene showHero>
       <form
         data-testid="signup-form"
         onSubmit={onSubmit}
-        className="pixel-panel p-6 w-full max-w-sm flex flex-col gap-3"
+        className="pixel-panel login-form-anim relative"
+        style={{
+          width: 380,
+          padding: 20,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
       >
+        <CornerDeco color="var(--accent-2)" />
+
         <div
-          aria-hidden
-          className="font-pixel text-[10px] tracking-widest text-center opacity-80"
-          style={{ color: "var(--a2)", textShadow: "0 0 10px var(--a1)" }}
-        >
-          ✦ FOCUS TOWN ✦
-        </div>
-        <h1
-          className="text-center mb-2"
+          className="font-silkscreen"
           style={{
-            fontSize: "var(--font-size-section-title)",
-            lineHeight: "var(--line-height-title)",
-            fontWeight: 500,
-            color: "var(--text)",
-            textShadow: "0 0 18px rgba(167,139,250,0.35)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 11,
+            color: "var(--ink-mute)",
+            letterSpacing: "0.2em",
           }}
         >
-          {t("heading")}
-        </h1>
+          <BlinkDot color="var(--accent-2)" />
+          <span>{tSplash("signUpTitle").toUpperCase()}</span>
+        </div>
+
+        <SsoButtons disabled={loading} />
+
+        <Divider label={tSplash("or")} />
 
         <div>
+          <Label>{t("displayNameLabel").toUpperCase()}</Label>
           <input
             data-testid="signup-name"
             placeholder={t("displayNamePlaceholder")}
             value={form.displayName}
             onChange={(e) => update("displayName", e.target.value)}
             className="pixel-input"
-            style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4 }}
             autoComplete="nickname"
           />
           {errors.displayName ? (
-            <p
-              className="text-coral mt-1"
-              style={{ fontSize: "var(--font-size-note)" }}
-            >
-              {errors.displayName}
-            </p>
+            <ErrorLine>{errors.displayName}</ErrorLine>
           ) : null}
         </div>
 
         <div>
+          <Label>{t("emailLabel").toUpperCase()}</Label>
           <input
             data-testid="signup-email"
             type="email"
@@ -118,73 +120,91 @@ export default function SignUpPage() {
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
             className="pixel-input"
-            style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4 }}
             autoComplete="email"
           />
-          {errors.email ? (
-            <p
-              className="text-coral mt-1"
-              style={{ fontSize: "var(--font-size-note)" }}
-            >
-              {errors.email}
-            </p>
-          ) : null}
+          {errors.email ? <ErrorLine>{errors.email}</ErrorLine> : null}
         </div>
 
-        <div>
-          <PasswordInput
-            data-testid="signup-password"
-            placeholder={t("passwordPlaceholder")}
-            value={form.password}
-            onChange={(e) => update("password", e.target.value)}
-            autoComplete="new-password"
+        <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ flex: 1 }}>
+            <Label>{t("passwordLabel").toUpperCase()}</Label>
+            <PasswordInput
+              data-testid="signup-password"
+              placeholder={t("passwordPlaceholder")}
+              value={form.password}
+              onChange={(e) => update("password", e.target.value)}
+              autoComplete="new-password"
+            />
+            {errors.password ? <ErrorLine>{errors.password}</ErrorLine> : null}
+          </div>
+          <div style={{ flex: 1 }}>
+            <Label>{t("passwordLabel").toUpperCase()} ✓</Label>
+            <PasswordInput
+              placeholder="••••••"
+              value={confirmPw}
+              onChange={(e) => setConfirmPw(e.target.value)}
+              autoComplete="new-password"
+            />
+          </div>
+        </div>
+
+        <label
+          className="font-silkscreen"
+          style={{
+            display: "inline-flex",
+            alignItems: "flex-start",
+            gap: 8,
+            cursor: "pointer",
+            fontSize: 10,
+            color: "var(--ink-mute)",
+            lineHeight: 1.6,
+          }}
+        >
+          <PixelCheckbox
+            checked={form.termsAccepted}
+            onClick={() => update("termsAccepted", !form.termsAccepted)}
           />
-          {errors.password ? (
-            <p
-              className="text-coral mt-1"
-              style={{ fontSize: "var(--font-size-note)" }}
+          <span>
+            {t("termsAgreement")}{" "}
+            <Link
+              href="/legal/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent-2 underline hover:text-accent-1"
             >
-              {errors.password}
-            </p>
-          ) : null}
-        </div>
+              {t("termsLink")}
+            </Link>{" "}
+            {t("termsConnector")}{" "}
+            <Link
+              href="/legal/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent-2 underline hover:text-accent-1"
+            >
+              {t("privacyLink")}
+            </Link>
+          </span>
+        </label>
+        {errors.termsAccepted ? <ErrorLine>{errors.termsAccepted}</ErrorLine> : null}
 
-        <Checkbox
-          data-testid="signup-terms"
-          checked={form.termsAccepted}
-          onChange={(e) => update("termsAccepted", e.target.checked)}
-          error={errors.termsAccepted}
-          name="termsAccepted"
-          label={
-            <>
-              {t("termsAgreement")}{" "}
-              <Link
-                href="/legal/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent-2 underline hover:text-accent-1"
-              >
-                {t("termsLink")}
-              </Link>{" "}
-              {t("termsConnector")}{" "}
-              <Link
-                href="/legal/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent-2 underline hover:text-accent-1"
-              >
-                {t("privacyLink")}
-              </Link>
-            </>
-          }
-        />
-
-        <Checkbox
-          checked={form.marketingOptIn}
-          onChange={(e) => update("marketingOptIn", e.target.checked)}
-          name="marketingOptIn"
-          label={t("marketingOptIn")}
-        />
+        <label
+          className="font-silkscreen"
+          style={{
+            display: "inline-flex",
+            alignItems: "flex-start",
+            gap: 8,
+            cursor: "pointer",
+            fontSize: 10,
+            color: "var(--ink-mute)",
+            lineHeight: 1.6,
+          }}
+        >
+          <PixelCheckbox
+            checked={form.marketingOptIn}
+            onClick={() => update("marketingOptIn", !form.marketingOptIn)}
+          />
+          <span>{t("marketingOptIn")}</span>
+        </label>
 
         {error ? (
           <div
@@ -201,20 +221,134 @@ export default function SignUpPage() {
           type="submit"
           disabled={loading || !form.termsAccepted}
           className="pixel-btn touch:min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ fontSize: 12, padding: "10px 16px", letterSpacing: 2 }}
+          style={{
+            padding: "12px 18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            fontSize: 13,
+          }}
         >
-          {loading ? t("loadingCta") : t("submitCta")}
+          <span>✦</span>
+          <span>{loading ? t("loadingCta") : tSplash("next")}</span>
         </button>
 
-        <Link
-          href="/signin"
-          className="text-muted hover:text-accent-2 active:text-accent-2 text-center touch:py-2 touch:-my-2"
-          style={{ fontSize: "var(--font-size-label)" }}
+        <div
+          className="font-silkscreen text-center"
+          style={{ fontSize: 10, color: "var(--ink-dim)" }}
         >
-          {t("toggleToSignin")}
-        </Link>
+          {tSplash("haveAcc")}{" "}
+          <Link href="/signin" style={{ color: "var(--accent-3)" }}>
+            {tSplash("backToSignin")} →
+          </Link>
+        </div>
       </form>
       <AppFooter />
-    </main>
+    </LoginScene>
+  );
+}
+
+function BlinkDot({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden
+      className="animate-blinkSoft"
+      style={{
+        display: "inline-block",
+        width: 6,
+        height: 6,
+        background: color,
+        boxShadow: `0 0 6px ${color}`,
+        verticalAlign: "middle",
+      }}
+    />
+  );
+}
+
+function Divider({ label }: { label: string }) {
+  return (
+    <div
+      className="font-silkscreen"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        color: "var(--ink-dim)",
+        fontSize: 9,
+      }}
+    >
+      <div style={{ flex: 1, height: 1, background: "var(--panel-stroke)" }} />
+      <span>{label}</span>
+      <div style={{ flex: 1, height: 1, background: "var(--panel-stroke)" }} />
+    </div>
+  );
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="font-silkscreen"
+      style={{
+        fontSize: 10,
+        color: "var(--ink-mute)",
+        letterSpacing: "0.2em",
+        marginBottom: 4,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ErrorLine({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="text-coral mt-1"
+      style={{ fontSize: "var(--font-size-note)" }}
+    >
+      {children}
+    </p>
+  );
+}
+
+function PixelCheckbox({
+  checked,
+  onClick,
+}: {
+  checked: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <span
+      role="checkbox"
+      aria-checked={checked}
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      style={{
+        width: 14,
+        height: 14,
+        border: "1px solid var(--panel-stroke-strong)",
+        background: checked ? "var(--accent)" : "rgba(0,0,0,0.4)",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        flexShrink: 0,
+        marginTop: 2,
+      }}
+    >
+      {checked ? (
+        <span style={{ color: "#0a0524", fontSize: 10, fontWeight: 700, lineHeight: 1 }}>
+          ✓
+        </span>
+      ) : null}
+    </span>
   );
 }

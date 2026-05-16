@@ -72,6 +72,36 @@
   /* Metric / focus-timer digits — clamped so small viewports don't blow
      the layout. */
   --font-size-metric: clamp(32px, 5vw, 56px);
+
+  /* ── Reference-design token aliases ──────────────────────────────
+     The original `reference/` design uses a different naming scheme
+     (`--accent`, `--sky-top`, `--ink-mute`, …). Aliasing here lets
+     ported components reuse reference styles verbatim while staying
+     on the Current palette below. Do NOT redefine in component CSS. */
+  --bg-0:                #07041a;
+  --bg-1:                #110826;
+  --bg-2:                #1c0f3d;
+  --sky-top:             #07041a;
+  --sky-mid:             #1a0d3d;
+  --sky-low:             #2a1854;
+  --ink:                 var(--text);
+  --ink-mute:            var(--dir-ink-mute);
+  --ink-dim:             var(--dir-ink-dim);
+  --accent:              var(--a1);
+  --accent-2:            #ec4899;
+  --accent-3:            #22d3ee;
+  --accent-4:            var(--amber);
+  --window-warm:         #fcd34d;
+  --window-cool:         #67e8f9;
+  --window-pink:         #f0abfc;
+  --window-mint:         #6ee7b7;
+  --panel-bg:            var(--card);
+  --panel-stroke:        var(--dir-panel-stroke);
+  --panel-stroke-strong: var(--dir-panel-stroke-strong);
+  --button-fill:         var(--dir-button-fill);
+  --neon-glow:           var(--dir-accent-glow);
+  --neon-glow-pink:      var(--dir-accent-glow-pink);
+  --neon-glow-cyan:      var(--dir-accent-glow-cyan);
 }
 
 :root[data-direction="dusk"] {
@@ -491,3 +521,72 @@ body {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-3px); }
 }
+
+/* ── Login scene keyframes (ported from reference/screen-login.jsx) ── */
+
+/* Gentle moon levitation on the login sky. */
+@keyframes floatMoon {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* Logo bob with a tiny rotation — gives the brand mark life. */
+@keyframes logoBob {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50%      { transform: translateY(-4px) rotate(-0.5deg); }
+}
+
+/* Avatar strip + featured rows — 4px sinwave bob. */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* Citizens + ambient items drifting across the bottom of the scene. */
+@keyframes driftX {
+  from { transform: translateX(-20vw); }
+  to   { transform: translateX(120vw); }
+}
+@keyframes driftXRev {
+  from { transform: translateX(120vw) scaleX(-1); }
+  to   { transform: translateX(-20vw)  scaleX(-1); }
+}
+
+/* Slow LED-dot blink for headline status lights. */
+@keyframes blinkSoft {
+  0%, 60%, 100% { opacity: 1; }
+  64%, 70%      { opacity: 0.4; }
+  72%           { opacity: 1; }
+}
+
+/* Neon FOCUSTOWN flicker — drop-shadow pulse with brief dropouts. */
+@keyframes neonFlicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    filter: drop-shadow(0 0 8px var(--accent-2)) drop-shadow(0 0 14px var(--accent));
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    filter: none;
+    opacity: 0.85;
+  }
+}
+
+/* Typewriter caret cursor — sharp on/off. */
+@keyframes caretBlink {
+  0%, 50%   { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Form panel slide-up entrance — replays when switching mode/page. */
+@keyframes panelSlideIn {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+/* NumberRoll fade-step on each tick. */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.login-form-anim { animation: panelSlideIn 0.5s ease-out; }

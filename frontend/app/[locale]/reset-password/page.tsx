@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api/client";
 import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/validation/auth";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { AppFooter } from "@/components/AppFooter";
+import { LoginScene } from "@/components/login/LoginScene";
 
 type FormErrors = Partial<Record<keyof ResetPasswordInput, string>>;
 
@@ -202,21 +203,11 @@ function ResetPasswordFallback() {
 export default function ResetPasswordPage() {
   const t = useTranslations("auth.reset");
   return (
-    <main
-      className="absolute inset-0 flex flex-col items-center justify-center p-6"
-      style={{
-        background:
-          "linear-gradient(155deg,#060120 0%,#0d0435 55%,#060120 100%)",
-      }}
-    >
-      <div className="bg-card border border-border rounded-lg p-6 w-full max-w-sm">
-        <div
-          aria-hidden
-          className="font-pixel text-[10px] tracking-widest text-center mb-2 opacity-80"
-          style={{ color: "var(--a2)", textShadow: "0 0 10px var(--a1)" }}
-        >
-          ✦ FOCUS TOWN ✦
-        </div>
+    <LoginScene showHero={false}>
+      <div
+        className="pixel-panel login-form-anim p-6 w-full max-w-sm relative"
+        style={{ width: 380 }}
+      >
         <h1
           className="text-center mb-3"
           style={{
@@ -234,6 +225,6 @@ export default function ResetPasswordPage() {
         </Suspense>
       </div>
       <AppFooter />
-    </main>
+    </LoginScene>
   );
 }
