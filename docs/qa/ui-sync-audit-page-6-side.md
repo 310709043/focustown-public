@@ -106,7 +106,7 @@ The diverged half was built before the reference port and was never retrofitted.
 | R5 `/forgot-password` | medium (Page 1 D11) | 2 hours | ✅ fixed in Phase A (bundled with Page 1 D11) |
 | R6 `/reset-password` | medium (Page 1 D11) | 2 hours | ✅ fixed in Phase A (bundled with Page 1 D11) |
 | R7 `/town/room/[id]` chrome | medium | 1 day | pending — Phase F |
-| R8 `/town/library` | medium | 4 hours | pending — Phase F |
+| R8 `/town/library` | medium | 4 hours | ✅ fixed in Phase F4 — page header in `pixel-panel`, MoodTabs use accent-fill pixel tabs, TrackList rows are `pixel-panel` with `pixel-btn` play + `pixel-btn primary` for in-room tracks |
 
 **Total cleanup effort** (excluding legal-pages product call): ~4-5 days across all impl-only routes.
 

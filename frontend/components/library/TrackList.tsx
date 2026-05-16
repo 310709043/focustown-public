@@ -2,21 +2,20 @@
 
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { clsx } from "clsx";
 import { ApiError } from "@/lib/api/client";
 import { tracksApi } from "@/lib/api/endpoints";
 import type { Track } from "@/lib/api/types.gen";
 
-type Props = {
+interface Props {
   tracks: Track[];
   /** Track ids currently in the signed-in user's room playlist. Empty
    *  set when not logged in. */
   inPlaylist: Set<string>;
-  /** When null the playlist toggle is hidden (anonymous viewer). */
+  /** When false the playlist toggle is hidden (anonymous viewer). */
   canCurateRoom: boolean;
   onAddToRoom: (trackId: string) => void | Promise<void>;
   onRemoveFromRoom: (trackId: string) => void | Promise<void>;
-};
+}
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -24,6 +23,13 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+/**
+ * Track list for `/town/library`. Each row is a `pixel-panel`; the
+ * play button uses `pixel-btn` (primary when playing); the "add to
+ * room" toggle uses `pixel-btn primary` when in-room (accent-2 pink)
+ * and outline `pixel-btn` otherwise. Audio plays one track at a time
+ * — selecting a new track pauses everything else.
+ */
 export function TrackList({
   tracks,
   inPlaylist,
@@ -74,43 +80,111 @@ export function TrackList({
 
   if (tracks.length === 0) {
     return (
-      <div className="text-xs text-muted py-8 text-center border border-border rounded">
+      <div
+        data-testid="track-list-empty"
+        className="pixel-panel font-silkscreen"
+        style={{
+          padding: 32,
+          fontSize: 11,
+          color: "var(--ink-mute)",
+          textAlign: "center",
+          letterSpacing: "0.1em",
+        }}
+      >
         {t("empty")}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      data-testid="track-list"
+      style={{ display: "flex", flexDirection: "column", gap: 8 }}
+    >
       {error && (
-        <div className="text-[11px] text-red-400 border border-red-400/40 rounded px-2 py-1">
+        <div
+          role="alert"
+          className="pixel-panel"
+          style={{
+            padding: "6px 10px",
+            fontSize: 11,
+            color: "var(--coral)",
+            borderColor: "var(--coral)",
+          }}
+        >
           {error}
         </div>
       )}
-      <ul className="flex flex-col gap-1.5">
+      <ul
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+          listStyle: "none",
+          padding: 0,
+          margin: 0,
+        }}
+      >
         {tracks.map((track) => {
           const isPlaying = playingId === track.id;
+          const isInRoom = inPlaylist.has(track.id);
           return (
             <li
               key={track.id}
-              className={clsx(
-                "flex items-center gap-2 px-2 py-1.5 border rounded",
-                isPlaying ? "border-accent-1 bg-accent-1/5" : "border-border",
-              )}
+              data-testid="track-row"
+              data-playing={isPlaying || undefined}
+              className="pixel-panel"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 10px",
+                background: isPlaying
+                  ? "rgba(167,139,250,0.08)"
+                  : "rgba(12,5,35,0.9)",
+              }}
             >
               <button
                 type="button"
                 onClick={() => handleToggle(track.id)}
-                className="w-9 h-9 touch:w-11 touch:h-11 md:w-7 md:h-7 shrink-0 rounded-sm border border-accent-1 text-accent-1 hover:bg-accent-1/10 active:bg-accent-1/10"
+                className={isPlaying ? "pixel-btn primary" : "pixel-btn"}
+                style={{
+                  width: 34,
+                  height: 34,
+                  padding: 0,
+                  fontSize: 12,
+                  flexShrink: 0,
+                }}
                 aria-label={isPlaying ? t("pauseAria") : t("playAria")}
               >
                 {isPlaying ? "⏸" : "▶"}
               </button>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs truncate">{track.title}</div>
-                <div className="text-[10px] text-muted truncate">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  className="font-silkscreen"
+                  style={{
+                    fontSize: 12,
+                    color: "var(--ink)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {track.title}
+                </div>
+                <div
+                  className="font-silkscreen"
+                  style={{
+                    fontSize: 9,
+                    color: "var(--ink-mute)",
+                    letterSpacing: "0.08em",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {track.artist ? `${track.artist} · ` : ""}
-                  {track.mood} · {formatBytes(track.file_size_bytes)}
+                  #{track.mood} · {formatBytes(track.file_size_bytes)}
                 </div>
               </div>
               {canCurateRoom && (
@@ -118,17 +192,19 @@ export function TrackList({
                   type="button"
                   onClick={() => handleTogglePlaylist(track.id)}
                   disabled={playlistBusyId === track.id}
-                  className={clsx(
-                    "text-[10px] px-2 py-1.5 touch:px-3 touch:py-2 touch:min-h-[36px] md:px-1.5 md:py-0.5 border rounded disabled:opacity-50",
-                    inPlaylist.has(track.id)
-                      ? "border-accent-1 text-accent-1 hover:border-red-400 hover:text-red-400 active:border-red-400 active:text-red-400"
-                      : "border-border text-muted hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1",
-                  )}
-                  aria-pressed={inPlaylist.has(track.id)}
+                  data-in-room={isInRoom || undefined}
+                  className={isInRoom ? "pixel-btn primary" : "pixel-btn"}
+                  style={{
+                    padding: "5px 10px",
+                    fontSize: 10,
+                    opacity: playlistBusyId === track.id ? 0.5 : 1,
+                    cursor: playlistBusyId === track.id ? "wait" : "pointer",
+                  }}
+                  aria-pressed={isInRoom}
                 >
                   {playlistBusyId === track.id
                     ? "…"
-                    : inPlaylist.has(track.id)
+                    : isInRoom
                       ? t("inRoom")
                       : t("addToRoom")}
                 </button>

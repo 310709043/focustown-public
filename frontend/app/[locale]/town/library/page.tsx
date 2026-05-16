@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api/client";
 import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";
 import type { Track } from "@/lib/api/types.gen";
 import { useAuthStore } from "@/lib/state/authStore";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 import { MoodTabs, type MoodKey } from "@/components/library/MoodTabs";
 import { TrackList } from "@/components/library/TrackList";
 
@@ -81,36 +82,110 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 flex flex-col gap-4">
-      <header className="flex items-center justify-between">
-        <div>
-          <div className="text-[10px] text-muted">{t("breadcrumb")}</div>
-          <h1 className="text-lg font-semibold">{t("title")}</h1>
+    <div
+      data-testid="library-page"
+      className="mx-auto max-w-2xl px-4 py-6"
+      style={{ display: "flex", flexDirection: "column", gap: 16 }}
+    >
+      <header
+        className="pixel-panel"
+        style={{
+          padding: "12px 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span
+            className="font-silkscreen"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 9,
+              color: "var(--ink-dim)",
+              letterSpacing: "0.2em",
+            }}
+          >
+            <BlinkDot color="var(--accent-3)" />
+            {t("breadcrumb")}
+          </span>
+          <h1
+            className="font-silkscreen"
+            style={{
+              fontSize: 14,
+              color: "var(--accent)",
+              letterSpacing: "0.15em",
+              margin: 0,
+            }}
+          >
+            {t("title")}
+          </h1>
         </div>
         <button
           type="button"
           onClick={() => router.push("/town")}
-          className="text-[11px] px-3 py-1.5 touch:py-2.5 touch:min-h-[40px] border border-border rounded text-muted hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1"
+          className="pixel-btn"
+          style={{ padding: "6px 12px", fontSize: 10 }}
         >
-          {t("backCta")}
+          ◀ {t("backCta")}
         </button>
       </header>
 
-      <p className="text-[11px] text-muted leading-relaxed">{t("intro")}</p>
+      <p
+        style={{
+          fontSize: 11,
+          color: "var(--ink-mute)",
+          lineHeight: 1.7,
+          margin: 0,
+        }}
+      >
+        {t("intro")}
+      </p>
 
       <MoodTabs value={mood} onChange={setMood} />
 
       {!user && (
-        <div className="text-[11px] text-muted border border-border rounded p-3">
+        <div
+          className="pixel-panel"
+          style={{
+            padding: 12,
+            fontSize: 11,
+            color: "var(--ink-mute)",
+          }}
+        >
           {t("signedOutHint")}
         </div>
       )}
 
       {loading ? (
-        <div className="text-xs text-muted py-4 text-center">{t("loading")}</div>
+        <div
+          className="font-silkscreen"
+          style={{
+            fontSize: 10,
+            color: "var(--ink-mute)",
+            padding: 16,
+            textAlign: "center",
+            letterSpacing: "0.15em",
+          }}
+        >
+          {t("loading")}
+        </div>
       ) : error ? (
-        <div className="text-[11px] text-red-400 border border-red-400/40 rounded px-2 py-1">
-          {t("loadFailedPrefix")}{error}
+        <div
+          role="alert"
+          className="pixel-panel"
+          style={{
+            padding: "8px 12px",
+            fontSize: 11,
+            color: "var(--coral)",
+            borderColor: "var(--coral)",
+          }}
+        >
+          {t("loadFailedPrefix")}
+          {error}
         </div>
       ) : (
         <TrackList
