@@ -246,6 +246,28 @@ body {
   cursor: not-allowed;
 }
 
+/* Primary variant: pink accent-2 stroke + ink + glow. Used for the
+   reference's most-important CTAs (signin/signup submit, select-character
+   daily-goal toggle and "Enter Town", solo focus play/pause + tasks add). */
+.pixel-btn.primary {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+  text-shadow: 0 0 8px var(--accent-2);
+}
+.pixel-btn.primary:hover {
+  color: #fff;
+  box-shadow:
+    inset 0 -3px 0 0 rgba(0, 0, 0, 0.35),
+    0 3px 0 0 var(--a4),
+    0 0 28px rgba(236, 72, 153, 0.6);
+}
+.pixel-btn.primary:active {
+  box-shadow:
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
+    0 1px 0 0 var(--a4),
+    0 0 14px rgba(236, 72, 153, 0.4);
+}
+
 .pixel-edge {
   image-rendering: pixelated;
   box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.4);

@@ -9,11 +9,11 @@ import { useAuthStore } from "@/lib/state/authStore";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { matchesApi } from "@/lib/api/endpoints";
 import { FocusTimer } from "@/components/focus-room/FocusTimer";
-import { NotesPanel } from "@/components/focus-room/NotesPanel";
 import { SharedNotesPanel } from "@/components/focus-room/SharedNotesPanel";
 import { PartnerPairingHeader } from "@/components/focus-room/PartnerPairingHeader";
 import { PersonalRadio } from "@/components/audio/PersonalRadio";
 import { Airplane } from "@/components/scene/Airplane";
+import { SoloFocusScene } from "@/components/focus/SoloFocusScene";
 
 /** Deep-purple pixel city silhouette: calm horizon, no window detail. */
 function CitySilhouette() {
@@ -141,6 +141,13 @@ export default function FocusRoomPage() {
     };
   }, [paired, user, id, acceptedMatch]);
 
+  // Solo branch: render the ported reference design. Page 5 will swap in
+  // the buddy-room scene here; until then the paired path keeps the
+  // pre-port layout below intact.
+  if (!paired) {
+    return <SoloFocusScene />;
+  }
+
   return (
     <main
       className="absolute inset-0 flex flex-col overflow-hidden"
@@ -155,9 +162,7 @@ export default function FocusRoomPage() {
       <Airplane intervalSeconds={34} delaySeconds={-15} topPercent={20} />
       <CitySilhouette />
 
-      {paired ? (
-        <PartnerPairingHeader meKey={user?.character_key ?? null} partnerKey={partnerKey} />
-      ) : null}
+      <PartnerPairingHeader meKey={user?.character_key ?? null} partnerKey={partnerKey} />
 
       <header
         className="bg-[rgba(3,1,17,0.96)] border-b border-border flex items-center justify-between px-3 md:px-5 relative z-10 gap-3"
@@ -172,7 +177,7 @@ export default function FocusRoomPage() {
             textShadow: "0 0 10px var(--a1), 0 0 20px var(--a3)",
           }}
         >
-          ✦ {paired ? t("paired") : t("solo")}
+          ✦ {t("paired")}
         </div>
         <button
           onClick={() => router.push("/town")}
@@ -196,18 +201,14 @@ export default function FocusRoomPage() {
           fixed-height panel. Tablet+: classic side-by-side with the panel
           pinned to the right. */}
       <div
-        className={`flex-1 grid min-h-0 relative z-[3] grid-cols-1 grid-rows-[1fr_240px] md:grid-rows-1 ${paired ? "md:grid-cols-[1fr_380px]" : "md:grid-cols-[1fr_360px]"}`}
+        className="flex-1 grid min-h-0 relative z-[3] grid-cols-1 grid-rows-[1fr_240px] md:grid-rows-1 md:grid-cols-[1fr_380px]"
       >
-        <FocusTimer partnerId={paired ? id : null} />
+        <FocusTimer partnerId={id} />
         <aside
           className="border-t border-border md:border-l md:border-t-0 flex flex-col min-h-0"
           style={{ background: "rgba(5,1,20,0.6)", backdropFilter: "blur(8px)" }}
         >
-          {paired && user ? (
-            <SharedNotesPanel matchId={id} myUserId={user.id} />
-          ) : (
-            <NotesPanel />
-          )}
+          {user ? <SharedNotesPanel matchId={id} myUserId={user.id} /> : null}
         </aside>
       </div>
 
@@ -220,10 +221,7 @@ export default function FocusRoomPage() {
         className="absolute z-10 hidden md:block"
         style={{ right: 16, bottom: 16, width: 244 }}
       >
-        <PersonalRadio
-          context="focus"
-          contextId={paired ? id : "solo"}
-        />
+        <PersonalRadio context="focus" contextId={id} />
       </div>
     </main>
   );

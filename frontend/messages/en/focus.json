@@ -49,5 +49,96 @@
   },
   "enter": {
     "cta": "✦ Enter focus mode ✦"
+  },
+  "solo": {
+    "topBar": {
+      "backCta": "Back",
+      "backAria": "Back to town",
+      "subtitle": "SOLO ROOM",
+      "guestName": "Guest",
+      "statusLine": "{minutes} min streak",
+      "focusingLine": "Focusing · {minutes} min streak"
+    },
+    "bigTimer": {
+      "headerFocus": "DEEP FOCUS",
+      "headerBreak": "BREAK",
+      "startCta": "Start",
+      "pauseCta": "Pause",
+      "resetCta": "Reset",
+      "skipCta": "Skip",
+      "statTodayLabel": "TODAY'S FOCUS",
+      "statStreakLabel": "STREAK DAYS",
+      "statStreakValue": "{days} d",
+      "statRankLabel": "WEEKLY RANK"
+    },
+    "sessionInsight": {
+      "goalLabel": "Today's goal {goal} 🍅",
+      "progressCounter": "{done} / {goal} done",
+      "hereLabel": "HERE",
+      "tips": {
+        "0": "✦ Put your phone out of sight. 25 minutes is all you need.",
+        "1": "✦ Reward yourself after every tomato — a tiny one is enough.",
+        "2": "✦ Take three slow breaths before you start.",
+        "3": "✦ Park stray thoughts on the side; you can pick them up later."
+      }
+    },
+    "notes": {
+      "header": "MY NOTES",
+      "defaultTitle": "Today's notes",
+      "placeholder": "What do you want to focus on?",
+      "toolbar": {
+        "bold": "Bold",
+        "italic": "Italic",
+        "bullet": "Bullet",
+        "check": "Checklist",
+        "header": "Header"
+      },
+      "notSavedYet": "Not saved yet",
+      "autoSavedAgo": "Auto-saved · {seconds}s ago",
+      "charLineCount": "{chars} chars · {lines} lines"
+    },
+    "friendsNow": {
+      "header": "FRIENDS NOW",
+      "onlineCount": "{count} online",
+      "joinCta": "+1",
+      "tasks": {
+        "writing": "writing",
+        "coding": "coding",
+        "reading": "reading",
+        "design": "design"
+      }
+    },
+    "tasksPanel": {
+      "header": "TASKS",
+      "doneOf": "{done} / {total}",
+      "addPlaceholder": "Add a task, press Enter…",
+      "addCta": "Add"
+    },
+    "ambientPanel": {
+      "header": "BACKGROUND",
+      "bg": {
+        "cafe": "Cafe",
+        "rain": "Rain",
+        "forest": "Forest",
+        "space": "Space",
+        "lofi": "lofi",
+        "fire": "Fire"
+      }
+    },
+    "soundMixer": {
+      "header": "SOUND MIX",
+      "tracks": {
+        "music": "🎵 lofi",
+        "rain": "☂ rain",
+        "cafe": "☕ cafe",
+        "fire": "🔥 fire"
+      }
+    },
+    "quickActions": {
+      "dndOn": "DND ON",
+      "dndOff": "DND OFF",
+      "lockPhone": "LOCK PHONE",
+      "backToTown": "BACK TO TOWN"
+    }
   }
 }

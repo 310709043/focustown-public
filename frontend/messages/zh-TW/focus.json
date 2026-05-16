@@ -49,5 +49,96 @@
   },
   "enter": {
     "cta": "✦ 進入專注模式 ✦"
+  },
+  "solo": {
+    "topBar": {
+      "backCta": "返回",
+      "backAria": "返回小鎮",
+      "subtitle": "SOLO ROOM",
+      "guestName": "訪客",
+      "statusLine": "連續 {minutes} 分鐘",
+      "focusingLine": "專注中 · 連續 {minutes} min"
+    },
+    "bigTimer": {
+      "headerFocus": "DEEP FOCUS",
+      "headerBreak": "BREAK",
+      "startCta": "開始",
+      "pauseCta": "暫停",
+      "resetCta": "重置",
+      "skipCta": "跳過",
+      "statTodayLabel": "今日專注",
+      "statStreakLabel": "連續天數",
+      "statStreakValue": "{days} 天",
+      "statRankLabel": "本週排名"
+    },
+    "sessionInsight": {
+      "goalLabel": "今日目標 {goal} 🍅",
+      "progressCounter": "{done} / {goal} 完成",
+      "hereLabel": "在這",
+      "tips": {
+        "0": "✦ 把手機放到視線外，專注只需要 25 分鐘。",
+        "1": "✦ 每完成一顆番茄，給自己一個微小的獎勵。",
+        "2": "✦ 深呼吸三次再開始，把心思帶回此刻。",
+        "3": "✦ 想分心時，先記下念頭，回到任務上。"
+      }
+    },
+    "notes": {
+      "header": "我的筆記",
+      "defaultTitle": "今日筆記",
+      "placeholder": "寫下這次想專注的事…",
+      "toolbar": {
+        "bold": "粗體",
+        "italic": "斜體",
+        "bullet": "項目",
+        "check": "待辦",
+        "header": "標題"
+      },
+      "notSavedYet": "尚未儲存",
+      "autoSavedAgo": "自動儲存 · {seconds} 秒前",
+      "charLineCount": "{chars} 字 · {lines} 行"
+    },
+    "friendsNow": {
+      "header": "FRIENDS NOW",
+      "onlineCount": "{count} 在線",
+      "joinCta": "+1",
+      "tasks": {
+        "writing": "寫作",
+        "coding": "寫程式",
+        "reading": "閱讀",
+        "design": "設計"
+      }
+    },
+    "tasksPanel": {
+      "header": "TASKS",
+      "doneOf": "{done} / {total}",
+      "addPlaceholder": "新增任務，按 Enter…",
+      "addCta": "新增"
+    },
+    "ambientPanel": {
+      "header": "BACKGROUND",
+      "bg": {
+        "cafe": "咖啡館",
+        "rain": "雨夜",
+        "forest": "森林",
+        "space": "太空",
+        "lofi": "lofi 房",
+        "fire": "火爐"
+      }
+    },
+    "soundMixer": {
+      "header": "SOUND MIX",
+      "tracks": {
+        "music": "🎵 lofi",
+        "rain": "☂ 雨聲",
+        "cafe": "☕ 咖啡館",
+        "fire": "🔥 火爐"
+      }
+    },
+    "quickActions": {
+      "dndOn": "勿擾 開",
+      "dndOff": "勿擾 關",
+      "lockPhone": "鎖住手機",
+      "backToTown": "回到小鎮"
+    }
   }
 }
