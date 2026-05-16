@@ -1,5 +1,7 @@
 # Page 1 — login family audit (2026-05-16)
 
+**Re-verified 2026-05-16:** `git diff origin/main` shows zero changes to Page 1 source files since the original audit ran. All 12 findings below still stand verbatim.
+
 Reference: `focustwon/reference/screen-login.jsx` (459 lines, covers `signin` + `signup` only)
 Impl entries:
 - `frontend/app/[locale]/signin/page.tsx` (279 lines)
@@ -129,17 +131,17 @@ Branch base: `origin/main` (these files are untouched on the audit branch — ve
 
 | Discrepancy | Severity | Open follow-up PR? |
 | --- | --- | --- |
-| D1 `.pixel-btn.primary` modifier | high | recommended — shared CSS fix benefits Page 4 too |
-| D2 Signin CTA "Enter Town" | high | recommended — i18n key swap, 1-line change |
-| D3 Signup extra `displayName` field | high | **needs product decision** before changing |
-| D4 Signup extra `marketingOptIn` checkbox | high | **needs product decision** (compliance angle) |
-| D5 Signup extra GitHub/Apple SSO row | high | recommended — small prop addition |
-| D6 Signup confirm-password label | medium | recommended — i18n add + label swap |
-| D7 LoginScene rain RainOverlay branch | medium | recommended — pair with `DirectionSync` |
-| D8 SkylineLayers direction wiring | medium | recommended — same fix as D7 |
-| D9 Citizens i18n key rename | low | document only — not visible to users |
-| D10 Signup TOS Link wrapping | low | optional — tighten line-height |
-| D11 forgot-password / reset-password Tailwind chrome | high | recommended — restore pixel-input / pixel-btn |
-| D12 AppFooter not in reference | low | document — likely intentional |
+| D1 `.pixel-btn.primary` modifier | high | ✅ fixed in Phase A — signin/signup/splash submit buttons now use `pixel-btn primary` (modifier shipped in PR #41) |
+| D2 Signin CTA "Enter Town" | high | ✅ no fix needed — `auth.splash.signInTitle` already resolves to "ENTER TOWN" / "進入小鎮" in both locales (audit caught key name, not displayed text) |
+| D3 Signup extra `displayName` field | high | **deferred — needs product decision** |
+| D4 Signup extra `marketingOptIn` checkbox | high | **deferred — needs product decision** (compliance angle) |
+| D5 Signup extra GitHub/Apple SSO row | high | **deferred — needs product decision** |
+| D6 Signup confirm-password label | medium | ✅ fixed in Phase A — added `auth.signup.confirmPasswordLabel` + `confirmPasswordPlaceholder` keys, swapped Label |
+| D7 LoginScene rain RainOverlay branch | medium | ✅ fixed in Phase A — `LoginScene` accepts `direction` prop; `rain` mounts `<RainOverlay color="var(--accent)">` |
+| D8 SkylineLayers direction wiring | medium | ✅ fixed in Phase A — `LoginScene` forwards `direction` to `<SkylineLayers direction={direction}>` |
+| D9 Citizens i18n key rename | low | deferred — document only, not user-visible |
+| D10 Signup TOS Link wrapping | low | deferred — depends on D3/D4 outcome |
+| D11 forgot-password / reset-password Tailwind chrome | high | ✅ fixed in Phase A — both forms converted to `pixel-input` + `pixel-btn primary` + cleaner `pixel-panel` chrome |
+| D12 AppFooter not in reference | low | deferred — likely intentional production necessity |
 
 **Recommendation:** D1 + D2 + D11 are quick, high-impact, no-product-decision fixes — bundle into a single `fix(login): restore .pixel-btn primary, "Enter Town" CTA, pixel-panel chrome on forgot/reset` follow-up PR. D3 / D4 / D5 require product alignment first; flag for design+PM review. D7 / D8 can wait until a real dusk/rain theme is wired.

@@ -138,9 +138,9 @@ export default function SignUpPage() {
             {errors.password ? <ErrorLine>{errors.password}</ErrorLine> : null}
           </div>
           <div style={{ flex: 1 }}>
-            <Label>{t("passwordLabel").toUpperCase()} ✓</Label>
+            <Label>{t("confirmPasswordLabel").toUpperCase()}</Label>
             <PasswordInput
-              placeholder="••••••"
+              placeholder={t("confirmPasswordPlaceholder")}
               value={confirmPw}
               onChange={(e) => setConfirmPw(e.target.value)}
               autoComplete="new-password"
@@ -220,7 +220,7 @@ export default function SignUpPage() {
           data-testid="signup-submit"
           type="submit"
           disabled={loading || !form.termsAccepted}
-          className="pixel-btn touch:min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="pixel-btn primary touch:min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             padding: "12px 18px",
             display: "flex",

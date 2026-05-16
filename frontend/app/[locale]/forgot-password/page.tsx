@@ -44,17 +44,23 @@ export default function ForgotPasswordPage() {
   return (
     <LoginScene showHero={false}>
       <div
-        className="pixel-panel login-form-anim p-6 w-full max-w-sm relative"
-        style={{ width: 380 }}
+        className="pixel-panel login-form-anim relative"
+        style={{
+          width: 380,
+          padding: 20,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
       >
         <h1
-          className="text-center mb-3"
+          className="font-silkscreen text-center"
           style={{
-            fontSize: "var(--font-size-section-title)",
-            lineHeight: "var(--line-height-title)",
-            fontWeight: 500,
-            color: "var(--text)",
-            textShadow: "0 0 18px rgba(167,139,250,0.35)",
+            fontSize: 13,
+            letterSpacing: "0.2em",
+            color: "var(--accent-2)",
+            textShadow: "0 0 12px var(--accent-2)",
+            margin: 0,
           }}
         >
           {t("title")}
@@ -66,11 +72,14 @@ export default function ForgotPasswordPage() {
             style={{
               fontSize: "var(--font-size-body)",
               lineHeight: "var(--line-height-body)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
             }}
           >
-            <p className="mb-2">{t("successMessage")}</p>
+            <p>{t("successMessage")}</p>
             <p
-              className="text-muted mb-4"
+              className="text-muted"
               style={{
                 fontSize: "var(--font-size-note)",
                 lineHeight: 1.6,
@@ -80,17 +89,25 @@ export default function ForgotPasswordPage() {
             </p>
             <Link
               href="/signin"
-              className="block text-accent-2 hover:text-accent-1 active:text-accent-1 text-center touch:py-2"
-              style={{ fontSize: "var(--font-size-label)" }}
+              className="font-silkscreen text-center"
+              style={{
+                color: "var(--accent)",
+                textShadow: "var(--neon-glow)",
+                fontSize: 10,
+                marginTop: 6,
+              }}
             >
               {t("backToSignin")}
             </Link>
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="flex flex-col gap-3">
+          <form
+            onSubmit={onSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: 12 }}
+          >
             <p
-              className="text-muted mb-1"
               style={{
+                color: "var(--ink-mute)",
                 fontSize: "var(--font-size-label)",
                 lineHeight: "var(--line-height-body)",
               }}
@@ -103,12 +120,12 @@ export default function ForgotPasswordPage() {
               placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-[rgba(12,5,35,.9)] border border-border rounded px-3 py-2 outline-none focus:border-accent-1"
-              style={{ fontSize: "var(--font-size-body)", lineHeight: 1.4 }}
+              className="pixel-input"
               autoComplete="email"
             />
             {error ? (
               <div
+                role="alert"
                 className="text-coral"
                 style={{ fontSize: "var(--font-size-label)", lineHeight: 1.5 }}
               >
@@ -118,15 +135,27 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="font-pixel border-2 border-accent-1 text-accent-1 py-2.5 rounded hover:border-accent-2 active:border-accent-2 active:bg-accent-1/10 touch:min-h-[48px] disabled:opacity-50 tracking-widest"
-              style={{ fontSize: "var(--font-size-label)", lineHeight: 1.2 }}
+              className="pixel-btn primary touch:min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                padding: "12px 18px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                fontSize: 13,
+              }}
             >
-              {submitting ? t("loadingCta") : t("submitCta")}
+              <span>✦</span>
+              <span>{submitting ? t("loadingCta") : t("submitCta")}</span>
             </button>
             <Link
               href="/signin"
-              className="text-muted hover:text-accent-2 active:text-accent-2 text-center touch:py-2 touch:-my-2"
-              style={{ fontSize: "var(--font-size-label)" }}
+              className="font-silkscreen text-center"
+              style={{
+                color: "var(--ink-mute)",
+                fontSize: 10,
+                textDecoration: "none",
+              }}
             >
               {t("backToSigninShort")}
             </Link>

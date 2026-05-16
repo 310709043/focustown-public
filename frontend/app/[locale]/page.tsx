@@ -158,7 +158,7 @@ export default function SplashPage() {
           data-testid="signin-submit"
           type="submit"
           disabled={loading}
-          className="pixel-btn touch:min-h-[48px] disabled:opacity-60 disabled:cursor-not-allowed"
+          className="pixel-btn primary touch:min-h-[48px] disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
             padding: "12px 18px",
             display: "flex",

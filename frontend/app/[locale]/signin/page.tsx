@@ -150,7 +150,7 @@ export default function SignInPage() {
           data-testid="signin-submit"
           type="submit"
           disabled={loading}
-          className="pixel-btn touch:min-h-[48px]"
+          className="pixel-btn primary touch:min-h-[48px]"
           style={{
             padding: "12px 18px",
             display: "flex",

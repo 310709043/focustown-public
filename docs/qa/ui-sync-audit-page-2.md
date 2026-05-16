@@ -1,5 +1,7 @@
 # Page 2 — `/select-character` audit (2026-05-16)
 
+**Re-verified 2026-05-16:** `git diff origin/main` shows zero changes to Page 2 source files since the original audit ran. All 5 findings below still stand verbatim.
+
 Reference: `focustwon/reference/screen-character.jsx` (392 lines)
 Impl entry: `frontend/app/[locale]/select-character/page.tsx` (299 lines)
 Composing components: `frontend/components/select-character/{SelectCharacterScene, PreviewCard, NicknameField, AgeSlider, RegionSelect, DailyGoalRadio, TabBar, RoleGrid, AvatarCell, InterestChips, SkillChips, SectionLabel, Chip, ToggleChip, SummaryFooter}.tsx`

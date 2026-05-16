@@ -1,5 +1,7 @@
 # Page 4 — `/focus/[id]` solo audit (2026-05-16)
 
+**Re-verified 2026-05-16:** Each of D1–D20 grepped against the current code post-fix. All 20 fixes verified present in `components/focus/*` + `globals.css` + `messages/{en,zh-TW}/focus.json`. No regressions introduced; no new drift found in the components touched by the fix pass. D21–D27 remain deferred (low-severity polish).
+
 Reference: `focustwon/reference/screen-focus.jsx` (562 lines)
 Impl entry: `frontend/app/[locale]/focus/[id]/page.tsx` (solo branch → `SoloFocusScene`)
 Branch: `feat/sync-eric-page-4-focus-solo` @ uncommitted (head `fda549d` + working tree)

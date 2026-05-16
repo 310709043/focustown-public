@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { PixelWord } from "@/components/pixel/PixelWord";
+import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { StarField } from "@/components/pixel/StarField";
 import { Logo } from "@/components/scene/Logo";
@@ -16,6 +17,12 @@ import { LoginCitizens } from "./LoginCitizens";
 import { NumberRoll } from "./NumberRoll";
 import { SkylineLayers } from "./SkylineLayers";
 import { Tagline } from "./Tagline";
+
+/** Reference's three theme directions. Default `neon` is the only
+ *  direction wired today; `dusk` and `rain` ride along for future
+ *  `DirectionSync` work. Forwarded to `SkylineLayers` for palette swap
+ *  and gates the full-bleed `RainOverlay`. */
+export type LoginDirection = "neon" | "dusk" | "rain";
 
 interface LoginSceneProps {
   /** Form / modal panel rendered above the scene. */
@@ -29,6 +36,9 @@ interface LoginSceneProps {
   /** Approximate live-citizens number rendered in the top bar. The
    *  number is decorative — reference hard-codes 2847. */
   citizenCount?: number;
+  /** Theme direction — drives the skyline palette and the optional
+   *  rain overlay. Defaults to `neon` for parity with existing callers. */
+  direction?: LoginDirection;
 }
 
 /**
@@ -56,6 +66,7 @@ export function LoginScene({
   showHero = true,
   showAvatarStrip = false,
   citizenCount = 2847,
+  direction = "neon",
 }: LoginSceneProps) {
   const t = useTranslations("auth.splash");
 
@@ -72,6 +83,11 @@ export function LoginScene({
         <StarField density={0.0008} />
       </div>
       <ShootingStars />
+
+      {/* Rain — only when the theme direction is `rain`, per reference. */}
+      {direction === "rain" ? (
+        <RainOverlay color="var(--accent)" />
+      ) : null}
 
       {/* Moon (pixel) — gently floats top-right. */}
       <div
@@ -94,7 +110,7 @@ export function LoginScene({
       </div>
 
       {/* Three-layer procedural skyline. */}
-      <SkylineLayers />
+      <SkylineLayers direction={direction} />
 
       {/* Ground strip + faint top edge highlight. */}
       <div

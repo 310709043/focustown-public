@@ -1,5 +1,7 @@
 # Page 3 — `/town` audit (2026-05-16)
 
+**Re-verified 2026-05-16:** `git diff origin/main` shows zero changes to Page 3 source files since the original audit ran. All 22 findings below still stand verbatim.
+
 Reference: `focustwon/reference/screen-town.jsx` (1,884 lines)
 Impl entry: `frontend/app/[locale]/town/page.tsx` (289 lines)
 Composing components:
