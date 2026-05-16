@@ -12,7 +12,7 @@ from app.core.config import Settings, get_settings
 from app.core.events import EventBus
 from app.core.exceptions import AuthError
 from app.core.ids import IIdGenerator, UUID4Generator
-from app.domain.notifications import INotificationService
+from app.domain.notifications import IEmailSender
 from app.domain.rate_limit import IRateLimiter
 from app.domain.repositories.presence import IPresenceTracker
 from app.domain.repositories.realtime import IRealtimePublisher
@@ -22,9 +22,11 @@ from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.session import get_session_factory
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.messaging.ws_manager import WSManager
-from app.infrastructure.notifications.log_notifier import LogNotifier
+from app.infrastructure.notifications.factory import make_email_sender
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
 from app.infrastructure.rate_limit.redis_limiter import RedisRateLimiter
+from app.infrastructure.secrets.base import ISecretsProvider
+from app.infrastructure.secrets.factory import make_secrets_provider
 from app.infrastructure.storage.base import IFileStorage
 from app.infrastructure.storage.factory import make_storage
 
@@ -69,13 +71,22 @@ def get_event_bus() -> EventBus:
 EventBusDep = Annotated[EventBus, Depends(get_event_bus)]
 
 
-def get_auth_provider(settings: SettingsDep) -> AuthProvider:
+def get_auth_provider(settings: SettingsDep, db: DbDep) -> AuthProvider:
     if settings.auth_provider == "local_jwt":
+        # Local mode doesn't read users at the provider level — the db
+        # session is harmless and FastAPI's Depends graph dedupes against
+        # any router that also asks for DbDep, so no extra cost.
+        del db
         return LocalJWTProvider(settings)
     if settings.auth_provider == "cognito":
+        # CognitoProvider needs an IUserReader to map ``sub`` claims back
+        # to our internal users.id and to fetch the email for
+        # admin_set_user_password. We construct a thin SqlUserRepo over the
+        # request's session so the provider stays decoupled from SQLAlchemy.
         from app.infrastructure.auth.providers.cognito import CognitoProvider
+        from app.infrastructure.db.repositories.user_repo import SqlUserRepo
 
-        return CognitoProvider(settings)
+        return CognitoProvider(settings, users=SqlUserRepo(db))
     raise RuntimeError(f"unsupported auth_provider: {settings.auth_provider}")
 
 
@@ -126,12 +137,30 @@ async def get_current_user_id(
 CurrentUserId = Annotated[str, Depends(get_current_user_id)]
 
 
-def get_notifier() -> INotificationService:
-    """Swap point: LogNotifier (dev) → SESNotifier / SNSNotifier (prod)."""
-    return LogNotifier()
+def get_notifier(settings: SettingsDep) -> IEmailSender:
+    """Email-sender dispatch: LogNotifier (dev) → SESNotifier (prod).
+
+    Returns the narrower ``IEmailSender`` interface — the only side wired
+    this round. Push delivery (``IPushSender``) lands in a follow-up and
+    will get its own factory + Dep alias.
+    """
+    return make_email_sender(settings)
 
 
-NotifierDep = Annotated[INotificationService, Depends(get_notifier)]
+NotifierDep = Annotated[IEmailSender, Depends(get_notifier)]
+
+
+def get_secrets_provider(settings: SettingsDep) -> ISecretsProvider:
+    """Dispatch point: EnvSecretsProvider (dev/test) → AWSSecretsManagerProvider.
+
+    Most secrets enter the process via ECS task-definition env injection at
+    boot; this Dep is for the long tail (feature flags, third-party keys
+    looked up per request).
+    """
+    return make_secrets_provider(settings)
+
+
+SecretsProviderDep = Annotated[ISecretsProvider, Depends(get_secrets_provider)]
 
 
 def get_rate_limiter() -> IRateLimiter:

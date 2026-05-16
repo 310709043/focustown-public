@@ -13,6 +13,12 @@ class UserORM(Base, IdMixin, TimestampMixin):
 
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Identity sub from the external auth provider (Cognito). NULL when the
+    # user signed up via local_jwt and has no Cognito identity. UNIQUE so
+    # verify_access_token can look up internal user id by sub in O(1).
+    cognito_sub: Mapped[str | None] = mapped_column(
+        String(64), unique=True, nullable=True, index=True
+    )
     display_name: Mapped[str] = mapped_column(String(64), nullable=False)
     character_key: Mapped[str | None] = mapped_column(String(32), nullable=True)
     role_label: Mapped[str | None] = mapped_column(String(64), nullable=True)

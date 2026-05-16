@@ -98,6 +98,7 @@ def _auth_service(db, auth, ids, clock) -> AuthService:
 def _reset_service(
     db,
     notifier,
+    auth,
     clock,
     ids,
     settings,
@@ -106,6 +107,7 @@ def _reset_service(
         users=SqlUserRepo(db),
         tokens=SqlPasswordResetTokenRepo(db),
         notifier=notifier,
+        auth=auth,
         clock=clock,
         ids=ids,
         token_ttl=timedelta(hours=settings.reset_token_ttl_hours),
@@ -197,6 +199,7 @@ async def forgot_password(
     payload: ForgotPasswordRequest,
     db: DbDep,
     notifier: NotifierDep,
+    auth: AuthProviderDep,
     clock: ClockDep,
     ids: IdGenDep,
     settings: SettingsDep,
@@ -216,7 +219,7 @@ async def forgot_password(
         window_seconds=3600,
     )
 
-    service = _reset_service(db, notifier, clock, ids, settings)
+    service = _reset_service(db, notifier, auth, clock, ids, settings)
     await service.request_reset(
         email=payload.email,
         requested_ip=client_ip,
@@ -230,6 +233,7 @@ async def reset_password(
     payload: ResetPasswordRequest,
     db: DbDep,
     notifier: NotifierDep,
+    auth: AuthProviderDep,
     clock: ClockDep,
     ids: IdGenDep,
     settings: SettingsDep,
@@ -243,7 +247,7 @@ async def reset_password(
         window_seconds=3600,
     )
 
-    service = _reset_service(db, notifier, clock, ids, settings)
+    service = _reset_service(db, notifier, auth, clock, ids, settings)
     await service.reset_password(
         raw_token=payload.token,
         new_password=payload.new_password,

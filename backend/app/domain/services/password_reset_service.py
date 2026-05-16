@@ -8,7 +8,7 @@ from app.core.clock import IClock
 from app.core.exceptions import ValidationError
 from app.core.ids import IIdGenerator
 from app.core.security import hash_password, validate_password_strength
-from app.domain.notifications import INotificationService
+from app.domain.notifications import IEmailSender
 from app.domain.repositories.password_reset_token_repo import IPasswordResetTokenRepo
 from app.domain.repositories.user_repo import IUserRepo
 from app.domain.services.email_templates import (
@@ -16,6 +16,7 @@ from app.domain.services.email_templates import (
     Locale,
     render_password_reset_email,
 )
+from app.infrastructure.auth.providers.base import IAuthSessionWriter
 
 _CONTROL_CHARS = "".join(chr(c) for c in range(0x20)) + "\x7f"
 
@@ -51,7 +52,8 @@ class PasswordResetService:
         *,
         users: IUserRepo,
         tokens: IPasswordResetTokenRepo,
-        notifier: INotificationService,
+        notifier: IEmailSender,
+        auth: IAuthSessionWriter,
         clock: IClock,
         ids: IIdGenerator,
         token_ttl: timedelta = timedelta(hours=1),
@@ -60,6 +62,7 @@ class PasswordResetService:
         self._users = users
         self._tokens = tokens
         self._notifier = notifier
+        self._auth = auth
         self._clock = clock
         self._ids = ids
         self._token_ttl = token_ttl
@@ -129,5 +132,13 @@ class PasswordResetService:
         await self._users.update_password_hash(
             user_id=record.user_id,
             password_hash=hash_password(new_password),
+        )
+        # Keep the external provider in sync. Local impl no-ops; Cognito
+        # impl calls admin_set_user_password. Errors are swallowed by the
+        # provider (logged, not re-raised) so a transient AWS hiccup doesn't
+        # leak account state via a 500 — the user's NEXT sign-in retries it.
+        await self._auth.set_password(
+            user_id=record.user_id,
+            new_password=new_password,
         )
         await self._tokens.mark_consumed(record.id, at=now)

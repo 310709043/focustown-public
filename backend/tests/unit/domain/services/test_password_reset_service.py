@@ -9,6 +9,7 @@ from app.core.exceptions import ValidationError
 from app.core.security import hash_password, verify_password
 from app.domain.services.password_reset_service import PasswordResetService
 from tests.unit.fakes import (
+    FakeAuthProvider,
     FakeClock,
     FakeIdGen,
     FakeNotifier,
@@ -23,16 +24,18 @@ def _build_service(*, ttl_hours: int = 1):
     users = FakeUserRepo()
     tokens = FakeResetTokenRepo()
     notifier = FakeNotifier()
+    auth = FakeAuthProvider()
     service = PasswordResetService(
         users=users,
         tokens=tokens,
         notifier=notifier,
+        auth=auth,
         clock=clock,
         ids=ids,
         token_ttl=timedelta(hours=ttl_hours),
         reset_url_base="https://app.test/reset",
     )
-    return service, users, tokens, notifier, clock
+    return service, users, tokens, notifier, auth, clock
 
 
 async def _seed_user(
@@ -54,7 +57,7 @@ def _hash_token(raw: str) -> str:
 
 
 async def test_request_reset_creates_token_and_sends_email():
-    service, users, tokens, notifier, _ = _build_service()
+    service, users, tokens, notifier, _auth, _ = _build_service()
     await _seed_user(users)
 
     await service.request_reset(email="alice@example.com", requested_ip="1.2.3.4")
@@ -72,7 +75,7 @@ async def test_request_reset_creates_token_and_sends_email():
 
 
 async def test_request_reset_silent_on_unknown_email():
-    service, users, tokens, notifier, _ = _build_service()
+    service, users, tokens, notifier, _auth, _ = _build_service()
     await _seed_user(users)
 
     await service.request_reset(email="nobody@example.com", requested_ip=None)
@@ -82,7 +85,7 @@ async def test_request_reset_silent_on_unknown_email():
 
 
 async def test_request_reset_invalidates_previous_active_tokens():
-    service, users, tokens, notifier, _ = _build_service()
+    service, users, tokens, notifier, _auth, _ = _build_service()
     await _seed_user(users)
 
     await service.request_reset(email="alice@example.com", requested_ip=None)
@@ -95,7 +98,7 @@ async def test_request_reset_invalidates_previous_active_tokens():
 
 
 async def test_reset_password_succeeds_with_valid_token():
-    service, users, tokens, notifier, _ = _build_service()
+    service, users, tokens, notifier, _auth, _ = _build_service()
     await _seed_user(users, password="Hunter2-original")
 
     await service.request_reset(email="alice@example.com", requested_ip=None)
@@ -110,7 +113,7 @@ async def test_reset_password_succeeds_with_valid_token():
 
 
 async def test_reset_password_rejects_invalid_token():
-    service, users, _, _, _ = _build_service()
+    service, users, _, _, _auth, _ = _build_service()
     await _seed_user(users)
 
     with pytest.raises(ValidationError):
@@ -120,7 +123,7 @@ async def test_reset_password_rejects_invalid_token():
 
 
 async def test_reset_password_rejects_expired_token():
-    service, users, tokens, notifier, clock = _build_service(ttl_hours=1)
+    service, users, tokens, notifier, _auth, clock = _build_service(ttl_hours=1)
     await _seed_user(users)
     await service.request_reset(email="alice@example.com", requested_ip=None)
     raw_token = notifier.emails[0]["body"].split("token=", 1)[1].split()[0]
@@ -132,7 +135,7 @@ async def test_reset_password_rejects_expired_token():
 
 
 async def test_reset_password_rejects_already_consumed_token():
-    service, users, tokens, notifier, _ = _build_service()
+    service, users, tokens, notifier, _auth, _ = _build_service()
     await _seed_user(users)
     await service.request_reset(email="alice@example.com", requested_ip=None)
     raw_token = notifier.emails[0]["body"].split("token=", 1)[1].split()[0]
@@ -144,7 +147,7 @@ async def test_reset_password_rejects_already_consumed_token():
 
 
 async def test_reset_password_validates_strength():
-    service, users, tokens, notifier, _ = _build_service()
+    service, users, tokens, notifier, _auth, _ = _build_service()
     await _seed_user(users)
     await service.request_reset(email="alice@example.com", requested_ip=None)
     raw_token = notifier.emails[0]["body"].split("token=", 1)[1].split()[0]
@@ -157,7 +160,7 @@ async def test_reset_password_validates_strength():
 
 
 async def test_token_hash_stored_not_raw():
-    service, users, tokens, notifier, _ = _build_service()
+    service, users, tokens, notifier, _auth, _ = _build_service()
     await _seed_user(users)
     await service.request_reset(email="alice@example.com", requested_ip=None)
 

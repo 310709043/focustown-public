@@ -38,7 +38,24 @@ class Settings(BaseSettings):
     aws_region: str = "ap-northeast-1"
     cognito_user_pool_id: str = ""
     cognito_client_id: str = ""
+    cognito_client_secret: str = ""
+    cognito_endpoint_url: str = ""
+    cognito_jwks_ttl_seconds: int = 3600
     s3_bucket: str = ""
+
+    # Notification dispatch. "log" writes to structured logs (dev / test);
+    # "ses" sends real email via AWS SES v2. ses_from_email must be set
+    # whenever notifier_backend=ses in production.
+    notifier_backend: Literal["log", "ses"] = "log"
+    ses_from_email: str = ""
+    ses_endpoint_url: str = ""
+
+    # Secrets dispatch. "env" reads from process env vars (current behaviour);
+    # "aws" pulls from AWS Secrets Manager with an in-memory TTL cache so we
+    # don't hit the API on every request.
+    secrets_backend: Literal["env", "aws"] = "env"
+    secrets_cache_ttl_seconds: int = 300
+    secrets_endpoint_url: str = ""
 
     reset_token_ttl_hours: int = 1
     reset_url_base: str = "http://localhost:3000/reset-password"
@@ -102,6 +119,18 @@ class Settings(BaseSettings):
         env = info.data.get("app_env", "development")
         if env == "production" and parsed.scheme != "https":
             raise ValueError("reset_url_base must use https in production")
+        return v
+
+    @field_validator("ses_from_email")
+    @classmethod
+    def _validate_ses_from_email(cls, v: str, info: ValidationInfo) -> str:
+        # Empty is fine unless we're going to actually dispatch via SES in
+        # production. Catching this at boot prevents the password-reset path
+        # from silently dropping mail because boto3 rejects an empty Source.
+        backend = info.data.get("notifier_backend", "log")
+        env = info.data.get("app_env", "development")
+        if backend == "ses" and env == "production" and not v:
+            raise ValueError("ses_from_email is required when notifier_backend=ses in production")
         return v
 
 

@@ -63,6 +63,7 @@ class SqlUserRepo(IUserRepo):
         terms_version: str | None = None,
         marketing_opt_in: bool = False,
         marketing_opt_in_at: datetime | None = None,
+        cognito_sub: str | None = None,
     ) -> User:
         existing = await self.get_credentials_by_email(email)
         if existing is not None:
@@ -77,10 +78,22 @@ class SqlUserRepo(IUserRepo):
             terms_version=terms_version,
             marketing_opt_in=marketing_opt_in,
             marketing_opt_in_at=marketing_opt_in_at,
+            cognito_sub=cognito_sub,
         )
         self._s.add(row)
         await self._s.flush()
         return _to_domain(row)
+
+    async def get_id_by_cognito_sub(self, cognito_sub: str) -> str | None:
+        stmt = select(UserORM.id).where(UserORM.cognito_sub == cognito_sub)
+        return (await self._s.execute(stmt)).scalar_one_or_none()
+
+    async def set_cognito_sub(self, *, user_id: str, cognito_sub: str) -> None:
+        row = await self._s.get(UserORM, user_id)
+        if row is None:
+            raise NotFoundError("user_not_found")
+        row.cognito_sub = cognito_sub
+        await self._s.flush()
 
     async def update_profile(
         self,

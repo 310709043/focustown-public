@@ -64,7 +64,12 @@ from app.domain.services.strategies.compatibility import (
     CompatibilityScore,
     ICompatibilityStrategy,
 )
-from app.infrastructure.auth.providers.base import AuthProvider, Principal, TokenPair
+from app.infrastructure.auth.providers.base import (
+    AuthCredentials,
+    AuthProvider,
+    Principal,
+    TokenPair,
+)
 
 
 @dataclass(slots=True)
@@ -102,6 +107,7 @@ class FakeNotifier(INotificationService):
 class FakeUserRepo(IUserRepo):
     users: dict[str, User] = field(default_factory=dict)
     hashes: dict[str, str] = field(default_factory=dict)
+    cognito_subs: dict[str, str] = field(default_factory=dict)  # user_id → sub
     updates: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
@@ -138,6 +144,7 @@ class FakeUserRepo(IUserRepo):
         terms_version: str | None = None,
         marketing_opt_in: bool = False,
         marketing_opt_in_at: datetime | None = None,
+        cognito_sub: str | None = None,
     ) -> User:
         now = datetime.now(UTC)
         user = User(
@@ -158,7 +165,20 @@ class FakeUserRepo(IUserRepo):
         )
         self.users[user_id] = user
         self.hashes[user_id] = password_hash
+        if cognito_sub:
+            self.cognito_subs[user_id] = cognito_sub
         return user
+
+    async def get_id_by_cognito_sub(self, cognito_sub: str) -> str | None:
+        for uid, sub in self.cognito_subs.items():
+            if sub == cognito_sub:
+                return uid
+        return None
+
+    async def set_cognito_sub(self, *, user_id: str, cognito_sub: str) -> None:
+        if user_id not in self.users:
+            raise NotFoundError("user_not_found")
+        self.cognito_subs[user_id] = cognito_sub
 
     async def update_profile(
         self,
@@ -662,8 +682,22 @@ class FakeAuthProvider(AuthProvider):
     in-test if you need them."""
 
     issued: list[str] = field(default_factory=list)
+    signed_up: list[str] = field(default_factory=list)
+    password_updates: list[tuple[str, str]] = field(default_factory=list)
+    next_external_id: str = ""
 
-    async def issue_tokens(self, *, user_id: str) -> TokenPair:
+    async def sign_up_user(self, *, email: str, password: str) -> str:
+        del password
+        self.signed_up.append(email)
+        return self.next_external_id
+
+    async def issue_tokens(
+        self,
+        *,
+        user_id: str,
+        credentials: AuthCredentials | None = None,
+    ) -> TokenPair:
+        del credentials
         self.issued.append(user_id)
         return TokenPair(
             access_token=f"at:{user_id}", refresh_token=f"rt:{user_id}"
@@ -674,6 +708,9 @@ class FakeAuthProvider(AuthProvider):
 
     async def verify_access_token(self, token: str) -> Principal:
         raise NotImplementedError
+
+    async def set_password(self, *, user_id: str, new_password: str) -> None:
+        self.password_updates.append((user_id, new_password))
 
 
 @dataclass

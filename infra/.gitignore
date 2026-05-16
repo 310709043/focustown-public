@@ -1,0 +1,16 @@
+# CDK build artifacts and dependencies — never commit these.
+node_modules/
+cdk.out/
+*.d.ts
+*.js
+!jest.config.js
+*.tsbuildinfo
+
+# Coverage and test output
+coverage/
+.nyc_output/
+
+# OS / editor cruft
+.DS_Store
+.vscode/
+.idea/

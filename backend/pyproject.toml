@@ -34,6 +34,9 @@ dev = [
   "mypy>=1.13",
   "testcontainers[postgres,redis]>=4.8",
   "anyio>=4.6",
+  # moto stubs out boto3 calls so unit tests for the Cognito/SES/Secrets
+  # adapters can run without an AWS account or LocalStack container.
+  "moto>=5",
 ]
 
 [tool.setuptools.packages.find]
@@ -67,10 +70,8 @@ addopts = "--cov=app --cov-report=term-missing"
 branch = true
 source = ["app"]
 omit = [
-  # AWS stubs — raise NotImplementedError until adapters are real
-  "app/infrastructure/auth/providers/cognito.py",
-  # Logging-only notifier; no behaviour
-  "app/infrastructure/notifications/log_notifier.py",
+  # Push-notification stub — body lands in a follow-up round.
+  "app/infrastructure/notifications/sns_notifier.py",
   # Alembic migrations
   "alembic/*",
 ]

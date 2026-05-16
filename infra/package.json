@@ -1,0 +1,30 @@
+{
+  "name": "focustown-infra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS CDK (TypeScript) stacks for Focus Town — dev and prod environments in ap-northeast-1.",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "synth:dev": "cdk synth -c env=dev",
+    "synth:prod": "cdk synth -c env=prod",
+    "diff:dev": "cdk diff -c env=dev",
+    "diff:prod": "cdk diff -c env=prod",
+    "deploy:dev": "cdk deploy --all -c env=dev --require-approval broadening",
+    "deploy:prod": "cdk deploy --all -c env=prod --require-approval any-change",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.10",
+    "aws-cdk": "^2.165.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.165.0",
+    "constructs": "^10.4.2"
+  }
+}
