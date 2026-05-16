@@ -132,12 +132,12 @@
     "billboardEmptyLine2": "第一個專注的就是您 ✦"
   },
   "awards": {
-    "title": "✦ 大賞區 · HALL OF FAME",
+    "title": "大賞區 · HALL OF FAME",
     "closeCta": "✕ 關閉",
-    "leadersHeading": "🏆 今日番茄鐘排行",
+    "leadersHeading": "今日番茄鐘排行",
     "leadersEmpty": "尚無資料",
     "leaderCountSuffix": "🍅",
-    "achievementsHeading": "🎖️ 成就徽章",
+    "achievementsHeading": "成就徽章",
     "achievementsEmpty": "尚未建立任何成就（v2 會由 seeder 寫入）"
   },
   "room": {

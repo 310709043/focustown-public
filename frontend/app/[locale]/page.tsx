@@ -10,6 +10,7 @@ import { PasswordInput } from "@/components/forms/PasswordInput";
 import { LoginScene } from "@/components/login/LoginScene";
 import { CornerDeco } from "@/components/login/CornerDeco";
 import { SsoButtons } from "@/components/login/SsoButtons";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 /**
  * Landing splash — same scene + sign-in form as `/signin`, but with the
@@ -197,23 +198,6 @@ export default function SplashPage() {
         </div>
       </form>
     </LoginScene>
-  );
-}
-
-function BlinkDot({ color }: { color: string }) {
-  return (
-    <span
-      aria-hidden
-      className="animate-blinkSoft"
-      style={{
-        display: "inline-block",
-        width: 6,
-        height: 6,
-        background: color,
-        boxShadow: `0 0 6px ${color}`,
-        verticalAlign: "middle",
-      }}
-    />
   );
 }
 

@@ -46,15 +46,16 @@ The diverged half was built before the reference port and was never retrofitted.
 - **C6 Fonts**: ✅ `font-silkscreen` everywhere.
 - **Suggested fix:** same one-line fix as Page 1 D1 (apply `pixel-btn primary` to submit button). Otherwise faithful.
 
-### R2 — `/awards` *(diverges — verdict ⚠️)*
+### R2 — `/awards` *(✅ resolved in Phase F1 — `fix/sync-page-6-awards`)*
 
 - **Reference equivalent:** `screen-town.jsx`'s `AchievementsModal` (in-page overlay, not a full route).
-- **C1 Container**: ⚠️ — 3 `pixel-panel` instances for the sections, but the outer chrome (header + close button) uses raw Tailwind (`bg-[rgba(3,1,17,.96)] border-b border-border h-[46px]`).
-- **C2 Buttons**: ❌ close button is `border border-border text-muted font-japan text-[10px] px-3 py-1.5 ... rounded hover:border-coral hover:text-coral` — Tailwind chrome with rounded corners, no `pixel-btn` shadow/glow.
-- **C4 Colors**: ⚠️ mixes `var(--amber)` / `var(--coral)` (defined CSS vars) with raw Tailwind classes (`text-muted`, `border-border`). The CSS vars are correct; the Tailwind classes resolve through `tailwind.config.ts` aliases but the styling pattern is inconsistent.
-- **C5 Glyphs**: ❌ uses `font-pixel text-[9px] tracking-widest` headers with no blink-dot. Reference uses `● HEADING` pattern.
-- **C6 Fonts**: ❌ `font-pixel` and `font-japan` instead of `font-silkscreen` + `font-noto-sans-tc`.
-- **Suggested fix:** convert header + close button to a `pixel-btn`; replace `font-pixel text-[9px]` headers with the established `<BlinkDot> + uppercase silkscreen 10` pattern; use `var(--ink-mute)` and `var(--accent)` instead of `text-muted` / `text-amber` literals.
+- **C1 Container**: ✅ — outer chrome now uses an `<AwardsTopBar>` shell with `pixel-panel` sections inside. No raw Tailwind chrome.
+- **C2 Buttons**: ✅ close button is `pixel-btn` with the standard inset shadow + neon glow.
+- **C4 Colors**: ✅ all colors come from CSS vars (`var(--amber)`, `var(--teal)`, `var(--ink-mute)`, `var(--panel-stroke)`). No Tailwind alias classes.
+- **C5 Glyphs**: ✅ section headers use `<BlinkDot> + uppercase silkscreen` pattern; ✦ / 🏆 / 🎖️ prefixes dropped from i18n strings.
+- **C6 Fonts**: ✅ `font-silkscreen` throughout (sections + top bar). Tailwind picks up `font-noto-sans-tc` for CJK from the global stack.
+- **Deferred (out of audit scope):** reference's pair-wall + week-stars sections (require new backend endpoints `/api/v1/pair-wall`, `/api/v1/week-stars`). Current scope retains the existing 2 sections (leaderboard + achievements).
+- **Side effect:** `<BlinkDot>` extracted to `components/pixel/BlinkDot.tsx`; 5 prior inline duplicates (`LoginScene`, splash, signin, signup, `SkyWindow`) converted to import the shared primitive.
 
 ### R3 — `/shop` *(diverges — verdict ⚠️)*
 
@@ -99,7 +100,7 @@ The diverged half was built before the reference port and was never retrofitted.
 | Route | Severity (style-debt impact) | Effort | Open follow-up PR? |
 | --- | --- | --- | --- |
 | R1 `/` splash primary CTA | low | 1-line fix | ✅ fixed in Phase A (bundled with Page 1 D1) |
-| R2 `/awards` chrome | medium | 1 day | pending — Phase F |
+| R2 `/awards` chrome | medium | 1 day | ✅ shipped in Phase F1 (`fix/sync-page-6-awards`) — chrome converted to `pixel-panel` + `pixel-btn` + `<BlinkDot>` + `font-silkscreen`; pair-wall + week-stars sections deferred (need backend endpoints) |
 | R3 `/shop` chrome | medium | 1.5 days | pending — Phase F |
 | R4 `/legal/*` | low | needs decision | **needs product call** — pixel-UI or book-style? |
 | R5 `/forgot-password` | medium (Page 1 D11) | 2 hours | ✅ fixed in Phase A (bundled with Page 1 D11) |

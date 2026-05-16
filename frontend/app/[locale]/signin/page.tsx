@@ -10,6 +10,7 @@ import { AppFooter } from "@/components/AppFooter";
 import { LoginScene } from "@/components/login/LoginScene";
 import { CornerDeco } from "@/components/login/CornerDeco";
 import { SsoButtons } from "@/components/login/SsoButtons";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -183,23 +184,6 @@ export default function SignInPage() {
       </form>
       <AppFooter />
     </LoginScene>
-  );
-}
-
-function BlinkDot({ color }: { color: string }) {
-  return (
-    <span
-      aria-hidden
-      className="animate-blinkSoft"
-      style={{
-        display: "inline-block",
-        width: 6,
-        height: 6,
-        background: color,
-        boxShadow: `0 0 6px ${color}`,
-        verticalAlign: "middle",
-      }}
-    />
   );
 }
 

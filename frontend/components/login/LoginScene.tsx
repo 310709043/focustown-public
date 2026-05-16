@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { PixelWord } from "@/components/pixel/PixelWord";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
@@ -149,7 +150,7 @@ export function LoginScene({
       >
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <span style={{ color: "var(--accent)" }}>
-            <BlinkDot color="var(--accent)" /> FT
+            <BlinkDot color="var(--accent)" marginRight={4} /> FT
           </span>
           <span>v1.2.0</span>
           <span>·</span>
@@ -207,21 +208,3 @@ export function LoginScene({
   );
 }
 
-/** Small LED dot — slow "blink-soft" pulse used in headers. */
-function BlinkDot({ color }: { color: string }) {
-  return (
-    <span
-      aria-hidden
-      className="animate-blinkSoft"
-      style={{
-        display: "inline-block",
-        width: 6,
-        height: 6,
-        background: color,
-        boxShadow: `0 0 6px ${color}`,
-        verticalAlign: "middle",
-        marginRight: 4,
-      }}
-    />
-  );
-}

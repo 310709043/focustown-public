@@ -132,12 +132,12 @@
     "billboardEmptyLine2": "Be the first to focus ✦"
   },
   "awards": {
-    "title": "✦ Awards · HALL OF FAME",
-    "closeCta": "✕ Close",
-    "leadersHeading": "🏆 Today's Pomodoro leaders",
+    "title": "AWARDS · HALL OF FAME",
+    "closeCta": "✕ CLOSE",
+    "leadersHeading": "TODAY'S POMODORO LEADERS",
     "leadersEmpty": "No entries yet",
     "leaderCountSuffix": "🍅",
-    "achievementsHeading": "🎖️ Achievement badges",
+    "achievementsHeading": "ACHIEVEMENT BADGES",
     "achievementsEmpty": "No achievements yet (v2 seeder pending)"
   },
   "room": {

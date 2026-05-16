@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { leaderboardApi } from "@/lib/api/endpoints";
 import type { LeaderboardEntry } from "@/lib/api/types.gen";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { AVATARS, type AvatarDef } from "@/lib/pixel/sprites/avatars";
 import { TOMATO } from "@/lib/pixel/sprites/props";
@@ -74,7 +75,7 @@ export function SkyWindow() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <BlinkDot color="var(--accent-2)" />
+            <BlinkDot color="var(--accent-2)" size={8} />
             <span
               className="font-silkscreen"
               style={{
@@ -501,22 +502,6 @@ function TabPill({
     >
       {children}
     </button>
-  );
-}
-
-function BlinkDot({ color }: { color: string }) {
-  return (
-    <span
-      aria-hidden
-      className="animate-blinkSoft"
-      style={{
-        display: "inline-block",
-        width: 8,
-        height: 8,
-        background: color,
-        boxShadow: `0 0 6px ${color}`,
-      }}
-    />
   );
 }
 

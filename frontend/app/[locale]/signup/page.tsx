@@ -12,6 +12,7 @@ import { LEGAL } from "@/lib/config/legal";
 import { LoginScene } from "@/components/login/LoginScene";
 import { CornerDeco } from "@/components/login/CornerDeco";
 import { SsoButtons } from "@/components/login/SsoButtons";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 type FormErrors = Partial<Record<keyof SignUpInput, string>>;
 
@@ -246,23 +247,6 @@ export default function SignUpPage() {
       </form>
       <AppFooter />
     </LoginScene>
-  );
-}
-
-function BlinkDot({ color }: { color: string }) {
-  return (
-    <span
-      aria-hidden
-      className="animate-blinkSoft"
-      style={{
-        display: "inline-block",
-        width: 6,
-        height: 6,
-        background: color,
-        boxShadow: `0 0 6px ${color}`,
-        verticalAlign: "middle",
-      }}
-    />
   );
 }
 
