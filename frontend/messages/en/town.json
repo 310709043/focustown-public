@@ -49,6 +49,7 @@
       "playAria": "Play",
       "pauseAria": "Pause",
       "nextAria": "Next track",
+      "unlockHint": "Tap to play",
       "genres": {
         "lofi": "lofi",
         "classical": "classical",

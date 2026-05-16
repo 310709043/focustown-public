@@ -3,37 +3,24 @@
 /**
  * Personal radio — per-user, server-randomized local playlist.
  *
- * Calls `GET /api/v1/playback/playlist?context=…` once, then plays
- * through the returned tracks locally via a hidden `<audio>` element.
- * There is **no** cross-user sync: two users in the same room
- * deliberately hear different songs in different orders. The component
- * is therefore SRP-pure — it knows nothing about WebSockets,
- * presence, or room ownership.
+ * SRP-pure UI shell. All playlist + playback state lives in the shared
+ * `useRadioPlaylist` hook (`lib/hooks/useRadioPlaylist.ts`); this
+ * component owns the visual chrome (panel, EQ bars, transport buttons,
+ * volume slider) plus the hidden `<audio>` element the hook binds to.
  *
- * Track URLs reuse the existing unauthenticated stream endpoint
- * (`tracksApi.streamUrl`); the playlist endpoint only returns ids +
- * metadata so the wire payload stays small.
- *
- * Autoplay: browsers block `play()` without a prior user gesture, so
- * the panel shows a "🔊 點擊聆聽" pill until the user clicks once
- * per session.
+ * Cross-route reuse:
+ *   • `/focus/[id]` — `context="focus"`
+ *   • `/town/room/[id]` — `context="room"`
+ *   • `/town` (deprecated) — now wrapped by `<MusicPlayer>` which uses
+ *     the same hook against `context="city"`
  */
 
 import { clsx } from "clsx";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 
-import {
-  personalRadioApi,
-  tracksApi,
-  type PersonalPlaylistContext,
-  type PersonalPlaylistTrack,
-} from "@/lib/api/endpoints";
-import {
-  clearAudioUnlocked,
-  isAudioUnlocked,
-  markAudioUnlocked,
-} from "@/lib/audio/unlock";
+import type { PersonalPlaylistContext } from "@/lib/api/endpoints";
+import { useRadioPlaylist } from "@/lib/hooks/useRadioPlaylist";
 
 interface Props {
   context: PersonalPlaylistContext;
@@ -46,91 +33,28 @@ interface Props {
 
 export function PersonalRadio({ context, contextId, label, className }: Props) {
   const t = useTranslations("town.personalRadio");
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [tracks, setTracks] = useState<PersonalPlaylistTrack[]>([]);
-  const [index, setIndex] = useState(0);
-  // If the splash signin click already set the unlock flag we start
-  // playing as soon as the playlist arrives — no second gesture required.
-  const [audioUnlocked, setAudioUnlocked] = useState(isAudioUnlocked);
-  const [isPlaying, setIsPlaying] = useState(() => isAudioUnlocked());
-  const [volume, setVolume] = useState(0.65);
-
-  // Fetch the personalized playlist once on mount / context change.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await personalRadioApi.getPlaylist({
-          context,
-          contextId: contextId ?? null,
-        });
-        if (!cancelled) {
-          setTracks(res.tracks);
-          setIndex(0);
-        }
-      } catch {
-        if (!cancelled) {
-          setTracks([]);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [context, contextId]);
-
-  const currentTrack = tracks[index] ?? null;
-
-  // Bind audio element to current track + play state. When the track
-  // changes we let the element load fresh and (if unlocked) auto-play.
-  useEffect(() => {
-    const el = audioRef.current;
-    if (!el) return;
-    if (!currentTrack) {
-      el.pause();
-      el.removeAttribute("src");
-      return;
-    }
-    const desired = tracksApi.streamUrl(currentTrack.id);
-    if (el.src !== desired) {
-      el.src = desired;
-      el.load();
-    }
-    el.volume = volume;
-    if (isPlaying && audioUnlocked) {
-      void el.play().catch((err) => {
-        if (err?.name === "NotAllowedError") {
-          setAudioUnlocked(false);
-          clearAudioUnlocked();
-        }
-      });
-    } else {
-      el.pause();
-    }
-  }, [currentTrack, isPlaying, audioUnlocked, volume]);
-
-  const advance = () => {
-    if (tracks.length === 0) return;
-    setIndex((i) => (i + 1) % tracks.length);
-    setIsPlaying(true);
-  };
-
-  const previous = () => {
-    if (tracks.length === 0) return;
-    setIndex((i) => (i - 1 + tracks.length) % tracks.length);
-    setIsPlaying(true);
-  };
-
-  const unlockAndPlay = () => {
-    setAudioUnlocked(true);
-    markAudioUnlocked();
-    setIsPlaying(true);
-  };
+  const {
+    tracks,
+    index,
+    currentTrack,
+    audioUnlocked,
+    isPlaying,
+    volume,
+    audioRef,
+    toggle,
+    unlock,
+    next,
+    prev,
+    setVolume,
+    onEnded,
+  } = useRadioPlaylist({ context, contextId });
 
   const headerLabel = useMemo(
     () => label ?? (context === "city" ? t("headerCity") : t("headerPersonal")),
     [label, context, t],
   );
+
+  const disabled = tracks.length === 0;
 
   return (
     <div
@@ -155,12 +79,12 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
       <div className="flex items-center gap-1">
         <button
           type="button"
-          onClick={previous}
-          disabled={tracks.length === 0}
+          onClick={prev}
+          disabled={disabled}
           aria-label={t("prevAria")}
           className={clsx(
             "w-[22px] h-[22px] border rounded-sm",
-            tracks.length === 0
+            disabled
               ? "border-border text-muted opacity-40 cursor-not-allowed"
               : "border-border text-muted hover:border-accent-1 hover:text-accent-1",
           )}
@@ -169,18 +93,12 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
         </button>
         <button
           type="button"
-          onClick={() => {
-            if (!audioUnlocked) {
-              unlockAndPlay();
-              return;
-            }
-            setIsPlaying((p) => !p);
-          }}
-          disabled={tracks.length === 0}
+          onClick={toggle}
+          disabled={disabled}
           aria-label={isPlaying ? t("pauseAria") : t("playAria")}
           className={clsx(
             "w-[22px] h-[22px] border rounded-sm",
-            tracks.length === 0
+            disabled
               ? "border-border text-muted opacity-40 cursor-not-allowed"
               : "border-accent-1 text-accent-1",
           )}
@@ -189,12 +107,12 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
         </button>
         <button
           type="button"
-          onClick={advance}
-          disabled={tracks.length === 0}
+          onClick={next}
+          disabled={disabled}
           aria-label={t("nextAria")}
           className={clsx(
             "w-[22px] h-[22px] border rounded-sm",
-            tracks.length === 0
+            disabled
               ? "border-border text-muted opacity-40 cursor-not-allowed"
               : "border-border text-muted hover:border-accent-1 hover:text-accent-1",
           )}
@@ -215,7 +133,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
       {!audioUnlocked && tracks.length > 0 ? (
         <button
           type="button"
-          onClick={unlockAndPlay}
+          onClick={unlock}
           className="text-[10px] mt-1 px-2 py-1 rounded border border-amber text-amber hover:bg-amber/10"
         >
           🔊 點擊聆聽
@@ -225,7 +143,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
       <audio
         ref={audioRef}
         preload="none"
-        onEnded={advance}
+        onEnded={onEnded}
         style={{ display: "none" }}
         aria-hidden
       />

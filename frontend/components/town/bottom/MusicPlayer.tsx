@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { NOTE } from "@/lib/pixel/sprites/props";
-import { personalRadioApi, type PersonalPlaylistTrack } from "@/lib/api/endpoints";
+import { useRadioPlaylist } from "@/lib/hooks/useRadioPlaylist";
 
 import { EQViz } from "./EQViz";
 
@@ -13,48 +13,44 @@ type GenreKey = "lofi" | "classical" | "rain" | "cafe" | "forest";
 const GENRES: ReadonlyArray<GenreKey> = ["lofi", "classical", "rain", "cafe", "forest"];
 
 /**
- * Bottom-HUD right cluster — visual music UI. UI-only this PR per the
- * Phase C1 plan's risk mitigation: fetches the personal radio playlist
- * for the current track display, but DOES NOT mount an `<audio>` element
- * (audio playback follow-up will extract a `useCityRadio()` hook shared
- * with `<PersonalRadio>` so the two can drive a single audio source).
+ * Bottom-HUD right cluster — reference-aligned music UI for /town.
  *
- * SRP — visual + playlist display, nothing else.
- * DIP — `personalRadioApi.getPlaylist` (existing endpoint wrapper).
+ * Owns the city radio's `<audio>` element via the shared
+ * `useRadioPlaylist` hook (also consumed by `<PersonalRadio>` on
+ * /focus/[id] and /town/room/[id]). DIP: depends on the hook, not on
+ * direct `personalRadioApi` / `<audio>` plumbing.
+ *
+ * Reference: screen-town.jsx:L1234-L1283.
  */
 export function MusicPlayer() {
   const t = useTranslations("town.bottom.musicPlayer");
-  const [tracks, setTracks] = useState<PersonalPlaylistTrack[]>([]);
-  const [idx, setIdx] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [pos, setPos] = useState(60);
+  const {
+    tracks,
+    index,
+    currentTrack,
+    isPlaying,
+    audioUnlocked,
+    audioRef,
+    toggle,
+    unlock,
+    next,
+    prev,
+    onEnded,
+  } = useRadioPlaylist({ context: "city", contextId: "city" });
   const [activeGenre, setActiveGenre] = useState<GenreKey>("lofi");
+  const [pos, setPos] = useState(60);
 
+  // Decorative progress bar — drifts visually while playing. The track
+  // currentTime would be more accurate but reading it on every tick from
+  // the audio element is wasteful for a sub-second-precision visual.
   useEffect(() => {
-    let cancelled = false;
-    personalRadioApi
-      .getPlaylist({ context: "city", contextId: "city" })
-      .then((res) => {
-        if (!cancelled) setTracks(res.tracks);
-      })
-      .catch(() => {
-        /* tolerate transient failures — display falls back to seed copy */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Decorative progress animation; not synced to real audio yet.
-  useEffect(() => {
-    if (!playing) return;
+    if (!isPlaying) return;
     const id = window.setInterval(() => setPos((p) => (p + 0.3) % 100), 300);
     return () => window.clearInterval(id);
-  }, [playing]);
+  }, [isPlaying]);
 
-  const current = tracks[idx] ?? null;
-  const totalSeconds = (current?.duration_ms ?? 90_000) / 1000;
-  const elapsed = (pos / 100) * totalSeconds;
+  const total = (currentTrack?.duration_ms ?? 90_000) / 1000;
+  const elapsed = (pos / 100) * total;
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(Math.floor(elapsed) % 60).padStart(2, "0");
 
@@ -79,21 +75,18 @@ export function MusicPlayer() {
           <PixelSprite sprite={NOTE.sprite} palette={NOTE.palette} scale={1.4} />
           <span>{t("liveLabel")}</span>
         </div>
-        <EQViz playing={playing} />
+        <EQViz playing={isPlaying} />
       </div>
 
-      <div
-        className="font-silkscreen"
-        style={{ fontSize: 12, color: "var(--ink)" }}
-      >
-        {current ? current.title : t("trackTitleFallback")}
+      <div className="font-silkscreen" style={{ fontSize: 12, color: "var(--ink)" }}>
+        {currentTrack ? currentTrack.title : t("trackTitleFallback")}
       </div>
       <div
         className="font-silkscreen"
         style={{ fontSize: 9, color: "var(--ink-mute)", letterSpacing: "0.1em" }}
       >
         {t("trackSubLine", {
-          index: tracks.length > 0 ? idx + 1 : 1,
+          index: tracks.length > 0 ? index + 1 : 1,
           total: tracks.length > 0 ? tracks.length : 5,
         })}
       </div>
@@ -105,21 +98,19 @@ export function MusicPlayer() {
           data-testid="music-prev"
           className="pixel-btn"
           style={{ padding: "4px 6px", fontSize: 10 }}
-          onClick={() =>
-            setIdx((i) => (tracks.length > 0 ? (i - 1 + tracks.length) % tracks.length : 0))
-          }
+          onClick={prev}
         >
           ◀◀
         </button>
         <button
           type="button"
-          aria-label={playing ? t("pauseAria") : t("playAria")}
+          aria-label={isPlaying ? t("pauseAria") : t("playAria")}
           data-testid="music-toggle"
           className="pixel-btn primary"
           style={{ padding: "4px 8px", fontSize: 10 }}
-          onClick={() => setPlaying((p) => !p)}
+          onClick={toggle}
         >
-          {playing ? "⏸" : "▶"}
+          {isPlaying ? "⏸" : "▶"}
         </button>
         <button
           type="button"
@@ -127,7 +118,7 @@ export function MusicPlayer() {
           data-testid="music-next"
           className="pixel-btn"
           style={{ padding: "4px 6px", fontSize: 10 }}
-          onClick={() => setIdx((i) => (tracks.length > 0 ? (i + 1) % tracks.length : 0))}
+          onClick={next}
         >
           ▶▶
         </button>
@@ -157,6 +148,26 @@ export function MusicPlayer() {
         </span>
       </div>
 
+      {!audioUnlocked && tracks.length > 0 ? (
+        <button
+          type="button"
+          onClick={unlock}
+          className="font-silkscreen"
+          style={{
+            alignSelf: "center",
+            fontSize: 9,
+            padding: "2px 8px",
+            border: "1px solid var(--accent-4)",
+            color: "var(--accent-4)",
+            background: "transparent",
+            cursor: "pointer",
+            letterSpacing: "0.1em",
+          }}
+        >
+          🔊 {t("unlockHint")}
+        </button>
+      ) : null}
+
       <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
         {GENRES.map((g) => {
           const active = activeGenre === g;
@@ -182,6 +193,14 @@ export function MusicPlayer() {
           );
         })}
       </div>
+
+      <audio
+        ref={audioRef}
+        preload="none"
+        onEnded={onEnded}
+        style={{ display: "none" }}
+        aria-hidden
+      />
     </div>
   );
 }

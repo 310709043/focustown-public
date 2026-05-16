@@ -49,6 +49,7 @@
       "playAria": "播放",
       "pauseAria": "暫停",
       "nextAria": "下一首",
+      "unlockHint": "點擊聆聽",
       "genres": {
         "lofi": "lofi",
         "classical": "古典",
