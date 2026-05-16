@@ -10,9 +10,6 @@ venv/
 .coverage
 htmlcov/
 coverage/
-**/playwright/.auth/
-**/test-results/
-**/playwright-report/
 
 # Node
 node_modules/
@@ -21,6 +18,10 @@ out/
 dist/
 .turbo/
 *.tsbuildinfo
+
+# AWS CDK build artifacts
+cdk.out/
+cdk.context.json
 
 # Env / secrets
 .env
@@ -41,14 +42,15 @@ Thumbs.db
 .docker/
 docker-compose.override.yml
 
-# Seed audio assets — binary, sized in MB, sourced locally per developer.
-# Drop royalty-free MP3 files here; the seed script picks them up by name.
-backend/assets/seed-tracks/*.mp3
+# Playwright / test output
+**/playwright/.auth/
+**/playwright-report/
+**/test-results/
+**/.playwright/
 
 # Generated API types are committed (regenerated via script)
 !frontend/lib/api/types.gen.ts
 
-# Playwright
-frontend/playwright-report/
-frontend/test-results/
-frontend/.playwright/
+# Reference docs and binary audio assets
+reference/
+*.mp3
