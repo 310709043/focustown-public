@@ -44,6 +44,9 @@
     "completed": "Nice work. This session is complete.",
     "abandonedConfirm": "End the current session now? You can always start a new one when you are ready."
   },
+  "pairingHeader": {
+    "you": "You"
+  },
   "enter": {
     "cta": "✦ Enter focus mode ✦"
   }

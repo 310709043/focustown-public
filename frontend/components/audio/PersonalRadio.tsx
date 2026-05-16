@@ -28,6 +28,11 @@ import {
   type PersonalPlaylistContext,
   type PersonalPlaylistTrack,
 } from "@/lib/api/endpoints";
+import {
+  clearAudioUnlocked,
+  isAudioUnlocked,
+  markAudioUnlocked,
+} from "@/lib/audio/unlock";
 
 interface Props {
   context: PersonalPlaylistContext;
@@ -38,25 +43,14 @@ interface Props {
   className?: string;
 }
 
-const UNLOCK_KEY = "focustown.audio_unlocked";
-
-function loadUnlockedFlag(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.sessionStorage?.getItem(UNLOCK_KEY) === "1";
-}
-
-function setUnlockedFlag(v: boolean): void {
-  if (typeof window === "undefined") return;
-  if (v) window.sessionStorage?.setItem(UNLOCK_KEY, "1");
-  else window.sessionStorage?.removeItem(UNLOCK_KEY);
-}
-
 export function PersonalRadio({ context, contextId, label, className }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [tracks, setTracks] = useState<PersonalPlaylistTrack[]>([]);
   const [index, setIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioUnlocked, setAudioUnlocked] = useState(loadUnlockedFlag);
+  // If the splash signin click already set the unlock flag we start
+  // playing as soon as the playlist arrives — no second gesture required.
+  const [audioUnlocked, setAudioUnlocked] = useState(isAudioUnlocked);
+  const [isPlaying, setIsPlaying] = useState(() => isAudioUnlocked());
   const [volume, setVolume] = useState(0.65);
 
   // Fetch the personalized playlist once on mount / context change.
@@ -105,7 +99,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
       void el.play().catch((err) => {
         if (err?.name === "NotAllowedError") {
           setAudioUnlocked(false);
-          setUnlockedFlag(false);
+          clearAudioUnlocked();
         }
       });
     } else {
@@ -127,7 +121,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
 
   const unlockAndPlay = () => {
     setAudioUnlocked(true);
-    setUnlockedFlag(true);
+    markAudioUnlocked();
     setIsPlaying(true);
   };
 

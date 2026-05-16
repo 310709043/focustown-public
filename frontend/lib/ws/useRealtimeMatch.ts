@@ -20,6 +20,7 @@ export function useRealtimeMatch({ onProposed, onAccepted }: Handlers) {
         id: String(msg.match_id),
         requester_id: String(msg.from),
         candidate_id: String(msg.from),
+        requester_character_key: null,
         candidate_character_key: null,
         compatibility: Number(msg.compatibility),
         reason: "",

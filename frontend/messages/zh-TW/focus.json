@@ -44,6 +44,9 @@
     "completed": "這次專注已完成，辛苦您了！",
     "abandonedConfirm": "確定要結束目前的專注嗎？您可以隨時再開始一次。"
   },
+  "pairingHeader": {
+    "you": "您"
+  },
   "enter": {
     "cta": "✦ 進入專注模式 ✦"
   }

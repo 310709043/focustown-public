@@ -65,9 +65,10 @@ export type Match = {
   id: string;
   requester_id: string;
   candidate_id: string;
-  // Hydrated server-side from the candidate user so the modal can render the
-  // character sprite without a second round-trip. Null when the candidate has
-  // not picked a character yet.
+  // Hydrated server-side so the focus room and modal can render character
+  // sprites for both sides without a second round-trip. Null when that side
+  // has not picked a character yet.
+  requester_character_key: string | null;
   candidate_character_key: string | null;
   compatibility: number;
   reason: string;

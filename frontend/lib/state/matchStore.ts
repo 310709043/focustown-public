@@ -6,6 +6,13 @@ import type { Match } from "../api/types.gen";
 
 interface MatchState {
   current: Match | null;
+  /**
+   * The most recently accepted match — survives the modal closing so the
+   * focus room page can read partner metadata without a second HTTP call.
+   * Cleared when a new match is proposed/accepted or when the next focus
+   * session ends.
+   */
+  accepted: Match | null;
   proposing: boolean;
   propose: (candidateId: string) => Promise<void>;
   requestAuto: () => Promise<Match | null>;
@@ -16,6 +23,7 @@ interface MatchState {
 
 export const useMatchStore = create<MatchState>((set, get) => ({
   current: null,
+  accepted: null,
   proposing: false,
 
   async propose(candidateId) {
@@ -47,11 +55,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     if (!cur) return null;
     // Bot matches return already-accepted; skip the second HTTP call.
     if (cur.status === "accepted") {
-      set({ current: null });
+      set({ current: null, accepted: cur });
       return cur;
     }
     const updated = await matchesApi.accept(cur.id);
-    set({ current: null });
+    set({ current: null, accepted: updated });
     return updated;
   },
 
@@ -63,6 +71,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   },
 
   clear() {
-    set({ current: null });
+    set({ current: null, accepted: null });
   },
 }));

@@ -164,6 +164,12 @@ export const matchesApi = {
   recent() {
     return apiFetch<Match[]>("/api/v1/matches/recent", { method: "GET" });
   },
+  /** Fetch a single match by id. Used by /focus/{id} to rehydrate the
+   *  partner pairing header after a page reload (the in-memory matchStore
+   *  does not survive reload). 404 / 403 errors propagate to the caller. */
+  getById(id: string) {
+    return apiFetch<Match>(`/api/v1/matches/${id}`, { method: "GET" });
+  },
 };
 
 // ── leaderboard / achievements / shop ──────────────────

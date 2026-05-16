@@ -146,3 +146,77 @@ async def test_accept_response_hydrates_candidate_character_key(
 
     assert accept.status_code == 200
     assert accept.json()["candidate_character_key"] == "kai"
+
+
+@pytest.mark.asyncio
+async def test_get_match_returns_both_character_keys(client, auth_headers):
+    """GET /matches/{id} hydrates both requester + candidate character_key
+    so the focus room can render the pairing header regardless of which
+    side the viewer is on (post-reload rehydration path)."""
+    await _signup(client, email="frank@example.com", name="Frank")
+    frank_signin = await client.post(
+        "/api/v1/auth/signin",
+        json={"email": "frank@example.com", "password": "Sup3rSecret-zzz"},
+    )
+    frank_token = frank_signin.json()["tokens"]["access_token"]
+    frank_id = frank_signin.json()["user"]["id"]
+    await client.patch(
+        "/api/v1/users/me",
+        json={"character_key": "milo"},
+        headers={"Authorization": f"Bearer {frank_token}"},
+    )
+    # Requester picks a character too so we can assert hydration.
+    await client.patch(
+        "/api/v1/users/me",
+        json={"character_key": "luna"},
+        headers=auth_headers,
+    )
+
+    propose = await client.post(
+        "/api/v1/matches",
+        json={"candidate_id": frank_id},
+        headers=auth_headers,
+    )
+    match_id = propose.json()["id"]
+
+    response = await client.get(
+        f"/api/v1/matches/{match_id}",
+        headers=auth_headers,
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == match_id
+    assert body["requester_character_key"] == "luna"
+    assert body["candidate_character_key"] == "milo"
+
+
+@pytest.mark.asyncio
+async def test_get_match_by_stranger_returns_forbidden(client, auth_headers):
+    await _signup(client, email="gus@example.com", name="Gus")
+    gus_signin = await client.post(
+        "/api/v1/auth/signin",
+        json={"email": "gus@example.com", "password": "Sup3rSecret-zzz"},
+    )
+    gus_id = gus_signin.json()["user"]["id"]
+    propose = await client.post(
+        "/api/v1/matches",
+        json={"candidate_id": gus_id},
+        headers=auth_headers,
+    )
+    match_id = propose.json()["id"]
+
+    stranger_token = await _signup(client, email="harry@example.com", name="Harry")
+    response = await client.get(
+        f"/api/v1/matches/{match_id}",
+        headers={"Authorization": f"Bearer {stranger_token}"},
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_get_match_unknown_returns_not_found(client, auth_headers):
+    response = await client.get(
+        "/api/v1/matches/00000000-0000-0000-0000-000000000000",
+        headers=auth_headers,
+    )
+    assert response.status_code == 404

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
+import { markAudioUnlocked } from "@/lib/audio/unlock";
 import { Logo } from "@/components/scene/Logo";
 import { Airplane } from "@/components/scene/Airplane";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
@@ -50,6 +51,11 @@ export default function SplashPage() {
 
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    // Record the user gesture so `PersonalRadio` can auto-play once we
+    // land on /town — the click on this button satisfies the browser
+    // autoplay policy.
+    markAudioUnlocked();
     try {
       await signIn(email, password);
       router.push("/town");
@@ -182,7 +188,9 @@ export default function SplashPage() {
         <form
           data-testid="signin-form"
           onSubmit={onSignIn}
+          aria-busy={loading || undefined}
           className="pixel-panel p-6 w-full max-w-sm flex flex-col gap-3"
+          style={{ opacity: loading ? 0.85 : 1, transition: "opacity 0.2s" }}
         >
           <input
             data-testid="signin-email"
@@ -191,7 +199,8 @@ export default function SplashPage() {
             placeholder={t("emailPlaceholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pixel-input"
+            readOnly={loading}
+            className="pixel-input disabled:opacity-60 read-only:opacity-60"
           />
           <input
             data-testid="signin-password"
@@ -201,7 +210,8 @@ export default function SplashPage() {
             placeholder={t("passwordPlaceholder")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="pixel-input"
+            readOnly={loading}
+            className="pixel-input disabled:opacity-60 read-only:opacity-60"
           />
           {error ? (
             <div
@@ -228,9 +238,18 @@ export default function SplashPage() {
             data-testid="signin-submit"
             type="submit"
             disabled={loading}
-            className="pixel-btn touch:min-h-[48px]"
+            className="pixel-btn touch:min-h-[48px] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             style={{ fontSize: 12, padding: "12px 16px", letterSpacing: 3 }}
           >
+            {loading ? (
+              <span
+                aria-hidden
+                className="inline-block animate-spin"
+                style={{ fontSize: 14, lineHeight: 1 }}
+              >
+                ⟳
+              </span>
+            ) : null}
             {loading ? t("loadingCta") : t("submitCta")}
           </button>
           <div className="flex items-center gap-2 my-1">
@@ -241,8 +260,15 @@ export default function SplashPage() {
           <Link
             data-testid="signup-link"
             href="/signup"
+            aria-disabled={loading || undefined}
+            tabIndex={loading ? -1 : undefined}
+            onClick={loading ? (e) => e.preventDefault() : undefined}
             className="text-center font-japan border border-border rounded-md py-2.5 touch:py-3.5 hover:border-accent-1 hover:text-accent-1 active:border-accent-1 active:text-accent-1 text-muted transition-colors"
-            style={{ fontSize: 13 }}
+            style={{
+              fontSize: 13,
+              opacity: loading ? 0.4 : 1,
+              pointerEvents: loading ? "none" : "auto",
+            }}
           >
             {t("signupLink")}
           </Link>

@@ -6,9 +6,12 @@ import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useMatchStore } from "@/lib/state/matchStore";
+import { matchesApi } from "@/lib/api/endpoints";
 import { FocusTimer } from "@/components/focus-room/FocusTimer";
 import { NotesPanel } from "@/components/focus-room/NotesPanel";
 import { SharedNotesPanel } from "@/components/focus-room/SharedNotesPanel";
+import { PartnerPairingHeader } from "@/components/focus-room/PartnerPairingHeader";
 import { PersonalRadio } from "@/components/audio/PersonalRadio";
 import { Airplane } from "@/components/scene/Airplane";
 
@@ -98,12 +101,45 @@ export default function FocusRoomPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user, hydrate } = useAuthStore();
+  const acceptedMatch = useMatchStore((s) => s.accepted);
   const [paired] = useState<boolean>(id !== "solo");
+  const [partnerKey, setPartnerKey] = useState<string | null>(null);
   const t = useTranslations("focus.session");
 
   useEffect(() => {
     if (!user) void hydrate();
   }, [user, hydrate]);
+
+  // Resolve the partner's character_key for the pairing header. The
+  // happy path reuses the just-accepted match from the in-memory store
+  // (no extra request). On reload (or deep-link) the store is empty, so
+  // we fetch the match by id; if that 4xx's we silently fall back to a
+  // "solo-looking" header — the session itself keeps working.
+  useEffect(() => {
+    if (!paired || !user) {
+      setPartnerKey(null);
+      return;
+    }
+    const derive = (m: { requester_id: string; candidate_id: string; requester_character_key: string | null; candidate_character_key: string | null }) =>
+      m.requester_id === user.id ? m.candidate_character_key : m.requester_character_key;
+
+    if (acceptedMatch && acceptedMatch.id === id) {
+      setPartnerKey(derive(acceptedMatch));
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const m = await matchesApi.getById(id);
+        if (!cancelled) setPartnerKey(derive(m));
+      } catch {
+        if (!cancelled) setPartnerKey(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [paired, user, id, acceptedMatch]);
 
   return (
     <main
@@ -118,6 +154,10 @@ export default function FocusRoomPage() {
       <Airplane intervalSeconds={26} />
       <Airplane intervalSeconds={34} delaySeconds={-15} topPercent={20} />
       <CitySilhouette />
+
+      {paired ? (
+        <PartnerPairingHeader meKey={user?.character_key ?? null} partnerKey={partnerKey} />
+      ) : null}
 
       <header
         className="bg-[rgba(3,1,17,0.96)] border-b border-border flex items-center justify-between px-3 md:px-5 relative z-10 gap-3"

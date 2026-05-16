@@ -13,7 +13,7 @@ from app.core.deps import (
     IdGenDep,
     PresenceTrackerDep,
 )
-from app.core.exceptions import ConflictError
+from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
 from app.domain.models import Match
 from app.domain.repositories.match_repo import IMatchReader
 from app.domain.repositories.user_repo import IUserReader
@@ -40,23 +40,29 @@ async def _dto(
     *,
     cache: dict[str, str | None] | None = None,
 ) -> MatchResponse:
-    """Hydrate the optional ``candidate_character_key`` so the frontend
-    MatchModal can render the candidate's character sprite without a
-    second HTTP round-trip. One lookup per response; callers passing a
-    ``cache`` dict reuse hits across multiple matches in the same handler.
+    """Hydrate both sides' ``character_key`` so the frontend can render the
+    pairing illustration regardless of which side the viewer is on. One
+    lookup per distinct user; callers passing a ``cache`` dict reuse hits
+    across multiple matches in the same handler.
     """
     cache = cache if cache is not None else {}
-    if m.candidate_id in cache:
-        character_key = cache[m.candidate_id]
-    else:
-        candidate = await users.get_by_id(m.candidate_id)
-        character_key = candidate.character_key if candidate else None
-        cache[m.candidate_id] = character_key
+
+    async def _key_for(user_id: str) -> str | None:
+        if user_id in cache:
+            return cache[user_id]
+        record = await users.get_by_id(user_id)
+        key = record.character_key if record else None
+        cache[user_id] = key
+        return key
+
+    requester_key = await _key_for(m.requester_id)
+    candidate_key = await _key_for(m.candidate_id)
     return MatchResponse(
         id=m.id,
         requester_id=m.requester_id,
         candidate_id=m.candidate_id,
-        candidate_character_key=character_key,
+        requester_character_key=requester_key,
+        candidate_character_key=candidate_key,
         compatibility=m.compatibility,
         reason=m.reason,
         status=m.status,
@@ -125,6 +131,28 @@ async def recent_matches(user_id: CurrentUserId, db: DbDep) -> list[MatchRespons
     cache: dict[str, str | None] = {}
     matches = await repo.list_recent_for_user(user_id=user_id, limit=20)
     return [await _dto(m, users, cache=cache) for m in matches]
+
+
+@router.get("/{match_id}", response_model=MatchResponse)
+async def get_match(
+    match_id: str,
+    user_id: CurrentUserId,
+    db: DbDep,
+) -> MatchResponse:
+    """Fetch a single match the caller participates in.
+
+    Used by ``/focus/{id}`` to rehydrate the partner pairing header after
+    a page reload (matchStore is in-memory only). Read-only — depends on
+    ``IMatchReader`` per ISP. Returns 404 when unknown, 403 when the
+    caller is neither requester nor candidate.
+    """
+    repo: IMatchReader = SqlMatchRepo(db)
+    match = await repo.get(match_id)
+    if match is None:
+        raise NotFoundError("match_not_found")
+    if user_id not in (match.requester_id, match.candidate_id):
+        raise ForbiddenError("not_match_member")
+    return await _dto(match, SqlUserRepo(db))
 
 
 @router.post("/auto", response_model=MatchResponse, status_code=201)
