@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api/client";
 import { roomVisitApi } from "@/lib/api/endpoints";
 import type { RoomVisit } from "@/lib/api/types.gen";
 import { useRealtime } from "@/lib/ws/useRealtime";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 /**
  * Phase 8 — visitor avatar strip rendered inside `slot:visitor`.
@@ -136,39 +137,49 @@ export function VisitorPanel({ roomId, ownerUserId, currentUserId }: Props) {
 
   return (
     <div
-      className="absolute z-10 flex items-center gap-2 px-3 py-2 rounded-md"
+      className="pixel-panel absolute z-10 flex items-center"
       style={{
         left: 24,
         top: 24,
-        background: "rgba(8,3,25,0.85)",
-        border: "1px solid var(--border2)",
-        boxShadow: "0 0 14px rgba(167,139,250,0.18)",
-        backdropFilter: "blur(6px)",
+        padding: "8px 12px",
+        gap: 8,
       }}
     >
       <span
-        className="font-mono text-muted"
-        style={{ fontSize: 11, letterSpacing: 1, marginRight: 4 }}
+        className="font-silkscreen"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 9,
+          color: "var(--ink-mute)",
+          letterSpacing: "0.2em",
+        }}
       >
+        <BlinkDot color="var(--accent-2)" />
         {t("panelLabel")}
       </span>
       {renderable.map((v) => (
         <span
           key={v.visitor_user_id}
           title={t("tooltipFmt", { userId: v.visitor_user_id, joinedAt: v.joined_at })}
-          className="font-japan flex items-center gap-1"
+          className="flex items-center"
           style={{
             fontSize: 12,
             padding: "3px 6px",
-            border: "1px solid var(--border)",
-            background: "rgba(18,8,48,0.6)",
-            borderRadius: 4,
-            color: "var(--a2)",
+            border: "1px solid var(--panel-stroke)",
+            background: "var(--button-fill)",
+            borderRadius: 2,
+            color: "var(--ink)",
             lineHeight: 1,
+            gap: 4,
           }}
         >
           <span style={{ fontSize: 14 }}>👤</span>
-          <span className="font-mono" style={{ fontSize: 10 }}>
+          <span
+            className="font-silkscreen"
+            style={{ fontSize: 9, letterSpacing: "0.1em" }}
+          >
             #{shortId(v.visitor_user_id)}
           </span>
         </span>

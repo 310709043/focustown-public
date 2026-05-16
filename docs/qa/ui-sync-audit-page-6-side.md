@@ -86,11 +86,11 @@ The diverged half was built before the reference port and was never retrofitted.
 
 - Cross-reference: same as R5. Already documented under Page 1 audit.
 
-### R7 — `/town/room/[id]` *(diverges — verdict ❌, no pixel-UI primitives anywhere)*
+### R7 — `/town/room/[id]` *(✅ fixed in Phase F3)*
 
 - **Reference equivalent:** none — the reference design has the town in `screen-town.jsx` but no individual room visitor screen.
-- **C1–C6 all ❌**: zero `pixel-*` primitives across the page + all 10 sub-components in `components/town/room/{Wall, OutsideWindow, OwnerPlaque, Floor, LockedRoom, MissingRoom, DecorationCanvas, VisitorPanel, DecorationToolbar, DecorationItem}.tsx`. The page uses domain-specific atoms (Wall, Floor, etc.) but renders them with raw Tailwind classes.
-- **Suggested fix:** the room is an 8-bit indoor scene (its own deliberate aesthetic per the file's docstring at L4–L14). The internal atoms (`Wall`, `Floor`) are fine as bespoke art. But chrome elements (`VisitorPanel`, `DecorationToolbar`, `LockedRoom`, `MissingRoom`) should adopt `pixel-panel` + `pixel-btn` to read as part of the same product. **Medium-effort refactor — 4-6 components touched.**
+- **Original verdict:** C1–C6 all ❌ — zero `pixel-*` primitives across the page + all 10 sub-components in `components/town/room/{Wall, OutsideWindow, OwnerPlaque, Floor, LockedRoom, MissingRoom, DecorationCanvas, VisitorPanel, DecorationToolbar, DecorationItem}.tsx`. The page used domain-specific atoms (Wall, Floor, etc.) but rendered them with raw Tailwind classes.
+- **Fix shipped (Phase F3):** chrome surfaces converted to pixel-UI while keeping the interior 8-bit composition (`Wall`, `Floor`, `OutsideWindow`, `OwnerPlaque`, `DecorationCanvas`, `DecorationItem`) untouched as deliberate aesthetic. Five files changed: `page.tsx` (top nav strip + theme picker + loading state), `VisitorPanel.tsx` (top-left strip → `pixel-panel`), `DecorationToolbar.tsx` (bottom-left → `pixel-panel` + `pixel-btn` tiles), `LockedRoom.tsx` and `MissingRoom.tsx` (full-screen 403/404 → `pixel-panel` + `pixel-btn` back button). Mirrors R8's canonical pattern (BlinkDot + silkscreen headers, accent-coded badges, `var(--ink-*)` palette).
 
 ### R8 — `/town/library` *(diverges — verdict ❌)*
 
@@ -108,7 +108,7 @@ The diverged half was built before the reference port and was never retrofitted.
 | R4 `/legal/*` | low | needs decision | **needs product call** — pixel-UI or book-style? |
 | R5 `/forgot-password` | medium (Page 1 D11) | 2 hours | ✅ fixed in Phase A (bundled with Page 1 D11) |
 | R6 `/reset-password` | medium (Page 1 D11) | 2 hours | ✅ fixed in Phase A (bundled with Page 1 D11) |
-| R7 `/town/room/[id]` chrome | medium | 1 day | pending — Phase F |
+| R7 `/town/room/[id]` chrome | medium | 1 day | ✅ fixed in Phase F3 — chrome (`VisitorPanel` / `DecorationToolbar` / `LockedRoom` / `MissingRoom` / room `page.tsx` nav + theme picker) on `pixel-panel` + `pixel-btn` + `<BlinkDot>` + `font-silkscreen`; interior 8-bit art (Wall / Floor / OwnerPlaque / OutsideWindow / DecorationCanvas / DecorationItem) preserved as deliberate aesthetic |
 | R8 `/town/library` | medium | 4 hours | ✅ fixed in Phase F4 — page header in `pixel-panel`, MoodTabs use accent-fill pixel tabs, TrackList rows are `pixel-panel` with `pixel-btn` play + `pixel-btn primary` for in-room tracks |
 
 **Total cleanup effort** (excluding legal-pages product call): ~4-5 days across all impl-only routes.

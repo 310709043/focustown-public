@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { shopApi } from "@/lib/api/endpoints";
 import type { ShopItem, UserItem } from "@/lib/api/types.gen";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 /**
  * Phase 5 — bottom-left palette + edit-mode toggle for room decoration.
@@ -68,41 +69,34 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
 
   return (
     <div
-      className="absolute z-10"
+      className="pixel-panel absolute z-10"
       style={{
         left: 24,
         bottom: 24,
-        background: "rgba(8,3,25,0.88)",
-        border: "1px solid var(--border2)",
-        boxShadow: "0 0 14px rgba(167,139,250,0.18)",
-        backdropFilter: "blur(6px)",
-        borderRadius: 6,
-        padding: editMode ? "10px 10px 8px" : "6px 10px",
+        padding: editMode ? "10px 12px" : "6px 12px",
         maxWidth: 280,
       }}
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between" style={{ gap: 12 }}>
         <span
-          className="font-mono text-muted"
-          style={{ fontSize: 11, letterSpacing: 1 }}
+          className="font-silkscreen"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 9,
+            color: "var(--ink-mute)",
+            letterSpacing: "0.2em",
+          }}
         >
+          <BlinkDot color="var(--amber)" />
           {editMode ? t("modeEditing") : t("modeDecorate")}
         </span>
         <button
           type="button"
           onClick={onToggle}
-          className="font-japan transition-colors"
-          style={{
-            fontSize: 12,
-            color: editMode ? "var(--amber)" : "var(--a2)",
-            border: `1px solid ${editMode ? "var(--amber)" : "var(--border)"}`,
-            background: editMode
-              ? "rgba(252,211,77,0.16)"
-              : "rgba(18,8,48,0.6)",
-            padding: "4px 10px",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
+          className="pixel-btn"
+          style={{ padding: "4px 10px", fontSize: 10 }}
         >
           {editMode ? t("doneCta") : t("editCta")}
         </button>
@@ -112,24 +106,39 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
         <div style={{ marginTop: 8 }}>
           {catalog === null && !catalogError && (
             <div
-              className="font-mono text-muted"
-              style={{ fontSize: 11, padding: "4px 0" }}
+              className="font-silkscreen"
+              style={{
+                fontSize: 10,
+                color: "var(--ink-mute)",
+                padding: "6px 0",
+                letterSpacing: "0.1em",
+              }}
             >
               {t("loading")}
             </div>
           )}
           {catalogError && (
             <div
-              className="font-mono text-muted"
-              style={{ fontSize: 11, padding: "4px 0" }}
+              className="font-silkscreen"
+              style={{
+                fontSize: 10,
+                color: "var(--coral)",
+                padding: "6px 0",
+                letterSpacing: "0.1em",
+              }}
             >
               {t("loadFailed")}
             </div>
           )}
           {catalog !== null && !catalogError && entries.length === 0 && (
             <div
-              className="font-mono text-muted"
-              style={{ fontSize: 11, lineHeight: 1.6 }}
+              className="font-silkscreen"
+              style={{
+                fontSize: 10,
+                color: "var(--ink-mute)",
+                lineHeight: 1.7,
+                letterSpacing: "0.05em",
+              }}
             >
               {t("emptyLine1")}
               <br />
@@ -151,16 +160,12 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
                   type="button"
                   title={shopItem.name}
                   onClick={() => void onPlace(userItem.id)}
-                  className="font-japan"
+                  className="pixel-btn"
                   style={{
                     width: 40,
                     height: 40,
-                    fontSize: 22,
-                    background: "rgba(18,8,48,0.6)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 4,
-                    cursor: "pointer",
-                    imageRendering: "pixelated",
+                    padding: 0,
+                    fontSize: 20,
                     lineHeight: 1,
                   }}
                 >

@@ -35,6 +35,7 @@ import { MissingRoom } from "@/components/town/room/MissingRoom";
 import { DecorationCanvas } from "@/components/town/room/DecorationCanvas";
 import { VisitorPanel } from "@/components/town/room/VisitorPanel";
 import { PersonalRadio } from "@/components/audio/PersonalRadio";
+import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 const THEME_KEYS: Array<{ key: RoomTheme; chip: string }> = [
   { key: "dawn", chip: "🌅" },
@@ -147,8 +148,18 @@ export default function RoomPage() {
   }
   if (error === "load_failed" || !room) {
     return (
-      <main className="absolute inset-0 grid place-items-center bg-bg text-muted font-japan">
-        <span>{tRoom("openingDoor")}</span>
+      <main className="absolute inset-0 grid place-items-center bg-bg">
+        <div
+          className="pixel-panel font-silkscreen"
+          style={{
+            padding: "12px 18px",
+            fontSize: 10,
+            color: "var(--ink-mute)",
+            letterSpacing: "0.15em",
+          }}
+        >
+          {tRoom("openingDoor")}
+        </div>
       </main>
     );
   }
@@ -158,17 +169,27 @@ export default function RoomPage() {
   return (
     <main className="absolute inset-0 flex flex-col overflow-hidden bg-bg">
       <nav
-        className="bg-[rgba(2,0,12,0.97)] border-b border-border flex items-center justify-between px-3 md:px-5 z-20 gap-2"
-        style={{ height: 56 }}
+        className="flex items-center justify-between px-3 md:px-5 z-20"
+        style={{
+          height: 56,
+          gap: 8,
+          background: "var(--card)",
+          borderBottom: "1px solid var(--panel-stroke)",
+        }}
       >
         <Link
           href="/town"
-          className="font-japan text-muted hover:text-amber active:text-amber transition-colors flex items-center gap-2 touch:py-2 touch:-my-2 shrink-0"
-          style={{ fontSize: 13 }}
+          className="font-silkscreen transition-colors flex items-center shrink-0 touch:py-2 touch:-my-2"
+          style={{
+            fontSize: 10,
+            color: "var(--ink-mute)",
+            letterSpacing: "0.15em",
+            gap: 6,
+          }}
         >
-          <span style={{ fontSize: 15 }}>◂</span> {tRoom("backToStreet")}
+          ◀ {tRoom("backToStreet")}
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center" style={{ gap: 12 }}>
           {editing && isOwner ? (
             <input
               ref={inputRef}
@@ -184,26 +205,30 @@ export default function RoomPage() {
                   setEditing(false);
                 }
               }}
-              className="bg-transparent text-amber font-japan outline-none px-2 py-1"
+              className="pixel-input font-silkscreen"
               style={{
-                fontSize: 14,
-                borderBottom: "2px dashed var(--amber)",
-                caretColor: "var(--amber)",
-                minWidth: 180,
+                fontSize: 12,
+                padding: "4px 10px",
+                minWidth: 200,
+                width: "auto",
                 textAlign: "center",
+                letterSpacing: "0.1em",
               }}
             />
           ) : (
             <button
               type="button"
               onClick={() => isOwner && setEditing(true)}
-              className="font-japan"
+              className="font-silkscreen"
               style={{
-                fontSize: 14,
-                color: "var(--a2)",
+                fontSize: 12,
+                color: "var(--accent)",
                 cursor: isOwner ? "text" : "default",
-                letterSpacing: 1,
-                textShadow: "0 0 10px rgba(196,181,253,0.35)",
+                letterSpacing: "0.15em",
+                textShadow: "0 0 8px var(--accent)",
+                background: "transparent",
+                border: "none",
+                padding: 0,
               }}
               title={isOwner ? tRoom("renameTooltip") : ""}
             >
@@ -212,9 +237,17 @@ export default function RoomPage() {
           )}
         </div>
         <span
-          className="font-mono text-muted"
-          style={{ fontSize: 11, letterSpacing: 1.2 }}
+          className="font-silkscreen"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 9,
+            color: "var(--ink-dim)",
+            letterSpacing: "0.2em",
+          }}
         >
+          <BlinkDot color="var(--accent-3)" />
           {isOwner ? tRoom("ownerBadge") : tRoom("visitorBadge")}
         </span>
       </nav>
@@ -250,18 +283,25 @@ export default function RoomPage() {
 
         {isOwner && (
           <div
-            className="absolute z-10 flex items-center gap-1.5 px-3 py-2 rounded-md flex-wrap right-3 bottom-3 md:right-4 md:bottom-[148px] max-w-[calc(100%-1.5rem)]"
+            className="pixel-panel absolute z-10 flex items-center flex-wrap right-3 bottom-3 md:right-4 md:bottom-[148px] max-w-[calc(100%-1.5rem)]"
             style={{
-              background: "rgba(8,3,25,0.85)",
-              border: "1px solid var(--border2)",
-              boxShadow: "0 0 14px rgba(167,139,250,0.18)",
-              backdropFilter: "blur(6px)",
+              padding: "8px 10px",
+              gap: 8,
             }}
           >
             <span
-              className="font-mono text-muted"
-              style={{ fontSize: 11, letterSpacing: 1, marginRight: 4 }}
+              className="font-silkscreen"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 9,
+                color: "var(--ink-dim)",
+                letterSpacing: "0.2em",
+                marginRight: 2,
+              }}
             >
+              <BlinkDot color="var(--amber)" />
               {tRoom("themePickerLabel")}
             </span>
             {THEME_KEYS.map((th) => {
@@ -273,22 +313,13 @@ export default function RoomPage() {
                   disabled={busy}
                   onClick={() => switchTheme(th.key)}
                   title={tThemes(th.key)}
-                  className="font-japan transition-transform touch:w-9 touch:h-9 touch:text-[15px]"
+                  className={`pixel-btn touch:w-10 touch:h-10 touch:text-[18px]${active ? " primary" : ""}`}
                   style={{
-                    width: 26,
-                    height: 26,
-                    fontSize: 13,
-                    lineHeight: "24px",
-                    border: active ? "1px solid var(--amber)" : "1px solid var(--border)",
-                    background: active
-                      ? "linear-gradient(180deg, rgba(252,211,77,0.22), rgba(252,211,77,0.08))"
-                      : "rgba(18,8,48,0.6)",
-                    color: active ? "var(--amber)" : "var(--muted)",
-                    boxShadow: active
-                      ? "inset 0 1px 4px rgba(252,211,77,0.4), 0 0 6px rgba(252,211,77,0.2)"
-                      : "inset 0 0 4px rgba(0,0,0,0.4)",
-                    imageRendering: "pixelated",
-                    transform: active ? "translateY(1px)" : "none",
+                    width: 34,
+                    height: 34,
+                    padding: 0,
+                    fontSize: 16,
+                    lineHeight: 1,
                     cursor: busy ? "wait" : "pointer",
                   }}
                 >
