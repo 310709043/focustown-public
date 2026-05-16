@@ -33,6 +33,11 @@ import { NamedBuildings } from "@/components/town/scene/NamedBuildings";
 import { CelestialBody } from "@/components/town/scene/CelestialBody";
 import { SkyWindow } from "@/components/town/scene/SkyWindow";
 import { TownTopHUD, type TownModalKind } from "@/components/town/scene/TownTopHUD";
+import { NamedWalkers } from "@/components/town/npc/NamedWalkers";
+import { NamedCats } from "@/components/town/npc/NamedCats";
+import { NamedBirds } from "@/components/town/npc/NamedBirds";
+import { NamedCars } from "@/components/town/npc/NamedCars";
+import { Clouds } from "@/components/scene/Clouds";
 
 // Ambient / animation-only scene entities lazy-load so they don't block
 // the first paint. Each runs an independent animation loop, none of them
@@ -188,6 +193,7 @@ export default function TownPage() {
   const currentScene = useSceneStore((s) => s.current);
   const sceneHasStars = SCENES[currentScene].stars > 0;
   const sceneIsWet = currentScene === "rain" || currentScene === "storm";
+  const sceneIsCloudy = currentScene === "cloudy";
 
   return (
     <FrameTicker>
@@ -206,12 +212,20 @@ export default function TownPage() {
         {sceneHasStars ? <ShootingStars /> : null}
         <CelestialBody />
 
+        {/* Cloudy-weather drift overlay — only mounts for `scene === "cloudy"`
+            to avoid spinning rAF when the sky is clear. */}
+        {sceneIsCloudy ? <Clouds /> : null}
+
         {/* two airplanes with offset cycles so the sky always has movement */}
         <Airplane intervalSeconds={22} delaySeconds={0} />
         <Airplane intervalSeconds={28} delaySeconds={-14} />
 
         {/* per-user songbirds — fly under the airplane silhouettes */}
         <Birds />
+        {/* Three named scenery birds (Whisp / Echo / Wren) above the
+            crowd — port of reference design. Coexists with <Birds />
+            which renders presence-driven users. */}
+        <NamedBirds />
 
         {/* 9 named pixel buildings (CAFE PIXEL → INK STORE) with floating
             tags + weather/time tints + night radial glow. */}
@@ -224,10 +238,20 @@ export default function TownPage() {
             and cars (driving on top). Pure CSS; respects reduced-motion. */}
         <Road />
 
+        {/* Seven named scenery walkers + two cats wander the sidewalk
+            regardless of how many real users are online. Mounted BEFORE
+            <Pedestrians /> so real-user sprites render on top — the
+            player feels foregrounded among the town's residents. */}
+        <NamedWalkers />
+        <NamedCats />
+
         {/* ground crowd — every moving entity is a real online user;
             entityKindFor() routes each user to exactly one of these four. */}
         <Pedestrians />
         <Dogs />
+        {/* Three named scenery cars on the road, mounted before
+            <CarsLane /> so presence-driven vehicles render on top. */}
+        <NamedCars />
         <CarsLane />
 
         {/* FOCUS BROADCAST sky window — tabbed rank / ad rotation with

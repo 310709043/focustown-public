@@ -167,7 +167,32 @@
   "scene": {
     "youSuffix": "you",
     "billboardEmptyLine1": "No completed sessions yet",
-    "billboardEmptyLine2": "Be the first to focus ✦"
+    "billboardEmptyLine2": "Be the first to focus ✦",
+    "npc": {
+      "walkers": {
+        "yuki": { "name": "Yuki", "status": "STUDY HALL" },
+        "aria": { "name": "Aria", "status": "Writing" },
+        "kai":  { "name": "Kai",  "status": "Pomodoro #5" },
+        "doc":  { "name": "Doc",  "status": "Researching" },
+        "bear": { "name": "Bear", "status": "Deep work" },
+        "milo": { "name": "Milo", "status": "LOFI BAR" },
+        "nova": { "name": "Nova", "status": "Matching" }
+      },
+      "cats": {
+        "blackbean": { "name": "Kuro",  "status": "Patrol" },
+        "milktea":   { "name": "Latte", "status": "Foraging" }
+      },
+      "birds": {
+        "whisp": { "name": "Whisp", "status": "Night flight" },
+        "echo":  { "name": "Echo",  "status": "Patrol" },
+        "wren":  { "name": "Wren",  "status": "Foraging" }
+      },
+      "cars": {
+        "ubermira": { "name": "Uber-Mira", "status": "Commuting" },
+        "boltren":  { "name": "Bolt-Ren",  "status": "Night shift" },
+        "gogolin":  { "name": "GoGo-Lin",  "status": "Delivering" }
+      }
+    }
   },
   "awards": {
     "title": "AWARDS · HALL OF FAME",
