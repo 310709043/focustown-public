@@ -4,16 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { matchesApi } from "@/lib/api/endpoints";
-import { FocusTimer } from "@/components/focus-room/FocusTimer";
-import { SharedNotesPanel } from "@/components/focus-room/SharedNotesPanel";
-import { PartnerPairingHeader } from "@/components/focus-room/PartnerPairingHeader";
-import { PersonalRadio } from "@/components/audio/PersonalRadio";
-import { Airplane } from "@/components/scene/Airplane";
+import { findCharacter } from "@/lib/data/characters";
 import { SoloFocusScene } from "@/components/focus/SoloFocusScene";
+import { BuddyFocusScene } from "@/components/focus-buddy/BuddyFocusScene";
 
 /** Deep-purple pixel city silhouette: calm horizon, no window detail. */
 function CitySilhouette() {
@@ -99,12 +95,13 @@ function Stars() {
 
 export default function FocusRoomPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { user, hydrate } = useAuthStore();
   const acceptedMatch = useMatchStore((s) => s.accepted);
   const [paired] = useState<boolean>(id !== "solo");
   const [partnerKey, setPartnerKey] = useState<string | null>(null);
-  const t = useTranslations("focus.session");
+  // `t` from focus.session was only used by the old paired-branch UI; the new
+  // BuddyFocusScene owns its own i18n namespace.
+  useTranslations("focus.session");
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -141,88 +138,21 @@ export default function FocusRoomPage() {
     };
   }, [paired, user, id, acceptedMatch]);
 
-  // Solo branch: render the ported reference design. Page 5 will swap in
-  // the buddy-room scene here; until then the paired path keeps the
-  // pre-port layout below intact.
+  // Solo branch: render the Page 4 SoloFocusScene.
   if (!paired) {
     return <SoloFocusScene />;
   }
 
+  // Paired branch: Page 5's BuddyFocusScene replaces the pre-port JSX.
+  // Partner display name resolves from `findCharacter(partnerKey).name`
+  // when we have the key; otherwise BuddyFocusScene's "Aria" fallback
+  // keeps the room readable.
+  const partnerCharacter = findCharacter(partnerKey);
   return (
-    <main
-      className="absolute inset-0 flex flex-col overflow-hidden"
-      style={{
-        background:
-          "radial-gradient(ellipse at 50% 35%, #1a0a6e 0%, #09023a 50%, #030111 100%)",
-      }}
-    >
-      <Stars />
-      <PixelMoon />
-      <Airplane intervalSeconds={26} />
-      <Airplane intervalSeconds={34} delaySeconds={-15} topPercent={20} />
-      <CitySilhouette />
-
-      <PartnerPairingHeader meKey={user?.character_key ?? null} partnerKey={partnerKey} />
-
-      <header
-        className="bg-[rgba(3,1,17,0.96)] border-b border-border flex items-center justify-between px-3 md:px-5 relative z-10 gap-3"
-        style={{ height: 52 }}
-      >
-        <div
-          className="font-pixel tracking-[3px] truncate"
-          style={{
-            fontSize: "var(--font-size-label)",
-            lineHeight: 1.2,
-            color: "var(--a2)",
-            textShadow: "0 0 10px var(--a1), 0 0 20px var(--a3)",
-          }}
-        >
-          ✦ {t("paired")}
-        </div>
-        <button
-          onClick={() => router.push("/town")}
-          className="pixel-btn tracking-wider shrink-0 touch:min-h-[40px]"
-          style={{
-            fontSize: "var(--font-size-caption)",
-            lineHeight: 1.2,
-            padding: "8px 16px",
-            background: "transparent",
-            color: "var(--muted)",
-            borderColor: "var(--border)",
-            boxShadow: "none",
-            textShadow: "none",
-          }}
-        >
-          {t("exitFullscreen")}
-        </button>
-      </header>
-
-      {/* Mobile: stack timer on top, notes/chat below as a bottom drawer-like
-          fixed-height panel. Tablet+: classic side-by-side with the panel
-          pinned to the right. */}
-      <div
-        className="flex-1 grid min-h-0 relative z-[3] grid-cols-1 grid-rows-[1fr_240px] md:grid-rows-1 md:grid-cols-[1fr_380px]"
-      >
-        <FocusTimer partnerId={id} />
-        <aside
-          className="border-t border-border md:border-l md:border-t-0 flex flex-col min-h-0"
-          style={{ background: "rgba(5,1,20,0.6)", backdropFilter: "blur(8px)" }}
-        >
-          {user ? <SharedNotesPanel matchId={id} myUserId={user.id} /> : null}
-        </aside>
-      </div>
-
-      {/* Per-user random radio — paired and solo sessions both get
-          their own private shuffle of the official catalog. Tablet+
-          only because phones already need every vertical pixel for
-          the timer + notes split. Position matches /town and /room:
-          bottom-right, 16px from each edge, 244px wide. */}
-      <div
-        className="absolute z-10 hidden md:block"
-        style={{ right: 16, bottom: 16, width: 244 }}
-      >
-        <PersonalRadio context="focus" contextId={id} />
-      </div>
-    </main>
+    <BuddyFocusScene
+      matchId={id}
+      partnerKey={partnerKey}
+      partnerName={partnerCharacter?.name ?? "Aria"}
+    />
   );
 }

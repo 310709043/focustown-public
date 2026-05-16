@@ -189,31 +189,33 @@ Manual visual QA per the per-component reference citations above.
 
 ## Closing checklist — build status
 
-| Component | Status | Build effort |
+| Component | Status | Build notes |
 | --- | --- | --- |
-| B1 BuddyFocusScene wrapper | missing | new file ~30 lines |
-| B2 BuddyTopBar | missing | new file ~80 lines |
-| B3 2-column body grid | missing | inside B1, ~5 lines |
-| B4 Two-user buddy header card | missing | new file ~60 lines |
-| B5 BuddyCard | missing | new file ~60 lines |
-| B6 SharedTimer | missing | new file ~120 lines (reuses PixelDigits) |
-| B7 StatusMini | missing | new file ~50 lines |
-| B8 SharedAgenda | missing | new file ~80 lines |
-| B9 RoomMusic | missing | new file ~100 lines |
-| B10 SharedPanel container | partial | new file ~50 lines (replaces SharedNotesPanel for paired branch) |
-| B11 ChatStream | missing | new file ~150 lines |
-| B12 Message variants | missing | inside B11 |
-| B13 NotesStream | missing | new file ~80 lines |
-| B14 Pill | missing | colocate / new file ~15 lines |
-| B15 TypingDots | missing | colocate / new file ~20 lines |
-| B16 TabBtn | missing | reuse Page 2 pattern |
-| B17 Chat composer mode buttons | missing | inside B11 |
-| B18 i18n catalogue | missing | additive zh-TW + en keys |
-| B19 Always-on rain | missing | inside B1, ~3 lines |
-| B20 Wire `/focus/[id]/page.tsx` paired branch | missing | replace existing paired JSX with `<BuddyFocusScene>` |
+| B1 BuddyFocusScene wrapper | ✅ built in Phase E | `components/focus-buddy/BuddyFocusScene.tsx` — full-bleed gradient + StarField + always-on RainOverlay + 2-col body grid |
+| B2 BuddyTopBar | ✅ built in Phase E | `components/focus-buddy/BuddyTopBar.tsx` — back + Logo + FOCUSTOWN + accent-2 BUDDY ROOM + SAME FOCUS center + CoinBadge |
+| B3 2-column body grid | ✅ built in Phase E | inside BuddyFocusScene — `gridTemplateColumns: '1fr 1.3fr'`, gap 14, padding 14 |
+| B4 Two-user buddy header card | ✅ built in Phase E | `components/focus-buddy/BuddyHeaderCard.tsx` — CornerDeco + BuddyCard×2 + center × connector + SAME TAG + `#WRITING` |
+| B5 BuddyCard | ✅ built in Phase E | `components/focus-buddy/BuddyCard.tsx` — sprite scale 3 with side-colored glow + green online dot + 2 Pills + tomato/minutes stats |
+| B6 SharedTimer | ✅ built in Phase E | `components/focus-buddy/SharedTimer.tsx` — reuses `PixelDigits` (scale 7, accent-2 glow) + `TomatoStrip` (scale 1.3) + gradient progress + 3 buttons (.pixel-btn.primary on play) + cooperation hint |
+| B7 StatusMini | ✅ built in Phase E | `components/focus-buddy/StatusMini.tsx` |
+| B8 SharedAgenda | ✅ built in Phase E | `components/focus-buddy/SharedAgenda.tsx` — uses new `PixelCheckbox` primitive + NOW highlight |
+| B9 RoomMusic | ✅ built in Phase E | `components/focus-buddy/RoomMusic.tsx` — reuses `<EQViz>` from Phase C1 |
+| B10 SharedPanel container | ✅ built in Phase E | `components/focus-buddy/SharedPanel.tsx` — tabs + LIVE status |
+| B11 ChatStream | ✅ built in Phase E (UI-only) | `components/focus-buddy/ChatStream.tsx` — seed messages match reference; real backend chat is a follow-up |
+| B12 Message variants | ✅ built in Phase E | `components/focus-buddy/Message.tsx` — discriminated union `sys / chat / note` (LSP) |
+| B13 NotesStream | ✅ built in Phase E | `components/focus-buddy/NotesStream.tsx` — wires `notesApi` with `shared_in_match_id` for real persistence |
+| B14 Pill | ✅ built in Phase E | `components/focus-buddy/Pill.tsx` |
+| B15 TypingDots | ✅ built in Phase E | `components/focus-buddy/TypingDots.tsx` |
+| B16 TabBtn | ✅ built in Phase E | `components/focus-buddy/TabBtn.tsx` |
+| B17 Chat composer mode buttons | ✅ built in Phase E | inside `ChatStream.tsx` via local `modeBtnStyle()` helper |
+| B18 i18n catalogue | ✅ added in Phase E | `focus.buddy.*` namespace added to both en + zh-TW. **Note**: `sharedTimer.cooperationHint` softened from reference's punitive "-10 T 幣" to "可能影響本次連續紀錄" / "may interrupt your streak" per [bilingual-seo-copywriting-guidelines.md](../i18n/bilingual-seo-copywriting-guidelines.md) "avoid pressure / punishment" rule |
+| B19 Always-on rain | ✅ built in Phase E | inside BuddyFocusScene — RainOverlay color `rgba(167,139,250,0.4)` density 0.5 unconditional |
+| B20 Wire `/focus/[id]/page.tsx` paired branch | ✅ built in Phase E | paired branch returns `<BuddyFocusScene matchId partnerKey partnerName>`; old `FocusTimer + SharedNotesPanel + PartnerPairingHeader + PersonalRadio` block removed |
 | B21 PixelDigits | ✅ reused | no work |
 | B22 `.pixel-btn.primary` | ✅ reused | no work |
+| (bonus) `PixelCheckbox` | ✅ extracted in Phase E | `components/focus-buddy/PixelCheckbox.tsx` — extracted from inline pattern; SharedAgenda consumes |
 
-**Recommendation:** open `feat/sync-eric-page-5-focus-buddy` off `origin/main`. Land B1–B20 in that branch. Run a Page 5 audit using the same framework Page 4 used. Open per-page PR.
-
-This audit doc is intentionally a **pre-port build spec** — it does not list "discrepancies" because there's no impl side to discrepancy against. Once Page 5 is built, a follow-up audit will surface high/medium/low discrepancies the same way Page 4's did.
+**Status:** Phase E ships all 22 build items. Follow-up work:
+- Real-time WebSocket chat persistence for ChatStream (currently UI-only with seed)
+- OT/CRDT for NotesStream's "Aria 正在編輯第 8 行" indicator (currently decorative)
+- Existing `components/focus-room/{FocusTimer, SharedNotesPanel, PartnerPairingHeader, NotesPanel}.tsx` are now ORPHANED — no callers. Recommend deletion in a small follow-up PR (or rolled into Phase C3 cleanup).

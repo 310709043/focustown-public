@@ -140,5 +140,76 @@
       "lockPhone": "LOCK PHONE",
       "backToTown": "BACK TO TOWN"
     }
+  },
+  "buddy": {
+    "topBar": {
+      "leaveAria": "Leave room",
+      "leaveCta": "Leave room",
+      "subtitle": "BUDDY ROOM",
+      "sameFocusLabel": "SAME FOCUS",
+      "roomLine": "ROOM #{code} · {minutes} min"
+    },
+    "headerCard": {
+      "sameTagLabel": "SAME TAG"
+    },
+    "sharedTimer": {
+      "headerFocus": "SHARED FOCUS · #{num}",
+      "headerBreak": "BREAK",
+      "startCta": "Start",
+      "pauseCta": "Pause",
+      "resetCta": "Reset",
+      "skipCta": "Skip",
+      "startAria": "Start timer",
+      "pauseAria": "Pause timer",
+      "resetAria": "Reset timer",
+      "skipAria": "Skip",
+      "cooperationHint": "Both of you press start to begin · leaving early may interrupt your streak"
+    },
+    "statusMini": {
+      "header": "STATUS"
+    },
+    "agenda": {
+      "header": "SHARED AGENDA",
+      "nowLabel": "NOW",
+      "items": {
+        "0": "Tomato #1 · each writes 25 min",
+        "1": "5 min — read each other's drafts aloud",
+        "2": "Tomato #2 · each writes 25 min",
+        "3": "Tomato #3 · revise + peer critique",
+        "4": "Celebrate at LOFI BAR together ✦"
+      }
+    },
+    "roomMusic": {
+      "header": "ROOM SYNC",
+      "syncStatus": "2/2 in sync",
+      "trackTitle": "midnight city — lofi",
+      "trackSubLine": "♪ 1 / 5 · lofi radio",
+      "playAria": "Play",
+      "pauseAria": "Pause"
+    },
+    "sharedPanel": {
+      "chatTab": "Chat",
+      "notesTab": "Notes",
+      "liveLabel": "LIVE",
+      "onlineCount": "{count} ONLINE"
+    },
+    "chat": {
+      "noteLabel": "NOTE",
+      "modeChat": "Chat",
+      "modeNote": "Note",
+      "attach": "Attach",
+      "attachAria": "Attach a file",
+      "shareMusic": "Share music",
+      "shareMusicAria": "Share music",
+      "pause": "Pause",
+      "pauseAria": "Pause pomodoro",
+      "typeMsg": "Type a message…"
+    },
+    "notes": {
+      "defaultTitle": "Shared notes",
+      "partnerEditing": "Buddy is editing line {line}",
+      "autoSaved": "Auto-saved · synced",
+      "autoSavedIdle": "Not yet edited"
+    }
   }
 }

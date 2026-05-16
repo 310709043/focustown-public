@@ -140,5 +140,76 @@
       "lockPhone": "鎖住手機",
       "backToTown": "回到小鎮"
     }
+  },
+  "buddy": {
+    "topBar": {
+      "leaveAria": "離開房間",
+      "leaveCta": "離開房間",
+      "subtitle": "BUDDY ROOM",
+      "sameFocusLabel": "同步專注",
+      "roomLine": "ROOM #{code} · {minutes} min"
+    },
+    "headerCard": {
+      "sameTagLabel": "SAME TAG"
+    },
+    "sharedTimer": {
+      "headerFocus": "SHARED FOCUS · #{num}",
+      "headerBreak": "BREAK",
+      "startCta": "開始",
+      "pauseCta": "暫停",
+      "resetCta": "重置",
+      "skipCta": "跳過",
+      "startAria": "開始計時",
+      "pauseAria": "暫停計時",
+      "resetAria": "重置計時",
+      "skipAria": "跳過",
+      "cooperationHint": "兩人都按下開始才會計時 · 中途離開可能影響本次連續紀錄"
+    },
+    "statusMini": {
+      "header": "即時狀態"
+    },
+    "agenda": {
+      "header": "共同行程",
+      "nowLabel": "NOW",
+      "items": {
+        "0": "番茄 #1 · 各自寫 25 min",
+        "1": "5 min 互唸對方寫的東西",
+        "2": "番茄 #2 · 各自寫 25 min",
+        "3": "番茄 #3 · 改寫 + 互評",
+        "4": "一起去 LOFI BAR 慶祝 ✦"
+      }
+    },
+    "roomMusic": {
+      "header": "ROOM SYNC",
+      "syncStatus": "2/2 同步中",
+      "trackTitle": "midnight city — lofi",
+      "trackSubLine": "♪ 1 / 5 · lofi radio",
+      "playAria": "播放",
+      "pauseAria": "暫停"
+    },
+    "sharedPanel": {
+      "chatTab": "共筆對話",
+      "notesTab": "我的筆記",
+      "liveLabel": "LIVE",
+      "onlineCount": "{count} 位在線"
+    },
+    "chat": {
+      "noteLabel": "NOTE",
+      "modeChat": "訊息",
+      "modeNote": "筆記",
+      "attach": "附件",
+      "attachAria": "附加檔案",
+      "shareMusic": "分享音樂",
+      "shareMusicAria": "分享音樂",
+      "pause": "暫停",
+      "pauseAria": "暫停番茄",
+      "typeMsg": "輸入訊息…"
+    },
+    "notes": {
+      "defaultTitle": "共同筆記",
+      "partnerEditing": "夥伴正在編輯第 {line} 行",
+      "autoSaved": "自動儲存 · 已同步",
+      "autoSavedIdle": "尚未編輯"
+    }
   }
 }
