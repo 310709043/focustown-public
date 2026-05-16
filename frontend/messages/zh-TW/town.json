@@ -5,7 +5,9 @@
     "myRoomTooltip": "進入我的房間",
     "shop": "🛒 道具",
     "signout": "登出",
-    "library": "🎵 音樂庫"
+    "library": "🎵 音樂庫",
+    "achv": "ACHV",
+    "frds": "FRDS"
   },
   "presence": {
     "online": "{count, plural, =0 {目前無人在線} other {目前在線 # 位}}",
@@ -27,6 +29,43 @@
   },
   "leaderboard": {
     "empty": "尚無資料"
+  },
+  "cafe": "CAFE PIXEL",
+  "studyHall": "STUDY HALL",
+  "lofiBar": "LOFI BAR",
+  "arcade": "PIXEL ARCADE",
+  "ramen": "NEKO RAMEN",
+  "library": "LIBRARY",
+  "coworking": "COWORKING",
+  "gallery": "GALLERY",
+  "inkStore": "INK STORE",
+  "focusBroadcast": "FOCUS BROADCAST",
+  "todayRank": "今日排行",
+  "skyAd": "廣告",
+  "liveOnline": "LIVE · {count, number} ONLINE",
+  "channel": "CH 04 · FOCUSTOWN.TV",
+  "adContact": "想在這裡投放廣告？ad@focustown.app",
+  "onlineCount": "ONLINE {count, number}",
+  "weatherSunny": "晴",
+  "weatherCloudy": "多雲",
+  "weatherRain": "雨",
+  "weatherSnow": "雪",
+  "weatherStorm": "雷雨",
+  "skyAds": {
+    "sponsorTag": "贊助商",
+    "sponsorTitle": "Notion · 一個地方寫下你所有想法",
+    "sponsorCta": "免費試用 ▶",
+    "proTag": "FT PRO",
+    "proTitle": "解鎖無限主題、自訂背景與雲端同步",
+    "proCta": "升級 PRO ▶",
+    "eventTag": "社群活動",
+    "eventTitle": "本週五晚 9pm · 深夜寫作馬拉松 ✎",
+    "eventCta": "報名 ▶"
+  },
+  "statusPill": {
+    "level": "LV.{level}",
+    "focusing": "專注中 · 🍅 #{count}",
+    "minutes": "{count} min"
   },
   "clock": {
     "tooltip": "小鎮時間"

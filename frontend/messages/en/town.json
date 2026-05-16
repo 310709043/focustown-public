@@ -5,7 +5,9 @@
     "myRoomTooltip": "Enter your room",
     "shop": "🛒 Shop",
     "signout": "Sign out",
-    "library": "🎵 Music library"
+    "library": "🎵 Music library",
+    "achv": "ACHV",
+    "frds": "FRDS"
   },
   "presence": {
     "online": "{count, plural, =0 {No one online right now} one {# person online} other {# people online}}",
@@ -27,6 +29,43 @@
   },
   "leaderboard": {
     "empty": "No entries yet"
+  },
+  "cafe": "CAFE PIXEL",
+  "studyHall": "STUDY HALL",
+  "lofiBar": "LOFI BAR",
+  "arcade": "PIXEL ARCADE",
+  "ramen": "NEKO RAMEN",
+  "library": "LIBRARY",
+  "coworking": "COWORKING",
+  "gallery": "GALLERY",
+  "inkStore": "INK STORE",
+  "focusBroadcast": "FOCUS BROADCAST",
+  "todayRank": "TODAY",
+  "skyAd": "AD",
+  "liveOnline": "LIVE · {count, number} ONLINE",
+  "channel": "CH 04 · FOCUSTOWN.TV",
+  "adContact": "Want to advertise here? ad@focustown.app",
+  "onlineCount": "ONLINE {count, number}",
+  "weatherSunny": "Sunny",
+  "weatherCloudy": "Cloudy",
+  "weatherRain": "Rain",
+  "weatherSnow": "Snow",
+  "weatherStorm": "Storm",
+  "skyAds": {
+    "sponsorTag": "SPONSOR",
+    "sponsorTitle": "Notion · One workspace for everything",
+    "sponsorCta": "Try free ▶",
+    "proTag": "FT PRO",
+    "proTitle": "Unlock themes, custom backgrounds, cloud sync",
+    "proCta": "Upgrade PRO ▶",
+    "eventTag": "EVENT",
+    "eventTitle": "Friday 9pm · Late-night writing marathon ✎",
+    "eventCta": "Sign up ▶"
+  },
+  "statusPill": {
+    "level": "LV.{level}",
+    "focusing": "Focusing · 🍅 #{count}",
+    "minutes": "{count} min"
   },
   "clock": {
     "tooltip": "Town time"

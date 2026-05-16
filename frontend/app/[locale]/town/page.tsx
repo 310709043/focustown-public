@@ -15,22 +15,24 @@ import { useMatchStore } from "@/lib/state/matchStore";
 
 import { Sky } from "@/components/scene/Sky";
 import { StarsLayer } from "@/components/scene/StarsLayer";
-import { Moon } from "@/components/scene/Moon";
-import { WeatherBadge } from "@/components/scene/WeatherBadge";
-import { TownClock } from "@/components/scene/TownClock";
-import { Buildings } from "@/components/scene/Buildings";
-import { Billboard } from "@/components/scene/Billboard";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
-import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { FrameTicker } from "@/components/pixel/FrameTicker";
-import { TownNavbar } from "@/components/chrome/TownNavbar";
 import { TickerBar } from "@/components/chrome/TickerBar";
-import { VenueCards } from "@/components/scene/VenueCards";
 import { StreetProps } from "@/components/scene/StreetProps";
 import { Road } from "@/components/scene/Road";
 import { SCENES } from "@/lib/data/scenes";
+
+// Reference-design town visuals (Page 3 of UI sync). These replace the
+// pre-port `Buildings` / `Moon` / `LeaderboardWindow` / `TownNavbar` /
+// `Billboard` / `VenueCards` / `WeatherBadge` / `TownClock` set with
+// the named 9-building cityscape, pixel celestial sprite, FOCUS
+// BROADCAST sky window, and 3-cluster top HUD respectively.
+import { NamedBuildings } from "@/components/town/scene/NamedBuildings";
+import { CelestialBody } from "@/components/town/scene/CelestialBody";
+import { SkyWindow } from "@/components/town/scene/SkyWindow";
+import { TownTopHUD } from "@/components/town/scene/TownTopHUD";
 
 // Ambient / animation-only scene entities lazy-load so they don't block
 // the first paint. Each runs an independent animation loop, none of them
@@ -187,17 +189,19 @@ export default function TownPage() {
   return (
     <FrameTicker>
     <main className="absolute inset-0 flex flex-col overflow-hidden">
-      <TownNavbar />
+      {/* Top HUD — reference's 3-cluster layout: logo+wordmark+weather chip
+          on the left, UserStatusPill in the center, ACHV/SHOP/FRDS + clock
+          + T-coin + sign-out on the right. Overlays the scene (absolute). */}
+      <TownTopHUD />
 
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
-           z-order: sky → stars → shooting stars → moon → planes → skyline →
-           ground crowd → rain overlay → floating UI panels. Rain covers the
-           skyline but stays below the HUD (z-[9]) so panels remain legible. */}
+           z-order: sky → stars → shooting stars → celestial sprite → planes →
+           named skyline → ground crowd → rain overlay → sky window → HUD. */}
       <div className="flex-1 relative overflow-hidden">
         <Sky />
         <StarsLayer />
         {sceneHasStars ? <ShootingStars /> : null}
-        <Moon />
+        <CelestialBody />
 
         {/* two airplanes with offset cycles so the sky always has movement */}
         <Airplane intervalSeconds={22} delaySeconds={0} />
@@ -206,12 +210,9 @@ export default function TownPage() {
         {/* per-user songbirds — fly under the airplane silhouettes */}
         <Birds />
 
-        <WeatherBadge />
-        <TownClock />
-
-        {/* skyline + venue overlays */}
-        <Buildings />
-        <VenueCards />
+        {/* 9 named pixel buildings (CAFE PIXEL → INK STORE) with floating
+            tags + weather/time tints + night radial glow. */}
+        <NamedBuildings />
 
         {/* sidewalk props (lamps/trees/bench/cat) sit under moving crowd */}
         <StreetProps />
@@ -226,11 +227,9 @@ export default function TownPage() {
         <Dogs />
         <CarsLane />
 
-        {/* central billboard */}
-        <Billboard />
-
-        {/* top-center: leaderboard "city window" */}
-        <LeaderboardWindow />
+        {/* FOCUS BROADCAST sky window — tabbed rank / ad rotation with
+            antenna, signal bars, and a LIVE indicator. */}
+        <SkyWindow />
 
         {/* wet-scene atmosphere — only mounts for rain/storm so we don't
             spin a rAF loop on sunny days. */}
