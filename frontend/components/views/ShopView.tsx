@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { clsx } from "clsx";
 
+import {
+  CategorySection,
+  type ShopCategoryKey,
+} from "@/components/shop/CategorySection";
+import { type FlashState } from "@/components/shop/ShopItemCard";
+import { SubscriptionPanel } from "@/components/shop/SubscriptionPanel";
 import {
   equipmentApi,
   purchaseApi,
@@ -13,33 +18,29 @@ import {
 } from "@/lib/api/endpoints";
 import type { ShopItem, ShopItemPrice } from "@/lib/api/types.gen";
 import { useAuthStore } from "@/lib/state/authStore";
-import { formatMinor, useWalletStore } from "@/lib/state/walletStore";
+import { useWalletStore } from "@/lib/state/walletStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
 
 type SectionDef = {
-  category: "car" | "scene" | "effect";
-  titleKey: "carSkin" | "sceneSkin" | "effects";
+  category: ShopCategoryKey;
+  headingColor: string;
 };
 
 const SECTIONS: SectionDef[] = [
-  { category: "car", titleKey: "carSkin" },
-  { category: "scene", titleKey: "sceneSkin" },
-  { category: "effect", titleKey: "effects" },
+  { category: "car", headingColor: "var(--accent)" },
+  { category: "scene", headingColor: "var(--teal)" },
+  { category: "effect", headingColor: "var(--amber)" },
 ];
 
 function priceFor(prices: ShopItemPrice[], code: string): ShopItemPrice | null {
   return prices.find((p) => p.currency_code === code) ?? null;
 }
 
-type FlashState =
-  | { kind: "idle" }
-  | { kind: "ok"; key: number }
-  | { kind: "err"; msg: string };
-
 /**
- * Shop body — shared between the /shop route page and ShopModal.
- * Chrome (header bar, coin badge, close button, modal panel) is provided
- * by the host.
+ * Shop body (chromeless). Hosts the data fetch + purchase/equip handlers
+ * and renders the subscription tier + catalogue sections in pixel-UI
+ * primitives. The /shop route wraps this in <ShopScene> for the full-bleed
+ * top-bar chrome; <ShopModal> reuses it inside its own modal panel.
  */
 export function ShopView() {
   const [items, setItems] = useState<ShopItem[]>([]);
@@ -52,11 +53,7 @@ export function ShopView() {
   );
   const setEquippedVehicle = useAuthStore((s) => s.setEquippedVehicle);
   const tPage = useTranslations("shop.page");
-  const tSection = useTranslations("shop.section");
-  const tItem = useTranslations("shop.item");
   const tErr = useTranslations("shop.errors");
-
-  const featureBullets: string[] = tPage.raw("subscriptionFeatures") as string[];
 
   useEffect(() => {
     void Promise.all([
@@ -66,17 +63,21 @@ export function ShopView() {
     ]).catch(() => {});
   }, []);
 
-  const byCategory = (cat: string) => items.filter((i) => i.category === cat);
-
   async function handleBuy(item: ShopItem) {
     if (pendingId || owns[item.id]) return;
     const price = priceFor(item.prices, "T");
     if (!price) {
-      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: tErr("unavailable") } }));
+      setFlash((f) => ({
+        ...f,
+        [item.id]: { kind: "err", msg: tErr("unavailable") },
+      }));
       return;
     }
     if (tBalance < price.amount_minor) {
-      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: tErr("insufficient") } }));
+      setFlash((f) => ({
+        ...f,
+        [item.id]: { kind: "err", msg: tErr("insufficient") },
+      }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
         1800,
@@ -86,14 +87,19 @@ export function ShopView() {
     setPendingId(item.id);
     try {
       const res = await purchaseApi.buy(item.id, "T");
-      useWalletStore.getState().setBalance(res.currency_code, res.new_balance_minor);
+      useWalletStore
+        .getState()
+        .setBalance(res.currency_code, res.new_balance_minor);
       useUserItemsStore.getState().add({
         id: res.transaction_id,
         shop_item_id: res.item_id,
         acquired_via: "purchase",
         acquired_at: res.acquired_at,
       });
-      setFlash((f) => ({ ...f, [item.id]: { kind: "ok", key: Date.now() } }));
+      setFlash((f) => ({
+        ...f,
+        [item.id]: { kind: "ok", key: Date.now() },
+      }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
         900,
@@ -107,7 +113,10 @@ export function ShopView() {
           : msg.includes("price_not_available")
             ? tErr("unavailable")
             : tErr("purchaseFailed");
-      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: friendly } }));
+      setFlash((f) => ({
+        ...f,
+        [item.id]: { kind: "err", msg: friendly },
+      }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
         1800,
@@ -125,7 +134,10 @@ export function ShopView() {
       const target = isEquipped ? null : item.id;
       const res = await equipmentApi.setVehicle(target);
       setEquippedVehicle(res.equipped_vehicle_item_id, res.equipped_vehicle);
-      setFlash((f) => ({ ...f, [item.id]: { kind: "ok", key: Date.now() } }));
+      setFlash((f) => ({
+        ...f,
+        [item.id]: { kind: "ok", key: Date.now() },
+      }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
         900,
@@ -137,7 +149,10 @@ export function ShopView() {
         : msg.includes("not_a_vehicle")
           ? tErr("notAVehicle")
           : tErr("equipFailed");
-      setFlash((f) => ({ ...f, [item.id]: { kind: "err", msg: friendly } }));
+      setFlash((f) => ({
+        ...f,
+        [item.id]: { kind: "err", msg: friendly },
+      }));
       window.setTimeout(
         () => setFlash((f) => ({ ...f, [item.id]: { kind: "idle" } })),
         1800,
@@ -148,214 +163,40 @@ export function ShopView() {
   }
 
   return (
-    <div>
-      <div className="text-[10px] text-muted mb-1">{tPage("subscriptionTitle")}</div>
-      <div className="pixel-panel p-5 flex flex-col gap-2 mb-4">
-        <div className="flex justify-between items-start">
-          <div
-            className="font-pixel text-[9px]"
-            style={{ color: "var(--a2)", textShadow: "0 0 8px var(--a1)" }}
-          >
-            {tPage("subscriptionBadge")}
-          </div>
-          <div className="text-[14px] text-amber font-medium">
-            {tPage("subscriptionPrice")}
-            <span className="text-[11px] text-muted">{tPage("subscriptionPriceSuffix")}</span>
-          </div>
-        </div>
-        <ul className="flex flex-col gap-1.5 text-[11px]">
-          {featureBullets.map((line) => (
-            <li
-              key={line}
-              className="before:content-['✓'] before:text-teal before:mr-2"
-            >
-              {line}
-            </li>
-          ))}
-        </ul>
-        <button
-          disabled
-          className="font-pixel text-[8px] py-3 rounded bg-gradient-to-br from-accent-3 to-accent-4 text-accent-2 tracking-wider opacity-60 cursor-not-allowed"
-          title={tPage("subscriptionCtaTooltip")}
-        >
-          {tPage("subscriptionCta")}
-        </button>
-      </div>
+    <div
+      data-testid="shop-view"
+      style={{ display: "flex", flexDirection: "column", gap: 13 }}
+    >
+      <SubscriptionPanel />
 
-      {SECTIONS.map(({ category, titleKey }) => {
-        const list = byCategory(category);
-        if (!list.length) return null;
-        return (
-          <div key={category}>
-            <div className="text-[10px] text-muted my-3 tracking-wide">{tSection(titleKey)}</div>
-            <div className="grid grid-cols-2 gap-2 mb-1">
-              {list.map((it) => {
-                const tPrice = priceFor(it.prices, "T");
-                const owned = !!owns[it.id];
-                const isLoading = pendingId === it.id;
-                const state = flash[it.id] ?? { kind: "idle" as const };
-                const canAfford = tPrice ? tBalance >= tPrice.amount_minor : false;
-                return (
-                  <div
-                    key={it.id}
-                    className={clsx(
-                      "pixel-panel p-3 flex flex-col gap-1.5 transition-all relative",
-                      !owned && "hover:-translate-y-0.5 touch:active:scale-[0.98]",
-                    )}
-                    style={
-                      owned
-                        ? {
-                            boxShadow:
-                              "0 0 0 2px var(--bg), 0 0 0 3px var(--teal), 0 12px 30px rgba(0,0,0,0.6)",
-                            background: "rgba(52,211,153,0.05)",
-                          }
-                        : it.featured
-                          ? {
-                              boxShadow:
-                                "0 0 0 2px var(--bg), 0 0 0 3px var(--pink), 0 12px 30px rgba(0,0,0,0.6)",
-                              background: "rgba(244,114,182,0.05)",
-                            }
-                          : undefined
-                    }
-                  >
-                    <div className="text-2xl">{it.icon}</div>
-                    <div className="text-[12px] flex items-center gap-1.5 flex-wrap">
-                      {it.name}
-                      {it.featured ? (
-                        <span className="text-[10px] text-pink">{tItem("featuredBadge")}</span>
-                      ) : null}
-                      {owned ? (
-                        <span
-                          className="text-[10px]"
-                          style={{
-                            color: "var(--teal)",
-                            border: "1px solid rgba(52,211,153,0.5)",
-                            padding: "0 4px",
-                            borderRadius: 3,
-                            fontFamily: "var(--font-vt323), monospace",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          {tItem("ownedBadge")}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="text-[11px] text-muted leading-tight">{it.description}</div>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span
-                        className="text-[13px]"
-                        style={{
-                          color: tPrice ? "var(--amber)" : "var(--muted)",
-                          fontFamily: "var(--font-vt323), monospace",
-                          letterSpacing: 0.5,
-                          textShadow: tPrice ? "0 0 6px rgba(252,211,77,0.4)" : undefined,
-                        }}
-                      >
-                        {tPrice ? `💰 ${formatMinor("T", tPrice.amount_minor)} T` : "—"}
-                      </span>
-                      {owned && it.category === "car" ? (
-                        (() => {
-                          const isEquipped = equippedVehicleId === it.id;
-                          return (
-                            <button
-                              onClick={() => handleEquipToggle(it)}
-                              disabled={isLoading}
-                              className={clsx(
-                                "font-pixel text-[8px] px-2.5 py-1.5 touch:px-3 touch:py-2 touch:text-[10px] touch:min-h-[40px] rounded relative",
-                                isEquipped
-                                  ? "border border-amber bg-amber/10 text-amber"
-                                  : "border border-teal/60 text-teal hover:bg-teal/10 active:bg-teal/10",
-                              )}
-                              title={
-                                isEquipped
-                                  ? tItem("equipTooltipUnequip")
-                                  : tItem("equipTooltipEquip")
-                              }
-                              style={
-                                isEquipped
-                                  ? { textShadow: "0 0 6px rgba(252,211,77,0.6)" }
-                                  : undefined
-                              }
-                            >
-                              {isLoading
-                                ? tItem("buyLoading")
-                                : isEquipped
-                                  ? tItem("equippedCta")
-                                  : tItem("equipCta")}
-                            </button>
-                          );
-                        })()
-                      ) : (
-                        <button
-                          onClick={() => handleBuy(it)}
-                          disabled={owned || isLoading || !tPrice}
-                          className={clsx(
-                            "font-pixel text-[8px] px-2.5 py-1.5 touch:px-3 touch:py-2 touch:text-[10px] touch:min-h-[40px] rounded relative",
-                            owned
-                              ? "border border-teal/40 text-teal/70 cursor-not-allowed"
-                              : !canAfford
-                                ? "border border-border text-muted cursor-not-allowed"
-                                : "border border-accent-1 text-accent-1 hover:bg-accent-1/10 active:bg-accent-1/10",
-                          )}
-                          title={
-                            owned
-                              ? tItem("buyTooltipOwned")
-                              : !canAfford
-                                ? tItem("buyTooltipInsufficient")
-                                : tItem("buyTooltipBuy")
-                          }
-                        >
-                          {owned
-                            ? tItem("ownedBadge")
-                            : isLoading
-                              ? tItem("buyLoading")
-                              : tItem("buyCta")}
-                        </button>
-                      )}
-                    </div>
-                    {state.kind === "ok" ? (
-                      <span
-                        key={state.key}
-                        className="absolute pointer-events-none animate-coinPop"
-                        style={{
-                          right: 8,
-                          bottom: 26,
-                          fontFamily: "var(--font-vt323), monospace",
-                          color: "var(--amber)",
-                          fontSize: 18,
-                          textShadow: "0 0 10px var(--amber), 0 0 18px rgba(252,211,77,0.5)",
-                        }}
-                      >
-                        {owned && it.category === "car"
-                          ? tItem("successEquip")
-                          : tItem("successOwn")}
-                      </span>
-                    ) : null}
-                    {state.kind === "err" ? (
-                      <span
-                        className="absolute pointer-events-none"
-                        style={{
-                          right: 8,
-                          bottom: 26,
-                          fontFamily: "var(--font-vt323), monospace",
-                          color: "var(--coral)",
-                          fontSize: 14,
-                          textShadow: "0 0 8px var(--coral)",
-                        }}
-                      >
-                        {tItem("errorPrefix")} {state.msg}
-                      </span>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+      {SECTIONS.map(({ category, headingColor }) => (
+        <CategorySection
+          key={category}
+          category={category}
+          headingColor={headingColor}
+          items={items.filter((i) => i.category === category)}
+          ownsMap={owns}
+          equippedVehicleId={equippedVehicleId}
+          pendingId={pendingId}
+          flash={flash}
+          tBalance={tBalance}
+          onBuy={handleBuy}
+          onEquipToggle={handleEquipToggle}
+        />
+      ))}
 
       {items.length === 0 ? (
-        <div className="text-[11px] text-muted text-center mt-4">
+        <div
+          data-testid="shop-empty"
+          className="font-silkscreen"
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.08em",
+            color: "var(--ink-mute)",
+            textAlign: "center",
+            padding: "24px 0",
+          }}
+        >
           {tPage("emptyState")}
         </div>
       ) : null}

@@ -57,13 +57,16 @@ The diverged half was built before the reference port and was never retrofitted.
 - **Deferred (out of audit scope):** reference's pair-wall + week-stars sections (require new backend endpoints `/api/v1/pair-wall`, `/api/v1/week-stars`). Current scope retains the existing 2 sections (leaderboard + achievements).
 - **Side effect:** `<BlinkDot>` extracted to `components/pixel/BlinkDot.tsx`; 5 prior inline duplicates (`LoginScene`, splash, signin, signup, `SkyWindow`) converted to import the shared primitive.
 
-### R3 — `/shop` *(diverges — verdict ⚠️)*
+### R3 — `/shop` *(✅ resolved in Phase F2 — `fix/sync-page-6-shop`)*
 
 - **Reference equivalent:** `screen-town.jsx`'s `ShopModal` (in-page overlay).
-- **C1 Container**: ⚠️ — 2 `pixel-panel` instances; outer chrome uses Tailwind.
-- **C2 Buttons**: ❌ purchase / equip buttons are Tailwind-styled (`border-[...] rounded text-[...] hover:...` patterns).
-- **C5 Glyphs / C6 Fonts**: ❌ same as `/awards`.
-- **Suggested fix:** the shop page is the biggest route here (401 lines). Convert the section headers + item cards + purchase buttons to pixel-UI primitives. This is a multi-hour refactor.
+- **C1 Container**: ✅ — outer chrome is now `<ShopScene>` (full-bleed `<main>` + diagonal gradient) wrapping `<ShopTopBar>` + a chromeless `<ShopView>` body. Every panel uses `pixel-panel`.
+- **C2 Buttons**: ✅ purchase + equip CTAs use `pixel-btn primary` for the positive action (buy / equip) and default `pixel-btn` for the cancel action (unequip); close button is `pixel-btn`.
+- **C4 Colors**: ✅ all colors come from CSS vars (`var(--pink)`, `var(--accent-2)`, `var(--amber)`, `var(--teal)`, `var(--accent)`, `var(--ink-mute)`, `var(--coral)`). No Tailwind palette literals.
+- **C5 Glyphs**: ✅ top bar + every section header uses the `<BlinkDot> + uppercase silkscreen` pattern; the `🛒` / `★` / `✦` glyph prefixes survive only inside the i18n strings (`shop.page.title`, `shop.page.subscriptionTitle`, `shop.page.subscriptionBadge`) where they read as content rather than chrome.
+- **C6 Fonts**: ✅ `font-silkscreen` for labels; VT323 for numeric (prices + balance) via inline `font-family: var(--font-vt323), monospace`. All `font-pixel` / `font-japan` removed from `/shop`.
+- **Split:** `<ShopScene>` (route-only chrome) + `<ShopView>` (chromeless body, reused by `<ShopModal>`). Section pieces under `components/shop/`: `WalletBadge`, `ShopTopBar`, `SubscriptionPanel`, `CategorySection`, `ShopItemCard`. Page reduced from 56 LOC of inline chrome to a 4-LOC shell.
+- **Side note:** `<ShopModal>`'s in-modal coin badge is left untouched (separate audit row under Page 3 modals); it can be swapped for the new `<WalletBadge>` in a follow-up.
 
 ### R4 — `/legal/{terms, privacy, refund}` *(diverges — verdict ❌)*
 
@@ -101,7 +104,7 @@ The diverged half was built before the reference port and was never retrofitted.
 | --- | --- | --- | --- |
 | R1 `/` splash primary CTA | low | 1-line fix | ✅ fixed in Phase A (bundled with Page 1 D1) |
 | R2 `/awards` chrome | medium | 1 day | ✅ shipped in Phase F1 (`fix/sync-page-6-awards`) — chrome converted to `pixel-panel` + `pixel-btn` + `<BlinkDot>` + `font-silkscreen`; pair-wall + week-stars sections deferred (need backend endpoints) |
-| R3 `/shop` chrome | medium | 1.5 days | pending — Phase F |
+| R3 `/shop` chrome | medium | 1.5 days | ✅ shipped in Phase F2 (`fix/sync-page-6-shop`) — chrome converted to `pixel-panel` + `pixel-btn` + `<BlinkDot>` + `font-silkscreen`; `<ShopScene>` wraps a chromeless `<ShopView>` so `<ShopModal>` still reuses the same body |
 | R4 `/legal/*` | low | needs decision | **needs product call** — pixel-UI or book-style? |
 | R5 `/forgot-password` | medium (Page 1 D11) | 2 hours | ✅ fixed in Phase A (bundled with Page 1 D11) |
 | R6 `/reset-password` | medium (Page 1 D11) | 2 hours | ✅ fixed in Phase A (bundled with Page 1 D11) |

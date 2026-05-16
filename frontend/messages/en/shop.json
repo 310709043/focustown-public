@@ -41,6 +41,9 @@
     "notAVehicle": "Not a vehicle",
     "equipFailed": "Could not equip"
   },
+  "topBar": {
+    "title": "SHOP"
+  },
   "page": {
     "title": "🛒 Item shop",
     "closeCta": "✕ Close",

@@ -41,6 +41,9 @@
     "notAVehicle": "非車輛",
     "equipFailed": "裝備失敗"
   },
+  "topBar": {
+    "title": "商店"
+  },
   "page": {
     "title": "🛒 道具商店",
     "closeCta": "✕ 關閉",
