@@ -112,7 +112,7 @@ export function Billboard() {
                   >
                     {r.display_name}
                   </span>
-                  <span style={{ color, fontFamily: "VT323, monospace", fontSize: 16 }}>
+                  <span style={{ color, fontFamily: "var(--font-vt323), monospace", fontSize: 16 }}>
                     {r.completed_count} 🍅
                   </span>
                 </div>

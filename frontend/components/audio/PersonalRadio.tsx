@@ -20,6 +20,7 @@
  */
 
 import { clsx } from "clsx";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -44,6 +45,7 @@ interface Props {
 }
 
 export function PersonalRadio({ context, contextId, label, className }: Props) {
+  const t = useTranslations("town.personalRadio");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [tracks, setTracks] = useState<PersonalPlaylistTrack[]>([]);
   const [index, setIndex] = useState(0);
@@ -126,8 +128,8 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
   };
 
   const headerLabel = useMemo(
-    () => label ?? (context === "city" ? "城市電台" : "個人電台"),
-    [label, context],
+    () => label ?? (context === "city" ? t("headerCity") : t("headerPersonal")),
+    [label, context, t],
   );
 
   return (
@@ -155,7 +157,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
           type="button"
           onClick={previous}
           disabled={tracks.length === 0}
-          aria-label="上一首"
+          aria-label={t("prevAria")}
           className={clsx(
             "w-[22px] h-[22px] border rounded-sm",
             tracks.length === 0
@@ -175,7 +177,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
             setIsPlaying((p) => !p);
           }}
           disabled={tracks.length === 0}
-          aria-label={isPlaying ? "暫停" : "播放"}
+          aria-label={isPlaying ? t("pauseAria") : t("playAria")}
           className={clsx(
             "w-[22px] h-[22px] border rounded-sm",
             tracks.length === 0
@@ -189,7 +191,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
           type="button"
           onClick={advance}
           disabled={tracks.length === 0}
-          aria-label="下一首"
+          aria-label={t("nextAria")}
           className={clsx(
             "w-[22px] h-[22px] border rounded-sm",
             tracks.length === 0
@@ -205,7 +207,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
           max={100}
           value={Math.round(volume * 100)}
           onChange={(e) => setVolume(Number(e.target.value) / 100)}
-          aria-label="音量"
+          aria-label={t("volumeAria")}
           className="flex-1"
         />
       </div>

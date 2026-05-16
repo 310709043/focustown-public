@@ -59,7 +59,7 @@ class FocusSessionService:
         return session
 
     async def complete(self, *, session_id: str, user_id: str) -> FocusSession:
-        session = await self._fetch_owned(session_id=session_id, user_id=user_id)
+        session = await self.get_owned(session_id=session_id, user_id=user_id)
         if not session.can_transition_to(FocusSessionStatus.COMPLETED):
             raise ConflictError("session_not_active")
         now = self._clock.now()
@@ -82,7 +82,7 @@ class FocusSessionService:
         return updated
 
     async def cancel(self, *, session_id: str, user_id: str) -> FocusSession:
-        session = await self._fetch_owned(session_id=session_id, user_id=user_id)
+        session = await self.get_owned(session_id=session_id, user_id=user_id)
         if not session.can_transition_to(FocusSessionStatus.CANCELLED):
             raise ConflictError("session_not_active")
         now = self._clock.now()
@@ -115,7 +115,7 @@ class FocusSessionService:
                 result.append(updated)
         return result
 
-    async def _fetch_owned(self, *, session_id: str, user_id: str) -> FocusSession:
+    async def get_owned(self, *, session_id: str, user_id: str) -> FocusSession:
         session = await self._repo.get(session_id)
         if session is None:
             raise NotFoundError("session_not_found")

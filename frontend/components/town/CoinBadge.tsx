@@ -23,7 +23,7 @@ export function CoinBadge() {
         background: "rgba(252,211,77,0.07)",
         border: "1px solid rgba(252,211,77,0.45)",
         color: "var(--amber)",
-        fontFamily: "VT323, monospace",
+        fontFamily: "var(--font-vt323), monospace",
         letterSpacing: 0.6,
         textShadow: "0 0 6px rgba(252,211,77,0.55)",
         boxShadow: "inset 0 0 12px rgba(252,211,77,0.05)",

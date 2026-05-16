@@ -91,7 +91,7 @@ export function TownNavbar() {
               border: "1px solid rgba(252,211,77,0.4)",
               padding: "1px 5px",
               borderRadius: 99,
-              fontFamily: "VT323, monospace",
+              fontFamily: "var(--font-vt323), monospace",
               letterSpacing: 0.5,
             }}
           >

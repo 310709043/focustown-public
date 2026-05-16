@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=DotGothic16&family=VT323&family=Noto+Sans+TC:wght@300;400;500;700&display=swap");
+/* Fonts are self-hosted via next/font/google (see frontend/lib/fonts.ts).
+   The font CSS variables are attached to <html> in app/layout.tsx and
+   exposed to Tailwind's fontFamily tokens via tailwind.config.ts. */
 
 :root {
   --bg: #030111;
@@ -108,7 +110,7 @@ html,
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "DotGothic16", monospace;
+  font-family: var(--font-dot-gothic-16), monospace;
   image-rendering: pixelated;
   overflow: hidden;
   height: 100%;
@@ -180,7 +182,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: "Press Start 2P", monospace;
+  font-family: var(--font-press-start-2p), monospace;
   letter-spacing: 1px;
   background: var(--card);
   color: var(--a2);
@@ -240,7 +242,7 @@ body {
   border: 1px solid var(--dir-panel-stroke);
   color: var(--text);
   padding: 10px 14px;
-  font-family: "Silkscreen", "Noto Sans TC", monospace;
+  font-family: var(--font-silkscreen), var(--font-noto-sans-tc), monospace;
   font-size: var(--t-sm);
   outline: none;
   width: 100%;
@@ -256,7 +258,7 @@ body {
 /* English-only label utility: tight pixel monospace with widened tracking.
    Reach for this on chips, badges, tags, and English-only headers. */
 .font-pixel-en {
-  font-family: "Silkscreen", "Press Start 2P", monospace;
+  font-family: var(--font-silkscreen), var(--font-press-start-2p), monospace;
   letter-spacing: 0.04em;
 }
 

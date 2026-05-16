@@ -92,5 +92,5 @@ async def get_session(
     events: EventBusDep,
 ) -> FocusSessionResponse:
     svc = _service(db, clock, ids, events)
-    session = await svc._fetch_owned(session_id=session_id, user_id=user_id)
+    session = await svc.get_owned(session_id=session_id, user_id=user_id)
     return _dto(session)

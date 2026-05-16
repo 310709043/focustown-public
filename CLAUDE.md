@@ -158,7 +158,7 @@ Auth endpoints are rate-limited via `IRateLimiter` (Redis-backed in prod, `Memor
 
 - **Windows line endings**: `git add` emits CRLF warnings — that's `core.autocrlf=true` doing its job. Leave it.
 - **Alembic location**: `backend/alembic/` is a sibling of `app/`, not inside it. `prepend_sys_path = .` in `alembic.ini` makes `app.*` imports work inside `env.py`. Don't move it.
-- **`focus_session_service._fetch_owned`** is called by `api/v1/sessions/router.py:get_session`. It's intentionally private — the GET endpoint just wants the ownership check. If you rename it, update both call sites.
+- **`focus_session_service.get_owned`** is called by `api/v1/sessions/router.py:get_session` and is the same helper that `complete` / `cancel` use internally for the ownership check. Keep them all on this single public entry point.
 - **AWS adapters are stubs**: `infrastructure/auth/providers/cognito.py` and `infrastructure/storage/s3.py` raise `NotImplementedError`. Do not import them outside `core/deps.py`'s dispatch path until they have real bodies.
 - **Don't bypass `IRealtimePublisher`**: chat messages go through Redis even within the same process, so that scaling to >1 backend container Just Works.
 - **Frontend types are committed**: `frontend/lib/api/types.gen.ts` is in git (see `.gitignore`'s `!` rule). Regenerate via the script; don't hand-edit.

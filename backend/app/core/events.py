@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -26,14 +27,23 @@ class EventBus:
         self._handlers[event_type].append(handler)
 
     async def publish(self, event: Any) -> None:
-        for handler in self._handlers.get(type(event), []):
-            try:
-                await handler(event)
-            except Exception:
-                # NB: cannot name the kwarg "event" — structlog uses that
-                # key for the message itself, so collision raises TypeError
-                # and silently swallows the underlying error.
-                log.exception(
-                    "event_handler_failed",
-                    event_type=type(event).__name__,
-                )
+        handlers = self._handlers.get(type(event))
+        if not handlers:
+            return
+        # Run subscribers concurrently; one handler's I/O latency no longer
+        # blocks siblings. Each invocation is wrapped so an exception in one
+        # cannot abort the others — same isolation guarantee as the prior
+        # sequential implementation.
+        await asyncio.gather(*(self._safe_invoke(h, event) for h in handlers))
+
+    async def _safe_invoke(self, handler: EventHandler, event: Any) -> None:
+        try:
+            await handler(event)
+        except Exception:
+            # NB: cannot name the kwarg "event" — structlog uses that
+            # key for the message itself, so collision raises TypeError
+            # and silently swallows the underlying error.
+            log.exception(
+                "event_handler_failed",
+                event_type=type(event).__name__,
+            )

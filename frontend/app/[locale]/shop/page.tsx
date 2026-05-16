@@ -165,7 +165,7 @@ export default function ShopPage() {
               background: "rgba(252,211,77,0.07)",
               border: "1px solid rgba(252,211,77,0.45)",
               color: "var(--amber)",
-              fontFamily: "VT323, monospace",
+              fontFamily: "var(--font-vt323), monospace",
               letterSpacing: 0.6,
               textShadow: "0 0 6px rgba(252,211,77,0.5)",
               fontSize: 13,
@@ -268,7 +268,7 @@ export default function ShopPage() {
                               border: "1px solid rgba(52,211,153,0.5)",
                               padding: "0 4px",
                               borderRadius: 3,
-                              fontFamily: "VT323, monospace",
+                              fontFamily: "var(--font-vt323), monospace",
                               letterSpacing: 0.5,
                             }}
                           >
@@ -282,7 +282,7 @@ export default function ShopPage() {
                           className="text-[13px]"
                           style={{
                             color: tPrice ? "var(--amber)" : "var(--muted)",
-                            fontFamily: "VT323, monospace",
+                            fontFamily: "var(--font-vt323), monospace",
                             letterSpacing: 0.5,
                             textShadow: tPrice ? "0 0 6px rgba(252,211,77,0.4)" : undefined,
                           }}
@@ -356,7 +356,7 @@ export default function ShopPage() {
                           style={{
                             right: 8,
                             bottom: 26,
-                            fontFamily: "VT323, monospace",
+                            fontFamily: "var(--font-vt323), monospace",
                             color: "var(--amber)",
                             fontSize: 18,
                             textShadow: "0 0 10px var(--amber), 0 0 18px rgba(252,211,77,0.5)",
@@ -373,7 +373,7 @@ export default function ShopPage() {
                           style={{
                             right: 8,
                             bottom: 26,
-                            fontFamily: "VT323, monospace",
+                            fontFamily: "var(--font-vt323), monospace",
                             color: "var(--coral)",
                             fontSize: 14,
                             textShadow: "0 0 8px var(--coral)",

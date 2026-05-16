@@ -31,6 +31,15 @@
   "clock": {
     "tooltip": "Town time"
   },
+  "personalRadio": {
+    "headerCity": "City radio",
+    "headerPersonal": "Personal radio",
+    "prevAria": "Previous track",
+    "nextAria": "Next track",
+    "playAria": "Play",
+    "pauseAria": "Pause",
+    "volumeAria": "Volume"
+  },
   "scene": {
     "youSuffix": "you",
     "billboardEmptyLine1": "No completed sessions yet",

@@ -5,7 +5,7 @@ What's worth testing here, per the plan:
 - ``complete`` clamps ``elapsed_seconds`` to ``duration_seconds`` and emits SessionCompleted
 - ``complete`` / ``cancel`` reject non-active sessions
 - ``sweep_abandoned`` applies the 60-second grace exactly
-- ``_fetch_owned`` rejects non-members
+- ``get_owned`` rejects non-members
 
 What's NOT worth testing here:
 - Trivial constructor wiring
@@ -207,7 +207,7 @@ async def test_cancel_rejects_completed_session(service, clock):
         await service.cancel(session_id=session.id, user_id="u1")
 
 
-# ── _fetch_owned (member check) ────────────────────────────────────────────
+# ── get_owned (member check) ──────────────────────────────────────────────
 
 
 @pytest.mark.asyncio

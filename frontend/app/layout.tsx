@@ -3,6 +3,8 @@ import "./globals.css";
 import type { Viewport } from "next";
 import type { ReactNode } from "react";
 
+import { fontVariables } from "@/lib/fonts";
+
 /**
  * Root shell. Next.js requires exactly one root layout that renders
  * `<html>` + `<body>`. The post-i18n tree splits routes between
@@ -23,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="zh-TW">
+    <html lang="zh-TW" className={fontVariables}>
       <body>{children}</body>
     </html>
   );

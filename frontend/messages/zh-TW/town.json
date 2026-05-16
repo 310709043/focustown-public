@@ -31,6 +31,15 @@
   "clock": {
     "tooltip": "小鎮時間"
   },
+  "personalRadio": {
+    "headerCity": "城市電台",
+    "headerPersonal": "個人電台",
+    "prevAria": "上一首",
+    "nextAria": "下一首",
+    "playAria": "播放",
+    "pauseAria": "暫停",
+    "volumeAria": "音量"
+  },
   "scene": {
     "youSuffix": "您",
     "billboardEmptyLine1": "還沒有完成記錄",

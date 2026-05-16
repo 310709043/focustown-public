@@ -27,7 +27,7 @@ export function TopStatusPill() {
           border: "1px solid rgba(52,211,153,0.35)",
           fontSize: 12,
           color: "var(--teal)",
-          fontFamily: "VT323, monospace",
+          fontFamily: "var(--font-vt323), monospace",
           letterSpacing: 0.6,
           textShadow: "0 0 6px rgba(52,211,153,0.4)",
         }}

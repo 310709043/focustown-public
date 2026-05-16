@@ -39,11 +39,15 @@ const config: Config = {
         green: "var(--green)",
       },
       fontFamily: {
-        pixel: ["'Press Start 2P'", "monospace"],
-        japan: ["'DotGothic16'", "monospace"],
-        mono: ["'VT323'", "monospace"],
-        body: ["'Noto Sans TC'", "sans-serif"],
-        silkscreen: ["'Silkscreen'", "'Press Start 2P'", "monospace"],
+        pixel: ["var(--font-press-start-2p)", "monospace"],
+        japan: ["var(--font-dot-gothic-16)", "monospace"],
+        mono: ["var(--font-vt323)", "monospace"],
+        body: ["var(--font-noto-sans-tc)", "sans-serif"],
+        silkscreen: [
+          "var(--font-silkscreen)",
+          "var(--font-press-start-2p)",
+          "monospace",
+        ],
       },
       fontSize: {
         // V2 type scale (mirrors --t-* CSS vars in globals.css)

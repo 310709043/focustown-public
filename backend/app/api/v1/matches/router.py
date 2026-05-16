@@ -43,7 +43,8 @@ async def _dto(
     """Hydrate both sides' ``character_key`` so the frontend can render the
     pairing illustration regardless of which side the viewer is on. One
     lookup per distinct user; callers passing a ``cache`` dict reuse hits
-    across multiple matches in the same handler.
+    across multiple matches in the same handler (used by ``/recent`` to
+    avoid the N+1 pattern after batch-loading user rows).
     """
     cache = cache if cache is not None else {}
 
@@ -93,7 +94,8 @@ async def propose_match(
 ) -> MatchResponse:
     svc = _service(db, ids, events, clock)
     match = await svc.propose(requester_id=user_id, candidate_id=payload.candidate_id)
-    return await _dto(match, SqlUserRepo(db))
+    users: IUserReader = SqlUserRepo(db)
+    return await _dto(match, users)
 
 
 @router.post("/{match_id}/accept", response_model=MatchResponse)
@@ -107,7 +109,8 @@ async def accept_match(
 ) -> MatchResponse:
     svc = _service(db, ids, events, clock)
     match = await svc.accept(match_id=match_id, user_id=user_id)
-    return await _dto(match, SqlUserRepo(db))
+    users: IUserReader = SqlUserRepo(db)
+    return await _dto(match, users)
 
 
 @router.post("/{match_id}/skip", response_model=MatchResponse)
@@ -121,15 +124,25 @@ async def skip_match(
 ) -> MatchResponse:
     svc = _service(db, ids, events, clock)
     match = await svc.skip(match_id=match_id, user_id=user_id)
-    return await _dto(match, SqlUserRepo(db))
+    users: IUserReader = SqlUserRepo(db)
+    return await _dto(match, users)
 
 
 @router.get("/recent", response_model=list[MatchResponse])
 async def recent_matches(user_id: CurrentUserId, db: DbDep) -> list[MatchResponse]:
     repo: IMatchReader = SqlMatchRepo(db)
     users: IUserReader = SqlUserRepo(db)
-    cache: dict[str, str | None] = {}
     matches = await repo.list_recent_for_user(user_id=user_id, limit=20)
+    if not matches:
+        return []
+    user_ids = list(
+        {m.requester_id for m in matches} | {m.candidate_id for m in matches}
+    )
+    fetched = await users.get_many_by_ids(user_ids)
+    cache: dict[str, str | None] = {u.id: u.character_key for u in fetched}
+    # Mark misses as None so _dto's cache short-circuits instead of re-querying.
+    for uid in user_ids:
+        cache.setdefault(uid, None)
     return [await _dto(m, users, cache=cache) for m in matches]
 
 
@@ -152,7 +165,8 @@ async def get_match(
         raise NotFoundError("match_not_found")
     if user_id not in (match.requester_id, match.candidate_id):
         raise ForbiddenError("not_match_member")
-    return await _dto(match, SqlUserRepo(db))
+    users: IUserReader = SqlUserRepo(db)
+    return await _dto(match, users)
 
 
 @router.post("/auto", response_model=MatchResponse, status_code=201)
@@ -205,7 +219,7 @@ async def auto_match(
     if real_pool:
         chosen = random.choice(real_pool)  # noqa: S311
         match = await svc.propose(requester_id=user_id, candidate_id=chosen.id)
-        return await _dto(match, users)
+        return await _dto(match, users, cache={chosen.id: chosen.character_key})
 
     # Step 2: bot fallback
     bots = await users.list_bots()
@@ -215,4 +229,4 @@ async def auto_match(
     chosen = random.choice(bot_pool)  # noqa: S311
     match = await svc.propose(requester_id=user_id, candidate_id=chosen.id)
     accepted = await svc.accept(match_id=match.id, user_id=chosen.id)
-    return await _dto(accepted, users)
+    return await _dto(accepted, users, cache={chosen.id: chosen.character_key})
