@@ -7,7 +7,9 @@
     "signout": "登出",
     "library": "🎵 音樂庫",
     "achv": "ACHV",
-    "frds": "FRDS"
+    "frds": "FRDS",
+    "feedbackAria": "意見回饋",
+    "supportAria": "技術支援"
   },
   "bottom": {
     "focusTimer": {
@@ -63,6 +65,41 @@
   },
   "shopBadge": {
     "unlocked": "🔓 已解鎖 {count} 項"
+  },
+  "modals": {
+    "achv": {
+      "title": "成就 / ACHV"
+    },
+    "shop": {
+      "title": "商店 / SHOP"
+    },
+    "feedback": {
+      "title": "意見回饋 / FEEDBACK",
+      "subjectLabel": "主旨",
+      "subjectPlaceholder": "簡單描述一下…",
+      "bodyLabel": "想說的話",
+      "bodyPlaceholder": "告訴我們你的想法、卡關的地方、希望我們做什麼…",
+      "emptyError": "請至少寫一點內容再送出",
+      "submitCta": "送出回饋",
+      "cancelCta": "取消",
+      "doneCta": "好",
+      "successHeading": "已收到，謝謝你",
+      "successBody": "我們會把每一則訊息看完。再見囉！"
+    },
+    "support": {
+      "title": "技術支援 / SUPPORT",
+      "helpHint": "登入問題、付款異常、被擋在小鎮外面？把細節告訴我們，會儘快回覆你。",
+      "subjectLabel": "主旨",
+      "subjectPlaceholder": "例如：付款後沒看到 T 幣入帳",
+      "bodyLabel": "詳細狀況",
+      "bodyPlaceholder": "發生了什麼？什麼時候開始？你用的瀏覽器與裝置是？",
+      "emptyError": "請描述一下狀況再送出",
+      "submitCta": "送出",
+      "cancelCta": "取消",
+      "doneCta": "好",
+      "successHeading": "已收到，會盡快回覆",
+      "successBody": "我們會用你註冊的 email 跟你聯絡。"
+    }
   },
   "greeting": {
     "welcome": "歡迎回來，{name}"

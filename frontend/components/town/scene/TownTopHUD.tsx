@@ -17,6 +17,18 @@ import { TROPHY, NOTE } from "@/lib/pixel/sprites/props";
 import { NavButton } from "./NavButton";
 import { UserStatusPill } from "./UserStatusPill";
 
+/**
+ * Modal targets the TopHUD can open. PR1 wires achv/shop/feedback/support;
+ * PR2 will add friends + profile.
+ */
+export type TownModalKind =
+  | "achv"
+  | "shop"
+  | "frds"
+  | "profile"
+  | "feedback"
+  | "support";
+
 const TIME_LABEL: Record<SceneName, string> = {
   night: "timeNight",
   dawn: "timeDawn",
@@ -79,7 +91,11 @@ const MN = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT"
  * roomApi.getMine, leaderboard nav). The locale switcher is rendered
  * by the global LocaleLayout top-right slot.
  */
-export function TownTopHUD() {
+export function TownTopHUD({
+  onOpenModal,
+}: {
+  onOpenModal: (kind: TownModalKind) => void;
+}) {
   const router = useRouter();
   const signOut = useAuthStore((s) => s.signOut);
   const scene = useSceneStore((s) => s.current);
@@ -176,13 +192,13 @@ export function TownTopHUD() {
             <PixelSprite sprite={TROPHY.sprite} palette={TROPHY.palette} scale={1.3} />
           }
           label={tNav("achv")}
-          href="/awards"
+          onClick={() => onOpenModal("achv")}
         />
         <NavButton
           testId="nav-shop"
           icon="🛒"
           label={tNav("shop")}
-          href="/shop"
+          onClick={() => onOpenModal("shop")}
         />
         <NavButton
           testId="nav-friends"
@@ -190,9 +206,7 @@ export function TownTopHUD() {
             <PixelSprite sprite={NOTE.sprite} palette={NOTE.palette} scale={1.3} />
           }
           label={tNav("frds")}
-          onClick={() => {
-            /* friends modal lands in a follow-up PR */
-          }}
+          onClick={() => onOpenModal("frds")}
         />
 
         {/* My-room — kept from Current as a useful nav target. */}
@@ -255,6 +269,41 @@ export function TownTopHUD() {
         ) : null}
 
         <CoinBadge />
+
+        {/* Compact feedback + support icon buttons — PR1 entry point. PR2
+            may consolidate these into the profile/sign-out menu. */}
+        <button
+          data-testid="nav-feedback"
+          onClick={() => onOpenModal("feedback")}
+          aria-label={tNav("feedbackAria")}
+          className="font-silkscreen"
+          style={{
+            background: "rgba(7,4,26,0.75)",
+            border: "1px solid var(--panel-stroke)",
+            padding: "6px 8px",
+            fontSize: 11,
+            color: "var(--ink-mute)",
+            cursor: "pointer",
+          }}
+        >
+          ✎
+        </button>
+        <button
+          data-testid="nav-support"
+          onClick={() => onOpenModal("support")}
+          aria-label={tNav("supportAria")}
+          className="font-silkscreen"
+          style={{
+            background: "rgba(7,4,26,0.75)",
+            border: "1px solid var(--panel-stroke)",
+            padding: "6px 8px",
+            fontSize: 11,
+            color: "var(--ink-mute)",
+            cursor: "pointer",
+          }}
+        >
+          ?
+        </button>
 
         <Link
           data-testid="nav-logout"

@@ -7,7 +7,9 @@
     "signout": "Sign out",
     "library": "🎵 Music library",
     "achv": "ACHV",
-    "frds": "FRDS"
+    "frds": "FRDS",
+    "feedbackAria": "Send feedback",
+    "supportAria": "Get support"
   },
   "bottom": {
     "focusTimer": {
@@ -63,6 +65,41 @@
   },
   "shopBadge": {
     "unlocked": "🔓 {count} unlocked"
+  },
+  "modals": {
+    "achv": {
+      "title": "ACHIEVEMENTS / ACHV"
+    },
+    "shop": {
+      "title": "SHOP"
+    },
+    "feedback": {
+      "title": "FEEDBACK",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "A quick headline…",
+      "bodyLabel": "Your thoughts",
+      "bodyPlaceholder": "Tell us what's on your mind, where you got stuck, what you wish we'd build next…",
+      "emptyError": "Please write something before sending",
+      "submitCta": "Send feedback",
+      "cancelCta": "Cancel",
+      "doneCta": "Done",
+      "successHeading": "Got it — thank you",
+      "successBody": "We read every message. Catch you later!"
+    },
+    "support": {
+      "title": "SUPPORT",
+      "helpHint": "Login trouble, payment issues, locked out of town? Drop the details below and we'll get back to you.",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "e.g. T coins missing after purchase",
+      "bodyLabel": "Details",
+      "bodyPlaceholder": "What happened? When did it start? Which browser + device?",
+      "emptyError": "Please describe the issue before sending",
+      "submitCta": "Send",
+      "cancelCta": "Cancel",
+      "doneCta": "Done",
+      "successHeading": "Got it — we'll be in touch",
+      "successBody": "We'll reply to your registered email."
+    }
   },
   "greeting": {
     "welcome": "Welcome back, {name}"

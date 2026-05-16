@@ -32,7 +32,7 @@ import { SCENES } from "@/lib/data/scenes";
 import { NamedBuildings } from "@/components/town/scene/NamedBuildings";
 import { CelestialBody } from "@/components/town/scene/CelestialBody";
 import { SkyWindow } from "@/components/town/scene/SkyWindow";
-import { TownTopHUD } from "@/components/town/scene/TownTopHUD";
+import { TownTopHUD, type TownModalKind } from "@/components/town/scene/TownTopHUD";
 
 // Ambient / animation-only scene entities lazy-load so they don't block
 // the first paint. Each runs an independent animation loop, none of them
@@ -57,6 +57,10 @@ const ShootingStars = dynamic(
 );
 
 import { MatchModal } from "@/components/modals/MatchModal";
+import { ShopModal } from "@/components/modals/ShopModal";
+import { AchievementsModal } from "@/components/modals/AchievementsModal";
+import { FeedbackModal } from "@/components/modals/FeedbackModal";
+import { SupportModal } from "@/components/modals/SupportModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
 
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
@@ -66,6 +70,8 @@ export default function TownPage() {
   const advanceScene = useSceneStore((s) => s.advance);
   const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
   const [matchOpen, setMatchOpen] = useState(false);
+  // PR1 wires achv/shop/feedback/support; frds/profile become live in PR2.
+  const [openModal, setOpenModal] = useState<TownModalKind | null>(null);
   const requestAutoMatch = useMatchStore((s) => s.requestAuto);
   const matchProposing = useMatchStore((s) => s.proposing);
 
@@ -189,7 +195,7 @@ export default function TownPage() {
       {/* Top HUD — reference's 3-cluster layout: logo+wordmark+weather chip
           on the left, UserStatusPill in the center, ACHV/SHOP/FRDS + clock
           + T-coin + sign-out on the right. Overlays the scene (absolute). */}
-      <TownTopHUD />
+      <TownTopHUD onOpenModal={setOpenModal} />
 
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
            z-order: sky → stars → shooting stars → celestial sprite → planes →
@@ -258,6 +264,22 @@ export default function TownPage() {
       </div>
 
       <MatchModal open={matchOpen} onClose={() => setMatchOpen(false)} />
+      <ShopModal
+        open={openModal === "shop"}
+        onClose={() => setOpenModal(null)}
+      />
+      <AchievementsModal
+        open={openModal === "achv"}
+        onClose={() => setOpenModal(null)}
+      />
+      <FeedbackModal
+        open={openModal === "feedback"}
+        onClose={() => setOpenModal(null)}
+      />
+      <SupportModal
+        open={openModal === "support"}
+        onClose={() => setOpenModal(null)}
+      />
     </main>
     </FrameTicker>
   );
