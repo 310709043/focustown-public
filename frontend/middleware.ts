@@ -23,6 +23,21 @@ const isProd = process.env.NODE_ENV === "production";
 const apiOriginHttp = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 const apiOriginWs = apiOriginHttp.replace(/^http/, "ws");
 
+// Origins the browser is allowed to load <audio>/<video> bytes from. The
+// streaming endpoint lives on the backend (cross-origin from the frontend
+// in dev) and, in S3 mode, the backend 302-redirects to MinIO / CloudFront —
+// each of those final hosts also has to be allow-listed here, because CSP
+// re-checks media-src against the post-redirect URL.
+//
+// Comma-separated NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS lets ops add hosts
+// without code changes; when unset, fall back to the API origin so dev
+// keeps working out of the box.
+const mediaOrigins = (process.env.NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS ?? apiOriginHttp)
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .join(" ");
+
 function buildCsp(nonce: string): string {
   const scriptSrc = isProd
     ? `'self' 'nonce-${nonce}' 'strict-dynamic'`
@@ -33,6 +48,7 @@ function buildCsp(nonce: string): string {
     `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
+    `media-src 'self' ${mediaOrigins} blob:`,
     "font-src 'self' data:",
     `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} ws: wss:`,
     "frame-ancestors 'none'",
