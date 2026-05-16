@@ -227,9 +227,9 @@ Branch base: `origin/main` (these files are untouched on the audit branch — ve
 | D12 Missing `midnight` scene | medium | recommended — palette + density swap |
 | D13 Missing `cloudy` weather | medium | recommended — port `Clouds` overlay |
 | D14 TIME_TEMP value drift | medium | recommended — 1-table change |
-| D15 UserStatusPill missing 🍅 | medium | recommended — i18n value edit |
-| D16 Birds lose names | medium | recommended — small NPC restore |
-| D17 Ticker `📡 LIVE` pin | medium | verify TickerBar; add if missing |
+| D15 UserStatusPill missing 🍅 | medium | ✅ confirmed already fixed in i18n (`statusPill.focusing: "專注中 · 🍅 #{count}"`) — audit doc was stale |
+| D16 Birds lose names | medium | pending — Phase C3b (after C2 PR2 merges) |
+| D17 Ticker `📡 LIVE` pin | medium | ✅ fixed in Phase C3a — `components/chrome/TickerBar.tsx` left-pinned `📡 LIVE` chip (solid `var(--accent)` bg + dark `#0a0524` text + silkscreen 10 0.2em) |
 | D18 Weather-chip spacing | medium | verify only; mostly matches |
 | D19 Lamp/tree/bench positions | low | verify StreetProps and align |
 | D20 RankBoard live data | low | document — intentional |
