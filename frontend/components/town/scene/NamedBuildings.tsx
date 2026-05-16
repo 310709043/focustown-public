@@ -12,9 +12,11 @@ import { BuildingTag } from "./BuildingTag";
  *  to a sub-set of reference's 5 weather states. */
 const WEATHER_TINT: Record<SceneName, string> = {
   night: "transparent",
+  midnight: "transparent",
   dawn: "transparent",
   day: "transparent",
   dusk: "transparent",
+  cloudy: "rgba(110,110,140,0.18)",
   rain: "rgba(34,80,180,0.28)",
   snow: "rgba(220,230,250,0.18)",
   storm: "rgba(20,30,80,0.4)",
@@ -23,15 +25,17 @@ const WEATHER_TINT: Record<SceneName, string> = {
 /** Subtle time-of-day overlay applied via `mix-blend: overlay`. */
 const TIME_TINT: Record<SceneName, string> = {
   night: "rgba(20,8,58,0.2)",
+  midnight: "rgba(2,2,10,0.35)",
   dawn: "rgba(217,122,138,0.12)",
   day: "rgba(255,255,255,0.04)",
   dusk: "rgba(240,130,90,0.12)",
+  cloudy: "rgba(80,80,110,0.15)",
   rain: "rgba(20,30,80,0.2)",
   snow: "rgba(120,140,170,0.15)",
   storm: "rgba(2,2,10,0.35)",
 };
 
-const NIGHTY: readonly SceneName[] = ["night", "storm"];
+const NIGHTY: readonly SceneName[] = ["night", "midnight", "storm"];
 
 /**
  * Foreground cityscape — 9 named pixel buildings (CAFE PIXEL →

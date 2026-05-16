@@ -16,9 +16,11 @@ export type Direction = "neon" | "dusk" | "rain";
 
 export const SCENE_TO_DIRECTION: Record<SceneName, Direction> = {
   night: "neon",
+  midnight: "neon",
   dawn: "dusk",
   day: "dusk",
   dusk: "dusk",
+  cloudy: "dusk",
   rain: "rain",
   snow: "neon",
   storm: "neon",

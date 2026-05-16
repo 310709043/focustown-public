@@ -4,17 +4,21 @@ import { create } from "zustand";
 
 export type SceneName =
   | "night"
+  | "midnight"
   | "dawn"
   | "day"
   | "dusk"
+  | "cloudy"
   | "rain"
   | "snow"
   | "storm";
 
 export const SCENE_ORDER: SceneName[] = [
   "night",
+  "midnight",
   "dawn",
   "day",
+  "cloudy",
   "dusk",
   "rain",
   "night",

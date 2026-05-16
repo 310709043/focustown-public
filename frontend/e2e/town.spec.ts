@@ -18,37 +18,30 @@ test.describe("/town navigation", () => {
     await seedAuthTokens(page);
   });
 
-  test("/town renders and navbar links are wired", async ({ page }) => {
+  test("/town renders and HUD links are wired", async ({ page }) => {
     await page.goto("/town");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    await expect(page.getByTestId("town-navbar")).toBeVisible();
+    await expect(page.getByTestId("town-top-hud")).toBeVisible();
     await expect(page.getByTestId("nav-awards")).toBeVisible();
     await expect(page.getByTestId("nav-shop")).toBeVisible();
-    await expect(page.getByTestId("nav-room")).toBeVisible();
+    await expect(page.getByTestId("nav-friends")).toBeVisible();
     await expect(page.getByTestId("nav-logout")).toBeVisible();
   });
 
-  test("🏆 大賞區 → /awards", async ({ page }) => {
+  test("🏆 ACHV opens the awards modal", async ({ page }) => {
     await page.goto("/town");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
     await page.getByTestId("nav-awards").click();
-    // Dev-server compile of the destination route can take a few seconds;
-    // waitForURL is more tolerant than toHaveURL's default 5s assertion.
-    await page.waitForURL(/\/awards$/, { timeout: 15_000 });
+    await expect(page.getByTestId("achievements-modal")).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
-  test("🛒 道具 → /shop", async ({ page }) => {
+  test("🛒 SHOP opens the shop modal", async ({ page }) => {
     await page.goto("/town");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
     await page.getByTestId("nav-shop").click();
-    await page.waitForURL(/\/shop$/, { timeout: 15_000 });
-  });
-
-  test("🏠 我的房間 → /town/room/[id]", async ({ page }) => {
-    await page.goto("/town");
-    await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    await page.getByTestId("nav-room").click();
-    await page.waitForURL(/\/town\/room\/room-test-1$/, { timeout: 15_000 });
+    await expect(page.getByTestId("shop-modal")).toBeVisible({ timeout: 5_000 });
   });
 
   test("登出 clears tokens and returns to /", async ({ page }) => {

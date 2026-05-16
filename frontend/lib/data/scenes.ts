@@ -23,7 +23,19 @@ export const SCENES: Record<SceneName, SceneDef> = {
     aurora: 0.18,
     moon: 1,
     sun: 0,
-    label: "🌙 夜晚・微涼 18°C",
+    label: "🌙 夜晚・微涼 16°C",
+  },
+  midnight: {
+    sky:
+      "linear-gradient(180deg,#020208 0%,#0a0820 50%,#15093a 100%)",
+    ground: "#020108",
+    road: "#040114",
+    sidewalk: "#06021a",
+    stars: 1,
+    aurora: 0.22,
+    moon: 1,
+    sun: 0,
+    label: "🌙 深夜・寂靜 11°C",
   },
   dawn: {
     sky:
@@ -35,7 +47,7 @@ export const SCENES: Record<SceneName, SceneDef> = {
     aurora: 0,
     moon: 0,
     sun: 0,
-    label: "🌅 黎明・薄霧 14°C",
+    label: "🌅 黎明・薄霧 12°C",
   },
   day: {
     sky:
@@ -47,7 +59,7 @@ export const SCENES: Record<SceneName, SceneDef> = {
     aurora: 0,
     moon: 0,
     sun: 1,
-    label: "☀️ 白天・晴朗 26°C",
+    label: "☀️ 白天・晴朗 22°C",
   },
   dusk: {
     sky:
@@ -59,7 +71,19 @@ export const SCENES: Record<SceneName, SceneDef> = {
     aurora: 0,
     moon: 0,
     sun: 0,
-    label: "🌇 黃昏・涼爽 22°C",
+    label: "🌇 黃昏・涼爽 19°C",
+  },
+  cloudy: {
+    sky:
+      "linear-gradient(180deg,#3a3a52 0%,#5c5c75 45%,#8a8aa0 100%)",
+    ground: "#1a1828",
+    road: "#1e1c2c",
+    sidewalk: "#222033",
+    stars: 0,
+    aurora: 0,
+    moon: 0,
+    sun: 0.3,
+    label: "☁️ 多雲・微涼 18°C",
   },
   rain: {
     sky: "linear-gradient(180deg,#0a0a16 0%,#111828 45%,#1e2940 100%)",

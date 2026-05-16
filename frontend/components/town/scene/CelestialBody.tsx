@@ -5,8 +5,8 @@ import { MOON, SUN } from "@/lib/pixel/sprites/props";
 import { useSceneStore } from "@/lib/state/sceneStore";
 import { SCENES } from "@/lib/data/scenes";
 
-const NIGHT_SCENES = new Set(["night", "storm"]);
-const DAY_SCENES = new Set(["day", "dawn", "dusk"]);
+const NIGHT_SCENES = new Set(["night", "midnight", "storm"]);
+const DAY_SCENES = new Set(["day", "dawn", "dusk", "cloudy"]);
 
 /**
  * Pixel moon / sun in the upper-right of the sky — replaces the

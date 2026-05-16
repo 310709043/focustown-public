@@ -7,12 +7,12 @@ import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { PixelWord } from "@/components/pixel/PixelWord";
 import { Logo } from "@/components/scene/Logo";
 import { CoinBadge } from "@/components/town/CoinBadge";
-import { Link, useRouter } from "@/i18n/routing";
-import { roomApi } from "@/lib/api/endpoints";
+import { Link } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import { useSceneStore, type SceneName } from "@/lib/state/sceneStore";
-import { TROPHY, NOTE } from "@/lib/pixel/sprites/props";
+import { TROPHY } from "@/lib/pixel/sprites/props";
+import { CAT_WALK } from "@/lib/pixel/sprites/walkers";
 
 import { NavButton } from "./NavButton";
 import { UserStatusPill } from "./UserStatusPill";
@@ -29,47 +29,48 @@ export type TownModalKind =
   | "feedback"
   | "support";
 
-const TIME_LABEL: Record<SceneName, string> = {
-  night: "timeNight",
-  dawn: "timeDawn",
-  day: "timeDay",
-  dusk: "timeDusk",
-  rain: "timeNight",
-  snow: "timeNight",
-  storm: "timeNight",
-};
 const TIME_EMOJI: Record<SceneName, string> = {
   night: "🌙",
+  midnight: "🌙",
   dawn: "🌅",
   day: "☀",
   dusk: "🌆",
+  cloudy: "☀",
   rain: "🌙",
   snow: "🌙",
   storm: "🌙",
 };
 const WEATHER_LABEL: Record<SceneName, string> = {
   night: "weatherSunny",
+  midnight: "weatherSunny",
   dawn: "weatherSunny",
   day: "weatherSunny",
   dusk: "weatherSunny",
+  cloudy: "weatherCloudy",
   rain: "weatherRain",
   snow: "weatherSnow",
   storm: "weatherStorm",
 };
 const WEATHER_ICON: Record<SceneName, string> = {
   night: "☀",
+  midnight: "☀",
   dawn: "☀",
   day: "☀",
   dusk: "☀",
+  cloudy: "☁",
   rain: "☂",
   snow: "❄",
   storm: "⚡",
 };
+// Aligned with reference/screen-town.jsx TIME_TEMP: dawn 12 · day 22 · dusk 19
+// · night 16 · midnight 11. Weather-collapsed scenes inherit the implied time.
 const SCENE_TEMP: Record<SceneName, number> = {
-  night: 18,
-  dawn: 14,
-  day: 26,
-  dusk: 22,
+  night: 16,
+  midnight: 11,
+  dawn: 12,
+  day: 22,
+  dusk: 19,
+  cloudy: 18,
   rain: 16,
   snow: 2,
   storm: 12,
@@ -96,11 +97,13 @@ export function TownTopHUD({
 }: {
   onOpenModal: (kind: TownModalKind) => void;
 }) {
-  const router = useRouter();
   const signOut = useAuthStore((s) => s.signOut);
   const scene = useSceneStore((s) => s.current);
+  // Presence store may not be hydrated yet on initial paint (SSR + first WS
+  // tick). Floor at 1 so the chip never reads as "ONLINE 0" — at minimum the
+  // user looking at the page IS online.
   const onlineCount = usePresenceStore(
-    (s) => Object.keys(s.byId).length,
+    (s) => Math.max(Object.keys(s.byId).length, 1),
   );
   const tNav = useTranslations("town.nav");
   const tHud = useTranslations("town");
@@ -203,27 +206,14 @@ export function TownTopHUD({
         <NavButton
           testId="nav-friends"
           icon={
-            <PixelSprite sprite={NOTE.sprite} palette={NOTE.palette} scale={1.3} />
+            <PixelSprite
+              sprite={CAT_WALK.frames[0]}
+              palette={CAT_WALK.palette}
+              scale={1.3}
+            />
           }
           label={tNav("frds")}
           onClick={() => onOpenModal("frds")}
-        />
-
-        {/* My-room — kept from Current as a useful nav target. */}
-        <NavButton
-          testId="nav-room"
-          icon="🏠"
-          label={tNav("myRoom")}
-          onClick={async () => {
-            try {
-              const room = await roomApi.getMine();
-              router.push(
-                `/town/room/${room.id}` as Parameters<typeof router.push>[0],
-              );
-            } catch {
-              /* hydration retry on next click */
-            }
-          }}
         />
 
         {now ? (

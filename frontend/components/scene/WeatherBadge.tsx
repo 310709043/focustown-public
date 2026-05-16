@@ -10,19 +10,25 @@ import { useSceneStore, type SceneName } from "@/lib/state/sceneStore";
 // is delegated to the `scenes` namespace so adding a language is a JSON edit.
 const SCENE_EMOJI: Record<SceneName, string> = {
   night: "🌙",
+  midnight: "🌙",
   dawn: "🌅",
   day: "☀️",
   dusk: "🌇",
+  cloudy: "☁️",
   rain: "🌧",
   snow: "❄️",
   storm: "⛈",
 };
 
+// Aligned with reference/screen-town.jsx TIME_TEMP: dawn 12 · day 22 · dusk 19
+// · night 16 · midnight 11. Weather-collapsed scenes inherit the implied time.
 const SCENE_TEMP_C: Record<SceneName, number> = {
-  night: 18,
-  dawn: 14,
-  day: 26,
-  dusk: 22,
+  night: 16,
+  midnight: 11,
+  dawn: 12,
+  day: 22,
+  dusk: 19,
+  cloudy: 18,
   rain: 16,
   snow: 2,
   storm: 12,
