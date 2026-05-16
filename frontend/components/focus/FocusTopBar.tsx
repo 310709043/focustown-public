@@ -25,12 +25,11 @@ export function FocusTopBar() {
     <header
       data-testid="focus-top-bar"
       style={{
-        height: 56,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 16px",
-        background: "rgba(3,1,17,0.92)",
+        padding: "12px 18px",
+        background: "rgba(7,4,26,0.75)",
         borderBottom: "1px solid var(--panel-stroke)",
         position: "relative",
         zIndex: 5,

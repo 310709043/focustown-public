@@ -9,7 +9,7 @@ Branch: `feat/sync-eric-page-4-focus-solo` @ uncommitted (head `fda549d` + worki
 ## Summary
 
 - **27 discrepancies total**: 7 high, 13 medium, 7 low.
-- **Status (as of fix pass):** D1–D20 + D23 ✅ fixed in this PR; D21, D22, D24–D27 deferred (low-severity polish).
+- **Status (post-Phase D):** all 27 discrepancies ✅ resolved. D1–D20 + D23 shipped in PR #41; D21–D27 shipped in Phase D polish PR.
 - All 6 ambient backdrops (`cafe / rain / forest / space / lofi / fire`), the `getBgGradient` palette, `PixelDigits` font, BG_OPTIONS schema, 3-column grid template, and the 8-tomato strip in `BigTimer` ported faithfully.
 - The major theme: impl is **systematically slightly larger and uses different decorative glyphs** (`✦ ✎ ◉ ✓ ♪` instead of the reference's uniform `●` blink-dot header pattern), and several panels lost reference-specific affordances (Notes' flat 22 × 22 `Mini` toolbar buttons, TasksPanel's custom checkbox, the QuickActions row-without-panel layout).
 
@@ -255,14 +255,14 @@ Branch: `feat/sync-eric-page-4-focus-solo` @ uncommitted (head `fda549d` + worki
 | D18 TasksPanel row background | medium | ✅ fixed in this PR |
 | D19 TasksPanel `+` button | medium | ✅ fixed in this PR |
 | D20 AmbientPanel header glyph + color | medium | ✅ fixed in this PR |
-| D21 Body-grid spacing | low | deferred — optional polish |
-| D22 FriendsNow header drift | low | deferred — partially covered by D7 (header color/text still drifts) |
-| D23 SessionInsight glyph | low | ✅ resolved alongside D1 (`●` restored on header) |
-| D24 SessionInsight tip copy | low | deferred — copy still impl-specific (lifestyle-vs-motivational tips) |
-| D25 Notes textarea VT323 | low | deferred — `notes textarea` still uses pixel-input fontFamily |
-| D26 Notes header glyph | low | deferred — `✎` glyph still in header |
-| D27 Top-bar wrapper padding/bg | low | deferred — fixed 56 px height kept |
+| D21 Body-grid spacing | low | ✅ fixed in Phase D — gap/padding 16→12 in SoloFocusScene; right-column gap 12→10 to match reference's tighter spacing |
+| D22 FriendsNow header drift | low | ✅ fixed in Phase D — `◉` accent-3 → `●` blink-dot accent-2 with `neon-glow-pink` shadow |
+| D23 SessionInsight glyph | low | ✅ resolved alongside D1 in PR #41 |
+| D24 SessionInsight tip copy | low | ✅ fixed in Phase D — replaced generic tips with reference's 4 lifestyle tips (research / break / caffeine / late-night) in both locales |
+| D25 Notes textarea VT323 | low | ✅ fixed in Phase D — textarea adds inline `fontFamily: var(--font-vt323)`, `fontSize: 17`, `lineHeight: 1.45`, `padding: 12` |
+| D26 Notes header glyph | low | ✅ fixed in Phase D — `✎` accent → `●` blink-dot accent-2 with `neon-glow-pink` |
+| D27 Top-bar wrapper padding/bg | low | ✅ fixed in Phase D — dropped fixed 56 px height; padding `12px 18px`; background `rgba(7,4,26,0.75)` per reference |
 
-**Recommendation:** D1–D20 (all high + medium) were applied before opening the Page 4 PR per scope confirmed with user. D21–D27 (low-severity drift) intentionally deferred — can land as a follow-up polish PR after Page 4 merges if visually noticeable.
+**Status:** all 27 discrepancies resolved. D1–D20 + D23 shipped in PR #41 (Page 4 merge). D21–D27 shipped in Phase D polish PR.
 
 Bonus: the new `.pixel-btn.primary` modifier in `frontend/app/globals.css` is the shared CSS infrastructure for Page 1 D1 + Page 2 D1 + Page 2 D2 + Page 4 D11 + Page 4 D19. Page 4 D11 + D19 consume it now; the Page 1 / Page 2 application is a one-line `className` add per consumer and can ship in those pages' separate follow-up PRs.

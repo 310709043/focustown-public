@@ -35,13 +35,30 @@ export function FriendsNow() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span
           className="font-silkscreen"
-          style={{ fontSize: 10, color: "var(--accent-3)", letterSpacing: "0.25em" }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 10,
+            color: "var(--accent-2)",
+            letterSpacing: "0.2em",
+          }}
         >
-          ◉ {t("header")}
+          <span
+            aria-hidden
+            className="animate-blinkSoft"
+            style={{
+              width: 6,
+              height: 6,
+              background: "var(--accent-2)",
+              boxShadow: "var(--neon-glow-pink)",
+            }}
+          />
+          {t("header")}
         </span>
         <span
           className="font-silkscreen"
-          style={{ fontSize: 9, color: "var(--ink-mute)", letterSpacing: "0.18em" }}
+          style={{ fontSize: 9, color: "var(--ink-dim)", letterSpacing: "0.15em" }}
         >
           {t("onlineCount", { count: SEED.length })}
         </span>

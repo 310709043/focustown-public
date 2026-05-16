@@ -122,12 +122,25 @@ export function SoloNotesPanel() {
       <div
         className="font-silkscreen"
         style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
           fontSize: 10,
-          color: "var(--accent)",
-          letterSpacing: "0.25em",
+          color: "var(--accent-2)",
+          letterSpacing: "0.2em",
         }}
       >
-        ✎ {t("header")}
+        <span
+          aria-hidden
+          className="animate-blinkSoft"
+          style={{
+            width: 6,
+            height: 6,
+            background: "var(--accent-2)",
+            boxShadow: "var(--neon-glow-pink)",
+          }}
+        />
+        {t("header")}
       </div>
 
       <div style={{ display: "flex", gap: 4 }}>
@@ -167,8 +180,10 @@ export function SoloNotesPanel() {
           flex: 1,
           minHeight: 160,
           resize: "none",
-          lineHeight: 1.6,
-          fontFamily: "var(--font-noto-sans-tc), monospace",
+          fontFamily: 'var(--font-vt323), "Noto Sans TC", monospace',
+          fontSize: 17,
+          lineHeight: 1.45,
+          padding: 12,
         }}
       />
 

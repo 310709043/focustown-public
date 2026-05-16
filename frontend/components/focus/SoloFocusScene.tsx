@@ -63,8 +63,8 @@ export function SoloFocusScene() {
           minHeight: 0,
           display: "grid",
           gridTemplateColumns: "1.05fr 1.3fr 0.95fr",
-          gap: 16,
-          padding: 16,
+          gap: 12,
+          padding: 12,
           position: "relative",
           zIndex: 2,
           overflowY: "auto",
@@ -79,7 +79,7 @@ export function SoloFocusScene() {
           <SoloNotesPanel />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
           <FriendsNow />
           <TasksPanel />
           <AmbientPanel value={bg} onChange={setBg} />
