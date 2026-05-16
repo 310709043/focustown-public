@@ -40,6 +40,12 @@ class ITrackRepo(Protocol):
         """
         ...
     async def get(self, track_id: str) -> TrackRecord | None: ...
+    async def get_many_by_ids(self, track_ids: list[str]) -> list[TrackRecord]:
+        """Batch-fetch by id for hydrating join tables (e.g. room playlist)
+        in one query instead of N. Order of the returned list is not
+        guaranteed to match the input — callers should index by id.
+        """
+        ...
     async def insert(
         self,
         *,

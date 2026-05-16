@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { presenceApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
@@ -17,15 +18,11 @@ import { StarsLayer } from "@/components/scene/StarsLayer";
 import { Moon } from "@/components/scene/Moon";
 import { WeatherBadge } from "@/components/scene/WeatherBadge";
 import { TownClock } from "@/components/scene/TownClock";
-import { Airplane } from "@/components/scene/Airplane";
 import { Buildings } from "@/components/scene/Buildings";
 import { Billboard } from "@/components/scene/Billboard";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
-import { Dogs } from "@/components/scene/Dogs";
-import { Birds } from "@/components/scene/Birds";
 import { LeaderboardWindow } from "@/components/scene/LeaderboardWindow";
-import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { FrameTicker } from "@/components/pixel/FrameTicker";
 import { TownNavbar } from "@/components/chrome/TownNavbar";
@@ -34,6 +31,28 @@ import { VenueCards } from "@/components/scene/VenueCards";
 import { StreetProps } from "@/components/scene/StreetProps";
 import { Road } from "@/components/scene/Road";
 import { SCENES } from "@/lib/data/scenes";
+
+// Ambient / animation-only scene entities lazy-load so they don't block
+// the first paint. Each runs an independent animation loop, none of them
+// is above the fold (sky stays static while these hop in), and they
+// don't carry SSR-visible content — `ssr: false` keeps them out of the
+// server render entirely.
+const Airplane = dynamic(
+  () => import("@/components/scene/Airplane").then((m) => ({ default: m.Airplane })),
+  { ssr: false },
+);
+const Birds = dynamic(
+  () => import("@/components/scene/Birds").then((m) => ({ default: m.Birds })),
+  { ssr: false },
+);
+const Dogs = dynamic(
+  () => import("@/components/scene/Dogs").then((m) => ({ default: m.Dogs })),
+  { ssr: false },
+);
+const ShootingStars = dynamic(
+  () => import("@/components/pixel/ShootingStars").then((m) => ({ default: m.ShootingStars })),
+  { ssr: false },
+);
 
 import { TimerPanel } from "@/components/panels/TimerPanel";
 import { PersonalRadio } from "@/components/audio/PersonalRadio";

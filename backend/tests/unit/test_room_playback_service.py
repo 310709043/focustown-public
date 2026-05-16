@@ -39,6 +39,9 @@ class FakeTrackRepoForPlayback(ITrackRepo):
     async def get(self, track_id: str) -> TrackRecord | None:
         return self.rows.get(track_id)
 
+    async def get_many_by_ids(self, track_ids: list[str]) -> list[TrackRecord]:
+        return [self.rows[tid] for tid in track_ids if tid in self.rows]
+
     async def insert(self, **_: object) -> TrackRecord:  # type: ignore[override]
         raise NotImplementedError
 
