@@ -56,11 +56,8 @@ const ShootingStars = dynamic(
   { ssr: false },
 );
 
-import { TimerPanel } from "@/components/panels/TimerPanel";
-import { PersonalRadio } from "@/components/audio/PersonalRadio";
 import { MatchModal } from "@/components/modals/MatchModal";
-import { BigFocusCTA } from "@/components/town/BigFocusCTA";
-import { MatchCTA } from "@/components/town/MatchCTA";
+import { BottomHUD } from "@/components/town/bottom/BottomHUD";
 
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
 
@@ -240,42 +237,20 @@ export default function TownPage() {
           />
         ) : null}
 
-        {/* Mobile bottom-left: BigFocusCTA stacked above TimerPanel.
-            Phones don't get the shared rail because there's not enough
-            horizontal room beside the centred MatchCTA. */}
-        <div
-          className="absolute z-[9] flex flex-col gap-2 items-stretch
-                     left-3 right-3 bottom-[120px] xs:bottom-[140px]
-                     md:hidden"
-        >
-          <BigFocusCTA />
-          <TimerPanel />
-        </div>
-
-        {/* Tablet+ shared bottom rail: timer cluster (left) and city
-            radio (right) on one baseline, 16px from each edge. Each
-            cluster is 244px wide so they read as a matched pair. */}
-        <div
-          className="absolute inset-x-0 bottom-0 z-[9] hidden md:flex
-                     items-end justify-between px-4 pb-4 pointer-events-none"
-        >
-          <div className="pointer-events-auto w-[244px] flex flex-col gap-2">
-            <BigFocusCTA />
-            <TimerPanel />
-          </div>
-          <div className="pointer-events-auto w-[244px]">
-            <PersonalRadio context="city" contextId="city" />
-          </div>
-        </div>
-
-        {/* news ticker — drifts above the bottom HUD */}
+        {/* news ticker — drifts above the bottom HUD. Rendered twice
+            per reference (screen-town.jsx:L127-L128) so the two
+            independent setInterval phases layer into a subtle cross-fade. */}
+        <TickerBar />
         <TickerBar />
 
-        {/* bottom-center: match CTA — fetches a candidate via /matches/auto
-            (real-first, bot fallback), then opens the modal with the result */}
-        <MatchCTA
-          disabled={matchProposing}
-          onClick={async () => {
+        {/* Reference-aligned 180 px BottomHUD: FocusTimer + MatchPanel
+            + MusicPlayer in a 1.05fr / 1fr / 1fr grid. Replaces the
+            scattered TimerPanel + MatchCTA + BigFocusCTA + PersonalRadio
+            block (audio playback follow-up will re-mount city radio
+            once `useCityRadio()` is extracted). */}
+        <BottomHUD
+          onFindBuddy={async () => {
+            if (matchProposing) return;
             const m = await requestAutoMatch();
             if (m) setMatchOpen(true);
           }}

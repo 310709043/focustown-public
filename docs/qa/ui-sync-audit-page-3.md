@@ -213,12 +213,12 @@ Branch base: `origin/main` (these files are untouched on the audit branch — ve
 
 | Discrepancy | Severity | Open follow-up PR? |
 | --- | --- | --- |
-| D1 BottomHUD container | high | recommended — foundational for D2 / D3 / D4 |
-| D2 FocusTimer bottom variant | high | recommended — after D1 |
-| D3 MatchPanel | high | recommended — after D1; product spec needed for filter chips |
-| D4 MusicPlayer bottom variant | high | recommended — after D1; reuse `PersonalRadio` data path |
-| D5 5 missing modals | high | **needs product call** — modal vs full-route pattern |
-| D6 Double `Ticker` render | high | recommended — 1-line change |
+| D1 BottomHUD container | high | ✅ fixed in Phase C1 — new `components/town/bottom/BottomHUD.tsx` (180 px gradient backplate + 3-col grid) |
+| D2 FocusTimer bottom variant | high | ✅ fixed in Phase C1 — `components/town/bottom/FocusTimer.tsx` (PixelDigits scale 4 + TomatoStrip + 5 buttons incl. `useSceneStore.advance` cycle) |
+| D3 MatchPanel | high | ✅ fixed in Phase C1 — `components/town/bottom/MatchPanel.tsx` (avatar+? slot + 5 tag chips + dual buttons; wires `useMatchStore.requestAuto`) |
+| D4 MusicPlayer bottom variant | high | ✅ fixed in Phase C1 (UI-only) — `components/town/bottom/MusicPlayer.tsx` with `EQViz` + transport + 5 genre chips; consumes `personalRadioApi.getPlaylist`. Audio playback follow-up will extract a shared `useCityRadio()` hook |
+| D5 5 missing modals | high | pending — Phase C2 (modal vs route default: coexist) |
+| D6 Double `Ticker` render | high | ✅ fixed in Phase C1 — `<TickerBar />` rendered twice in `town/page.tsx` |
 | D7 WalkingCitizens named NPCs | high | **needs product call** — live vs curated |
 | D8 Cats → Dogs species swap | high | **needs product call** — restore cats as decoration? |
 | D9 Named cars | high | **needs product call** — keep equipped-vehicle pulse |

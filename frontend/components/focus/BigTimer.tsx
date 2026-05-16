@@ -3,13 +3,9 @@
 import { useTranslations } from "next-intl";
 
 import { PixelDigits } from "@/components/pixel/PixelDigits";
-import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { TOMATO } from "@/lib/pixel/sprites/props";
+import { TomatoStrip } from "@/components/town/bottom/TomatoStrip";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useTimer } from "@/lib/hooks/useTimer";
-
-/** Dim palette used for tomato chips beyond `tomatoCount`. */
-const DIM_PALETTE = { R: "#3a2820", G: "#1a0f3d", W: "#5a4a7a" } as const;
 
 interface BigTimerProps {
   /** Solo passes null; buddy passes the partner user id. Forwarded to
@@ -61,16 +57,7 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
         >
           ● {mode === "focus" ? t("headerFocus") : t("headerBreak")}
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <PixelSprite
-              key={i}
-              sprite={TOMATO.sprite}
-              palette={i < tomatoCount ? TOMATO.palette : DIM_PALETTE}
-              scale={1.4}
-            />
-          ))}
-        </div>
+        <TomatoStrip count={tomatoCount} max={8} scale={1.4} />
       </div>
 
       {/* Big timer */}

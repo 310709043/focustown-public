@@ -9,6 +9,53 @@
     "achv": "ACHV",
     "frds": "FRDS"
   },
+  "bottom": {
+    "focusTimer": {
+      "modeFocus": "FOCUS · #{num}",
+      "modeBreak": "BREAK",
+      "progressLabel": "{count} / {total} 🍅",
+      "startCta": "開始",
+      "pauseCta": "暫停",
+      "resetAria": "重置計時",
+      "startAria": "開始計時",
+      "pauseAria": "暫停計時",
+      "skipAria": "跳過",
+      "sceneAria": "切換場景"
+    },
+    "matchPanel": {
+      "header": "尋找夥伴",
+      "waitTime": "平均等候 ~8 秒",
+      "slotCaption": "尋找做類似事情的鎮民",
+      "candidateMeta": "3 候選人 · 平均專注 142 min",
+      "tags": {
+        "code": "程式",
+        "write": "寫作",
+        "study": "學習",
+        "design": "設計",
+        "all": "任何"
+      },
+      "findBuddyCta": "找夥伴",
+      "findBuddySub": "一起專注",
+      "soloCta": "獨自專注",
+      "soloSub": "進入專注室"
+    },
+    "musicPlayer": {
+      "liveLabel": "lofi · LIVE",
+      "trackTitleFallback": "midnight city · lofi remix",
+      "trackSubLine": "♪ {index}/{total} · lofi radio · @ neko ramen",
+      "prevAria": "上一首",
+      "playAria": "播放",
+      "pauseAria": "暫停",
+      "nextAria": "下一首",
+      "genres": {
+        "lofi": "lofi",
+        "classical": "古典",
+        "rain": "雨聲",
+        "cafe": "咖啡館",
+        "forest": "森林"
+      }
+    }
+  },
   "presence": {
     "online": "{count, plural, =0 {目前無人在線} other {目前在線 # 位}}",
     "onlineShort": "在線 {count}",

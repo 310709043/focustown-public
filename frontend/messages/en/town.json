@@ -9,6 +9,53 @@
     "achv": "ACHV",
     "frds": "FRDS"
   },
+  "bottom": {
+    "focusTimer": {
+      "modeFocus": "FOCUS · #{num}",
+      "modeBreak": "BREAK",
+      "progressLabel": "{count} / {total} 🍅",
+      "startCta": "Start",
+      "pauseCta": "Pause",
+      "resetAria": "Reset timer",
+      "startAria": "Start timer",
+      "pauseAria": "Pause timer",
+      "skipAria": "Skip",
+      "sceneAria": "Cycle scene"
+    },
+    "matchPanel": {
+      "header": "FIND BUDDY",
+      "waitTime": "~8s avg wait",
+      "slotCaption": "Find a townsfolk doing similar work",
+      "candidateMeta": "3 candidates · avg focus 142 min",
+      "tags": {
+        "code": "Code",
+        "write": "Write",
+        "study": "Study",
+        "design": "Design",
+        "all": "Any"
+      },
+      "findBuddyCta": "Find Buddy",
+      "findBuddySub": "focus together",
+      "soloCta": "Solo Focus",
+      "soloSub": "enter focus room"
+    },
+    "musicPlayer": {
+      "liveLabel": "lofi · LIVE",
+      "trackTitleFallback": "midnight city · lofi remix",
+      "trackSubLine": "♪ {index}/{total} · lofi radio · @ neko ramen",
+      "prevAria": "Previous track",
+      "playAria": "Play",
+      "pauseAria": "Pause",
+      "nextAria": "Next track",
+      "genres": {
+        "lofi": "lofi",
+        "classical": "classical",
+        "rain": "rain",
+        "cafe": "cafe",
+        "forest": "forest"
+      }
+    }
+  },
   "presence": {
     "online": "{count, plural, =0 {No one online right now} one {# person online} other {# people online}}",
     "onlineShort": "Online {count}",
