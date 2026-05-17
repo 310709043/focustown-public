@@ -112,3 +112,36 @@ def test_request_id_with_disallowed_chars_is_replaced():
     rid = response.headers["x-request-id"]
     assert rid != 'abc"; rm -rf'
     assert len(rid) == 32
+
+
+def test_request_id_binds_to_structlog_contextvars_during_request():
+    # The middleware's log-correlation guarantee rests on binding request_id
+    # to structlog.contextvars BEFORE call_next runs — every log line inside
+    # the request then picks it up via the merge_contextvars processor in
+    # the production pipeline. Exposing the bound contextvars through a
+    # temporary endpoint is the most direct way to assert the binding
+    # contract without depending on structlog's BoundLogger cache
+    # (cache_logger_on_first_use=True in app.core.logging defeats
+    # capture_logs() once another test has already exercised the
+    # middleware's module-level logger).
+    from structlog.contextvars import get_contextvars
+
+    client, patches = _client()
+
+    @client.app.get("/__ctx")
+    async def _ctx():
+        return get_contextvars()
+
+    try:
+        with client:
+            response = client.get(
+                "/__ctx", headers={"X-Request-ID": "req-test-123"}
+            )
+    finally:
+        _stop(patches)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["request_id"] == "req-test-123"
+    assert body["route"] == "/__ctx"
+    assert body["method"] == "GET"
