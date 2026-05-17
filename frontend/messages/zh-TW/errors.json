@@ -14,10 +14,24 @@
   "unsupported_media_type": "目前不支援這個檔案格式。",
   "invalid_room_id": "找不到這個房間。",
   "focustown_error": "發生未預期的狀況，請稍後再試一次。",
+  "not_found": "找不到您要的資料。",
+  "conflict": "這個操作與其他正在進行的動作衝突，請重新整理後再試一次。",
+  "validation_error": "資料看起來不太對，請重新確認後再試一次。",
+  "internal_error": "伺服器發生未預期的錯誤，請稍後再試一次。",
+  "forbidden": "您沒有執行這個操作的權限。",
+  "business_error": "目前無法完成這個操作，請稍後再試一次。",
+  "idempotency_violation": "這個操作已經送出過了，請重新整理畫面查看最新狀態。",
+  "timeout": "請求時間過長，請再試一次。",
+  "network_error": "您目前似乎沒有連線，請確認網路後再試一次。",
+  "request_failed": "請求發生問題，請再試一次。",
+  "refresh_failed": "您的登入已過期，請重新登入。",
+  "malformed_error_body": "發生未預期的狀況，請稍後再試一次。",
   "generic": {
     "network": "您目前似乎沒有連線，請確認網路後再試一次。",
     "server": "伺服器暫時無法回應，請稍後再試一次。",
     "unknown": "發生未預期的狀況，請稍後再試一次。",
-    "unauthorized": "您需要重新登入才能繼續。"
+    "unauthorized": "您需要重新登入才能繼續。",
+    "retry": "再試一次",
+    "back_to_town": "回到城鎮"
   }
 }

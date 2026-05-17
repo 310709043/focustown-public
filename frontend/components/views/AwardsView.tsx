@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { LeaderboardSection } from "@/components/awards/LeaderboardSection";
 import { AchievementsSection } from "@/components/awards/AchievementsSection";
 import { leaderboardApi, achievementsApi } from "@/lib/api/endpoints";
+import { errShape, reportApiError } from "@/lib/api/report";
 import type { LeaderboardEntry, Achievement } from "@/lib/api/types.gen";
 
 /**
@@ -16,11 +18,24 @@ import type { LeaderboardEntry, Achievement } from "@/lib/api/types.gen";
 export function AwardsView() {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const tApi = useTranslations("errors");
 
   useEffect(() => {
-    leaderboardApi.today().then(setLeaders).catch(() => {});
-    achievementsApi.all().then(setAchievements).catch(() => {});
-  }, []);
+    leaderboardApi
+      .today()
+      .then(setLeaders)
+      .catch((e) => {
+        reportApiError(e, tApi);
+        console.error({ event: "awards_leaderboard_failed", err: errShape(e) });
+      });
+    achievementsApi
+      .all()
+      .then(setAchievements)
+      .catch((e) => {
+        reportApiError(e, tApi);
+        console.error({ event: "awards_achievements_failed", err: errShape(e) });
+      });
+  }, [tApi]);
 
   return (
     <div

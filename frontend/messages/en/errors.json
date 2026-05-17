@@ -14,10 +14,24 @@
   "unsupported_media_type": "This file format is not supported.",
   "invalid_room_id": "We could not find that room.",
   "focustown_error": "Something unexpected happened. Please try again in a little while.",
+  "not_found": "We could not find what you were looking for.",
+  "conflict": "That action conflicts with something already in progress. Please refresh and try again.",
+  "validation_error": "Some of the information looks incorrect. Please review and try again.",
+  "internal_error": "Our server hit an unexpected problem. Please try again in a moment.",
+  "forbidden": "You do not have permission to do that.",
+  "business_error": "We could not complete this action. Please try again later.",
+  "idempotency_violation": "This action was already submitted. Please refresh to see the latest state.",
+  "timeout": "The request took too long. Please try again.",
+  "network_error": "You seem to be offline. Please check your connection and try again.",
+  "request_failed": "Something went wrong with the request. Please try again.",
+  "refresh_failed": "Your session has ended. Please sign in again.",
+  "malformed_error_body": "Something unexpected happened. Please try again in a little while.",
   "generic": {
     "network": "You seem to be offline. Please check your connection and try again.",
     "server": "Our server is not responding right now. Please try again in a moment.",
     "unknown": "Something unexpected happened. Please try again in a little while.",
-    "unauthorized": "Please sign in again to continue."
+    "unauthorized": "Please sign in again to continue.",
+    "retry": "Try Again",
+    "back_to_town": "Back to Town"
   }
 }

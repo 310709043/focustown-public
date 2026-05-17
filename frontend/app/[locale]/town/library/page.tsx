@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/client";
 import { roomTracksApi, tracksApi } from "@/lib/api/endpoints";
+import { errShape, reportApiError } from "@/lib/api/report";
 import type { Track } from "@/lib/api/types.gen";
 import { useAuthStore } from "@/lib/state/authStore";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
@@ -21,6 +22,7 @@ export default function LibraryPage() {
   const [error, setError] = useState<string | null>(null);
   const [inPlaylist, setInPlaylist] = useState<Set<string>>(() => new Set());
   const t = useTranslations("library.page");
+  const tApi = useTranslations("errors");
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -59,13 +61,16 @@ export default function LibraryPage() {
       .then((rows) => {
         if (!cancelled) setInPlaylist(new Set(rows.map((r) => r.track_id)));
       })
-      .catch(() => {
-        if (!cancelled) setInPlaylist(new Set());
+      .catch((e) => {
+        if (cancelled) return;
+        setInPlaylist(new Set());
+        reportApiError(e, tApi);
+        console.error({ event: "library_room_tracks_failed", err: errShape(e) });
       });
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, tApi]);
 
   async function handleAddToRoom(trackId: string) {
     await roomTracksApi.add(trackId);

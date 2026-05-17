@@ -6,6 +6,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 
 import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { SplashGate } from "@/components/chrome/SplashGate";
+import { Toaster } from "@/components/chrome/Toaster";
 import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { routing, type Locale } from "@/i18n/routing";
 
@@ -92,6 +93,7 @@ export default async function LocaleLayout({
       <div className="crt-overlay" aria-hidden />
       <DirectionSync locale={locale} />
       <SplashGate />
+      <Toaster />
       <div className="fixed top-3 right-3 z-[20] pointer-events-auto">
         <LocaleSwitcher
           className="flex gap-1 bg-glass border border-border rounded px-2 py-1 touch:px-3 touch:py-2 backdrop-blur-md shadow-[0_0_12px_rgba(167,139,250,0.18)]"

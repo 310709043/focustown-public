@@ -42,20 +42,83 @@ async function refreshTokens(refreshToken: string): Promise<Tokens> {
   return tokens;
 }
 
+const DEFAULT_TIMEOUT_MS = 15_000;
+const MAX_RETRIES = 2;
+const BASE_BACKOFF_MS = 500;
+const JITTER_MS = 50;
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function backoffDelay(attempt: number): number {
+  const base = BASE_BACKOFF_MS * Math.pow(2, attempt);
+  const jitter = Math.floor((Math.random() * 2 - 1) * JITTER_MS);
+  return Math.max(0, base + jitter);
+}
+
 export interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
-  auth?: boolean; // default true
+  auth?: boolean;
+  timeoutMs?: number;
+  retryOn5xx?: boolean;
+}
+
+async function fetchOnce(
+  url: string,
+  init: RequestInit,
+  auth: boolean,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    let res = await fetch(url, { ...init, signal: controller.signal });
+
+    if (res.status === 401 && auth) {
+      const tokens = tokenStore.load();
+      if (tokens?.refresh_token) {
+        try {
+          const fresh = await refreshTokens(tokens.refresh_token);
+          (init.headers as Record<string, string>).authorization =
+            `Bearer ${fresh.access_token}`;
+          res = await fetch(url, { ...init, signal: controller.signal });
+        } catch (refreshErr) {
+          console.warn(
+            "[apiFetch] refresh failed; clearing tokens",
+            refreshErr instanceof Error ? refreshErr.message : refreshErr,
+          );
+          tokenStore.clear();
+          throw new ApiError("refresh_failed", 401, "refresh_failed");
+        }
+      }
+    }
+
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function apiFetch<T>(
   path: string,
   opts: ApiFetchOptions = {},
 ): Promise<T> {
-  const { body, auth = true, headers, ...rest } = opts;
+  const {
+    body,
+    auth = true,
+    headers,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    retryOn5xx,
+    ...rest
+  } = opts;
+
+  const method = (rest.method ?? "GET").toUpperCase();
+  const retryEnabled = retryOn5xx ?? SAFE_METHODS.has(method);
 
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const baseHeaders: Record<string, string> = { ...(headers as Record<string, string> ?? {}) };
-  // Let the browser set the multipart boundary itself when sending FormData.
   if (!isFormData && !baseHeaders["content-type"] && !baseHeaders["Content-Type"]) {
     baseHeaders["content-type"] = "application/json";
   }
@@ -77,20 +140,30 @@ export async function apiFetch<T>(
     }
   }
 
-  let res = await fetch(`${config.apiBaseUrl}${path}`, init);
+  const url = `${config.apiBaseUrl}${path}`;
+  let res: Response | null = null;
+  let lastNetErr: unknown = null;
 
-  if (res.status === 401 && auth) {
-    const tokens = tokenStore.load();
-    if (tokens?.refresh_token) {
-      try {
-        const fresh = await refreshTokens(tokens.refresh_token);
-        (init.headers as Record<string, string>).authorization = `Bearer ${fresh.access_token}`;
-        res = await fetch(`${config.apiBaseUrl}${path}`, init);
-      } catch {
-        tokenStore.clear();
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      res = await fetchOnce(url, init, auth, timeoutMs);
+      if (res.ok || !retryEnabled || res.status < 500 || res.status > 599) break;
+      if (attempt < MAX_RETRIES) {
+        await sleep(backoffDelay(attempt));
+        continue;
       }
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      lastNetErr = err;
+      if (retryEnabled && attempt < MAX_RETRIES) {
+        await sleep(backoffDelay(attempt));
+        continue;
+      }
+      throw err;
     }
   }
+
+  if (!res) throw lastNetErr ?? new ApiError("request_failed", 0, "network_error");
 
   if (res.status === 204) return undefined as T;
 
@@ -101,8 +174,13 @@ export async function apiFetch<T>(
       const payload = await res.json();
       code = payload?.error?.code ?? code;
       message = payload?.error?.message ?? message;
-    } catch {
-      /* ignore */
+    } catch (parseErr) {
+      console.warn(
+        "[apiFetch] malformed error body",
+        { path, status: res.status },
+        parseErr instanceof Error ? parseErr.message : parseErr,
+      );
+      code = "malformed_error_body";
     }
     throw new ApiError(message, res.status, code);
   }

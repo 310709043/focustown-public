@@ -16,6 +16,7 @@ import {
   userItemsApi,
   walletApi,
 } from "@/lib/api/endpoints";
+import { errShape, reportApiError } from "@/lib/api/report";
 import type { ShopItem, ShopItemPrice } from "@/lib/api/types.gen";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useWalletStore } from "@/lib/state/walletStore";
@@ -54,14 +55,18 @@ export function ShopView() {
   const setEquippedVehicle = useAuthStore((s) => s.setEquippedVehicle);
   const tPage = useTranslations("shop.page");
   const tErr = useTranslations("shop.errors");
+  const tApi = useTranslations("errors");
 
   useEffect(() => {
     void Promise.all([
       shopApi.list().then(setItems),
       walletApi.list().then((ws) => useWalletStore.getState().hydrate(ws)),
       userItemsApi.list().then((is) => useUserItemsStore.getState().hydrate(is)),
-    ]).catch(() => {});
-  }, []);
+    ]).catch((e) => {
+      reportApiError(e, tApi);
+      console.error({ event: "shop_hydrate_failed", err: errShape(e) });
+    });
+  }, [tApi]);
 
   async function handleBuy(item: ShopItem) {
     if (pendingId || owns[item.id]) return;
