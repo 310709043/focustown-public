@@ -13,7 +13,10 @@ class LogNotifier(INotificationService):
     """
 
     async def send_email(self, *, to: str, subject: str, body: str) -> None:
-        log.info("email_dispatch", to=to, subject=subject, body=body)
+        # body intentionally omitted: reset/verification tokens live there. If a
+        # misconfigured prod ends up on LogNotifier, shipping body to centralized
+        # logs would expose those tokens.
+        log.info("email_dispatch", to=to, subject=subject, body_length=len(body))
 
     async def send_push(self, *, user_id: str, title: str, body: str) -> None:
-        log.info("push_dispatch", user_id=user_id, title=title, body=body)
+        log.info("push_dispatch", user_id=user_id, title=title, body_length=len(body))

@@ -48,6 +48,19 @@ class BusinessError(FocusTownError):
     code = "business_error"
 
 
+class InternalError(FocusTownError):
+    """Catch-all for unhandled exceptions that escape domain code.
+
+    Raised only by the global Exception handler in ``app/main.py``; never
+    raised by services or routers directly (use a more specific subclass).
+    Exists so the response envelope stays uniform when something explodes
+    unexpectedly — never put ``str(e)`` in the message.
+    """
+
+    status_code = 500
+    code = "internal_error"
+
+
 class IdempotencyViolationError(FocusTownError):
     """A previously-recorded (ref_type, ref_id) was retried.
 

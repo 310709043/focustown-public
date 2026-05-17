@@ -6,11 +6,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DataError, IntegrityError
 
 from app.core.clock import SystemClock
 from app.core.config import get_settings
 from app.core.deps import _event_bus
-from app.core.exceptions import FocusTownError
+from app.core.exceptions import (
+    ConflictError,
+    FocusTownError,
+    InternalError,
+    ValidationError,
+)
 from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import SecurityHeadersMiddleware
@@ -112,7 +118,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
     app.add_middleware(
@@ -120,12 +126,52 @@ def create_app() -> FastAPI:
         enable_hsts=settings.app_env == "production",
     )
 
-    @app.exception_handler(FocusTownError)
-    async def _domain_error_handler(_: Request, exc: FocusTownError) -> JSONResponse:
+    def _envelope(exc: FocusTownError) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": {"code": exc.code, "message": str(exc) or exc.code}},
         )
+
+    @app.exception_handler(FocusTownError)
+    async def _domain_error_handler(_: Request, exc: FocusTownError) -> JSONResponse:
+        return _envelope(exc)
+
+    @app.exception_handler(IntegrityError)
+    async def _integrity_error_handler(request: Request, exc: IntegrityError) -> JSONResponse:
+        # SQL constraint violations (unique, FK, NOT NULL) — raw driver messages
+        # leak schema details, so we log them and respond with a stable code.
+        log.warning(
+            "sql_integrity_error",
+            path=request.url.path,
+            method=request.method,
+            exc_type=type(exc).__name__,
+        )
+        return _envelope(ConflictError("conflict"))
+
+    @app.exception_handler(DataError)
+    async def _data_error_handler(request: Request, exc: DataError) -> JSONResponse:
+        # DataError covers bad-shape inputs that slipped past Pydantic
+        # (e.g. integer overflow, invalid enum literal). Map to 422 envelope.
+        log.warning(
+            "sql_data_error",
+            path=request.url.path,
+            method=request.method,
+            exc_type=type(exc).__name__,
+        )
+        return _envelope(ValidationError("validation_error"))
+
+    @app.exception_handler(Exception)
+    async def _unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
+        # Catch-all for anything that escapes domain code. Log full trace
+        # server-side; respond with a sanitized envelope so we never ship
+        # tracebacks or driver-error strings to the client.
+        log.exception(
+            "unhandled_exception",
+            path=request.url.path,
+            method=request.method,
+            exc_type=type(exc).__name__,
+        )
+        return _envelope(InternalError("internal_error"))
 
     @app.get("/healthz", tags=["meta"])
     async def healthz() -> dict[str, str]:
