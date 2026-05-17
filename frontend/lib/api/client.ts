@@ -84,11 +84,8 @@ async function fetchOnce(
           (init.headers as Record<string, string>).authorization =
             `Bearer ${fresh.access_token}`;
           res = await fetch(url, { ...init, signal: controller.signal });
-        } catch (refreshErr) {
-          console.warn(
-            "[apiFetch] refresh failed; clearing tokens",
-            refreshErr instanceof Error ? refreshErr.message : refreshErr,
-          );
+        } catch {
+          console.warn("[apiFetch] refresh failed; clearing tokens");
           tokenStore.clear();
           throw new ApiError("refresh_failed", 401, "refresh_failed");
         }
