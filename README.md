@@ -5,6 +5,7 @@
 - **前端**：Next.js 15 + Tailwind + Zustand
 - **後端**：FastAPI + SQLAlchemy 2 async + Alembic + Redis Pub/Sub + APScheduler
 - **架構**：SOLID ports & adapters；MVP-but-extensible（細節見 [CLAUDE.md](./CLAUDE.md)）
+- **部署**：AWS Lightsail 單機 docker-compose（prod 用），本機 docker-compose（dev 用）— 完整步驟見 [infra/DEPLOY.md](./infra/DEPLOY.md)
 
 ---
 

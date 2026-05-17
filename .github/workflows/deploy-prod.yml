@@ -1,0 +1,55 @@
+name: Deploy to Lightsail (prod)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: ${{ secrets.LIGHTSAIL_SSH_PORT || 22 }}
+          command_timeout: 15m
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd /opt/focustown
+            echo "==> Fetching ${GITHUB_REF_NAME:-main}"
+            git fetch --prune origin main
+            git reset --hard origin/main
+            echo "==> Pulling base images"
+            docker compose -f docker-compose.prod.yml pull caddy postgres redis
+            echo "==> Building app images"
+            docker compose -f docker-compose.prod.yml build --pull backend worker frontend
+            echo "==> Running migrations (one-shot)"
+            docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
+            echo "==> Restarting services"
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            echo "==> Pruning dangling images"
+            docker image prune -f
+            echo "==> Waiting for backend to become healthy"
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -fsS "https://${PUBLIC_HOST}/healthz" >/dev/null 2>&1; then
+                echo "Deploy OK on attempt $i"
+                exit 0
+              fi
+              sleep 6
+            done
+            echo "Smoke test failed — last 50 lines of backend log:"
+            docker compose -f docker-compose.prod.yml logs --tail=50 backend || true
+            exit 1
+          envs: PUBLIC_HOST
+        env:
+          PUBLIC_HOST: ${{ secrets.PUBLIC_HOST }}

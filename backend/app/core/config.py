@@ -139,39 +139,50 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate_production_posture(self) -> Settings:
-        # Fail fast at boot when APP_ENV=production but the AWS-required
-        # settings are missing. Surfacing the env-var names (UPPER_CASE) in
-        # the error message matches how ECS task-def operators see them.
+        # Fail fast at boot when APP_ENV=production but the chosen-backend's
+        # required env vars are missing. Surfacing UPPER_CASE names matches
+        # how ECS task-def / Lightsail .env operators see them.
         if self.app_env != "production":
             return self
 
-        required = {
-            "COGNITO_USER_POOL_ID": self.cognito_user_pool_id,
-            "COGNITO_CLIENT_ID": self.cognito_client_id,
-            "S3_BUCKET": self.s3_bucket,
-            "SES_FROM_EMAIL": self.ses_from_email,
-        }
-        for var, value in required.items():
-            if not value:
-                raise ValueError(f"{var} must be set in production (got empty)")
+        # Auth: Cognito needs its pool identifiers. local_jwt only needs the
+        # APP_SECRET_KEY guarded by the field-level validator at any env.
+        if self.auth_provider == "cognito":
+            cognito_required = {
+                "COGNITO_USER_POOL_ID": self.cognito_user_pool_id,
+                "COGNITO_CLIENT_ID": self.cognito_client_id,
+            }
+            for var, value in cognito_required.items():
+                if not value:
+                    raise ValueError(
+                        f"{var} must be set when AUTH_PROVIDER=cognito in production"
+                    )
 
+        # Storage: S3 needs a bucket name. ``local`` is permitted in
+        # production because deploys onto a single VM with bind-mounted
+        # volumes (see infra/DEPLOY.md) provide durable storage; only
+        # ECS/Fargate task fs is ephemeral.
+        if self.storage_backend == "s3" and not self.s3_bucket:
+            raise ValueError(
+                "S3_BUCKET must be set when STORAGE_BACKEND=s3 in production"
+            )
+
+        # Notifier: log is forbidden in prod (silent email loss).
+        # ses_from_email is enforced separately by _validate_ses_from_email.
         if self.notifier_backend == "log":
             raise ValueError(
                 "NOTIFIER_BACKEND must not be 'log' in production "
                 "(set to 'ses' for real email delivery)"
             )
-        if self.storage_backend == "local":
-            raise ValueError(
-                "STORAGE_BACKEND must not be 'local' in production "
-                "(set to 's3' — container fs is ephemeral)"
-            )
+
         if self.secrets_backend == "env":
-            # ECS task-def env injection is the canonical secrets path, so
-            # this is allowed but flagged — an operator running production
-            # with secrets_backend=env should be doing so intentionally.
+            # ECS task-def env injection OR a chmod-600 .env on a single VM
+            # are both legitimate in-prod patterns. Warn so an operator who
+            # ended up here by accident notices.
             warnings.warn(
-                "Production with SECRETS_BACKEND=env relies on ECS task-def "
-                "env injection — confirm this is intentional.",
+                "Production with SECRETS_BACKEND=env relies on the operator "
+                "injecting secrets via env-file or task-def — confirm this is "
+                "intentional.",
                 RuntimeWarning,
                 stacklevel=2,
             )

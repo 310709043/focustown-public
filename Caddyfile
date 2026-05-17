@@ -1,0 +1,62 @@
+# Production reverse proxy for Focus Town single-VM Lightsail deploy.
+# Auto-issues + renews Let's Encrypt certs for {$PUBLIC_HOST}.
+# DNS A record for {$PUBLIC_HOST} MUST resolve to the VM static IP before
+# first start, otherwise the ACME HTTP-01 challenge fails.
+
+{
+    # Email used by Let's Encrypt for cert expiry warnings
+    email {$ACME_EMAIL:admin@example.com}
+}
+
+{$PUBLIC_HOST} {
+    encode gzip zstd
+
+    # WebSocket upgrade — must come before /api/* generic match.
+    # Caddy v2 reverse_proxy already handles Upgrade headers, but listing
+    # the path explicitly keeps intent obvious.
+    @ws path /api/v1/ws/*
+    handle @ws {
+        reverse_proxy backend:8000
+    }
+
+    # Backend API
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+    handle /healthz {
+        reverse_proxy backend:8000
+    }
+    handle /ready {
+        reverse_proxy backend:8000
+    }
+    handle /docs* {
+        reverse_proxy backend:8000
+    }
+    handle /openapi.json {
+        reverse_proxy backend:8000
+    }
+
+    # Frontend SSR (catch-all, last)
+    handle {
+        reverse_proxy frontend:3000
+    }
+
+    # Defence-in-depth headers (backend SecurityHeadersMiddleware emits these
+    # too, but Caddy sees frontend responses which the middleware can't reach).
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        -Server
+    }
+
+    log {
+        output file /data/access.log {
+            roll_size 50mb
+            roll_keep 5
+            roll_keep_for 720h
+        }
+        format json
+    }
+}

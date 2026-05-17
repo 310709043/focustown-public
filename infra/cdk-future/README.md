@@ -1,6 +1,22 @@
-# infra/ — AWS Deployment Plan (v2)
+# infra/cdk-future/ — Scale-up CDK stacks (ARCHIVED, not deployed)
 
-This directory is reserved for AWS CDK (TypeScript) stacks. **Not implemented in MVP.** The placeholder exists so the layout is ready when we cut over from `docker-compose` to AWS.
+> **Status: archived.** These stacks describe the architecture for when Focus Town outgrows the single-VM MVP. They are NOT what runs in production today.
+>
+> **Current production:** single Lightsail 2GB VM running `docker-compose.prod.yml`. See `../DEPLOY.md`.
+>
+> **Revisit this folder when:** MAU > 500, OR budget allows ≥ $200/mo, OR you start hitting any of single-VM SPOF / vertical scaling ceiling / multi-region requirements. At that point: `cd infra/cdk-future && pnpm install && cdk deploy --all`.
+
+---
+
+## Why these stacks aren't running
+
+At MVP scale (50 users, $15/mo budget) the minimum cost of these stacks is ~$310/mo — 20× over budget. Aurora Serverless v2 alone is $30/mo at 0.5 ACU, ALB $18/mo, ElastiCache cache.t4g.micro $12/mo, NAT $35/mo. None of that buys real value at 50 users on one host.
+
+The backend code (T0–T5 work) is fully reusable when you do swap over — `core/deps.py` dispatches on env vars, so flipping `AUTH_PROVIDER=cognito`, `STORAGE_BACKEND=s3`, `NOTIFIER_BACKEND=ses`, `SECRETS_BACKEND=aws` will pick the AWS adapters with zero application-code change.
+
+---
+
+## Originally planned stacks (still accurate, just expensive)
 
 ## Planned stacks
 

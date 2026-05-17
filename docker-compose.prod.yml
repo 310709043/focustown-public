@@ -1,0 +1,118 @@
+# Production docker-compose for single-VM Lightsail deploy.
+# Sits alongside docker-compose.yml (which is dev-only, source bind-mounted).
+# Source of truth: ~/.claude/plans/aws-polymorphic-bee.md
+#
+# Run on Lightsail VM as:
+#   docker compose -f docker-compose.prod.yml build
+#   docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
+#   docker compose -f docker-compose.prod.yml up -d
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      target: runner
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://${PUBLIC_HOST}
+        NEXT_PUBLIC_WS_BASE_URL: wss://${PUBLIC_HOST}
+        NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS: https://${PUBLIC_HOST}
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+asyncpg://focustown:${PG_PASSWORD}@postgres:5432/focustown
+      REDIS_URL: redis://redis:6379/0
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz',timeout=3).status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./backend
+      target: runtime
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+asyncpg://focustown:${PG_PASSWORD}@postgres:5432/focustown
+      REDIS_URL: redis://redis:6379/0
+    command: ["python", "-m", "app.worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: focustown
+      POSTGRES_USER: focustown
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - /opt/focustown/data/pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U focustown -d focustown"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --save
+      - "60"
+      - "1"
+      - --loglevel
+      - warning
+    volumes:
+      - /opt/focustown/data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  caddy_data:
+  caddy_config:
