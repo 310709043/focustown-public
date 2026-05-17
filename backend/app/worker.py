@@ -117,7 +117,7 @@ async def main() -> None:
     settings = get_settings()
     configure_logging(debug=settings.app_debug)
     log.info("worker_starting")
-    await init_redis(settings.redis_url)
+    await init_redis(settings.redis_url, settings.redis_auth_token)
     factory = get_session_factory(settings.database_url)
     bus = EventBus()
     scheduler = APSchedulerAdapter()

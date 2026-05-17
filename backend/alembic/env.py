@@ -17,7 +17,24 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url)
+
+
+def _database_url_for_alembic() -> str:
+    """Apply production SSL posture before handing the URL to Alembic.
+
+    The driver is ``postgresql+asyncpg``; asyncpg honours the ``ssl=``
+    parameter (NOT libpq's ``sslmode=``). We append ``ssl=require`` only
+    when no SSL preference is already encoded in the URL, so an operator
+    can still override (e.g. ``ssl=verify-full``) via env.
+    """
+    url = settings.database_url
+    if settings.app_env == "production" and "ssl=" not in url and "sslmode=" not in url:
+        sep = "&" if "?" in url else "?"
+        url = f"{url}{sep}ssl=require"
+    return url
+
+
+config.set_main_option("sqlalchemy.url", _database_url_for_alembic())
 
 target_metadata = Base.metadata
 

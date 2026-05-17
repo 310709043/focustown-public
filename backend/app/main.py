@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+import asyncio
+from collections.abc import AsyncIterator, Awaitable
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 from sqlalchemy.exc import DataError, IntegrityError
 
 from app.core.clock import SystemClock
 from app.core.config import get_settings
-from app.core.deps import _event_bus
+from app.core.deps import DbDep, SecretsProviderDep, _event_bus
 from app.core.exceptions import (
     ConflictError,
     FocusTownError,
@@ -46,7 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     configure_logging(debug=settings.app_debug)
     log.info("startup", env=settings.app_env)
-    await init_redis(settings.redis_url)
+    await init_redis(settings.redis_url, settings.redis_auth_token)
 
     # Register domain event subscribers once. Each event handler opens its
     # own short-lived DB session (we deliberately avoid the broken
@@ -179,6 +181,30 @@ def create_app() -> FastAPI:
     @app.get("/healthz", tags=["meta"])
     async def healthz() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/ready", tags=["meta"])
+    async def ready(db: DbDep, secrets: SecretsProviderDep) -> JSONResponse:
+        """Deep readiness: DB / Redis / secrets each probed with 500ms timeout.
+
+        ``/healthz`` stays fast (liveness); ``/ready`` is for ALB target-group
+        and k8s readiness probes that should fail-open when a dependency is
+        down so the load balancer pulls the pod out of rotation.
+        """
+        checks: dict[str, str] = {}
+
+        async def _probe(name: str, coro: Awaitable[object]) -> None:
+            try:
+                await asyncio.wait_for(coro, timeout=0.5)
+                checks[name] = "up"
+            except Exception:
+                checks[name] = "down"
+
+        await _probe("db", db.execute(text("SELECT 1")))
+        await _probe("redis", get_redis().ping())
+        await _probe("secrets", secrets.get("_health"))
+
+        status = 200 if all(v == "up" for v in checks.values()) else 503
+        return JSONResponse(status_code=status, content=checks)
 
     # Routers are registered lazily so the app factory stays cheap to import
     from app.api.v1 import router as v1_router

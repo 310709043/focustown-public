@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import ipaddress
+import warnings
 from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import Field, ValidationInfo, field_validator
+from pydantic import Field, ValidationInfo, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +30,9 @@ class Settings(BaseSettings):
 
     database_url: str
     redis_url: str = "redis://redis:6379/0"
+    # ElastiCache AUTH token. When set, overrides any password embedded in
+    # redis_url; rediss:// scheme in redis_url is the TLS trigger.
+    redis_auth_token: str = ""
 
     auth_provider: Literal["local_jwt", "cognito"] = "local_jwt"
     jwt_algorithm: str = "HS256"
@@ -132,6 +136,46 @@ class Settings(BaseSettings):
         if backend == "ses" and env == "production" and not v:
             raise ValueError("ses_from_email is required when notifier_backend=ses in production")
         return v
+
+    @model_validator(mode="after")
+    def _validate_production_posture(self) -> Settings:
+        # Fail fast at boot when APP_ENV=production but the AWS-required
+        # settings are missing. Surfacing the env-var names (UPPER_CASE) in
+        # the error message matches how ECS task-def operators see them.
+        if self.app_env != "production":
+            return self
+
+        required = {
+            "COGNITO_USER_POOL_ID": self.cognito_user_pool_id,
+            "COGNITO_CLIENT_ID": self.cognito_client_id,
+            "S3_BUCKET": self.s3_bucket,
+            "SES_FROM_EMAIL": self.ses_from_email,
+        }
+        for var, value in required.items():
+            if not value:
+                raise ValueError(f"{var} must be set in production (got empty)")
+
+        if self.notifier_backend == "log":
+            raise ValueError(
+                "NOTIFIER_BACKEND must not be 'log' in production "
+                "(set to 'ses' for real email delivery)"
+            )
+        if self.storage_backend == "local":
+            raise ValueError(
+                "STORAGE_BACKEND must not be 'local' in production "
+                "(set to 's3' — container fs is ephemeral)"
+            )
+        if self.secrets_backend == "env":
+            # ECS task-def env injection is the canonical secrets path, so
+            # this is allowed but flagged — an operator running production
+            # with secrets_backend=env should be doing so intentionally.
+            warnings.warn(
+                "Production with SECRETS_BACKEND=env relies on ECS task-def "
+                "env injection — confirm this is intentional.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        return self
 
 
 @lru_cache

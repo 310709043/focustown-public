@@ -75,8 +75,11 @@ export class RealtimeClient {
     const token = tokenStore.load()?.access_token;
     if (!token) return;
     this.intentionalClose = false;
-    const url = `${config.wsBaseUrl}/api/v1/ws/connect?token=${encodeURIComponent(token)}`;
-    const ws = new WebSocket(url);
+    // Send the JWT via Sec-WebSocket-Protocol so it never appears in the
+    // URL (which proxies/ALBs log) — the backend pulls it from
+    // websocket.scope.subprotocols and echoes the chosen one on accept().
+    const url = `${config.wsBaseUrl}/api/v1/ws/connect`;
+    const ws = new WebSocket(url, [`bearer.${token}`]);
     ws.onopen = () => {
       this.reconnectAttempts = 0;
     };

@@ -20,8 +20,10 @@ class WSManager:
     def __init__(self) -> None:
         self._conns: dict[str, set[WebSocket]] = defaultdict(set)
 
-    async def connect(self, user_id: str, ws: WebSocket) -> None:
-        await ws.accept()
+    async def connect(self, user_id: str, ws: WebSocket, subprotocol: str | None = None) -> None:
+        # When the client offered Sec-WebSocket-Protocol: bearer.{token},
+        # echo it back on accept — browsers reject the handshake otherwise.
+        await ws.accept(subprotocol=subprotocol)
         self._conns[user_id].add(ws)
         log.info("ws_connected", user_id=user_id, count=len(self._conns[user_id]))
 

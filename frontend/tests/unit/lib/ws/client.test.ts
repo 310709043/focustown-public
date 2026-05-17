@@ -28,7 +28,10 @@ class MockSocket {
   public onclose?: () => void;
   public onerror?: () => void;
 
-  constructor(public readonly url: string) {
+  constructor(
+    public readonly url: string,
+    public readonly protocols?: string | string[],
+  ) {
     MockSocket.last = this;
   }
 
@@ -68,6 +71,15 @@ test("connect with no token is a no-op", () => {
   const client = new RealtimeClient();
   client.connect();
   expect(MockSocket.last).toBeUndefined();
+});
+
+test("sends JWT via Sec-WebSocket-Protocol, never in URL query", () => {
+  tokenStore.save({ access_token: "jwt-abc.xyz.sig", refresh_token: "r" });
+  const client = new RealtimeClient();
+  client.connect();
+
+  expect(MockSocket.last.url).not.toContain("token=");
+  expect(MockSocket.last.protocols).toEqual(["bearer.jwt-abc.xyz.sig"]);
 });
 
 test("dispatches parsed messages to every listener", () => {

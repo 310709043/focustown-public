@@ -121,13 +121,28 @@ def test_sanitize_for_email_strips_controls():
 
 # ── F4: reset_url_base validation ────────────────────────────────────────
 
+# Pre-filled production overrides so we exercise the reset_url_base validator
+# in isolation, without tripping the model-level production-posture check
+# (which would otherwise reject empty COGNITO_*/S3/SES values first).
+_PROD_AWS_STUBS: dict[str, object] = {
+    "cognito_user_pool_id": "ap-northeast-1_XXXXX",
+    "cognito_client_id": "client-id-stub",
+    "s3_bucket": "focustown-prod",
+    "ses_from_email": "noreply@focustown.example",
+    "notifier_backend": "ses",
+    "storage_backend": "s3",
+    "secrets_backend": "aws",
+}
+
+
 def test_reset_url_base_must_be_https_in_production():
-    with pytest.raises(PydValidationError):
+    with pytest.raises(PydValidationError, match="reset_url_base"):
         Settings(  # type: ignore[call-arg]
             app_secret_key="x" * 40,
             database_url="postgresql+asyncpg://x:x@h/db",
             app_env="production",
             reset_url_base="http://example.com/reset",
+            **_PROD_AWS_STUBS,
         )
 
 
@@ -137,6 +152,7 @@ def test_reset_url_base_https_accepted_in_production():
         database_url="postgresql+asyncpg://x:x@h/db",
         app_env="production",
         reset_url_base="https://app.focustown.example/reset-password",
+        **_PROD_AWS_STUBS,
     )
     assert s.reset_url_base.startswith("https://")
 

@@ -13,6 +13,31 @@ from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 log = get_logger(__name__)
 router = APIRouter()
 
+_BEARER_PREFIX = "bearer."
+
+
+def extract_ws_token(
+    subprotocols: list[str], query_token: str | None
+) -> tuple[str | None, str | None, bool]:
+    """Decide how to authenticate a WS handshake.
+
+    Returns ``(token, chosen_subprotocol, used_query_fallback)``:
+      - ``token`` — the JWT to verify, or ``None`` if no credential was offered
+      - ``chosen_subprotocol`` — value to echo back via ``ws.accept(subprotocol=...)``
+        when the client used the subprotocol path; ``None`` otherwise
+      - ``used_query_fallback`` — ``True`` only when the client fell back to
+        ``?token=...``; routers log a deprecation in that case
+
+    Extracted as a pure function so the branching can be unit-tested without
+    spinning up the full WS handshake harness.
+    """
+    bearer = next((p for p in subprotocols if p.startswith(_BEARER_PREFIX)), None)
+    if bearer is not None:
+        return bearer[len(_BEARER_PREFIX) :], bearer, False
+    if query_token:
+        return query_token, None, True
+    return None, None, False
+
 
 @router.websocket("/connect")
 async def ws_connect(
@@ -20,7 +45,10 @@ async def ws_connect(
     ws_mgr: WSManagerDep,
     auth: AuthProviderDep,
     tracker: PresenceTrackerDep,
-    token: str = Query(..., description="JWT access token"),
+    token: str | None = Query(
+        None,
+        description="DEPRECATED — use Sec-WebSocket-Protocol: bearer.{token}",
+    ),
 ) -> None:
     """Single multiplexed connection per user. Messages are JSON envelopes:
 
@@ -33,6 +61,18 @@ async def ws_connect(
       {"type": "match.proposed", ...}
       {"type": "session.completed", ...}
     """
+    # Prefer Sec-WebSocket-Protocol: bearer.{token} so the JWT stays out of
+    # proxy access logs. Keep ?token=... as a transitional fallback with a
+    # deprecation log so the next release can drop it.
+    subprotocols = websocket.scope.get("subprotocols") or []
+    token, chosen_subprotocol, used_query = extract_ws_token(subprotocols, token)
+    if used_query:
+        log.warning("ws_auth_query_param_deprecated")
+
+    if not token:
+        await websocket.close(code=4401)
+        return
+
     try:
         principal = await auth.verify_access_token(token)
     except AuthError:
@@ -40,7 +80,7 @@ async def ws_connect(
         return
 
     user_id = principal.user_id
-    await ws_mgr.connect(user_id, websocket)
+    await ws_mgr.connect(user_id, websocket, subprotocol=chosen_subprotocol)
     pub = RedisPubSubPublisher(get_redis())
     presence = PresenceService(tracker=tracker, publisher=pub)
 
