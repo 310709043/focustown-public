@@ -16,7 +16,10 @@ runs in Fargate scheduled tasks or Lambda.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from functools import partial
+
+import structlog
 
 from app.core.clock import SystemClock
 from app.core.config import get_settings
@@ -40,6 +43,33 @@ from app.infrastructure.presence.bot_seeder import refresh_bot_presence
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
 
 log = get_logger(__name__)
+
+
+def _log_job_errors(
+    job_id: str, coro_factory: Callable[[], Awaitable[None]]
+) -> Callable[[], Awaitable[None]]:
+    """Wrap a scheduled coroutine so any exception is logged with full
+    traceback before it surfaces back into APScheduler.
+
+    APScheduler's default error handling logs through the stdlib logger,
+    which (a) bypasses our structlog JSON renderer and (b) drops the job
+    context that operators need for triage. This wrapper guarantees a
+    `worker_job_failed` line with `job=...` and a traceback, then re-raises
+    so the scheduler still records the misfire.
+    """
+
+    async def wrapped() -> None:
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(job=job_id)
+        try:
+            await coro_factory()
+        except Exception:
+            log.exception("worker_job_failed", job=job_id)
+            raise
+        finally:
+            structlog.contextvars.clear_contextvars()
+
+    return wrapped
 
 
 async def sweep_abandoned(factory, bus: EventBus) -> None:
@@ -94,17 +124,23 @@ async def main() -> None:
 
     scheduler.schedule_interval(
         job_id="sweep_abandoned",
-        func=partial(sweep_abandoned, factory, bus),
+        func=_log_job_errors(
+            "sweep_abandoned", partial(sweep_abandoned, factory, bus)
+        ),
         seconds=60,
     )
     scheduler.schedule_interval(
         job_id="refresh_bot_presence",
-        func=partial(refresh_bot_presence_job, factory),
+        func=_log_job_errors(
+            "refresh_bot_presence", partial(refresh_bot_presence_job, factory)
+        ),
         seconds=60,
     )
     scheduler.schedule_cron(
         job_id="snapshot_leaderboard",
-        func=partial(snapshot_leaderboard, factory),
+        func=_log_job_errors(
+            "snapshot_leaderboard", partial(snapshot_leaderboard, factory)
+        ),
         hour=1,
         minute=0,
     )

@@ -4,6 +4,7 @@ import ipaddress as _ipaddress
 from collections.abc import AsyncIterator
 from typing import Annotated
 
+import structlog
 from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -131,6 +132,7 @@ async def get_current_user_id(
         raise AuthError("missing_bearer_token")
     token = authorization.split(" ", 1)[1].strip()
     principal = await auth.verify_access_token(token)
+    structlog.contextvars.bind_contextvars(user_id=principal.user_id)
     return principal.user_id
 
 

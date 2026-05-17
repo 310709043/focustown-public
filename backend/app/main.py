@@ -19,7 +19,7 @@ from app.core.exceptions import (
 )
 from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
-from app.core.middleware import SecurityHeadersMiddleware
+from app.core.middleware import RequestIDMiddleware, SecurityHeadersMiddleware
 from app.domain.services.coin_award_service import (
     CoinAwardService,
     _WalletServiceAcquired,
@@ -125,6 +125,9 @@ def create_app() -> FastAPI:
         SecurityHeadersMiddleware,
         enable_hsts=settings.app_env == "production",
     )
+    # Added last so it runs outermost — request_id is bound before any other
+    # middleware emits a log line and cleared after they finish.
+    app.add_middleware(RequestIDMiddleware)
 
     def _envelope(exc: FocusTownError) -> JSONResponse:
         return JSONResponse(

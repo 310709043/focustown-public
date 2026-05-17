@@ -7,6 +7,7 @@ from app.api.v1.items.router import router as items_router
 from app.api.v1.leaderboard.router import router as leaderboard_router
 from app.api.v1.matches.router import router as matches_router
 from app.api.v1.notes.router import router as notes_router
+from app.api.v1.observability.router import router as observability_router
 from app.api.v1.playback.router import router as playback_router
 from app.api.v1.presence.router import router as presence_router
 from app.api.v1.rooms.router import me_room_router, rooms_router
@@ -34,4 +35,5 @@ router.include_router(me_room_router, prefix="/me/room", tags=["rooms"])
 router.include_router(rooms_router, prefix="/rooms", tags=["rooms"])
 router.include_router(tracks_router, prefix="/tracks", tags=["tracks"])
 router.include_router(playback_router, prefix="/playback", tags=["playback"])
+router.include_router(observability_router, prefix="/observability", tags=["observability"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])
