@@ -19,16 +19,29 @@ if config.config_file_name is not None:
 settings = get_settings()
 
 
+_MANAGED_DB_HOST_SUFFIXES = (
+    ".rds.amazonaws.com",   # AWS RDS / Aurora
+    ".neon.tech",           # Neon
+    ".supabase.co",         # Supabase
+)
+
+
 def _database_url_for_alembic() -> str:
-    """Apply production SSL posture before handing the URL to Alembic.
+    """Apply SSL posture for known managed Postgres hosts.
 
     The driver is ``postgresql+asyncpg``; asyncpg honours the ``ssl=``
     parameter (NOT libpq's ``sslmode=``). We append ``ssl=require`` only
-    when no SSL preference is already encoded in the URL, so an operator
-    can still override (e.g. ``ssl=verify-full``) via env.
+    when (a) no SSL preference is already encoded in the URL, AND (b) the
+    URL targets a known managed-Postgres host. This avoids forcing SSL on
+    in-cluster Postgres (e.g. the single-VM Lightsail deploy where the
+    backend reaches ``postgres:5432`` over the docker bridge network).
+    Operators with a custom managed host can still opt in by setting
+    ``ssl=require`` in DATABASE_URL directly.
     """
     url = settings.database_url
-    if settings.app_env == "production" and "ssl=" not in url and "sslmode=" not in url:
+    if "ssl=" in url or "sslmode=" in url:
+        return url
+    if any(suffix in url for suffix in _MANAGED_DB_HOST_SUFFIXES):
         sep = "&" if "?" in url else "?"
         url = f"{url}{sep}ssl=require"
     return url

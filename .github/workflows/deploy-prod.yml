@@ -1,0 +1,123 @@
+name: Deploy to Lightsail (prod)
+
+on:
+  workflow_run:
+    workflows: ["Build & push ECR images"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_sha:
+        description: "Git SHA (first 12 chars) of the image to deploy. Leave blank to use current main."
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Resolve image tag
+        id: meta
+        run: |
+          if [[ -n "${{ github.event.inputs.image_sha }}" ]]; then
+            SHORT="${{ github.event.inputs.image_sha }}"
+          else
+            SHORT="$(git rev-parse --short=12 HEAD)"
+          fi
+          echo "image_tag=${SHORT}" >> "$GITHUB_OUTPUT"
+          echo "frontend_tag=${SHORT}-prod" >> "$GITHUB_OUTPUT"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Verify images exist in ECR
+        run: |
+          set -euo pipefail
+          aws ecr describe-images --region "${{ vars.AWS_REGION }}" \
+            --repository-name focustown-backend \
+            --image-ids imageTag=${{ steps.meta.outputs.image_tag }} >/dev/null
+          aws ecr describe-images --region "${{ vars.AWS_REGION }}" \
+            --repository-name focustown-frontend \
+            --image-ids imageTag=${{ steps.meta.outputs.frontend_tag }} >/dev/null
+
+      - name: Materialize deployment spec
+        env:
+          ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          FRONTEND_TAG: ${{ steps.meta.outputs.frontend_tag }}
+          PUBLIC_HOST: ${{ vars.PROD_PUBLIC_HOST }}
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          APP_SECRET_KEY: ${{ secrets.PROD_APP_SECRET_KEY }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_APP_ACCESS_KEY_ID: ${{ secrets.AWS_APP_ACCESS_KEY_ID }}
+          AWS_APP_SECRET_ACCESS_KEY: ${{ secrets.AWS_APP_SECRET_ACCESS_KEY }}
+          SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          TERMS_CURRENT_VERSION: ${{ vars.TERMS_CURRENT_VERSION }}
+        run: |
+          set -euo pipefail
+          envsubst < infra/lightsail/prod/containers.json.tpl > /tmp/containers.json
+          envsubst < infra/lightsail/prod/public-endpoint.json.tpl > /tmp/public-endpoint.json
+
+      - name: Trigger LCS deployment
+        run: |
+          aws lightsail create-container-service-deployment \
+            --region "${{ vars.AWS_REGION }}" \
+            --service-name focustown-prod \
+            --containers file:///tmp/containers.json \
+            --public-endpoint file:///tmp/public-endpoint.json
+
+      - name: Wait for deployment ACTIVE
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            STATE=$(aws lightsail get-container-services \
+              --region "${{ vars.AWS_REGION }}" \
+              --service-name focustown-prod \
+              --query 'containerServices[0].currentDeployment.state' \
+              --output text)
+            echo "[attempt $i] currentDeployment.state=$STATE"
+            if [[ "$STATE" == "ACTIVE" ]]; then
+              exit 0
+            fi
+            if [[ "$STATE" == "FAILED" ]]; then
+              aws lightsail get-container-service-deployments \
+                --region "${{ vars.AWS_REGION }}" \
+                --service-name focustown-prod \
+                --query 'deployments[0]' >&2
+              exit 1
+            fi
+            sleep 15
+          done
+          echo "Timed out waiting for ACTIVE"
+          exit 1
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS "https://${{ vars.PROD_PUBLIC_HOST }}/healthz" >/dev/null; then
+              echo "Prod healthz OK on attempt $i"
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "Smoke test failed"
+          exit 1

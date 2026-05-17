@@ -1,0 +1,122 @@
+# Local prod-mode smoke test.
+# Reproduces what Lightsail Container Service (LCS) will run, on your laptop.
+# Real prod is `aws lightsail create-container-service-deployment` driven by
+# .github/workflows/deploy-prod.yml — see infra/lightsail/bootstrap.md.
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml build
+#   docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
+#   docker compose -f docker-compose.prod.yml up
+#   curl -sf http://localhost:8080/healthz
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      target: runner
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+        NEXT_PUBLIC_WS_BASE_URL: ws://localhost:8080
+        NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS: http://localhost:8080
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    restart: unless-stopped
+    environment:
+      APP_ENV: staging
+      APP_DEBUG: "false"
+      APP_SECRET_KEY: dev_secret_at_least_32_characters_long_xxxxx
+      APP_CORS_ORIGINS: http://localhost:8080
+      DATABASE_URL: postgresql+asyncpg://focustown:focustown@postgres:5432/focustown
+      REDIS_URL: redis://redis:6379/0
+      AUTH_PROVIDER: local_jwt
+      STORAGE_BACKEND: local
+      STORAGE_ROOT: /app/data/storage
+      SECRETS_BACKEND: env
+      NOTIFIER_BACKEND: ses
+      SES_FROM_EMAIL: noreply@localhost
+      AWS_REGION: ap-northeast-1
+      RESET_URL_BASE: http://localhost:8080/reset-password
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz',timeout=3).status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./backend
+      target: runtime
+    restart: unless-stopped
+    environment:
+      APP_ENV: staging
+      APP_SECRET_KEY: dev_secret_at_least_32_characters_long_xxxxx
+      DATABASE_URL: postgresql+asyncpg://focustown:focustown@postgres:5432/focustown
+      REDIS_URL: redis://redis:6379/0
+      AUTH_PROVIDER: local_jwt
+      STORAGE_BACKEND: local
+      STORAGE_ROOT: /app/data/storage
+      SECRETS_BACKEND: env
+      NOTIFIER_BACKEND: ses
+      SES_FROM_EMAIL: noreply@localhost
+      AWS_REGION: ap-northeast-1
+    command: ["python", "-m", "app.worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: focustown
+      POSTGRES_USER: focustown
+      POSTGRES_PASSWORD: focustown
+    volumes:
+      - pgdata_prod_test:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U focustown -d focustown"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--loglevel", "warning"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata_prod_test:

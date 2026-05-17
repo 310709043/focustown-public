@@ -1,0 +1,102 @@
+name: Build & push ECR images
+
+on:
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: meta
+        run: echo "image_tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          target: runtime
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/focustown-backend:${{ steps.meta.outputs.image_tag }}
+            ${{ steps.ecr.outputs.registry }}/focustown-backend:latest
+          cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-backend:cache
+          cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-backend:cache,mode=max
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [prod, dev]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: meta
+        run: |
+          SHORT="${GITHUB_SHA::12}"
+          echo "image_tag=${SHORT}-${{ matrix.env }}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve public host
+        id: host
+        run: |
+          if [[ "${{ matrix.env }}" == "prod" ]]; then
+            echo "host=${{ vars.PROD_PUBLIC_HOST }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "host=${{ vars.DEV_PUBLIC_HOST }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build & push frontend (${{ matrix.env }})
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          target: runner
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/focustown-frontend:${{ steps.meta.outputs.image_tag }}
+            ${{ steps.ecr.outputs.registry }}/focustown-frontend:latest-${{ matrix.env }}
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=https://${{ steps.host.outputs.host }}
+            NEXT_PUBLIC_WS_BASE_URL=wss://${{ steps.host.outputs.host }}
+            NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=https://${{ steps.host.outputs.host }}
+          cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-frontend:cache-${{ matrix.env }}
+          cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-frontend:cache-${{ matrix.env }},mode=max

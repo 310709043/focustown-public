@@ -17,3 +17,32 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json pnpm-lock.yaml ./
 EXPOSE 3000
 CMD ["pnpm", "dev"]
+
+# Builder stage: produces the standalone Next.js bundle (.next/standalone +
+# .next/static). NEXT_PUBLIC_* are baked into the JS bundle here, so each
+# deploy environment requires its own image build with matching build-args.
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_WS_BASE_URL
+ARG NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV NEXT_PUBLIC_WS_BASE_URL=${NEXT_PUBLIC_WS_BASE_URL}
+ENV NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=${NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS}
+ENV NODE_ENV=production
+RUN pnpm build
+
+# Runner: minimal image with only the standalone server output.
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+RUN addgroup -S app && adduser -S app -G app
+COPY --from=builder --chown=app:app /app/.next/standalone ./
+COPY --from=builder --chown=app:app /app/.next/static ./.next/static
+COPY --from=builder --chown=app:app /app/public ./public
+USER app
+EXPOSE 3000
+CMD ["node", "server.js"]

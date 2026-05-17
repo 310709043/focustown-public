@@ -1,0 +1,56 @@
+# Reverse proxy for Focus Town inside the Lightsail Container Service.
+# LCS terminates TLS at the public endpoint and proxies HTTP to caddy:80,
+# so this file does NOT issue certs or listen on 443 — that's LCS's job.
+# Routing must stay in this file because LCS's public endpoint maps to a
+# single (container, port) pair; Caddy is the per-path router.
+
+:80 {
+    encode gzip zstd
+
+    # WebSocket upgrade — must come before /api/* generic match.
+    # Caddy v2 reverse_proxy already handles Upgrade headers, but listing
+    # the path explicitly keeps intent obvious.
+    @ws path /api/v1/ws/*
+    handle @ws {
+        reverse_proxy backend:8000
+    }
+
+    # Backend API
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+    handle /healthz {
+        reverse_proxy backend:8000
+    }
+    handle /ready {
+        reverse_proxy backend:8000
+    }
+    handle /docs* {
+        reverse_proxy backend:8000
+    }
+    handle /openapi.json {
+        reverse_proxy backend:8000
+    }
+
+    # Frontend SSR (catch-all, last)
+    handle {
+        reverse_proxy frontend:3000
+    }
+
+    # Defence-in-depth headers (backend SecurityHeadersMiddleware emits these
+    # too, but Caddy sees frontend responses which the middleware can't reach).
+    # HSTS still useful: LCS speaks HTTPS to the browser, so the header reaches
+    # the client even though Caddy itself is plaintext.
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        -Server
+    }
+
+    log {
+        output stdout
+        format json
+    }
+}
