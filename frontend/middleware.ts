@@ -50,7 +50,15 @@ function buildCsp(nonce: string): string {
     "img-src 'self' data: blob:",
     `media-src 'self' ${mediaOrigins} blob:`,
     "font-src 'self' data:",
-    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} ws: wss:`,
+    // Restrict to the known API origin only. Bare `ws:`/`wss:` wildcards
+    // would let an injected script open a WebSocket to attacker-controlled
+    // hosts and exfiltrate chat/tokens. The legitimate WS target is already
+    // included via apiOriginWs (derived from NEXT_PUBLIC_API_BASE_URL).
+    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs}`,
+    // App spawns no Web Workers and no PWA manifest; lock those vectors.
+    "worker-src 'self'",
+    "manifest-src 'self'",
+    "frame-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
     "base-uri 'self'",
