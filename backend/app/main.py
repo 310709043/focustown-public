@@ -109,11 +109,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    # In production, OpenAPI surface (/docs, /redoc, /openapi.json) enumerates
+    # every endpoint and schema. Useful for dev/staging onboarding; in prod it
+    # gives attackers a free map of the API. APP_ENV=staging keeps it on for
+    # dev.lowbatterytown.com.
+    in_prod = settings.app_env == "production"
     app = FastAPI(
         title="Focus Town API",
         version="0.1.0",
         debug=settings.app_debug,
         lifespan=lifespan,
+        docs_url=None if in_prod else "/docs",
+        redoc_url=None if in_prod else "/redoc",
+        openapi_url=None if in_prod else "/openapi.json",
     )
 
     app.add_middleware(
@@ -121,7 +129,16 @@ def create_app() -> FastAPI:
         allow_origins=settings.cors_origin_list,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["*"],
+        # Explicit list of headers the frontend actually sends. Wildcard `*`
+        # would forward whatever clients ask for, expanding the cross-origin
+        # contract surface unnecessarily.
+        allow_headers=[
+            "Content-Type",
+            "Authorization",
+            "X-Request-ID",
+            "Accept",
+            "Accept-Language",
+        ],
     )
     app.add_middleware(
         SecurityHeadersMiddleware,

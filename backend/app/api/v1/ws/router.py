@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
-from app.core.deps import AuthProviderDep, PresenceTrackerDep, WSManagerDep
+from app.core.deps import (
+    AuthProviderDep,
+    PresenceTrackerDep,
+    RateLimiterDep,
+    SettingsDep,
+    WSManagerDep,
+)
 from app.core.exceptions import AuthError
 from app.core.logging import get_logger
 from app.domain.repositories.realtime import IRealtimePublisher
@@ -45,8 +51,11 @@ async def ws_connect(
     ws_mgr: WSManagerDep,
     auth: AuthProviderDep,
     tracker: PresenceTrackerDep,
+    settings: SettingsDep,
+    limiter: RateLimiterDep,
     token: str | None = Query(
         None,
+        max_length=2048,
         description="DEPRECATED — use Sec-WebSocket-Protocol: bearer.{token}",
     ),
 ) -> None:
@@ -61,6 +70,20 @@ async def ws_connect(
       {"type": "match.proposed", ...}
       {"type": "session.completed", ...}
     """
+    # Per-IP connect throttle BEFORE the JWT decode. Attackers probing tokens
+    # otherwise pay only the JWT-verify cost; rejecting at the handshake stage
+    # bounds both CPU and the auth-failure log volume. Close code 4429 mirrors
+    # the HTTP 429 convention for WebSocket clients.
+    peer_ip = websocket.client.host if websocket.client else None
+    decision = await limiter.hit(
+        f"ws:ip:{peer_ip or 'unknown'}",
+        limit=settings.ws_rl_connect_per_ip_per_min,
+        window_seconds=60,
+    )
+    if not decision.allowed:
+        await websocket.close(code=4429)
+        return
+
     # Prefer Sec-WebSocket-Protocol: bearer.{token} so the JWT stays out of
     # proxy access logs. Keep ?token=... as a transitional fallback with a
     # deprecation log so the next release can drop it.

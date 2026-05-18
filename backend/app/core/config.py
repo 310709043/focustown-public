@@ -95,6 +95,16 @@ class Settings(BaseSettings):
     auth_rl_forgot_per_ip_per_hour: int = 5
     auth_rl_forgot_per_email_per_hour: int = 3
     auth_rl_reset_per_ip_per_hour: int = 10
+    # Refresh is the only auth path that previously had no limiter — a stolen
+    # refresh token could be replayed at line rate. 60/hr per IP comfortably
+    # covers a tab-heavy user (refresh interval ~25 min, ~3 tabs).
+    auth_rl_refresh_per_ip_per_hour: int = 60
+
+    # WebSocket + expensive-read rate limits. Per-IP windows guard against
+    # connection-spam (auth probing pre-JWT-decode) and scraping.
+    ws_rl_connect_per_ip_per_min: int = 30
+    read_rl_leaderboard_per_ip_per_min: int = 120
+    read_rl_presence_per_ip_per_min: int = 60
 
     @property
     def cors_origin_list(self) -> list[str]:

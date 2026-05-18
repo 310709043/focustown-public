@@ -175,7 +175,19 @@ async def sign_in(
 
 
 @router.post("/refresh", response_model=TokensResponse)
-async def refresh(payload: RefreshRequest, auth: AuthProviderDep) -> TokensResponse:
+async def refresh(
+    payload: RefreshRequest,
+    auth: AuthProviderDep,
+    settings: SettingsDep,
+    limiter: RateLimiterDep,
+    client_ip: ClientIpDep,
+) -> TokensResponse:
+    await _enforce_limit(
+        limiter,
+        key=f"refresh:ip:{client_ip or 'unknown'}",
+        limit=settings.auth_rl_refresh_per_ip_per_hour,
+        window_seconds=3600,
+    )
     pair = await auth.refresh(payload.refresh_token)
     return TokensResponse(access_token=pair.access_token, refresh_token=pair.refresh_token)
 
