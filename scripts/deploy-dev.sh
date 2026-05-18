@@ -75,6 +75,19 @@ docker buildx build --platform linux/amd64 --target runner \
     "$REPO_ROOT/frontend"
 echo "    pushed: ${ECR_REGISTRY}/lowbatterytown-frontend:${FRONTEND_TAG}"
 
+# --- 3b. Build + push custom caddy image (bakes Caddyfile) ----------------
+# LCS doesn't allow volume mounts, so the repo-root Caddyfile has to be
+# packaged inside a custom image. Build context = repo root so the trivial
+# Dockerfile under infra/lightsail/caddy/ can pick up the Caddyfile.
+echo "==> [3b] Building caddy image (Caddyfile baked in)..."
+docker buildx build --platform linux/amd64 \
+    -f "$REPO_ROOT/infra/lightsail/caddy/Dockerfile" \
+    --tag "${ECR_REGISTRY}/lowbatterytown-caddy:${IMAGE_TAG}" \
+    --tag "${ECR_REGISTRY}/lowbatterytown-caddy:latest" \
+    --push \
+    "$REPO_ROOT"
+echo "    pushed: ${ECR_REGISTRY}/lowbatterytown-caddy:${IMAGE_TAG}"
+
 # --- 4. Materialize containers.json ---------------------------------------
 echo "==> [4/5] Generating deployment spec..."
 DEV_PWD_ENC=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$DEV_DB_PASSWORD")
