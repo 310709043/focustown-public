@@ -1,0 +1,44 @@
+# Anything that mustn't end up inside the backend image.
+#
+# Why this exists: backend/Dockerfile does `COPY . /app` in both the `dev`
+# and `runtime` stages. Without this list, the local working tree leaks into
+# the image — including the `.env` you keep next to docker-compose for local
+# development, Python venvs, test fixtures, and editor metadata. The image
+# is pushed to a private ECR, but defence-in-depth: secrets do not belong in
+# container layers, period (image layers are world-readable inside ECR, and
+# anything that can `docker pull` extracts them).
+
+# Local dev secrets
+.env
+.env.*
+!.env.example
+
+# Python build / cache artefacts (rebuilt fresh inside the image)
+__pycache__
+*.py[cod]
+*.egg-info
+.venv
+venv
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+
+# Local storage / data dirs (Lightsail uses S3 in prod)
+data
+storage
+*.sqlite
+*.db
+
+# Build / IDE / OS noise
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+*.log
+
+# Tests are needed for the `dev` stage but not for `runtime`. Listing them
+# here would break the dev image; keep them in. The `pytest_cache` line above
+# strips only the cache directory, not the tests themselves.
