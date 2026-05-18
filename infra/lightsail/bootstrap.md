@@ -14,7 +14,7 @@ End state after running this runbook (dev + prod together):
 
 **Estimated monthly cost: $49 end-state (dev + prod). First-pass dev-only ≈ $23/mo (~$8/mo for the first 3 months while Lightsail Managed PG free tier applies).**
 
-Region: `ap-northeast-1` (Tokyo). All commands assume `aws` CLI v2 with admin credentials and `--profile lowbattery`.
+Region: `ap-northeast-1` (Tokyo). All commands assume `aws` CLI v2 with admin credentials and `--profile lowbatterytown`.
 Substitute `<ACCOUNT_ID>` and `<GITHUB_REPO>` (e.g. `CoreNovus/focustown`) throughout.
 
 **First-pass scope (dev-only)**: §1, §2, §3+§3a, §4, §5, §6, **§7 only the `--service-name lowbatterytown-dev` line**, **§7a (alarm)**, **§8 only the `dev.lowbatterytown.com` cert**, §9 (Cloudflare), skip §10, §11, §12 only the dev DATABASE_URL line. The prod-only paths in §7, §8, §11 are deferred until dev is verified green.
@@ -286,11 +286,11 @@ WSManager is moved to a Redis-backed broadcast (see follow-up tasks).
 
 ```bash
 # Dev — run this in the first-pass bootstrap.
-aws lightsail create-container-service --region ap-northeast-1 --profile lowbattery \
+aws lightsail create-container-service --region ap-northeast-1 --profile lowbatterytown \
     --service-name lowbatterytown-dev --power nano --scale 1
 
 # Prod — DEFERRED until dev is verified green. Uncomment when ready.
-# aws lightsail create-container-service --region ap-northeast-1 --profile lowbattery \
+# aws lightsail create-container-service --region ap-northeast-1 --profile lowbatterytown \
 #     --service-name lowbatterytown-prod --power small --scale 1
 ```
 
@@ -304,7 +304,7 @@ One alarm per container service so an operator gets paged before the Nano /
 Small tier OOMs. Threshold 80% sustained for 10 minutes (2 × 300s evaluation).
 
 ```bash
-aws cloudwatch put-metric-alarm --region ap-northeast-1 --profile lowbattery \
+aws cloudwatch put-metric-alarm --region ap-northeast-1 --profile lowbatterytown \
     --alarm-name lowbatterytown-dev-memory-high \
     --metric-name MemoryUtilization \
     --namespace AWS/Lightsail \
@@ -331,12 +331,12 @@ cert via DNS validation — the validation CNAME must exist in Cloudflare
 
 ```bash
 # Dev — first-pass.
-aws lightsail create-certificate --region ap-northeast-1 --profile lowbattery \
+aws lightsail create-certificate --region ap-northeast-1 --profile lowbatterytown \
     --certificate-name lowbatterytown-dev-cert \
     --domain-name dev.lowbatterytown.com
 
 # Capture the validation CNAME from the response:
-aws lightsail get-certificates --region ap-northeast-1 --profile lowbattery \
+aws lightsail get-certificates --region ap-northeast-1 --profile lowbatterytown \
     --certificate-name lowbatterytown-dev-cert \
     --query 'certificates[0].certificateDetail.domainValidationRecords[0].resourceRecord'
 # → {"name": "_xxxxxxxxxxxx.dev.lowbatterytown.com.", "type": "CNAME",
@@ -345,18 +345,18 @@ aws lightsail get-certificates --region ap-northeast-1 --profile lowbattery \
 # Add this name→value as a CNAME in Cloudflare (§9), Proxy = OFF (DNS only),
 # then poll until status flips to ISSUED:
 
-aws lightsail get-certificates --region ap-northeast-1 --profile lowbattery \
+aws lightsail get-certificates --region ap-northeast-1 --profile lowbatterytown \
     --certificate-name lowbatterytown-dev-cert \
     --query 'certificates[0].certificateDetail.status'
 # When this prints "ISSUED" (typically 2–10 min after the Cloudflare CNAME
 # propagates), attach the public domain:
 
-aws lightsail update-container-service --region ap-northeast-1 --profile lowbattery \
+aws lightsail update-container-service --region ap-northeast-1 --profile lowbatterytown \
     --service-name lowbatterytown-dev \
     --public-domain-names '{"lowbatterytown-dev-cert":["dev.lowbatterytown.com"]}'
 
 # Prod — DEFERRED. Uncomment when ready.
-# aws lightsail create-certificate --region ap-northeast-1 --profile lowbattery \
+# aws lightsail create-certificate --region ap-northeast-1 --profile lowbatterytown \
 #     --certificate-name lowbatterytown-prod-cert --domain-name lowbatterytown.com
 # # (same Cloudflare validation + update-container-service flow)
 ```
@@ -442,7 +442,7 @@ need a one-off override, `scripts/deploy-dev.sh` is a local mirror of
 ```
 
 It reads `/tmp/lbt-deploy/state.env` (or `LBT_STATE_FILE`) for the secrets
-captured during Phase B, uses the `lowbattery` AWS CLI profile to log in to
+captured during Phase B, uses the `lowbatterytown` AWS CLI profile to log in to
 ECR, builds + pushes backend + frontend (dev variant) images, materialises the
 deployment spec from `infra/lightsail/dev/containers.json.tpl`, calls
 `aws lightsail create-container-service-deployment`, waits for `ACTIVE`, and

@@ -2,12 +2,12 @@
 # Local mirror of .github/workflows/build-and-push.yml + deploy-dev.yml
 #
 # Builds backend + frontend (dev variant) Docker images, pushes to ECR via the
-# `lowbattery` AWS CLI profile, then triggers an LCS deployment for
+# `lowbatterytown` AWS CLI profile, then triggers an LCS deployment for
 # `lowbatterytown-dev`. Use this while GitHub Actions is disabled. The CI
 # workflows in .github/workflows/ remain in sync — when billing is re-enabled,
 # `gh workflow run "Build & push ECR images" --ref develop` does the same.
 #
-# Required: ~/.aws/credentials [lowbattery] (Phase A) + a local secrets file at
+# Required: ~/.aws/credentials [lowbatterytown] (Phase A) + a local secrets file at
 #   /tmp/lbt-deploy/state.env (Phase B); override with LBT_STATE_FILE if moved.
 
 set -euo pipefail
@@ -16,7 +16,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 STATE_FILE="${LBT_STATE_FILE:-/tmp/lbt-deploy/state.env}"
-AWS_PROFILE="${AWS_PROFILE:-lowbattery}"
+AWS_PROFILE="${AWS_PROFILE:-lowbatterytown}"
 
 if [[ ! -f "$STATE_FILE" ]]; then
     echo "✗ State file not found: $STATE_FILE" >&2
@@ -90,7 +90,7 @@ echo "    pushed: ${ECR_REGISTRY}/lowbatterytown-caddy:${IMAGE_TAG}"
 
 # --- 4. Materialize containers.json ---------------------------------------
 echo "==> [4/5] Generating deployment spec..."
-DEV_PWD_ENC=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$DEV_DB_PASSWORD")
+DEV_PWD_ENC=$(printf '%s' "$DEV_DB_PASSWORD" | jq -sRr '@uri')
 export ECR_REGISTRY IMAGE_TAG FRONTEND_TAG AWS_REGION \
     PUBLIC_HOST="$DEV_HOST" \
     DATABASE_URL="postgresql+asyncpg://lowbatterytown_dev:${DEV_PWD_ENC}@${PG_ENDPOINT}:5432/lowbatterytown_dev?ssl=require" \
@@ -106,12 +106,23 @@ chmod 600 "$RUN_DIR/containers.json"
 echo "    wrote: $RUN_DIR/containers.json (perms 600 — contains secrets)"
 
 # --- 5. Trigger LCS deployment + wait + smoke test -------------------------
+# AWS CLI on Windows is a native .exe and does not understand Git Bash's
+# POSIX /tmp/... prefix. Convert to a Windows-style path on MSYS; no-op on
+# Linux CI runners. Use `-m` to keep forward slashes (file:// happy).
+if command -v cygpath >/dev/null 2>&1; then
+    CONTAINERS_FILE="file://$(cygpath -m "$RUN_DIR/containers.json")"
+    ENDPOINT_FILE="file://$(cygpath -m "$RUN_DIR/public-endpoint.json")"
+else
+    CONTAINERS_FILE="file://$RUN_DIR/containers.json"
+    ENDPOINT_FILE="file://$RUN_DIR/public-endpoint.json"
+fi
+
 echo "==> [5/5] Triggering Lightsail deployment..."
 aws lightsail create-container-service-deployment \
     --region "$AWS_REGION" --profile "$AWS_PROFILE" \
     --service-name "$SERVICE_NAME" \
-    --containers "file://$RUN_DIR/containers.json" \
-    --public-endpoint "file://$RUN_DIR/public-endpoint.json" >/dev/null
+    --containers "$CONTAINERS_FILE" \
+    --public-endpoint "$ENDPOINT_FILE" >/dev/null
 echo "    submitted"
 
 # Wait for OUR deployment (containing this commit's IMAGE_TAG) to land. Watching
