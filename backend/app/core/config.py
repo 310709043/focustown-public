@@ -158,11 +158,17 @@ class Settings(BaseSettings):
                         f"{var} must be set when AUTH_PROVIDER=cognito in production"
                     )
 
-        # Storage: S3 needs a bucket name. ``local`` is permitted in
-        # production because deploys onto a single VM with bind-mounted
-        # volumes (see infra/DEPLOY.md) provide durable storage; only
-        # ECS/Fargate task fs is ephemeral.
-        if self.storage_backend == "s3" and not self.s3_bucket:
+        # Storage: production runs on Lightsail Container Service, whose
+        # filesystem is ephemeral across deployments. Local-FS storage is
+        # therefore forbidden; uploaded files would vanish on the next
+        # deploy. See infra/lightsail/bootstrap.md for the S3 bucket the
+        # app expects.
+        if self.storage_backend != "s3":
+            raise ValueError(
+                "STORAGE_BACKEND must be 's3' in production "
+                "(Lightsail Container Service has no persistent volumes)"
+            )
+        if not self.s3_bucket:
             raise ValueError(
                 "S3_BUCKET must be set when STORAGE_BACKEND=s3 in production"
             )

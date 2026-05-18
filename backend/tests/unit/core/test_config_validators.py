@@ -5,9 +5,9 @@ production-required env var should fail-fast at Settings() instantiation
 when missing/weak, and secrets_backend=env should warn (not raise).
 
 The validator is **conditional** on the chosen backend — `AUTH_PROVIDER=cognito`
-enforces COGNITO_* vars, `STORAGE_BACKEND=s3` enforces S3_BUCKET, and
-`STORAGE_BACKEND=local` is acceptable in production (single-VM deploys with
-bind-mounted volumes are durable; see infra/DEPLOY.md).
+enforces COGNITO_* vars. STORAGE_BACKEND must be ``s3`` in production
+(Lightsail Container Service has no persistent volumes; see
+infra/lightsail/bootstrap.md), and S3_BUCKET must be set.
 
 Shared fixture ``tests/conftest.py`` already sets DATABASE_URL and a
 ≥32-char APP_SECRET_KEY, so tests only override the field they target.
@@ -45,16 +45,18 @@ def _prod_cognito_s3_settings(**overrides: object) -> Settings:
 
 
 def _prod_lite_settings(**overrides: object) -> Settings:
-    """Production posture using the single-VM "lite" stack.
+    """Production posture using the Lightsail Container Service "lite" stack.
 
-    AUTH_PROVIDER=local_jwt + STORAGE_BACKEND=local + SECRETS_BACKEND=env
-    is the supported MVP deploy shape (see infra/DEPLOY.md). The validator
-    must accept this combination without demanding Cognito/S3 identifiers.
+    AUTH_PROVIDER=local_jwt + STORAGE_BACKEND=s3 + SECRETS_BACKEND=env is
+    the supported MVP deploy shape (see infra/lightsail/bootstrap.md). The
+    validator must accept this combination without demanding Cognito vars,
+    while still enforcing STORAGE_BACKEND=s3 (LCS fs is ephemeral).
     """
     base: dict[str, object] = {
         "app_env": "production",
         "auth_provider": "local_jwt",
-        "storage_backend": "local",
+        "storage_backend": "s3",
+        "s3_bucket": "focustown-storage",
         "secrets_backend": "env",
         "notifier_backend": "ses",
         "ses_from_email": "noreply@focustown.app",
@@ -92,13 +94,12 @@ def test_production_s3_missing_bucket_raises():
         _prod_cognito_s3_settings(s3_bucket="")
 
 
-def test_production_local_storage_is_allowed():
-    # Single-VM deploy with bind-mounted /opt/focustown/data is durable;
-    # local storage must be accepted in production.
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
-        s = _prod_lite_settings()
-    assert s.storage_backend == "local"
+def test_production_local_storage_is_rejected():
+    # Lightsail Container Service has ephemeral filesystems; uploads would
+    # vanish on the next deploy. The validator forbids storage_backend=local
+    # in production regardless of which auth provider is in use.
+    with pytest.raises(ValidationError, match="STORAGE_BACKEND"):
+        _prod_lite_settings(storage_backend="local")
 
 
 # === Notifier enforcement (universal in prod) ==============================
