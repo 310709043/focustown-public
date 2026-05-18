@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 
 import { routing } from "./i18n/routing";
@@ -73,14 +73,42 @@ export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp(nonce);
 
-  // Propagate the nonce into the REQUEST headers so Next.js's SSR pass reads
-  // it and stamps `nonce={x-nonce}` onto every injected <script>. Without this
-  // step, `'strict-dynamic'` suppresses the `'self'` fallback and blocks every
-  // /_next/static/chunks/* script — the page renders the SplashGate overlay,
-  // hydration never runs, and the loading screen stays forever.
-  request.headers.set("x-nonce", nonce);
+  // Next.js stamps `nonce=` on its SSR-injected <script> tags ONLY when the
+  // inner request carries `x-nonce` — and "carries" means the framework's
+  // own request object, not whatever middleware mutated. The only way to make
+  // it visible there is `NextResponse.next/rewrite({ request: { headers } })`.
+  // Mutating `request.headers` directly is a no-op for the SSR pass.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
 
-  const response = intlMiddleware(request);
+  // next-intl's middleware decides: redirect (3xx for /  → /zh-TW),
+  // rewrite (200 + x-middleware-rewrite for /zh-TW/foo → /[locale]/foo),
+  // or passthrough (200 + no rewrite). It internally calls
+  // NextResponse.next/rewrite WITHOUT { request: { headers } }, so we cannot
+  // let its response stand — we have to rebuild the non-redirect cases with
+  // our header-carrying request, then port intl's cookies (NEXT_LOCALE) over.
+  const intlResponse = intlMiddleware(request);
+
+  let response: NextResponse;
+  const isRedirect = intlResponse.status >= 300 && intlResponse.status < 400;
+  if (isRedirect) {
+    response = intlResponse;
+  } else {
+    const rewriteUrl = intlResponse.headers.get("x-middleware-rewrite");
+    if (rewriteUrl) {
+      response = NextResponse.rewrite(new URL(rewriteUrl), {
+        request: { headers: requestHeaders },
+      });
+    } else {
+      response = NextResponse.next({ request: { headers: requestHeaders } });
+    }
+    for (const cookie of intlResponse.cookies.getAll()) {
+      response.cookies.set(cookie);
+    }
+    const vary = intlResponse.headers.get("vary");
+    if (vary) response.headers.set("Vary", vary);
+  }
+
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("x-csp-nonce", nonce);
   return response;
