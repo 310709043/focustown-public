@@ -1,0 +1,38 @@
+# Local artifacts that must NOT leak into the build context. The deps stage
+# of frontend/Dockerfile installs node_modules in a controlled way (using
+# `pnpm install --prod=false --frozen-lockfile` honoring frontend/.npmrc);
+# the builder stage then does `COPY . .` for source. Without this ignore,
+# COPY would overlay the host's locally-installed node_modules — created by
+# whatever pnpm version the developer ran — onto the deps-stage layer and
+# fail with "cannot copy to non-directory" on packages whose layout differs
+# between hoisted (host) and the container's chosen linker mode.
+
+node_modules
+.next
+.next-prod
+out
+dist
+.turbo
+*.tsbuildinfo
+
+# Test / coverage artifacts
+coverage
+.nyc_output
+playwright-report
+test-results
+.playwright
+
+# Env / secrets — runtime env is injected by Lightsail Container Service,
+# never via baked-in .env files
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+
+# Source control + docs not needed at build time
+.git
+README.md
