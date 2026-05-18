@@ -114,15 +114,25 @@ aws lightsail create-container-service-deployment \
     --public-endpoint "file://$RUN_DIR/public-endpoint.json" >/dev/null
 echo "    submitted"
 
-echo "==> Waiting for currentDeployment.state=ACTIVE (up to 10 min)..."
+# Wait for OUR deployment (containing this commit's IMAGE_TAG) to land. Watching
+# `currentDeployment.state` alone is wrong: when a new deploy is submitted, the
+# OLD deployment stays as `currentDeployment` (ACTIVE) while the new one shows
+# up under `nextDeployment` (ACTIVATING). The previous loop would exit
+# immediately as "ACTIVE" without ever waiting for the new deploy. Wait for
+# nextDeployment to clear AND currentDeployment to advance to a version that
+# carries our IMAGE_TAG.
+echo "==> Waiting for our deployment to become current (up to 10 min)..."
 for i in $(seq 1 40); do
-    STATE=$(aws lightsail get-container-services \
+    SNAP=$(aws lightsail get-container-services \
         --region "$AWS_REGION" --profile "$AWS_PROFILE" \
         --service-name "$SERVICE_NAME" \
-        --query 'containerServices[0].currentDeployment.state' --output text)
-    printf "    [%2d] state=%s\n" "$i" "$STATE"
-    if [[ "$STATE" == "ACTIVE" ]]; then break; fi
-    if [[ "$STATE" == "FAILED" ]]; then
+        --query 'containerServices[0].{cur:currentDeployment,nxt:nextDeployment}' \
+        --output json)
+    NXT_STATE=$(echo "$SNAP" | jq -r '.nxt.state // "NONE"')
+    CUR_STATE=$(echo "$SNAP" | jq -r '.cur.state // "NONE"')
+    CUR_IMG=$(echo "$SNAP" | jq -r '.cur.containers.backend.image // empty')
+    printf "    [%2d] cur=%s next=%s\n" "$i" "$CUR_STATE" "$NXT_STATE"
+    if [[ "$NXT_STATE" == "FAILED" || "$CUR_STATE" == "FAILED" ]]; then
         echo "✗ Deployment FAILED. Last deployment details:" >&2
         aws lightsail get-container-service-deployments \
             --region "$AWS_REGION" --profile "$AWS_PROFILE" \
@@ -130,9 +140,14 @@ for i in $(seq 1 40); do
             --query 'deployments[0]' >&2
         exit 1
     fi
+    # Success: nextDeployment cleared AND the current image carries our tag.
+    if [[ "$NXT_STATE" == "NONE" && "$CUR_STATE" == "ACTIVE" && "$CUR_IMG" == *"${IMAGE_TAG}"* ]]; then
+        STATE="ACTIVE"
+        break
+    fi
     sleep 15
 done
-[[ "$STATE" == "ACTIVE" ]] || { echo "✗ Timed out waiting for ACTIVE" >&2; exit 1; }
+[[ "${STATE:-}" == "ACTIVE" ]] || { echo "✗ Timed out waiting for our deployment to land" >&2; exit 1; }
 
 echo "==> Smoke testing https://${DEV_HOST}/healthz ..."
 for i in 1 2 3 4 5 6 7 8 9 10; do
