@@ -431,6 +431,27 @@ In repo settings → Secrets and variables → Actions:
 - `production`: require manual approval; add the secrets prefixed `PROD_*` here only
 - `dev`: no approval; add the secrets prefixed `DEV_*` here only
 
+## 11a. Local deploy fallback (when GitHub Actions is disabled)
+
+If the `CoreNovus` org's Actions billing is off (cost-saving posture) or you
+need a one-off override, `scripts/deploy-dev.sh` is a local mirror of
+`.github/workflows/build-and-push.yml` + `.github/workflows/deploy-dev.yml`:
+
+```bash
+./scripts/deploy-dev.sh
+```
+
+It reads `/tmp/lbt-deploy/state.env` (or `LBT_STATE_FILE`) for the secrets
+captured during Phase B, uses the `lowbattery` AWS CLI profile to log in to
+ECR, builds + pushes backend + frontend (dev variant) images, materialises the
+deployment spec from `infra/lightsail/dev/containers.json.tpl`, calls
+`aws lightsail create-container-service-deployment`, waits for `ACTIVE`, and
+smoke-tests `https://dev.lowbatterytown.com/healthz`. End state is identical to
+a successful CI run — no extra config drift when Actions is re-enabled.
+
+A `scripts/deploy-prod.sh` will land alongside the prod bootstrap; intentionally
+absent until prod LCS exists.
+
 ## 12. First migration (one-shot from your laptop)
 
 After the LCS services have run once successfully, run alembic against **both**
