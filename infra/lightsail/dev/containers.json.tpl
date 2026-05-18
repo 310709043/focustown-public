@@ -42,7 +42,9 @@
       "3000": "HTTP"
     },
     "environment": {
-      "NODE_ENV": "production"
+      "NODE_ENV": "production",
+      "HOSTNAME": "0.0.0.0",
+      "PORT": "3000"
     }
   },
   "redis": {
