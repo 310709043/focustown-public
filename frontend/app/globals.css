@@ -612,3 +612,73 @@ body {
 }
 
 .login-form-anim { animation: panelSlideIn 0.5s ease-out; }
+
+/* ─── QA round 1 additions ────────────────────────────────────────
+   SkyWindow CRT broadcast + Citizen ID card share these primitives.
+   See lib/data/broadcast.ts + components/profile/CitizenIdCard.tsx. */
+
+/* CRT TV screen wrapper — used by SkyWindow to host either a sponsor
+   card or a YouTube iframe inside the same scanline/vignette
+   treatment so modern picture reads pixel-native. */
+.tv-screen {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  transition: filter 120ms ease;
+}
+.tv-screen iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: saturate(1.15) contrast(1.05);
+  display: block;
+}
+.tv-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.18) 0 1px,
+    transparent 1px 3px
+  );
+  mix-blend-mode: multiply;
+}
+.tv-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(10, 5, 36, 0.6) 100%
+  );
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+@keyframes scanDrift {
+  to { background-position: 0 4px; }
+}
+.animate-scanDrift { animation: scanDrift 40s linear infinite; }
+
+/* Citizen ID card — segmented XP bar + ticker animation.
+   Card body styling is inline on the component so callers can tune
+   per-page; only the reusable cell + tick primitives live here. */
+.id-card { position: relative; padding: 28px; }
+.xp-bar  {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 2px;
+}
+.xp-cell {
+  height: 10px;
+  background: var(--panel-stroke);
+  transition: background 200ms ease, box-shadow 200ms ease;
+}
+.xp-cell.on {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-2);
+}
+@keyframes pixelTicker {
+  to { background-position: -12px 0; }
+}
+.animate-pixelTicker { animation: pixelTicker 6s linear infinite; }

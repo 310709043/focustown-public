@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { useRouter } from "@/i18n/routing";
 import { leaderboardApi } from "@/lib/api/endpoints";
 import type { LeaderboardEntry } from "@/lib/api/types.gen";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
@@ -10,6 +11,12 @@ import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { AVATARS, type AvatarDef } from "@/lib/pixel/sprites/avatars";
 import { TOMATO } from "@/lib/pixel/sprites/props";
 import { findCharacter } from "@/lib/data/characters";
+import {
+  BROADCAST_MODES,
+  BROADCAST_ROTATE_MS,
+  buildYouTubeEmbedSrc,
+  type BroadcastMode,
+} from "@/lib/data/broadcast";
 
 const RANK_BADGE_COLORS = ["#fcd34d", "#cbd5e1", "#fb923c"];
 const RANK_BADGE_LABELS = ["CHAMP", "SILVER", "BRONZE"];
@@ -174,6 +181,7 @@ export function SkyWindow() {
 function RankBoard() {
   const [rows, setRows] = useState<LeaderboardEntry[]>([]);
   const locale = useLocale();
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -213,9 +221,18 @@ function RankBoard() {
         const badgeLabel = i < 3 ? RANK_BADGE_LABELS[i] : undefined;
         const avatar = pickAvatarFor(r);
         const isLive = "user_id" in r;
+        // Only live rows route — sample rows have no real user id.
+        const clickable = isLive;
+        const onRowClick = clickable
+          ? () => router.push(`/users/${r.user_id}`)
+          : undefined;
         return (
-          <div
+          <button
             key={isLive ? r.user_id : r.sampleId}
+            type="button"
+            data-testid={`sky-window-rank-row-${rank}`}
+            onClick={onRowClick}
+            disabled={!clickable}
             className="font-silkscreen"
             style={{
               display: "grid",
@@ -223,6 +240,8 @@ function RankBoard() {
               gap: 10,
               alignItems: "center",
               padding: "4px 8px",
+              textAlign: "left",
+              cursor: clickable ? "pointer" : "default",
               background:
                 rank === 1
                   ? "rgba(252,211,77,0.1)"
@@ -235,6 +254,14 @@ function RankBoard() {
                 badgeColor
                   ? `1px solid ${badgeColor}44`
                   : "1px solid transparent",
+              transition: "filter 120ms ease",
+              filter: "brightness(1)",
+            }}
+            onMouseEnter={(e) => {
+              if (clickable) e.currentTarget.style.filter = "brightness(1.18)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.filter = "brightness(1)";
             }}
           >
             <span
@@ -299,7 +326,7 @@ function RankBoard() {
                 scale={1.2}
               />
             </span>
-          </div>
+          </button>
         );
       })}
       {/* Locale acknowledged so the component re-renders on language flip
@@ -343,82 +370,155 @@ function hashStringToInt(s: string): number {
   return Math.abs(h);
 }
 
+/**
+ * Broadcast carousel — replaces the legacy AdSpace. Renders the active
+ * `BroadcastMode` from `lib/data/broadcast.ts` inside a shared CRT screen
+ * shell (scanlines + vignette overlays) so sponsor cards and live-video
+ * picture both read as the same "TV channel". Rotates every
+ * `BROADCAST_ROTATE_MS`. Channel chrome (ON AIR pill + channel bug +
+ * "AUDIO ← TOWN RADIO") only appears for `video` mode — sponsor mode
+ * keeps the original branded-card look so existing copy still applies.
+ */
 function AdSpace() {
   const [idx, setIdx] = useState(0);
-  const t = useTranslations("town.skyAds");
   const tCommon = useTranslations("town");
-  const ads = [
-    { tagKey: "sponsorTag", titleKey: "sponsorTitle", ctaKey: "sponsorCta", accent: "#fff" },
-    { tagKey: "proTag", titleKey: "proTitle", ctaKey: "proCta", accent: "var(--accent-2)" },
-    { tagKey: "eventTag", titleKey: "eventTitle", ctaKey: "eventCta", accent: "var(--accent-3)" },
-  ];
+  const screenRef = useRef<HTMLDivElement>(null);
+  const modes = BROADCAST_MODES;
 
   useEffect(() => {
+    if (modes.length <= 1) return;
     const id = window.setInterval(
-      () => setIdx((i) => (i + 1) % ads.length),
-      3000,
+      () => setIdx((i) => (i + 1) % modes.length),
+      BROADCAST_ROTATE_MS,
     );
     return () => window.clearInterval(id);
-  }, [ads.length]);
+  }, [modes.length]);
 
-  const ad = ads[idx];
+  // Phosphor flash every ~12s — short brightness pulse that sells the
+  // channel-changing tic without paying full animation cost.
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const el = screenRef.current;
+      if (!el) return;
+      el.style.filter = "brightness(1.25)";
+      window.setTimeout(() => {
+        if (screenRef.current) screenRef.current.style.filter = "";
+      }, 120);
+    }, 12_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const mode = modes[idx];
 
   return (
     <div
-      data-testid="sky-window-ad"
+      data-testid="sky-window-broadcast"
       style={{
         padding: "10px 14px",
         display: "flex",
         flexDirection: "column",
         gap: 8,
-        minHeight: 156,
+        minHeight: 168,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span
-          className="font-silkscreen"
-          style={{
-            padding: "2px 8px",
-            background: ad.accent,
-            color: "#0a0524",
-            fontSize: 10,
-            letterSpacing: "0.2em",
-            fontWeight: 700,
-          }}
-        >
-          {t(ad.tagKey)}
-        </span>
-        <span
-          className="font-silkscreen"
-          style={{
-            fontSize: 8,
-            color: "var(--ink-dim)",
-            letterSpacing: "0.2em",
-          }}
-        >
-          AD · {idx + 1}/{ads.length}
-        </span>
-      </div>
       <div
-        style={{
-          fontSize: 15,
-          color: "var(--ink)",
-          lineHeight: 1.4,
-          fontWeight: 500,
-        }}
+        ref={screenRef}
+        className="tv-screen"
+        style={{ background: "rgba(0,0,0,0.55)" }}
       >
-        {t(ad.titleKey)}
+        {mode.kind === "sponsor" ? (
+          <SponsorPicture mode={mode} />
+        ) : (
+          <VideoPicture mode={mode} />
+        )}
+        <div aria-hidden className="tv-scanlines animate-scanDrift" />
+        <div aria-hidden className="tv-vignette" />
+        {mode.kind === "video" ? (
+          <>
+            <span
+              className="font-silkscreen"
+              style={{
+                position: "absolute",
+                top: 6,
+                left: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 9,
+                color: "var(--accent-2)",
+                letterSpacing: "0.2em",
+                textShadow: "var(--neon-glow-pink)",
+                background: "rgba(7,4,26,0.7)",
+                padding: "2px 6px",
+                pointerEvents: "none",
+              }}
+            >
+              <span
+                className="animate-blinkSoft"
+                style={{
+                  width: 6,
+                  height: 6,
+                  background: "var(--accent-2)",
+                  boxShadow: "var(--neon-glow-pink)",
+                }}
+              />
+              {mode.tag}
+            </span>
+            <span
+              className="font-silkscreen"
+              style={{
+                position: "absolute",
+                top: 6,
+                right: 8,
+                fontSize: 9,
+                color: "var(--ink-mute)",
+                letterSpacing: "0.15em",
+                background: "rgba(7,4,26,0.7)",
+                padding: "2px 6px",
+                pointerEvents: "none",
+              }}
+            >
+              CH-22 · LIVE
+            </span>
+            <span
+              className="font-silkscreen"
+              style={{
+                position: "absolute",
+                bottom: 6,
+                left: 8,
+                fontSize: 9,
+                color: "var(--accent)",
+                letterSpacing: "0.15em",
+                textShadow: "var(--neon-glow)",
+                background: "rgba(7,4,26,0.7)",
+                padding: "2px 6px",
+                pointerEvents: "none",
+              }}
+            >
+              {mode.channelLabel}
+            </span>
+            <span
+              className="font-silkscreen"
+              style={{
+                position: "absolute",
+                bottom: 6,
+                right: 8,
+                fontSize: 9,
+                color: "var(--ink-dim)",
+                letterSpacing: "0.15em",
+                background: "rgba(7,4,26,0.7)",
+                padding: "2px 6px",
+                pointerEvents: "none",
+              }}
+            >
+              ▣ AUDIO ← TOWN RADIO
+            </span>
+          </>
+        ) : null}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
-        <button
-          type="button"
-          className="pixel-btn"
-          style={{ padding: "8px 16px", fontSize: 11 }}
-        >
-          {t(ad.ctaKey)}
-        </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, display: "flex", gap: 4 }}>
-          {ads.map((_, i) => (
+          {modes.map((_, i) => (
             <div
               key={i}
               style={{
@@ -429,6 +529,16 @@ function AdSpace() {
             />
           ))}
         </div>
+        <span
+          className="font-silkscreen"
+          style={{
+            fontSize: 8,
+            color: "var(--ink-dim)",
+            letterSpacing: "0.2em",
+          }}
+        >
+          {mode.kind === "sponsor" ? "AD" : "LIVE"} · {idx + 1}/{modes.length}
+        </span>
       </div>
       <div
         className="font-silkscreen"
@@ -442,6 +552,107 @@ function AdSpace() {
         {tCommon("adContact")}
       </div>
     </div>
+  );
+}
+
+function SponsorPicture({
+  mode,
+}: {
+  mode: Extract<BroadcastMode, { kind: "sponsor" }>;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: 8,
+        padding: "12px 16px",
+        background:
+          "linear-gradient(135deg, rgba(125,93,255,0.18), rgba(7,4,26,0.6))",
+      }}
+    >
+      <span
+        className="font-silkscreen"
+        style={{
+          alignSelf: "flex-start",
+          padding: "2px 8px",
+          background: mode.accent,
+          color: "#0a0524",
+          fontSize: 10,
+          letterSpacing: "0.2em",
+          fontWeight: 700,
+        }}
+      >
+        {mode.tag}
+      </span>
+      <div
+        style={{
+          fontSize: 14,
+          color: "var(--ink)",
+          lineHeight: 1.35,
+          fontWeight: 500,
+        }}
+      >
+        {mode.title}
+      </div>
+      <a
+        href={mode.href || "#"}
+        target={mode.href && mode.href !== "#" ? "_blank" : undefined}
+        rel="noopener noreferrer"
+        className="pixel-btn"
+        style={{
+          alignSelf: "flex-start",
+          padding: "8px 16px",
+          fontSize: 11,
+          textDecoration: "none",
+        }}
+      >
+        {mode.label} ›
+      </a>
+    </div>
+  );
+}
+
+function VideoPicture({
+  mode,
+}: {
+  mode: Extract<BroadcastMode, { kind: "video" }>;
+}) {
+  const src = buildYouTubeEmbedSrc(mode.embedId);
+  if (!src) {
+    // PLACEHOLDER state — render a static "tuning" picture instead of an
+    // empty iframe. Lets the CRT chrome still read while we wait for a
+    // real embed ID.
+    return (
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--ink-dim)",
+          fontFamily: "var(--font-silkscreen), monospace",
+          letterSpacing: "0.25em",
+          fontSize: 10,
+          background:
+            "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 6px, transparent 6px 12px)",
+        }}
+      >
+        TUNING SIGNAL · STAND BY
+      </div>
+    );
+  }
+  return (
+    <iframe
+      title="Focustown.tv lofi broadcast"
+      src={src}
+      allow="autoplay; encrypted-media; picture-in-picture"
+      referrerPolicy="no-referrer"
+    />
   );
 }
 

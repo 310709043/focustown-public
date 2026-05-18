@@ -63,7 +63,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <LoginScene showHero>
+    <LoginScene showHero topAlign>
       <form
         data-testid="signup-form"
         onSubmit={onSubmit}

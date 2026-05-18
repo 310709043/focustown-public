@@ -34,7 +34,10 @@ export function BottomHUD({ onFindBuddy }: BottomHUDProps) {
         left: 0,
         right: 0,
         bottom: 0,
-        height: 180,
+        // Bumped 180 → 204 in QA round 1 — the three sub-panels needed
+        // ~24 px of vertical breathing room so Find Buddy / Solo Focus
+        // and the music transport row don't clip at the bottom edge.
+        height: 204,
         gap: 12,
         padding: 12,
         background:

@@ -23,7 +23,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(
             // Pixel-shell when framed (default); pr-10 reserves space for
             // the show/hide toggle. The `pixel-input` class already sets
             // font, focus glow, and direction-aware stroke.
-            framed && "pixel-input pr-10",
+            framed && "pixel-input pr-16",
             className,
           )}
           // Body-scale font on inputs keeps iOS Safari from auto-zooming on

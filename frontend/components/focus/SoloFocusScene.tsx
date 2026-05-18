@@ -3,10 +3,8 @@
 import { useState } from "react";
 
 import { AmbientBackdrop } from "@/components/focus/ambient/AmbientBackdrop";
-import { AmbientPanel } from "@/components/focus/AmbientPanel";
 import { BigTimer } from "@/components/focus/BigTimer";
 import { FocusTopBar } from "@/components/focus/FocusTopBar";
-import { FriendsNow } from "@/components/focus/FriendsNow";
 import { QuickActions } from "@/components/focus/QuickActions";
 import { SessionInsight } from "@/components/focus/SessionInsight";
 import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
@@ -22,9 +20,16 @@ const INITIAL_MIX: MixerVolumes = { music: 40, rain: 60, cafe: 30, fire: 0 };
  * 0.95fr) that hosts every solo panel. State that only matters to this
  * scene (current ambient bg, mixer volumes) lives here so the page-level
  * wrapper stays thin.
+ *
+ * QA round 1: dropped `<FriendsNow />` (soloing should feel solo —
+ * seeing other people focusing is a distraction during deep work) and
+ * `<AmbientPanel />` (the scene picker had no functional purpose since
+ * the background already animates per-scene). Background is fixed to
+ * the initial `rain` scene; it can be reintroduced later as a top-bar
+ * dropdown if telemetry shows people want it back.
  */
 export function SoloFocusScene() {
-  const [bg, setBg] = useState<FocusBgId>("rain");
+  const [bg] = useState<FocusBgId>("rain");
   const [volumes, setVolumes] = useState<MixerVolumes>(INITIAL_MIX);
   const bgOption = findFocusBg(bg);
 
@@ -36,7 +41,8 @@ export function SoloFocusScene() {
         inset: 0,
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        overflowX: "hidden",
+        overflowY: "auto",
         background: bgOption.gradient,
         transition: "background 0.6s ease",
       }}
@@ -44,7 +50,7 @@ export function SoloFocusScene() {
       <div
         aria-hidden
         style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
           pointerEvents: "none",
           zIndex: 0,
@@ -53,7 +59,7 @@ export function SoloFocusScene() {
         <AmbientBackdrop bg={bg} />
       </div>
 
-      <div style={{ position: "relative", zIndex: 2 }}>
+      <div style={{ position: "relative", zIndex: 2, flexShrink: 0 }}>
         <FocusTopBar />
       </div>
 
@@ -67,7 +73,6 @@ export function SoloFocusScene() {
           padding: 12,
           position: "relative",
           zIndex: 2,
-          overflowY: "auto",
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
@@ -80,9 +85,7 @@ export function SoloFocusScene() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
-          <FriendsNow />
           <TasksPanel />
-          <AmbientPanel value={bg} onChange={setBg} />
           <SoundMixer volumes={volumes} onChange={setVolumes} />
           <QuickActions />
         </div>

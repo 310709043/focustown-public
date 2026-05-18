@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { Logo } from "@/components/scene/Logo";
+import { MiniClock } from "@/components/chrome/MiniClock";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { PixelWord } from "@/components/pixel/PixelWord";
 import { CoinBadge } from "@/components/town/CoinBadge";
@@ -90,6 +91,7 @@ export function FocusTopBar() {
             </span>
           </div>
         </div>
+        <MiniClock />
         <CoinBadge />
       </div>
     </header>

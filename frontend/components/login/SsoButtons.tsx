@@ -3,19 +3,19 @@
 import { useTranslations } from "next-intl";
 
 /**
- * Three SSO buttons ported from `reference/screen-login.jsx`: Google
- * (primary white), GitHub + Apple (compact pair). Visual only —
- * `onProvider` is a no-op stub today, because OAuth wiring lives in a
- * separate task; the panel is presentational until that lands.
+ * Two SSO buttons ported from `reference/screen-login.jsx`: Google
+ * (primary white) + GitHub (compact). Apple was removed per QA round 1.
+ * Visual only — `onProvider` is a no-op stub today, because OAuth wiring
+ * lives in a separate task; the panel is presentational until that lands.
  */
 interface SsoButtonsProps {
-  onProvider?: (provider: "google" | "github" | "apple") => void;
+  onProvider?: (provider: "google" | "github") => void;
   disabled?: boolean;
 }
 
 export function SsoButtons({ onProvider, disabled }: SsoButtonsProps) {
   const t = useTranslations("auth.splash");
-  const click = (p: "google" | "github" | "apple") => () => {
+  const click = (p: "google" | "github") => () => {
     if (disabled) return;
     onProvider?.(p);
   };
@@ -43,42 +43,22 @@ export function SsoButtons({ onProvider, disabled }: SsoButtonsProps) {
         <span>{t("continueWithGoogle")}</span>
       </button>
 
-      <div style={{ display: "flex", gap: 8 }}>
-        <button
-          type="button"
-          onClick={click("github")}
-          disabled={disabled}
-          className="pixel-btn"
-          style={{
-            flex: 1,
-            padding: "8px 8px",
-            fontSize: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-          }}
-        >
-          <GithubIcon /> {t("continueWithGithub")}
-        </button>
-        <button
-          type="button"
-          onClick={click("apple")}
-          disabled={disabled}
-          className="pixel-btn"
-          style={{
-            flex: 1,
-            padding: "8px 8px",
-            fontSize: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-          }}
-        >
-           {t("continueWithApple")}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={click("github")}
+        disabled={disabled}
+        className="pixel-btn"
+        style={{
+          padding: "10px 12px",
+          fontSize: 11,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+        }}
+      >
+        <GithubIcon /> {t("continueWithGithub")}
+      </button>
     </>
   );
 }

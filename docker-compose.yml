@@ -49,7 +49,19 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+      # Mount the repo-level scripts dir so the dev container can run
+      # ./scripts/seed-dev-data.py on boot — needed for the LoFi tracks
+      # the music player streams from /api/v1/tracks/{id}/stream.
+      - ./scripts:/scripts:ro
+    # Auto-migrate + seed on every dev boot so a fresh `docker compose up`
+    # produces a fully usable environment (achievements, shop items,
+    # LoFi tracks for the music player). Seed is idempotent; rerunning
+    # is safe. The script tolerates a missing scripts dir for users on
+    # earlier mounts.
+    command:
+      - sh
+      - -c
+      - "alembic upgrade head && (python /scripts/seed-dev-data.py || echo 'seed skipped') && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   worker:
     build:

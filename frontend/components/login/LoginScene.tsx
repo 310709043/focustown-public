@@ -40,6 +40,11 @@ interface LoginSceneProps {
   /** Theme direction — drives the skyline palette and the optional
    *  rain overlay. Defaults to `neon` for parity with existing callers. */
   direction?: LoginDirection;
+  /** When true, foreground stack uses `justify-content: flex-start` so
+   *  content sticks to the top + footer follows directly. Used by
+   *  `/signup` where the form is tall enough that centering creates a
+   *  visible gap below the form. */
+  topAlign?: boolean;
 }
 
 /**
@@ -68,6 +73,7 @@ export function LoginScene({
   showAvatarStrip = false,
   citizenCount = 2847,
   direction = "neon",
+  topAlign = false,
 }: LoginSceneProps) {
   const t = useTranslations("auth.splash");
 
@@ -171,7 +177,7 @@ export function LoginScene({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: topAlign ? "flex-start" : "center",
           gap: 14,
           padding: "70px 20px 30px",
         }}

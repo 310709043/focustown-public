@@ -26,6 +26,7 @@ from app.domain.services.coin_award_service import (
     CoinAwardService,
     _WalletServiceAcquired,
 )
+from app.domain.services.match_realtime_link import MatchRealtimeLink
 from app.domain.services.presence_service import PresenceService
 from app.domain.services.session_presence_subscriber import SessionPresenceLink
 from app.domain.services.wallet_service import WalletService
@@ -84,6 +85,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         publisher=RedisPubSubPublisher(get_redis()),
     )
     SessionPresenceLink(writer=presence_writer).register(_event_bus)
+
+    # Bridge in-process MatchProposed / MatchAccepted events into per-user
+    # Redis pub/sub channels. Without this, the candidate's WebSocket
+    # never sees the proposal and the receiving MatchModal never opens
+    # (regression flagged in QA round 1).
+    MatchRealtimeLink(
+        publisher=RedisPubSubPublisher(get_redis()),
+    ).register(_event_bus)
 
     log.info("subscribers_registered")
 

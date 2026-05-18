@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/routing";
+import { markAudioUnlocked } from "@/lib/audio/unlock";
 import { useAuthStore } from "@/lib/state/authStore";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { AppFooter } from "@/components/AppFooter";
@@ -23,6 +24,10 @@ export default function SignInPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Submit click is a user gesture — unlock audio so the music
+    // player on /town can autoplay without a second click. Mirrors
+    // what the splash sign-in page does.
+    markAudioUnlocked();
     try {
       await signIn(email, password);
       router.push("/town");

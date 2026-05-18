@@ -45,7 +45,13 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
     <div
       data-testid="match-panel"
       className="pixel-panel relative"
-      style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}
+      style={{
+        padding: 10,
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+        minWidth: 0,
+      }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div
@@ -151,7 +157,14 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         })}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 6,
+          minWidth: 0,
+        }}
+      >
         <button
           type="button"
           data-testid="match-panel-find-buddy"

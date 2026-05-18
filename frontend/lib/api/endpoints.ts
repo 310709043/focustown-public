@@ -77,9 +77,21 @@ export const authApi = {
 };
 
 // ── users ──────────────────────────────────────────────
+export interface PublicUserProfile {
+  id: string;
+  display_name: string;
+  character_key: string | null;
+  role_label: string | null;
+  joined_at: string;
+  today_focus_minutes: number;
+}
+
 export const userApi = {
   updateMe(input: { display_name?: string; character_key?: string; role_label?: string }) {
     return apiFetch<User>("/api/v1/users/me", { method: "PATCH", body: input });
+  },
+  getPublicProfile(userId: string) {
+    return apiFetch<PublicUserProfile>(`/api/v1/users/${userId}/public`);
   },
 };
 

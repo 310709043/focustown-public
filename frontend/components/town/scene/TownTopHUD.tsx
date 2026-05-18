@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { MiniClock } from "@/components/chrome/MiniClock";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { PixelWord } from "@/components/pixel/PixelWord";
 import { Logo } from "@/components/scene/Logo";
@@ -76,8 +76,6 @@ const SCENE_TEMP: Record<SceneName, number> = {
   storm: 12,
 };
 
-const WD = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const MN = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 /**
  * Town top HUD — visual port of `reference/screen-town.jsx#TopHUD`.
@@ -108,15 +106,6 @@ export function TownTopHUD({
   const tNav = useTranslations("town.nav");
   const tHud = useTranslations("town");
   const tScene = useTranslations("scenes");
-  const [now, setNow] = useState<Date | null>(null);
-
-  useEffect(() => {
-    const tick = () => setNow(new Date());
-    tick();
-    const id = window.setInterval(tick, 30_000);
-    return () => window.clearInterval(id);
-  }, []);
-
   return (
     <div
       data-testid="town-top-hud"
@@ -217,47 +206,7 @@ export function TownTopHUD({
           onClick={() => onOpenModal("frds")}
         />
 
-        {now ? (
-          <div
-            className="pixel-panel"
-            style={{
-              padding: "6px 10px",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-              }}
-            >
-              <div
-                className="font-silkscreen"
-                style={{
-                  fontSize: 16,
-                  color: "var(--ink)",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                {String(now.getHours()).padStart(2, "0")}:
-                {String(now.getMinutes()).padStart(2, "0")}
-              </div>
-              <div
-                className="font-silkscreen"
-                style={{
-                  fontSize: 8,
-                  color: "var(--ink-mute)",
-                  letterSpacing: "0.18em",
-                }}
-              >
-                {WD[now.getDay()]} · {MN[now.getMonth()]} {now.getDate()}
-              </div>
-            </div>
-          </div>
-        ) : null}
+        <MiniClock />
 
         <CoinBadge />
 
