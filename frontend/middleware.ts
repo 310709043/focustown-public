@@ -6,16 +6,25 @@ import { routing } from "./i18n/routing";
 /**
  * Per-request CSP nonce + locale routing.
  *
- * Why: shipping `script-src 'self' 'unsafe-inline'` in production turns the
- * CSP into theatre — any XSS sink immediately exfiltrates tokens from
- * localStorage. Generating a fresh nonce per response and pairing it with
- * `'strict-dynamic'` lets the Next.js bootstrap run while blocking anything
- * an attacker would inject. In development we keep `'unsafe-eval'` + nonce
- * because HMR's bundle reloads rely on eval.
+ * Why no `'strict-dynamic'`: our app uses Next.js's default static prerender
+ * (`X-Nextjs-Prerender: 1` on /en and /zh-TW). The framework chunk <script>
+ * tags are baked into the HTML at `next build` time, before middleware runs,
+ * so they cannot carry a per-request nonce. Pairing strict-dynamic with a
+ * nonce against prerendered HTML blocks every chunk → no hydration → the
+ * SplashGate loading overlay stays forever.
+ *
+ * Trade-off: `'self'` allows any same-origin script to execute, including a
+ * hypothetical injected `<script src="/some/path.js">` if an attacker can
+ * write into a same-origin path. We still block inline scripts (no
+ * `'unsafe-inline'`) and dynamic-eval (no `'unsafe-eval'`), which closes the
+ * common XSS sinks. The nonce stays in script-src so any future
+ * non-prerendered pages (or `<Script nonce={headers().get('x-nonce')}>`)
+ * can still benefit.
  *
  * next-intl's middleware handles `/` → `/zh-TW` redirects and writes the
- * `NEXT_LOCALE` cookie. We let it produce the response, then layer CSP on
- * top so locale routing and security headers compose cleanly.
+ * `NEXT_LOCALE` cookie. We compose with it carefully below — its internal
+ * NextResponse.next/rewrite calls don't forward request headers, so we
+ * rebuild the outbound response to carry x-nonce through.
  */
 
 const isProd = process.env.NODE_ENV === "production";
@@ -39,8 +48,12 @@ const mediaOrigins = (process.env.NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS ?? apiOrigin
   .join(" ");
 
 function buildCsp(nonce: string): string {
+  // Prod: nonce kept for future dynamic pages; 'self' is what actually
+  // unblocks /_next/static/chunks/* on prerendered routes. Inline scripts
+  // and eval are NOT allowed.
+  // Dev: HMR needs eval + inline; keep them gated behind NODE_ENV.
   const scriptSrc = isProd
-    ? `'self' 'nonce-${nonce}' 'strict-dynamic'`
+    ? `'self' 'nonce-${nonce}'`
     : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline'`;
 
   const directives = [
