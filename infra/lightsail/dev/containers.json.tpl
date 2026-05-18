@@ -9,7 +9,7 @@
     }
   },
   "backend": {
-    "image": "${ECR_REGISTRY}/focustown-backend:${IMAGE_TAG}",
+    "image": "${ECR_REGISTRY}/lowbatterytown-backend:${IMAGE_TAG}",
     "command": ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"],
     "ports": {
       "8000": "HTTP"
@@ -36,7 +36,7 @@
     }
   },
   "frontend": {
-    "image": "${ECR_REGISTRY}/focustown-frontend:${FRONTEND_TAG}",
+    "image": "${ECR_REGISTRY}/lowbatterytown-frontend:${FRONTEND_TAG}",
     "ports": {
       "3000": "HTTP"
     },

@@ -44,10 +44,10 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ steps.ecr.outputs.registry }}/focustown-backend:${{ steps.meta.outputs.image_tag }}
-            ${{ steps.ecr.outputs.registry }}/focustown-backend:latest
-          cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-backend:cache
-          cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-backend:cache,mode=max
+            ${{ steps.ecr.outputs.registry }}/lowbatterytown-backend:${{ steps.meta.outputs.image_tag }}
+            ${{ steps.ecr.outputs.registry }}/lowbatterytown-backend:latest
+          cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-backend:cache
+          cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-backend:cache,mode=max
 
   frontend:
     runs-on: ubuntu-latest
@@ -92,11 +92,11 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ steps.ecr.outputs.registry }}/focustown-frontend:${{ steps.meta.outputs.image_tag }}
-            ${{ steps.ecr.outputs.registry }}/focustown-frontend:latest-${{ matrix.env }}
+            ${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:${{ steps.meta.outputs.image_tag }}
+            ${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:latest-${{ matrix.env }}
           build-args: |
             NEXT_PUBLIC_API_BASE_URL=https://${{ steps.host.outputs.host }}
             NEXT_PUBLIC_WS_BASE_URL=wss://${{ steps.host.outputs.host }}
             NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=https://${{ steps.host.outputs.host }}
-          cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-frontend:cache-${{ matrix.env }}
-          cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/focustown-frontend:cache-${{ matrix.env }},mode=max
+          cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:cache-${{ matrix.env }}
+          cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:cache-${{ matrix.env }},mode=max

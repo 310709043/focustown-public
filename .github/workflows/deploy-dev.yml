@@ -59,11 +59,16 @@ jobs:
           echo "--- containers.json ---"
           jq 'del(.. | .APP_SECRET_KEY?, .DATABASE_URL?, .AWS_SECRET_ACCESS_KEY?)' /tmp/containers.json
 
+      # NB: the LCS service `lowbatterytown-dev` must be created with --scale 1
+      # and stay there. WSManager (infrastructure/messaging/ws_manager.py) holds
+      # the active WebSocket set in a process-local dict; running scale>1 splits
+      # connected users across containers and breaks realtime fan-out. Lift this
+      # only after WSManager is moved to Redis-backed broadcast.
       - name: Trigger LCS deployment
         run: |
           aws lightsail create-container-service-deployment \
             --region "${{ vars.AWS_REGION }}" \
-            --service-name focustown-dev \
+            --service-name lowbatterytown-dev \
             --containers file:///tmp/containers.json \
             --public-endpoint file:///tmp/public-endpoint.json
 
@@ -73,7 +78,7 @@ jobs:
           for i in $(seq 1 40); do
             STATE=$(aws lightsail get-container-services \
               --region "${{ vars.AWS_REGION }}" \
-              --service-name focustown-dev \
+              --service-name lowbatterytown-dev \
               --query 'containerServices[0].currentDeployment.state' \
               --output text)
             echo "[attempt $i] currentDeployment.state=$STATE"
@@ -83,7 +88,7 @@ jobs:
             if [[ "$STATE" == "FAILED" ]]; then
               aws lightsail get-container-service-deployments \
                 --region "${{ vars.AWS_REGION }}" \
-                --service-name focustown-dev \
+                --service-name lowbatterytown-dev \
                 --query 'deployments[0]' >&2
               exit 1
             fi

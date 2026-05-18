@@ -51,10 +51,10 @@ jobs:
         run: |
           set -euo pipefail
           aws ecr describe-images --region "${{ vars.AWS_REGION }}" \
-            --repository-name focustown-backend \
+            --repository-name lowbatterytown-backend \
             --image-ids imageTag=${{ steps.meta.outputs.image_tag }} >/dev/null
           aws ecr describe-images --region "${{ vars.AWS_REGION }}" \
-            --repository-name focustown-frontend \
+            --repository-name lowbatterytown-frontend \
             --image-ids imageTag=${{ steps.meta.outputs.frontend_tag }} >/dev/null
 
       - name: Materialize deployment spec
@@ -80,7 +80,7 @@ jobs:
         run: |
           aws lightsail create-container-service-deployment \
             --region "${{ vars.AWS_REGION }}" \
-            --service-name focustown-prod \
+            --service-name lowbatterytown-prod \
             --containers file:///tmp/containers.json \
             --public-endpoint file:///tmp/public-endpoint.json
 
@@ -90,7 +90,7 @@ jobs:
           for i in $(seq 1 60); do
             STATE=$(aws lightsail get-container-services \
               --region "${{ vars.AWS_REGION }}" \
-              --service-name focustown-prod \
+              --service-name lowbatterytown-prod \
               --query 'containerServices[0].currentDeployment.state' \
               --output text)
             echo "[attempt $i] currentDeployment.state=$STATE"
@@ -100,7 +100,7 @@ jobs:
             if [[ "$STATE" == "FAILED" ]]; then
               aws lightsail get-container-service-deployments \
                 --region "${{ vars.AWS_REGION }}" \
-                --service-name focustown-prod \
+                --service-name lowbatterytown-prod \
                 --query 'deployments[0]' >&2
               exit 1
             fi

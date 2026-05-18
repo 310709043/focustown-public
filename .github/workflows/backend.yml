@@ -18,9 +18,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: focustown
-          POSTGRES_PASSWORD: focustown
-          POSTGRES_DB: focustown
+          POSTGRES_USER: lowbatterytown
+          POSTGRES_PASSWORD: lowbatterytown
+          POSTGRES_DB: lowbatterytown
         ports: ["5432:5432"]
         options: >-
           --health-cmd pg_isready
@@ -37,7 +37,7 @@ jobs:
           --health-retries 10
     env:
       APP_SECRET_KEY: "ci-secret-please-change-this-32-chars-minimum"
-      DATABASE_URL: postgresql+asyncpg://focustown:focustown@localhost:5432/focustown
+      DATABASE_URL: postgresql+asyncpg://lowbatterytown:lowbatterytown@localhost:5432/lowbatterytown
       REDIS_URL: redis://localhost:6379/0
     steps:
       - uses: actions/checkout@v4
