@@ -64,11 +64,23 @@ docker buildx build --platform linux/amd64 --target runtime \
 echo "    pushed: ${ECR_REGISTRY}/lowbatterytown-backend:${IMAGE_TAG}"
 
 # --- 3. Build + push frontend (dev variant) -------------------------------
+# CSP `media-src` must include every host the backend can 302-redirect
+# audio bytes to. The S3 storage adapter is pinned to path-style
+# addressing (`backend/app/infrastructure/storage/s3.py` Config
+# s3={"addressing_style":"path"}), so presigned URLs always emit
+# `s3.<region>.amazonaws.com/<bucket>/<key>` — that exact host has to be
+# in this allow-list. If `STORAGE_BACKEND` in
+# `infra/lightsail/dev/containers.json.tpl` flips to anything else
+# (virtual-hosted, CloudFront, custom subdomain), update MEDIA_ORIGINS in
+# lockstep or every audio fetch will silently CSP-block (root cause of
+# the round-3 "music still doesn't play" report).
+MEDIA_ORIGINS="https://${DEV_HOST},https://s3.${AWS_REGION}.amazonaws.com"
+
 echo "==> [3/5] Building frontend image (env=dev, target=runner)..."
 docker buildx build --platform linux/amd64 --target runner \
     --build-arg "NEXT_PUBLIC_API_BASE_URL=https://${DEV_HOST}" \
     --build-arg "NEXT_PUBLIC_WS_BASE_URL=wss://${DEV_HOST}" \
-    --build-arg "NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=https://${DEV_HOST}" \
+    --build-arg "NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=${MEDIA_ORIGINS}" \
     --tag "${ECR_REGISTRY}/lowbatterytown-frontend:${FRONTEND_TAG}" \
     --tag "${ECR_REGISTRY}/lowbatterytown-frontend:latest-dev" \
     --push \
