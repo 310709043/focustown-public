@@ -65,6 +65,13 @@ export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp(nonce);
 
+  // Propagate the nonce into the REQUEST headers so Next.js's SSR pass reads
+  // it and stamps `nonce={x-nonce}` onto every injected <script>. Without this
+  // step, `'strict-dynamic'` suppresses the `'self'` fallback and blocks every
+  // /_next/static/chunks/* script — the page renders the SplashGate overlay,
+  // hydration never runs, and the loading screen stays forever.
+  request.headers.set("x-nonce", nonce);
+
   const response = intlMiddleware(request);
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("x-csp-nonce", nonce);
