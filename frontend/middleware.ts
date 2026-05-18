@@ -4,27 +4,42 @@ import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 
 /**
- * Per-request CSP nonce + locale routing.
+ * CSP + locale routing.
  *
- * Why no `'strict-dynamic'`: our app uses Next.js's default static prerender
- * (`X-Nextjs-Prerender: 1` on /en and /zh-TW). The framework chunk <script>
- * tags are baked into the HTML at `next build` time, before middleware runs,
- * so they cannot carry a per-request nonce. Pairing strict-dynamic with a
- * nonce against prerendered HTML blocks every chunk → no hydration → the
- * SplashGate loading overlay stays forever.
+ * Architectural pin: Next.js statically prerenders /en and /zh-TW (verified
+ * via `X-Nextjs-Prerender: 1`). Static prerender bakes the HTML at
+ * `next build` time, including the RSC-bootstrap inline <script> blobs that
+ * Next.js injects (`__next_f.push(...)`, route manifest, etc.). Those inline
+ * scripts cannot carry a per-request nonce — no middleware runs at build
+ * time. Browsers (per CSP spec) IGNORE `'unsafe-inline'` whenever a nonce
+ * source is present in script-src; so a script-src directive with both
+ * `'nonce-X'` and `'unsafe-inline'` blocks the framework inline scripts
+ * → no hydration → SplashGate overlay frozen.
  *
- * Trade-off: `'self'` allows any same-origin script to execute, including a
- * hypothetical injected `<script src="/some/path.js">` if an attacker can
- * write into a same-origin path. We still block inline scripts (no
- * `'unsafe-inline'`) and dynamic-eval (no `'unsafe-eval'`), which closes the
- * common XSS sinks. The nonce stays in script-src so any future
- * non-prerendered pages (or `<Script nonce={headers().get('x-nonce')}>`)
- * can still benefit.
+ * Resolution: drop the nonce from production script-src and rely on
+ *   `'self' 'unsafe-inline'`
+ * which lets the framework's inline payloads run. The remaining defences:
+ *   - no `'unsafe-eval'`     → blocks dynamic-eval gadgets
+ *   - no external sources    → blocks third-party script injection
+ *   - no `data:` URI scripts → blocks data-URL script smuggling
+ *   - origin-pinned `connect-src` (no `ws:/wss:` wildcards)
+ *   - `worker-src` / `manifest-src` / `frame-src 'none'` for unused channels
+ *   - HSTS, X-Frame, X-Content, Referrer-Policy, Permissions-Policy
+ *
+ * The realistic XSS surface this concedes: an attacker who lands a sink can
+ * execute inline JS. Next.js + React escape user content by default, so the
+ * remaining sinks are bugs (`dangerouslySetInnerHTML`, third-party
+ * libraries) — audited as zero in this codebase. The right next step is
+ * not stricter CSP but a `report-to` violation collector + dependency CVE
+ * scanning, both tracked separately.
+ *
+ * Dev keeps `'unsafe-eval'` + `'unsafe-inline'` for HMR.
  *
  * next-intl's middleware handles `/` → `/zh-TW` redirects and writes the
- * `NEXT_LOCALE` cookie. We compose with it carefully below — its internal
- * NextResponse.next/rewrite calls don't forward request headers, so we
- * rebuild the outbound response to carry x-nonce through.
+ * `NEXT_LOCALE` cookie. We still set `x-nonce` on the request and rebuild
+ * the outbound response through `NextResponse.next/rewrite({request})` so
+ * any future dynamic page that opts in with `headers().get('x-nonce')`
+ * can read it.
  */
 
 const isProd = process.env.NODE_ENV === "production";
@@ -48,12 +63,12 @@ const mediaOrigins = (process.env.NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS ?? apiOrigin
   .join(" ");
 
 function buildCsp(nonce: string): string {
-  // Prod: nonce kept for future dynamic pages; 'self' is what actually
-  // unblocks /_next/static/chunks/* on prerendered routes. Inline scripts
-  // and eval are NOT allowed.
-  // Dev: HMR needs eval + inline; keep them gated behind NODE_ENV.
+  // Prod uses `'self' 'unsafe-inline'` (NOT `'self' 'nonce-...' 'unsafe-inline'`
+  // — the nonce source would suppress `'unsafe-inline'` per CSP spec and break
+  // every prerendered route). See the file header for the full rationale.
+  // Dev keeps the nonce so any dynamic page can opt-in via headers().
   const scriptSrc = isProd
-    ? `'self' 'nonce-${nonce}'`
+    ? `'self' 'unsafe-inline'`
     : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline'`;
 
   const directives = [
