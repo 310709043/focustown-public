@@ -5,7 +5,8 @@
       "80": "HTTP"
     },
     "environment": {
-      "PUBLIC_HOST": "${PUBLIC_HOST}"
+      "PUBLIC_HOST": "${PUBLIC_HOST}",
+      "SERVICE_HOST": "lowbatterytown-prod.service.local"
     }
   },
   "backend": {
@@ -21,7 +22,7 @@
       "APP_CORS_ORIGINS": "https://${PUBLIC_HOST}",
       "APP_TRUSTED_PROXIES": "127.0.0.1,172.16.0.0/12",
       "DATABASE_URL": "${DATABASE_URL}",
-      "REDIS_URL": "redis://localhost:6379/0",
+      "REDIS_URL": "redis://lowbatterytown-prod.service.local:6379/0",
       "AUTH_PROVIDER": "local_jwt",
       "STORAGE_BACKEND": "s3",
       "S3_BUCKET": "${S3_BUCKET}",
@@ -43,7 +44,7 @@
       "APP_DEBUG": "false",
       "APP_SECRET_KEY": "${APP_SECRET_KEY}",
       "DATABASE_URL": "${DATABASE_URL}",
-      "REDIS_URL": "redis://localhost:6379/0",
+      "REDIS_URL": "redis://lowbatterytown-prod.service.local:6379/0",
       "AUTH_PROVIDER": "local_jwt",
       "STORAGE_BACKEND": "s3",
       "S3_BUCKET": "${S3_BUCKET}",

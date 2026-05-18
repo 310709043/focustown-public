@@ -4,11 +4,13 @@
 # Routing must stay in this file because LCS's public endpoint maps to a
 # single (container, port) pair; Caddy is the per-path router.
 #
-# Inter-container hostnames are `localhost:<port>`, NOT docker-compose-style
-# service names. All containers in an LCS deployment share one network
-# namespace (like a Kubernetes pod), so `backend`, `frontend`, `redis` are not
-# resolvable via DNS — they would have to be reached as `localhost:8000`,
-# `localhost:3000`, `localhost:6379` respectively.
+# Inter-container hostnames use the LCS private-domain pattern
+# `<SERVICE>.service.local:<port>` — empirically `localhost` only sometimes
+# works (probably an internal-routing quirk for the first port-declared
+# container) and the AWS docs explicitly recommend the private domain. The
+# service name is environment-specific (lowbatterytown-dev vs
+# lowbatterytown-prod), so we parameterize via the SERVICE_HOST env var so
+# the same Caddyfile baked into the custom caddy image works for both envs.
 # Ref: https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-container-services.html
 
 :80 {
@@ -19,29 +21,29 @@
     # the path explicitly keeps intent obvious.
     @ws path /api/v1/ws/*
     handle @ws {
-        reverse_proxy localhost:8000
+        reverse_proxy {$SERVICE_HOST}:8000
     }
 
     # Backend API
     handle /api/* {
-        reverse_proxy localhost:8000
+        reverse_proxy {$SERVICE_HOST}:8000
     }
     handle /healthz {
-        reverse_proxy localhost:8000
+        reverse_proxy {$SERVICE_HOST}:8000
     }
     handle /ready {
-        reverse_proxy localhost:8000
+        reverse_proxy {$SERVICE_HOST}:8000
     }
     handle /docs* {
-        reverse_proxy localhost:8000
+        reverse_proxy {$SERVICE_HOST}:8000
     }
     handle /openapi.json {
-        reverse_proxy localhost:8000
+        reverse_proxy {$SERVICE_HOST}:8000
     }
 
     # Frontend SSR (catch-all, last)
     handle {
-        reverse_proxy localhost:3000
+        reverse_proxy {$SERVICE_HOST}:3000
     }
 
     # Defence-in-depth headers (backend SecurityHeadersMiddleware emits these
