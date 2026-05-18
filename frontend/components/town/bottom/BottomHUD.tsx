@@ -28,7 +28,10 @@ export function BottomHUD({ onFindBuddy }: BottomHUDProps) {
   return (
     <div
       data-testid="bottom-hud"
-      className="md:grid md:grid-cols-[1.05fr_1fr_1fr] flex flex-col"
+      // Round 2: middle MatchPanel was clipping ("太切邊"); rebalance
+      // the columns so the buddy/solo buttons get ~30 px more breathing
+      // room without harming FocusTimer or MusicPlayer cells.
+      className="md:grid md:grid-cols-[0.95fr_1.15fr_0.9fr] flex flex-col"
       style={{
         position: "absolute",
         left: 0,

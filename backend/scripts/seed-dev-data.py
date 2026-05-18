@@ -13,15 +13,30 @@ import asyncio
 import sys
 from pathlib import Path
 
-# Make `app.*` importable in both layouts:
-# - From repo root: <repo>/backend/app/ ← add <repo>/backend
-# - From inside the backend container: /app/app/... ← /app is already cwd,
-#   but PYTHONPATH may not include it, so add it explicitly
-ROOT = Path(__file__).resolve().parents[1]
-for candidate in (ROOT / "backend", Path("/app")):
+# Resolve where the backend code lives. Three possible call sites:
+#   * `python backend/scripts/seed-dev-data.py`   → SCRIPT_DIR.parent = <repo>/backend
+#   * `python scripts/seed-dev-data.py`           → legacy: SCRIPT_DIR.parent = <repo> (no `app/`)
+#   * `python /app/scripts/seed-dev-data.py`      → LCS container: SCRIPT_DIR.parent = /app
+# Walk candidates in priority order and pick the first one that holds `app/core/config.py`.
+SCRIPT_DIR = Path(__file__).resolve().parent
+BACKEND_DIR: Path | None = None
+for candidate in (
+    SCRIPT_DIR.parent,                    # backend/scripts/ or /app/scripts/
+    SCRIPT_DIR.parent / "backend",        # legacy: scripts/ at repo root
+    Path("/app"),                         # explicit container fallback
+):
     if (candidate / "app" / "core" / "config.py").exists():
-        sys.path.insert(0, str(candidate))
+        BACKEND_DIR = candidate
         break
+if BACKEND_DIR is None:
+    raise RuntimeError(
+        f"seed-dev-data.py could not locate backend/app from {SCRIPT_DIR}"
+    )
+sys.path.insert(0, str(BACKEND_DIR))
+# Kept for callers that still reference `ROOT` further down (e.g. _seed_tracks).
+# Old contract: `ROOT / "backend" / "assets" / "seed-tracks"`. Same shape works
+# from either layout as long as ROOT is the repo root OR the backend dir.
+ROOT = BACKEND_DIR.parent if (BACKEND_DIR / "assets").exists() and BACKEND_DIR.name == "backend" else BACKEND_DIR
 
 import random  # noqa: E402
 import secrets  # noqa: E402
@@ -239,11 +254,17 @@ async def _seed_bots(db, ids) -> None:
 
 
 async def _seed_tracks(db, settings, ids) -> None:
-    """Phase 6 Tier-2: copy any MP3 files found in backend/assets/seed-tracks/
+    """Phase 6 Tier-2: copy any MP3 files found in `<backend>/assets/seed-tracks/`
     into storage_root and insert tracks rows owned by a system seed user.
     Idempotent — files already seeded (same filename → file_key) are skipped.
-    Silently no-ops when the assets directory is empty or missing."""
-    assets_dir = ROOT / "backend" / "assets" / "seed-tracks"
+    Silently no-ops when the assets directory is empty or missing.
+
+    The asset dir lives next to the backend code, so search from BACKEND_DIR
+    rather than ROOT — the container layout has `/app/assets/seed-tracks`
+    while the host layout has `<repo>/backend/assets/seed-tracks`. Resolving
+    via BACKEND_DIR works for both.
+    """
+    assets_dir = BACKEND_DIR / "assets" / "seed-tracks"
     if not assets_dir.exists():
         return
     mp3_files = sorted(assets_dir.glob("*.mp3"))

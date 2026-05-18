@@ -147,6 +147,9 @@ export const config = {
   // image bytes is meaningless and slowing every static file with a middleware
   // pass is wasteful.
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|logo.png|logo.svg).*)",
+    // `audio` excluded so `/audio/lofi-*.mp3` from the public fallback
+    // bypasses the locale prefix injection (was redirecting to
+    // `/en/audio/...` and 404ing the static asset).
+    "/((?!api|_next/static|_next/image|audio|favicon.ico|logo.png|logo.svg).*)",
   ],
 };

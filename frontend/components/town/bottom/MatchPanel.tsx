@@ -170,39 +170,43 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           data-testid="match-panel-find-buddy"
           onClick={onFindBuddy}
           disabled={proposing}
+          title={t("findBuddySub")}
           className="pixel-btn primary"
           style={{
             padding: "10px 8px",
             fontSize: 12,
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            gap: 2,
+            justifyContent: "center",
             opacity: proposing ? 0.6 : 1,
             cursor: proposing ? "wait" : "pointer",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          <span>✦ {t("findBuddyCta")}</span>
-          <span style={{ fontSize: 8, opacity: 0.7 }}>{t("findBuddySub")}</span>
+          ✦ {t("findBuddyCta")}
         </button>
         <button
           type="button"
           data-testid="match-panel-solo"
           onClick={() => router.push("/focus/solo")}
+          title={t("soloSub")}
           className="pixel-btn"
           style={{
             padding: "10px 8px",
             fontSize: 12,
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            gap: 2,
+            justifyContent: "center",
             borderColor: "var(--accent-3)",
             color: "var(--accent-3)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          <span>{t("soloCta")}</span>
-          <span style={{ fontSize: 8, opacity: 0.7 }}>{t("soloSub")}</span>
+          {t("soloCta")}
         </button>
       </div>
     </div>

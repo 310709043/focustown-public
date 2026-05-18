@@ -124,9 +124,21 @@ export function useRadioPlaylist({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [tracks, setTracks] = useState<PersonalPlaylistTrack[]>([]);
   const [index, setIndex] = useState(0);
-  const [audioUnlocked, setAudioUnlocked] = useState(isAudioUnlocked);
-  const [isPlaying, setIsPlaying] = useState(() => isAudioUnlocked());
+  // SSR-safe initial state: `isAudioUnlocked()` reads sessionStorage and
+  // returns false during SSR (no `window`) but may return true on the
+  // first client render — that divergence triggers React #418 (hydration
+  // mismatch). Start stable, then sync from storage inside `useEffect`
+  // (which only runs on the client). Pattern #5 of `hydration-gotchas`.
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(initialVolume);
+
+  useEffect(() => {
+    if (isAudioUnlocked()) {
+      setAudioUnlocked(true);
+      setIsPlaying(true);
+    }
+  }, []);
 
   // Fetch playlist on mount + when context changes.
   useEffect(() => {

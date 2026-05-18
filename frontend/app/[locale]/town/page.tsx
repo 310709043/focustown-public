@@ -67,20 +67,35 @@ import { MatchModal } from "@/components/modals/MatchModal";
 import { ShopModal } from "@/components/modals/ShopModal";
 import { AchievementsModal } from "@/components/modals/AchievementsModal";
 import { FeedbackModal } from "@/components/modals/FeedbackModal";
+import { FriendsModal } from "@/components/modals/FriendsModal";
 import { SupportModal } from "@/components/modals/SupportModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
+import { useRouter } from "@/i18n/routing";
 
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
 
 export default function TownPage() {
   const { user, hydrate } = useAuthStore();
+  const router = useRouter();
   const advanceScene = useSceneStore((s) => s.advance);
   const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
   const [matchOpen, setMatchOpen] = useState(false);
-  // PR1 wires achv/shop/feedback/support; frds/profile become live in PR2.
   const [openModal, setOpenModal] = useState<TownModalKind | null>(null);
   const requestAutoMatch = useMatchStore((s) => s.requestAuto);
   const matchProposing = useMatchStore((s) => s.proposing);
+
+  // Reused by both the BottomHUD "Find Buddy" button and the FriendsModal
+  // CTA so the matching flow stays consistent (SRP — single behavior, two
+  // call sites).
+  const onFindBuddy = async () => {
+    if (matchProposing) return;
+    const m = await requestAutoMatch();
+    if (m) setMatchOpen(true);
+  };
+
+  const onOpenOwnProfile = () => {
+    if (user?.id) router.push(`/users/${user.id}`);
+  };
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -203,7 +218,7 @@ export default function TownPage() {
       {/* Top HUD — reference's 3-cluster layout: logo+wordmark+weather chip
           on the left, UserStatusPill in the center, ACHV/SHOP/FRDS + clock
           + T-coin + sign-out on the right. Overlays the scene (absolute). */}
-      <TownTopHUD onOpenModal={setOpenModal} />
+      <TownTopHUD onOpenModal={setOpenModal} onOpenOwnProfile={onOpenOwnProfile} />
 
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
            z-order: sky → stars → shooting stars → celestial sprite → planes →
@@ -281,13 +296,7 @@ export default function TownPage() {
             scattered TimerPanel + MatchCTA + BigFocusCTA + PersonalRadio
             block (audio playback follow-up will re-mount city radio
             once `useCityRadio()` is extracted). */}
-        <BottomHUD
-          onFindBuddy={async () => {
-            if (matchProposing) return;
-            const m = await requestAutoMatch();
-            if (m) setMatchOpen(true);
-          }}
-        />
+        <BottomHUD onFindBuddy={onFindBuddy} />
       </div>
 
       <MatchModal open={matchOpen} onClose={() => setMatchOpen(false)} />
@@ -298,6 +307,11 @@ export default function TownPage() {
       <AchievementsModal
         open={openModal === "achv"}
         onClose={() => setOpenModal(null)}
+      />
+      <FriendsModal
+        open={openModal === "frds"}
+        onClose={() => setOpenModal(null)}
+        onFindBuddy={onFindBuddy}
       />
       <FeedbackModal
         open={openModal === "feedback"}

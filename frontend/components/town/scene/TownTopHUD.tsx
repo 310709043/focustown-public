@@ -92,8 +92,13 @@ const SCENE_TEMP: Record<SceneName, number> = {
  */
 export function TownTopHUD({
   onOpenModal,
+  onOpenOwnProfile,
 }: {
   onOpenModal: (kind: TownModalKind) => void;
+  /** Click handler for the central UserStatusPill — opens the user's
+   *  own Citizen ID card at `/users/{user.id}`. Optional so existing
+   *  callers stay source-compatible. */
+  onOpenOwnProfile?: () => void;
 }) {
   const signOut = useAuthStore((s) => s.signOut);
   const scene = useSceneStore((s) => s.current);
@@ -174,7 +179,7 @@ export function TownTopHUD({
       </div>
 
       {/* ═══ CENTER: status pill ═══ */}
-      <UserStatusPill />
+      <UserStatusPill onClick={onOpenOwnProfile} />
 
       {/* ═══ RIGHT cluster ═══ */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

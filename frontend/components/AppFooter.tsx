@@ -16,7 +16,9 @@ export function AppFooter() {
       }}
     >
       <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2">
-        <span className="text-dim">© {new Date().getFullYear()} {LEGAL.companyName}</span>
+        <span className="text-ink-mute" suppressHydrationWarning>
+          © {new Date().getFullYear()} {LEGAL.companyName}
+        </span>
         <Link href="/legal/terms" className="hover:text-accent-2">
           {t("terms")}
         </Link>

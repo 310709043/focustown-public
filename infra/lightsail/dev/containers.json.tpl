@@ -11,7 +11,7 @@
   },
   "backend": {
     "image": "${ECR_REGISTRY}/lowbatterytown-backend:${IMAGE_TAG}",
-    "command": ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"],
+    "command": ["sh", "-c", "alembic upgrade head && (python /app/scripts/seed-dev-data.py || echo 'seed skipped') && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"],
     "ports": {
       "8000": "HTTP"
     },

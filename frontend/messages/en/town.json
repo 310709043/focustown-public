@@ -75,6 +75,13 @@
     "shop": {
       "title": "SHOP"
     },
+    "frds": {
+      "title": "FRIENDS / FRDS",
+      "heading": "No friends yet",
+      "body": "Open a focus room with someone to start growing your circle. Until then, you can match with a stranger and try out the buddy system.",
+      "findBuddyCta": "Find a buddy",
+      "doneCta": "Close"
+    },
     "feedback": {
       "title": "FEEDBACK",
       "subjectLabel": "Subject",

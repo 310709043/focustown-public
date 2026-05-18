@@ -75,6 +75,13 @@
     "shop": {
       "title": "商店 / SHOP"
     },
+    "frds": {
+      "title": "好友 / FRDS",
+      "heading": "還沒有好友",
+      "body": "和一起專注的人共度一段時光，就有機會把他們加入好友。先試試自動配對，找到對的節奏。",
+      "findBuddyCta": "立刻配對",
+      "doneCta": "關閉"
+    },
     "feedback": {
       "title": "意見回饋 / FEEDBACK",
       "subjectLabel": "主旨",
