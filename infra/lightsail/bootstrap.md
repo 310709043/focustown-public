@@ -3,7 +3,7 @@
 End state after running this runbook:
 
 - 2 Lightsail Container Services: `focustown-prod` (Small) + `focustown-dev` (Nano)
-- 2 Lightsail Managed Databases: `focustown-pg-prod` + `focustown-pg-dev` (Postgres Standard 1GB, single-AZ, 7-day automated backup)
+- 1 Lightsail Managed Database: `focustown-pg-prod` (Postgres Standard 1GB, single-AZ, 7-day PITR). Hosts **two databases on the same instance** — `focustown` (prod) and `focustown_dev` (dev) — each owned by a distinct role with no cross-DB grants. Trades $15/mo + strict env isolation against shared compute/RAM on a single instance.
 - 2 ECR repos: `focustown-backend`, `focustown-frontend` (shared across prod + dev, different image tags)
 - 1 S3 bucket: `focustown-storage` with prefixes `/prod/` + `/dev/`
 - 1 SES verified identity for `focustown.app`
@@ -12,7 +12,7 @@ End state after running this runbook:
 - 1 Route 53 hosted zone for `focustown.app` (apex + `dev.` subdomain)
 - 1 CloudFront distribution fronting `focustown.app` (origin = LCS prod public endpoint)
 
-**Estimated monthly cost: $64.**
+**Estimated monthly cost: $49.**
 
 Region: `ap-northeast-1` (Tokyo). All commands assume `aws` CLI v2 with admin credentials.
 Substitute `<ACCOUNT_ID>` and `<GITHUB_REPO>` (e.g. `jiao/focustwon`) throughout.
@@ -65,31 +65,27 @@ aws s3api put-bucket-versioning --bucket focustown-storage \
     --versioning-configuration Status=Enabled
 ```
 
-## 3. Managed Postgres (prod + dev)
+## 3. Managed Postgres (single instance, two databases)
+
+Provision **one** Managed Postgres instance for both environments. Dev shares
+the prod instance compute, but lives in a separate database with its own role
+— hard isolation at the Postgres database boundary, not soft isolation by
+schema or row-tenant. Saves $15/mo vs a dedicated dev instance; accepts shared
+RAM/CPU and a single PITR scope across both envs.
 
 ```bash
-# Prod — note master password is auto-generated; capture from output.
+# Single instance — master password is auto-generated; capture from output.
 aws lightsail create-relational-database \
     --region ap-northeast-1 \
     --relational-database-name focustown-pg-prod \
     --master-database-name focustown \
-    --master-username focustown \
-    --relational-database-blueprint-id postgres_16 \
-    --relational-database-bundle-id micro_2_0 \
-    --no-publicly-accessible
-
-# Dev
-aws lightsail create-relational-database \
-    --region ap-northeast-1 \
-    --relational-database-name focustown-pg-dev \
-    --master-database-name focustown \
-    --master-username focustown \
+    --master-username focustown_admin \
     --relational-database-blueprint-id postgres_16 \
     --relational-database-bundle-id micro_2_0 \
     --no-publicly-accessible
 ```
 
-Wait ~10 min for `state=available`, then capture endpoints + master passwords:
+Wait ~10 min for `state=available`, then capture the endpoint and master password:
 
 ```bash
 aws lightsail get-relational-database --region ap-northeast-1 \
@@ -101,11 +97,64 @@ aws lightsail get-relational-database-master-user-password --region ap-northeast
     --password-version CURRENT --query 'masterUserPassword' --output text
 ```
 
-Build the DATABASE_URL (used as a GitHub Actions secret later):
+### 3a. Create per-env roles and the dev database
+
+Temporarily expose the instance to your laptop (Lightsail's allowlist is on the
+DB, not the LCS), connect as `focustown_admin`, then run this **one-shot** SQL.
+Generate two strong, distinct passwords first (`openssl rand -base64 24` each)
+— these become `PROD_DB_PASSWORD` and `DEV_DB_PASSWORD`.
+
+```bash
+aws lightsail update-relational-database --region ap-northeast-1 \
+    --relational-database-name focustown-pg-prod \
+    --publicly-accessible
+
+# psql connects to the admin-owned 'focustown' database to issue CREATE ROLE etc.
+psql "postgresql://focustown_admin:<ADMIN_PASSWORD>@<endpoint>:5432/focustown?sslmode=require" <<SQL
+-- Prod role: owns the existing 'focustown' database.
+CREATE ROLE focustown LOGIN PASSWORD '<PROD_DB_PASSWORD>';
+ALTER DATABASE focustown OWNER TO focustown;
+
+-- Dev role + dev database, fully separate from prod.
+CREATE ROLE focustown_dev LOGIN PASSWORD '<DEV_DB_PASSWORD>';
+CREATE DATABASE focustown_dev OWNER focustown_dev;
+
+-- Belt-and-suspenders: explicitly revoke each role from the other's database.
+-- Postgres 15+ already removes CREATE on public from PUBLIC; this just makes
+-- the cross-env block visible in pg_database privileges.
+REVOKE ALL ON DATABASE focustown     FROM focustown_dev, PUBLIC;
+REVOKE ALL ON DATABASE focustown_dev FROM focustown,     PUBLIC;
+GRANT  CONNECT,TEMPORARY ON DATABASE focustown     TO focustown;
+GRANT  CONNECT,TEMPORARY ON DATABASE focustown_dev TO focustown_dev;
+SQL
+
+# Lock the instance back down.
+aws lightsail update-relational-database --region ap-northeast-1 \
+    --relational-database-name focustown-pg-prod \
+    --no-publicly-accessible
+```
+
+Build the two connection strings (used as GitHub Actions environment secrets later):
 
 ```
-postgresql+asyncpg://focustown:<URL_ENCODED_PASSWORD>@<endpoint>:5432/focustown?ssl=require
+PROD_DATABASE_URL=postgresql+asyncpg://focustown:<URL_ENCODED_PROD_PASSWORD>@<endpoint>:5432/focustown?ssl=require
+DEV_DATABASE_URL =postgresql+asyncpg://focustown_dev:<URL_ENCODED_DEV_PASSWORD>@<endpoint>:5432/focustown_dev?ssl=require
 ```
+
+**Verify isolation before moving on**:
+
+```bash
+# Should succeed:
+psql "$PROD_DATABASE_URL" -c "SELECT current_database(), current_user;"
+psql "$DEV_DATABASE_URL"  -c "SELECT current_database(), current_user;"
+
+# Should each fail with 'permission denied for database':
+psql "postgresql://focustown:<PROD_PWD>@<endpoint>:5432/focustown_dev?sslmode=require" -c "SELECT 1;"
+psql "postgresql://focustown_dev:<DEV_PWD>@<endpoint>:5432/focustown?sslmode=require"     -c "SELECT 1;"
+```
+
+If either of the last two commands succeeds, **stop**: the cross-DB REVOKE
+didn't take. Re-run the GRANT/REVOKE block before any deploy.
 
 ## 4. SES identity
 
@@ -310,8 +359,8 @@ In repo settings → Secrets and variables → Actions:
 | Name | Source |
 |---|---|
 | `AWS_DEPLOY_ROLE_ARN` | `arn:aws:iam::<ACCOUNT_ID>:role/gha-focustown-deployer` |
-| `PROD_DATABASE_URL` | postgresql+asyncpg URL from step 3 (prod) |
-| `DEV_DATABASE_URL` | postgresql+asyncpg URL from step 3 (dev) |
+| `PROD_DATABASE_URL` | postgresql+asyncpg URL from step 3a (`focustown` DB, `focustown` role) |
+| `DEV_DATABASE_URL` | postgresql+asyncpg URL from step 3a (`focustown_dev` DB, `focustown_dev` role) |
 | `PROD_APP_SECRET_KEY` | `openssl rand -base64 48` |
 | `DEV_APP_SECRET_KEY` | `openssl rand -base64 48` |
 | `AWS_APP_ACCESS_KEY_ID` | from step 5 |
@@ -323,9 +372,10 @@ In repo settings → Secrets and variables → Actions:
 
 ## 12. First migration (one-shot from your laptop)
 
-After the prod LCS has run once successfully, run alembic against the Managed PG
-endpoint from your laptop (which has temporarily added its public IP to the
-Lightsail DB allowlist):
+After the LCS services have run once successfully, run alembic against **both**
+databases on the Managed PG instance from your laptop (which has temporarily
+added its public IP to the Lightsail DB allowlist). The migrations are
+identical; only the connection target changes.
 
 ```bash
 aws lightsail update-relational-database --region ap-northeast-1 \
@@ -334,15 +384,21 @@ aws lightsail update-relational-database --region ap-northeast-1 \
 
 cd backend
 DATABASE_URL='<PROD_DATABASE_URL>' alembic upgrade head
+DATABASE_URL='<DEV_DATABASE_URL>'  alembic upgrade head
 
-# Lock it back down:
+# Lock the instance back down:
 aws lightsail update-relational-database --region ap-northeast-1 \
     --relational-database-name focustown-pg-prod \
     --no-publicly-accessible
 ```
 
-(Later iterations: the CI workflow runs `alembic upgrade head` inside a one-shot
-backend container before swapping in the new deployment.)
+Each database keeps its own `alembic_version` row, so they drift independently
+when a hotfix lands on `main` but `develop` is still ahead — that's intentional.
+
+(Later iterations: the CI workflow runs `alembic upgrade head` inside the
+backend + worker container command on cold start. Prod deploy targets the
+`focustown` database; dev deploy targets `focustown_dev` — driven entirely by
+which `*_DATABASE_URL` secret the env injects.)
 
 ---
 
@@ -352,8 +408,7 @@ backend container before swapping in the new deployment.)
 |---|---|
 | Lightsail Container Service (Small, 1 node) | $20 |
 | Lightsail Container Service (Nano, 1 node) | $7 |
-| Lightsail Managed Database — Standard 1GB (prod) | $15 |
-| Lightsail Managed Database — Standard 1GB (dev) | $15 |
+| Lightsail Managed Database — Standard 1GB (hosts prod + dev DBs) | $15 |
 | ECR storage (~1GB) | $0.10 |
 | S3 storage + requests | $1 |
 | CloudFront (50 users × few MB/day) | $3 |
@@ -361,6 +416,8 @@ backend container before swapping in the new deployment.)
 | Route 53 hosted zone + queries | $0.60 |
 | SES (password reset only) | $0.10 |
 | Data transfer (within free tier mostly) | $0–2 |
-| **Total** | **~$64** |
+| **Total** | **~$49** |
 
-Set a budget alarm at $80 (covers normal variance + cushion before $70 ceiling is breached).
+Set a budget alarm at $65 (covers normal variance + cushion before $55 ceiling
+is breached). If prod LCS Small starts OOM-ing under load — 0.5 GB shared
+across 5 containers is tight — the next step up is LCS Medium (+$20/mo).
