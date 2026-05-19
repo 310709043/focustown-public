@@ -1,18 +1,18 @@
 {
   "shared": {
-    "companyName": "Focus Town",
+    "companyName": "Low Battery Town",
     "jurisdiction": "Taiwan (R.O.C.)",
     "contactLine": "If you have any questions about this policy, please contact us at {email}. We will reply within 30 days.",
     "effectiveDateLabel": "Effective date",
     "versionLabel": "Version",
     "tocHeader": "Contents",
-    "backToApp": "Back to Focus Town"
+    "backToApp": "Back to Low Battery Town"
   },
   "privacy": {
     "title": "Privacy Policy",
     "subtitle": "How {companyName} collects, uses, and protects your personal data",
-    "metaTitle": "Privacy Policy — Focus Town",
-    "metaDescription": "Learn how Focus Town handles your personal data, what we keep, and the rights you have under Taiwan's PDPA.",
+    "metaTitle": "Privacy Policy | Low Battery Town",
+    "metaDescription": "Learn how Low Battery Town collects, processes and protects your personal data under Taiwan's Personal Data Protection Act, and the rights you can exercise.",
     "toc": {
       "intro": "1. Our commitment",
       "collect": "2. What we collect",
@@ -31,16 +31,16 @@
   },
   "terms": {
     "title": "Terms of Service",
-    "subtitle": "Welcome to Focus Town. Please read these terms before using the service.",
-    "metaTitle": "Terms of Service — Focus Town",
-    "metaDescription": "Understand your rights and responsibilities when using Focus Town, including accounts, payments, conduct, and dispute resolution.",
+    "subtitle": "Welcome to Low Battery Town. Please read these terms before using the service.",
+    "metaTitle": "Terms of Service | Low Battery Town",
+    "metaDescription": "Read the Low Battery Town Terms of Service to understand your account, payment, usage and dispute-resolution rights and responsibilities.",
     "toc": {}
   },
   "refund": {
     "title": "Refund Policy",
     "subtitle": "We want every purchase to feel right. Here is how refunds work.",
-    "metaTitle": "Refund Policy — Focus Town",
-    "metaDescription": "Learn about Focus Town's refund conditions, how to request a refund, and how to reach our support team.",
+    "metaTitle": "Refund Policy | Low Battery Town",
+    "metaDescription": "Learn the refund conditions, application process and timelines for Low Battery Town purchases, so every top-up and order feels safe.",
     "toc": {}
   }
 }

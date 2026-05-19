@@ -102,6 +102,8 @@
       "header": "FRIENDS NOW",
       "onlineCount": "{count} 在線",
       "joinCta": "+1",
+      "emptyState": "好友還沒上線。趕快邀請幾位鎮民開始一起專注吧！",
+      "loading": "載入中…",
       "tasks": {
         "writing": "寫作",
         "coding": "寫程式",
@@ -185,13 +187,9 @@
     "agenda": {
       "header": "共同行程",
       "nowLabel": "NOW",
-      "items": {
-        "0": "番茄 #1 · 各自寫 25 min",
-        "1": "5 min 互唸對方寫的東西",
-        "2": "番茄 #2 · 各自寫 25 min",
-        "3": "番茄 #3 · 改寫 + 互評",
-        "4": "一起去 LOFI BAR 慶祝 ✦"
-      }
+      "addPlaceholder": "新增任務，按 Enter 送出",
+      "loadError": "無法載入共同行程，請稍後再試。",
+      "saveError": "儲存失敗，請稍後再試。"
     },
     "roomMusic": {
       "header": "ROOM SYNC",
@@ -217,7 +215,9 @@
       "shareMusicAria": "分享音樂",
       "pause": "暫停",
       "pauseAria": "暫停番茄",
-      "typeMsg": "輸入訊息…"
+      "typeMsg": "輸入訊息…",
+      "loadError": "無法載入聊天記錄，請稍後再試。",
+      "sendError": "訊息送出失敗，請稍後再試。"
     },
     "notes": {
       "defaultTitle": "共同筆記",

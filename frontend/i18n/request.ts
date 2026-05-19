@@ -17,6 +17,7 @@ const NAMESPACES = [
   "errors",
   "scenes",
   "characters",
+  "profile",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

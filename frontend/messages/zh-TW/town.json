@@ -84,16 +84,26 @@
     },
     "feedback": {
       "title": "意見回饋 / FEEDBACK",
+      "categoryLabel": "類別",
+      "categoryBug": "回報問題",
+      "categorySuggestion": "建議",
+      "categoryPraise": "鼓勵",
+      "categoryOther": "其他",
       "subjectLabel": "主旨",
       "subjectPlaceholder": "簡單描述一下…",
       "bodyLabel": "想說的話",
       "bodyPlaceholder": "告訴我們你的想法、卡關的地方、希望我們做什麼…",
+      "contactLabel": "聯絡 Email（選填）",
+      "contactPlaceholder": "希望我們回覆時請留下信箱",
       "emptyError": "請至少寫一點內容再送出",
+      "rateLimitedError": "送出太頻繁了，請稍後再試。",
+      "submittingCta": "送出中…",
       "submitCta": "送出回饋",
       "cancelCta": "取消",
       "doneCta": "好",
       "successHeading": "已收到，謝謝你",
-      "successBody": "我們會把每一則訊息看完。再見囉！"
+      "successBody": "我們會把每一則訊息看完。再見囉！",
+      "failureGeneric": "送出失敗，請稍後再試。"
     },
     "support": {
       "title": "技術支援 / SUPPORT",
@@ -136,8 +146,8 @@
   "todayRank": "今日排行",
   "skyAd": "廣告",
   "liveOnline": "LIVE · {count, number} ONLINE",
-  "channel": "CH 04 · FOCUSTOWN.TV",
-  "adContact": "想在這裡投放廣告？ad@focustown.app",
+  "channel": "CH 04 · LBT.TV",
+  "adContact": "想在這裡投放廣告？ad@lowbatterytown.app",
   "onlineCount": "ONLINE {count, number}",
   "weatherSunny": "晴",
   "weatherCloudy": "多雲",
@@ -261,5 +271,12 @@
       "idPrefix": "id:",
       "backLink": "◂ 回街景"
     }
+  },
+  "userProfile": {
+    "backCta": "返回小鎮",
+    "registry": "鎮民名冊",
+    "loadingState": "訊號調頻中…",
+    "notFound": "查無此鎮民",
+    "notFoundHint": "再次確認 ID，或回到小鎮繼續探索。"
   }
 }

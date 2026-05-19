@@ -1,0 +1,255 @@
+{
+  "modal": {
+    "title": "我的數據",
+    "subtitle": "您的專注紀錄與成長軌跡",
+    "closeAria": "關閉個人專區",
+    "close": "關閉"
+  },
+  "sidebar": {
+    "levelLabel": "LV.{level}",
+    "xpLabel": "XP {current} / {next}",
+    "xpAria": "經驗值進度",
+    "metaUnknown": "—",
+    "signOut": "登出"
+  },
+  "nav": {
+    "stats": "我的數據",
+    "wallet": "T幣錢包",
+    "notes": "筆記庫",
+    "friends": "好友名單",
+    "settings": "設定",
+    "feedback": "意見回饋",
+    "support": "客服中心",
+    "activeIndicatorAria": "目前所在分頁"
+  },
+  "wallet": {
+    "title": "T 幣錢包 · WALLET",
+    "balanceEyebrow": "BALANCE",
+    "balanceSubtitle": "T COIN · LBT",
+    "weeklyIncoming": "+{amount} 本週",
+    "weeklyOutgoing": "-{amount} 本週",
+    "weeklyNet": "淨增 {amount}",
+    "actions": {
+      "topUp": "儲值",
+      "gift": "送禮",
+      "redeem": "兌換碼"
+    },
+    "topUp": {
+      "title": "儲值方案 · TOP-UP",
+      "paymentMethods": "TWD · 信用卡 · APPLE · GOOGLE",
+      "paymentLabel": "付款方式",
+      "bonusBadge": "+{amount} 贈送",
+      "ribbonHot": "熱門",
+      "ribbonValue": "超值",
+      "ribbonBest": "BEST",
+      "currencySuffix": "T 幣",
+      "selectionLine": "你選了 {coins} + {bonus} T 幣 · 全額 NT${total}",
+      "confirmCta": "立即儲值 ▶"
+    },
+    "earn": {
+      "title": "免費賺 T 幣",
+      "pomodoro": "完成一顆番茄",
+      "deepNight": "深夜時段專注",
+      "groupFocus": "與他人一起專注 25min",
+      "streak": "連續登入 7 天",
+      "achievement": "解鎖新成就",
+      "feedback": "送出意見反饋"
+    },
+    "tx": {
+      "title": "交易紀錄",
+      "filterAll": "全部",
+      "filterIncome": "收入",
+      "filterOutgoing": "支出",
+      "filterTopUp": "儲值",
+      "empty": "尚無交易紀錄",
+      "reasonFallback": "交易",
+      "reasons": {
+        "session_complete": "完成專注時段",
+        "pomodoro_complete": "完成番茄",
+        "group_focus": "與他人共同專注",
+        "streak_bonus": "連續登入獎勵",
+        "achievement_unlock": "解鎖成就",
+        "purchase": "購買道具",
+        "top_up": "儲值 T 幣",
+        "gift_sent": "送出禮物",
+        "gift_received": "收到禮物",
+        "redeem_code": "兌換碼",
+        "feedback_reward": "送出意見反饋"
+      }
+    },
+    "comingSoon": "此功能即將上線",
+    "redeem": {
+      "title": "輸入兌換碼",
+      "subtitle": "貼上活動或好友分享的代碼，立即把 T 幣存入你的錢包。",
+      "placeholder": "例如：WELCOME-2026",
+      "submitCta": "兌換",
+      "submittingCta": "兌換中…",
+      "cancelCta": "取消",
+      "successHeading": "兌換成功",
+      "successBody": "已存入 +{amount} T 幣，現在的餘額是 {balance} T。",
+      "errorNotFound": "查無此兌換碼，請確認後再試一次。",
+      "errorUsed": "你已經兌換過這個代碼囉。",
+      "errorExhausted": "這個代碼目前無法使用或已過期。",
+      "errorGeneric": "兌換失敗，請稍後再試。",
+      "emptyError": "請先輸入兌換碼。"
+    },
+    "gift": {
+      "title": "送禮給其他鎮民",
+      "subtitle": "把 T 幣送給好友，鼓勵他們繼續專注。",
+      "recipientLabel": "對方鎮民 ID",
+      "recipientPlaceholder": "貼上對方的鎮民 ID（在個人檔案可看到）",
+      "amountLabel": "送出數量（T 幣）",
+      "amountPlaceholder": "1 - 1000",
+      "messageLabel": "留下一句話（選填）",
+      "messagePlaceholder": "例如：今天的番茄一起加油 🍅",
+      "submitCta": "送出禮物",
+      "submittingCta": "送出中…",
+      "cancelCta": "取消",
+      "successHeading": "禮物已送達",
+      "successBody": "送出 {amount} T 幣，現在的餘額是 {balance} T。",
+      "errorRecipient": "找不到這位鎮民，請確認 ID。",
+      "errorSelf": "不能送禮給自己喔。",
+      "errorInsufficient": "T 幣餘額不夠，這份禮物送不出去。",
+      "errorAmount": "送出數量需在 1 ～ 1000 T 之間。",
+      "errorGeneric": "送出失敗，請稍後再試。"
+    }
+  },
+  "stats": {
+    "kpi": {
+      "tomatoes": "總番茄",
+      "focusHours": "累計專注",
+      "streak": "連續打卡",
+      "weeklyRank": "本週排名",
+      "valueWithUnitHours": "{value}H",
+      "valueWithUnitDays": "{value} 天",
+      "valueWithRank": "#{value}"
+    },
+    "heatmap": {
+      "title": "7-DAY FOCUS",
+      "weeklyTotal": "本週共 {hours}H",
+      "dayShort": {
+        "1": "一",
+        "2": "二",
+        "3": "三",
+        "4": "四",
+        "5": "五",
+        "6": "六",
+        "7": "日"
+      },
+      "hourTick": {
+        "0": "0時",
+        "6": "6",
+        "12": "12",
+        "18": "18",
+        "24": "24"
+      },
+      "cellAria": "{day} {hour}時 · 專注 {minutes} 分鐘"
+    },
+    "achievements": {
+      "title": "最近成就",
+      "emptyHint": "完成第一段專注後，這裡會記錄您解鎖的徽章"
+    },
+    "tags": {
+      "title": "標籤分布",
+      "coding": "寫程式",
+      "writing": "寫作",
+      "research": "研究 / 閱讀",
+      "other": "其他",
+      "rowAria": "{label} 佔比 {percent}%"
+    }
+  },
+  "stub": {
+    "title": "整理中",
+    "description": "這個區塊正在製作中，我們會在準備好後第一時間通知您。",
+    "ctaBack": "回到我的數據"
+  },
+  "notes": {
+    "title": "筆記庫 · NOTES",
+    "newCta": "+ 新增筆記",
+    "emptyState": "尚未建立任何筆記，新增第一則來開始整理今天的專注主題。",
+    "titlePlaceholder": "標題（選填）",
+    "bodyPlaceholder": "寫下今日的主題、想法或下一步動作…",
+    "saveCta": "儲存",
+    "cancelCta": "取消",
+    "editAria": "編輯筆記",
+    "deleteAria": "刪除筆記",
+    "deleteConfirm": "確定要刪除這則筆記嗎？",
+    "doneToggleAria": "標記完成 / 未完成",
+    "loading": "載入中…",
+    "loadError": "無法載入筆記，請稍後再試。",
+    "saveError": "儲存失敗，請再試一次。",
+    "untitled": "（未命名）"
+  },
+  "support": {
+    "title": "客服中心 · SUPPORT",
+    "subtitle": "你的問題我們聽得到。先看看常見問題，找不到答案請直接送出意見反饋。",
+    "feedbackCta": "送出意見反饋 →",
+    "faqs": [
+      {
+        "q": "我的 T 幣會過期嗎？",
+        "a": "T 幣不會過期。你儲值或免費賺到的點數都可以慢慢花在道具、贈送好友、或日常解鎖小屋裝飾。"
+      },
+      {
+        "q": "為什麼我的專注時段沒有計入排行榜？",
+        "a": "排行榜只計算完整的「FOCUS」時段（番茄），暫停或取消的時段不會列入。請確認連續完成至少一個完整時段。"
+      },
+      {
+        "q": "如何邀請好友一起共同專注？",
+        "a": "在小鎮主畫面點擊「找夥伴」即可進行配對；或在好友清單對好友按下邀請，等對方接受後會自動進入雙人房間。"
+      },
+      {
+        "q": "我可以更改鎮民暱稱或角色嗎？",
+        "a": "暱稱與其他基本資料可在「個人設定」修改；角色 ID 在註冊後固定，目前無法重置。"
+      },
+      {
+        "q": "兌換碼貼上後跳出錯誤怎麼辦？",
+        "a": "請先確認代碼仍在有效期、未被使用過。若仍有問題，請透過下方意見反饋告訴我們你的鎮民 ID 與代碼，我們會協助處理。"
+      },
+      {
+        "q": "聲音混音的設定會跨裝置同步嗎？",
+        "a": "會。混音器的數值會跟著你的鎮民帳號儲存，下次從任何裝置登入都會自動載入。"
+      }
+    ]
+  },
+  "settings": {
+    "title": "個人設定 · SETTINGS",
+    "loading": "載入中…",
+    "saveError": "儲存失敗，請稍後再試。",
+    "savedToast": "已儲存",
+    "sectionNotifications": "通知",
+    "notificationsDailyLabel": "每日專注提醒",
+    "notificationsDailyTimeLabel": "提醒時間",
+    "sectionLanguage": "語言",
+    "languageZh": "繁體中文",
+    "languageEn": "English",
+    "sectionFocus": "專注節奏",
+    "dailyGoalLabel": "每日番茄目標",
+    "durationLabel": "預設專注時長（分鐘）",
+    "sectionAppearance": "畫面",
+    "sceneRotationLabel": "自動循環場景（白天 / 黃昏 / 夜晚）"
+  },
+  "friends": {
+    "title": "好友名單 · FRIENDS",
+    "tabFriends": "好友",
+    "tabIncoming": "邀請我的",
+    "tabOutgoing": "我發出的",
+    "emptyFriends": "尚未加入好友。可以從排行榜或好友 ID 開始邀請。",
+    "emptyIncoming": "目前沒有人邀請你。",
+    "emptyOutgoing": "你目前沒有送出中的邀請。",
+    "addCta": "+ 邀請好友",
+    "addPlaceholder": "輸入鎮民 ID",
+    "addSubmit": "送出邀請",
+    "addSubmitting": "送出中…",
+    "addEmptyError": "請先輸入鎮民 ID。",
+    "addInvalidError": "找不到這位鎮民，請確認 ID。",
+    "addSelfError": "不能邀請自己。",
+    "addExistingError": "你們已經是好友了。",
+    "addGenericError": "邀請失敗，請稍後再試。",
+    "actionAccept": "接受",
+    "actionReject": "拒絕",
+    "actionUnfriend": "解除好友",
+    "unfriendConfirm": "確定要解除這位好友嗎？",
+    "loading": "載入中…",
+    "loadError": "無法載入好友名單，請稍後再試。"
+  }
+}

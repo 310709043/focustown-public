@@ -1,0 +1,255 @@
+{
+  "modal": {
+    "title": "Your Focus Profile",
+    "subtitle": "A calm view of your recent focus sessions and progress",
+    "closeAria": "Close your profile panel",
+    "close": "Close"
+  },
+  "sidebar": {
+    "levelLabel": "LV.{level}",
+    "xpLabel": "XP {current} / {next}",
+    "xpAria": "Experience progress",
+    "metaUnknown": "—",
+    "signOut": "Sign out"
+  },
+  "nav": {
+    "stats": "Your Stats",
+    "wallet": "T-Coin Wallet",
+    "notes": "Notes Library",
+    "friends": "Friends list",
+    "settings": "Settings",
+    "feedback": "Send Feedback",
+    "support": "Help Center",
+    "activeIndicatorAria": "Current section"
+  },
+  "wallet": {
+    "title": "T-Coin Wallet",
+    "balanceEyebrow": "BALANCE",
+    "balanceSubtitle": "T COIN · LBT",
+    "weeklyIncoming": "+{amount} this week",
+    "weeklyOutgoing": "-{amount} this week",
+    "weeklyNet": "Net {amount}",
+    "actions": {
+      "topUp": "Top up",
+      "gift": "Gift",
+      "redeem": "Redeem code"
+    },
+    "topUp": {
+      "title": "TOP-UP packages",
+      "paymentMethods": "TWD · Card · Apple · Google",
+      "paymentLabel": "Payment methods",
+      "bonusBadge": "+{amount} bonus",
+      "ribbonHot": "HOT",
+      "ribbonValue": "BEST VALUE",
+      "ribbonBest": "BEST",
+      "currencySuffix": "T",
+      "selectionLine": "Selected {coins} + {bonus} T · Total NT${total}",
+      "confirmCta": "Top up ▶"
+    },
+    "earn": {
+      "title": "Earn T-coins free",
+      "pomodoro": "Finish a pomodoro",
+      "deepNight": "Late-night focus",
+      "groupFocus": "Co-focus 25 min",
+      "streak": "7-day streak",
+      "achievement": "Unlock an achievement",
+      "feedback": "Send feedback"
+    },
+    "tx": {
+      "title": "Transactions",
+      "filterAll": "All",
+      "filterIncome": "Income",
+      "filterOutgoing": "Outgoing",
+      "filterTopUp": "Top-ups",
+      "empty": "No transactions yet",
+      "reasonFallback": "Transaction",
+      "reasons": {
+        "session_complete": "Focus session complete",
+        "pomodoro_complete": "Pomodoro complete",
+        "group_focus": "Co-focus session",
+        "streak_bonus": "Login streak reward",
+        "achievement_unlock": "Achievement unlocked",
+        "purchase": "Shop purchase",
+        "top_up": "T-coin top-up",
+        "gift_sent": "Gift sent",
+        "gift_received": "Gift received",
+        "redeem_code": "Redeem code",
+        "feedback_reward": "Feedback reward"
+      }
+    },
+    "comingSoon": "Coming soon",
+    "redeem": {
+      "title": "Redeem a code",
+      "subtitle": "Paste a campaign or friend-shared code to credit T-coins to your wallet.",
+      "placeholder": "e.g. WELCOME-2026",
+      "submitCta": "Redeem",
+      "submittingCta": "Redeeming…",
+      "cancelCta": "Cancel",
+      "successHeading": "Redeemed",
+      "successBody": "+{amount} T credited. New balance: {balance} T.",
+      "errorNotFound": "That code doesn't exist. Double-check and try again.",
+      "errorUsed": "You've already redeemed this code.",
+      "errorExhausted": "This code is no longer usable or has expired.",
+      "errorGeneric": "Could not redeem right now. Please try again later.",
+      "emptyError": "Please enter a code first."
+    },
+    "gift": {
+      "title": "Gift a fellow citizen",
+      "subtitle": "Send T-coins to keep a friend's focus going.",
+      "recipientLabel": "Recipient citizen ID",
+      "recipientPlaceholder": "Paste their citizen ID (visible on their profile)",
+      "amountLabel": "Amount (T-coins)",
+      "amountPlaceholder": "1 – 1000",
+      "messageLabel": "Note to attach (optional)",
+      "messagePlaceholder": "e.g. Crushing today's pomodoros together 🍅",
+      "submitCta": "Send gift",
+      "submittingCta": "Sending…",
+      "cancelCta": "Cancel",
+      "successHeading": "Gift delivered",
+      "successBody": "Sent {amount} T. New balance: {balance} T.",
+      "errorRecipient": "Citizen not found. Double-check the ID.",
+      "errorSelf": "You can't gift yourself.",
+      "errorInsufficient": "Not enough T-coins to send that gift.",
+      "errorAmount": "Amount must be between 1 and 1000 T.",
+      "errorGeneric": "Could not send right now. Please try again later."
+    }
+  },
+  "stats": {
+    "kpi": {
+      "tomatoes": "Total Tomatoes",
+      "focusHours": "Focus Hours",
+      "streak": "Day Streak",
+      "weeklyRank": "Weekly Rank",
+      "valueWithUnitHours": "{value}H",
+      "valueWithUnitDays": "{value} D",
+      "valueWithRank": "#{value}"
+    },
+    "heatmap": {
+      "title": "7-DAY FOCUS",
+      "weeklyTotal": "{hours}H this week",
+      "dayShort": {
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat",
+        "7": "Sun"
+      },
+      "hourTick": {
+        "0": "0h",
+        "6": "6",
+        "12": "12",
+        "18": "18",
+        "24": "24"
+      },
+      "cellAria": "{day} {hour}:00 · {minutes} focused minutes"
+    },
+    "achievements": {
+      "title": "Recent Achievements",
+      "emptyHint": "Finish your first focus session to start unlocking badges here."
+    },
+    "tags": {
+      "title": "Focus Tags",
+      "coding": "Coding",
+      "writing": "Writing",
+      "research": "Research & Reading",
+      "other": "Other",
+      "rowAria": "{label} accounts for {percent}%"
+    }
+  },
+  "stub": {
+    "title": "We are still building this",
+    "description": "This section is on the way. We will let you know as soon as it is ready.",
+    "ctaBack": "Back to your stats"
+  },
+  "notes": {
+    "title": "Notes Library",
+    "newCta": "+ New note",
+    "emptyState": "No notes yet — start one to capture today's focus theme.",
+    "titlePlaceholder": "Title (optional)",
+    "bodyPlaceholder": "Capture today's theme, thoughts, or next action…",
+    "saveCta": "Save",
+    "cancelCta": "Cancel",
+    "editAria": "Edit note",
+    "deleteAria": "Delete note",
+    "deleteConfirm": "Delete this note?",
+    "doneToggleAria": "Toggle done state",
+    "loading": "Loading…",
+    "loadError": "Could not load notes. Please try again.",
+    "saveError": "Save failed. Please try again.",
+    "untitled": "(Untitled)"
+  },
+  "support": {
+    "title": "Help Center",
+    "subtitle": "Browse common questions below. Can't find what you need? Send us feedback any time.",
+    "feedbackCta": "Send feedback →",
+    "faqs": [
+      {
+        "q": "Do T-coins expire?",
+        "a": "T-coins never expire. Whatever you top up or earn freely can be spent at your own pace on items, gifts to friends, or unlocking decorations for your home."
+      },
+      {
+        "q": "Why didn't my focus session show up on the leaderboard?",
+        "a": "Only complete FOCUS pomodoros count. Sessions you pause or cancel are excluded. Finish at least one full session to appear on the daily leaderboard."
+      },
+      {
+        "q": "How do I co-focus with a friend?",
+        "a": "Tap \"Find a partner\" on the town screen for automatic matching, or invite a friend directly from your friends list. Once they accept, you'll be dropped into a shared focus room."
+      },
+      {
+        "q": "Can I change my display name or character?",
+        "a": "Display name and most profile fields are editable from Settings. The character class chosen at sign-up is fixed for now and cannot be reset."
+      },
+      {
+        "q": "My redeem code returned an error — what now?",
+        "a": "First check the code is still active and hasn't been used. If it's still failing, drop your citizen ID and the code into the feedback form and we'll look into it."
+      },
+      {
+        "q": "Will my sound mixer levels sync across devices?",
+        "a": "Yes. The mixer values are saved per citizen, so signing in on any device picks up the same volumes you left."
+      }
+    ]
+  },
+  "settings": {
+    "title": "Settings",
+    "loading": "Loading…",
+    "saveError": "Could not save. Please try again later.",
+    "savedToast": "Saved",
+    "sectionNotifications": "Notifications",
+    "notificationsDailyLabel": "Daily focus reminder",
+    "notificationsDailyTimeLabel": "Reminder time",
+    "sectionLanguage": "Language",
+    "languageZh": "Traditional Chinese",
+    "languageEn": "English",
+    "sectionFocus": "Focus cadence",
+    "dailyGoalLabel": "Daily pomodoro goal",
+    "durationLabel": "Default focus length (minutes)",
+    "sectionAppearance": "Appearance",
+    "sceneRotationLabel": "Rotate through scenes (day / dusk / night)"
+  },
+  "friends": {
+    "title": "Friends",
+    "tabFriends": "Friends",
+    "tabIncoming": "Incoming",
+    "tabOutgoing": "Sent",
+    "emptyFriends": "No friends yet. Invite citizens from the leaderboard or paste an ID below.",
+    "emptyIncoming": "No incoming requests right now.",
+    "emptyOutgoing": "You have no pending invitations.",
+    "addCta": "+ Add friend",
+    "addPlaceholder": "Paste a citizen ID",
+    "addSubmit": "Send invite",
+    "addSubmitting": "Sending…",
+    "addEmptyError": "Please enter a citizen ID first.",
+    "addInvalidError": "Citizen not found — double-check the ID.",
+    "addSelfError": "You can't invite yourself.",
+    "addExistingError": "You're already friends.",
+    "addGenericError": "Could not send the invite. Please try again later.",
+    "actionAccept": "Accept",
+    "actionReject": "Decline",
+    "actionUnfriend": "Unfriend",
+    "unfriendConfirm": "Unfriend this citizen?",
+    "loading": "Loading…",
+    "loadError": "Could not load friends. Please try again."
+  }
+}

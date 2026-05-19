@@ -1,42 +1,127 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+
+import { ApiError } from "@/lib/api/client";
+import { matchAgendaApi, type MatchAgendaItem } from "@/lib/api/endpoints";
+import { useRealtime } from "@/lib/ws/useRealtime";
+import { pushErrorToast } from "@/lib/state/toastStore";
 
 import { PixelCheckbox } from "./PixelCheckbox";
 
-interface AgendaItem {
-  id: number;
-  textKey: string;
-  done: boolean;
-  current?: boolean;
+interface SharedAgendaProps {
+  matchId: string;
 }
 
-const SEED: ReadonlyArray<AgendaItem> = [
-  { id: 1, textKey: "items.0", done: true },
-  { id: 2, textKey: "items.1", done: true },
-  { id: 3, textKey: "items.2", done: false, current: true },
-  { id: 4, textKey: "items.3", done: false },
-  { id: 5, textKey: "items.4", done: false },
-];
+interface AgendaEvent {
+  type: string;
+  match_id?: string;
+  id?: string;
+  position?: number;
+  body?: string;
+  status?: MatchAgendaItem["status"];
+  checked_by?: string | null;
+}
 
 /**
- * Shared agenda checklist. The "current" item is highlighted with a pink
- * `rgba(236,72,153,0.1)` background + accent-2 border + neon-glow-pink
- * shadow + a `NOW` chip on the right. Reference: screen-buddy.jsx:L152-L190.
- *
- * Local state for the visual port — sharing the actual checklist between
- * the two users is a follow-up (would need a new "agenda" backend table).
+ * Shared agenda checklist for the matched focus room. Backed by
+ * /api/v1/matches/{id}/agenda. Updates fan-out via Redis pub/sub
+ * on the room:{match_id} channel; the FE subscribes through the
+ * existing useRealtime hook and patches its local list in place.
  */
-export function SharedAgenda() {
+export function SharedAgenda({ matchId }: SharedAgendaProps) {
   const t = useTranslations("focus.buddy.agenda");
-  const [items, setItems] = useState<AgendaItem[]>([...SEED]);
-  const doneCount = items.filter((it) => it.done).length;
+  const [items, setItems] = useState<MatchAgendaItem[]>([]);
+  const [draft, setDraft] = useState("");
 
-  const toggle = (id: number) =>
+  const reload = useCallback(async () => {
+    try {
+      const res = await matchAgendaApi.list(matchId);
+      setItems(res.items);
+    } catch {
+      pushErrorToast(t("loadError"));
+    }
+  }, [matchId, t]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  useRealtime((msg) => {
+    const payload = msg as AgendaEvent;
+    if (!payload || payload.match_id !== matchId) return;
+    if (payload.type === "agenda.item_added" && payload.id && payload.body) {
+      setItems((prev) => {
+        if (prev.some((it) => it.id === payload.id)) return prev;
+        const optimistic: MatchAgendaItem = {
+          id: payload.id!,
+          match_id: matchId,
+          position: payload.position ?? prev.length,
+          body: payload.body!,
+          status: (payload.status ?? "pending") as MatchAgendaItem["status"],
+          created_by: payload.checked_by ?? "",
+          checked_by: null,
+          checked_at: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        return [...prev, optimistic].sort((a, b) => a.position - b.position);
+      });
+      return;
+    }
+    if (payload.type === "agenda.item_updated" && payload.id) {
+      setItems((prev) =>
+        prev.map((it) =>
+          it.id === payload.id
+            ? {
+                ...it,
+                body: payload.body ?? it.body,
+                status: (payload.status ?? it.status) as MatchAgendaItem["status"],
+                position: payload.position ?? it.position,
+                checked_by: payload.checked_by ?? it.checked_by,
+              }
+            : it,
+        ),
+      );
+      return;
+    }
+    if (payload.type === "agenda.item_removed" && payload.id) {
+      setItems((prev) => prev.filter((it) => it.id !== payload.id));
+    }
+  });
+
+  const toggle = async (item: MatchAgendaItem) => {
+    const nextStatus: MatchAgendaItem["status"] =
+      item.status === "done" ? "pending" : "done";
+    // Optimistic local update; WS push will reconcile.
     setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, done: !it.done } : it)),
+      prev.map((it) => (it.id === item.id ? { ...it, status: nextStatus } : it)),
     );
+    try {
+      await matchAgendaApi.update(matchId, item.id, { status: nextStatus });
+    } catch (err) {
+      pushErrorToast(
+        err instanceof ApiError ? err.message : t("saveError"),
+      );
+      void reload();
+    }
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const body = draft.trim();
+    if (!body) return;
+    setDraft("");
+    try {
+      const created = await matchAgendaApi.create(matchId, body);
+      setItems((prev) => [...prev, created].sort((a, b) => a.position - b.position));
+    } catch {
+      pushErrorToast(t("saveError"));
+    }
+  };
+
+  const doneCount = items.filter((it) => it.status === "done").length;
 
   return (
     <div
@@ -68,48 +153,74 @@ export function SharedAgenda() {
           {doneCount} / {items.length}
         </span>
       </div>
-      {items.map((it) => (
-        <div
-          key={it.id}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "4px 6px",
-            background: it.current ? "rgba(236,72,153,0.1)" : "rgba(0,0,0,0.3)",
-            border: `1px solid ${it.current ? "var(--accent-2)" : "var(--panel-stroke)"}`,
-            cursor: "pointer",
-            boxShadow: it.current ? "var(--neon-glow-pink)" : "none",
-          }}
-          onClick={() => toggle(it.id)}
-        >
-          <PixelCheckbox checked={it.done} onToggle={() => toggle(it.id)} />
-          <span
-            className="font-silkscreen"
+
+      {items.map((it) => {
+        const done = it.status === "done";
+        const inProgress = it.status === "in_progress";
+        return (
+          <div
+            key={it.id}
             style={{
-              flex: 1,
-              fontSize: 11,
-              color: it.done ? "var(--ink-dim)" : "var(--ink)",
-              textDecoration: it.done ? "line-through" : "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "4px 6px",
+              background: inProgress
+                ? "rgba(236,72,153,0.1)"
+                : "rgba(0,0,0,0.3)",
+              border: `1px solid ${inProgress ? "var(--accent-2)" : "var(--panel-stroke)"}`,
+              cursor: "pointer",
+              boxShadow: inProgress ? "var(--neon-glow-pink)" : "none",
             }}
+            onClick={() => void toggle(it)}
           >
-            {t(it.textKey as "items.0")}
-          </span>
-          {it.current ? (
+            <PixelCheckbox checked={done} onToggle={() => void toggle(it)} />
             <span
               className="font-silkscreen"
               style={{
-                fontSize: 8,
-                color: "var(--accent-2)",
-                letterSpacing: "0.2em",
-                textShadow: "var(--neon-glow-pink)",
+                flex: 1,
+                fontSize: 11,
+                color: done ? "var(--ink-dim)" : "var(--ink)",
+                textDecoration: done ? "line-through" : "none",
               }}
             >
-              {t("nowLabel")}
+              {it.body}
             </span>
-          ) : null}
-        </div>
-      ))}
+            {inProgress ? (
+              <span
+                className="font-silkscreen"
+                style={{
+                  fontSize: 8,
+                  color: "var(--accent-2)",
+                  letterSpacing: "0.2em",
+                  textShadow: "var(--neon-glow-pink)",
+                }}
+              >
+                {t("nowLabel")}
+              </span>
+            ) : null}
+          </div>
+        );
+      })}
+
+      <form onSubmit={handleAdd} style={{ display: "flex", gap: 6, marginTop: 4 }}>
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={t("addPlaceholder")}
+          className="pixel-input"
+          style={{ flex: 1, fontSize: 11 }}
+          maxLength={280}
+        />
+        <button
+          type="submit"
+          className="pixel-btn primary"
+          style={{ padding: "0 14px", fontSize: 11 }}
+        >
+          +
+        </button>
+      </form>
     </div>
   );
 }

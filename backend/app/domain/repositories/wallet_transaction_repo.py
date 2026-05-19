@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Protocol
+from typing import Any, Protocol
 
 
 @dataclass(slots=True, frozen=True)
@@ -16,6 +16,7 @@ class WalletTransaction:
     ref_id: str | None
     balance_after_minor: int
     created_at: datetime
+    metadata: dict[str, Any] | None = field(default=None)
 
 
 class IWalletTransactionRepo(Protocol):
@@ -30,6 +31,7 @@ class IWalletTransactionRepo(Protocol):
         ref_type: str | None,
         ref_id: str | None,
         balance_after_minor: int,
+        metadata: dict[str, Any] | None = None,
     ) -> WalletTransaction:
         """Insert a ledger row.
 

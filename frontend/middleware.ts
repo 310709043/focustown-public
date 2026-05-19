@@ -150,6 +150,6 @@ export const config = {
     // `audio` excluded so `/audio/lofi-*.mp3` from the public fallback
     // bypasses the locale prefix injection (was redirecting to
     // `/en/audio/...` and 404ing the static asset).
-    "/((?!api|_next/static|_next/image|audio|favicon.ico|logo.png|logo.svg).*)",
+    "/((?!api|_next/static|_next/image|audio|favicon.ico|logo.png).*)",
   ],
 };

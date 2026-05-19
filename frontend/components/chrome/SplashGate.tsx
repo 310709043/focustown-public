@@ -7,12 +7,8 @@ const SESSION_FLAG = "ft.splash.seen";
 const HIDE_DELAY_MS = 1100;
 const REMOVE_DELAY_MS = 1600;
 
-/**
- * Boot-time splash overlay — pixel FOCUSTOWN wordmark + tagline +
- * loading bar — shown once per tab via `sessionStorage`. Fades after
- * HIDE_DELAY_MS, unmounts at REMOVE_DELAY_MS. Mounted in the root
- * layout so deep-link routes also get it, not just `/`.
- */
+/** Boot splash — Low Battery Town logo + CHARGING UP THE TOWN… loading bar.
+ *  Shown once per tab via sessionStorage; fades after HIDE_DELAY_MS. */
 export function SplashGate() {
   // Always start visible on the server / first hydration tick — that way
   // there is no SSR/CSR mismatch on the overlay shape. The effect below
@@ -71,19 +67,20 @@ export function SplashGate() {
     >
       <Image
         src="/logo.png"
-        alt="Focus Town"
-        width={160}
-        height={160}
+        alt="Low Battery Town"
+        width={280}
+        height={112}
         priority
         style={{
-          width: 160,
+          width: 280,
           height: "auto",
           filter:
             "drop-shadow(0 0 12px var(--a1)) drop-shadow(0 0 28px var(--a3))",
+          imageRendering: "pixelated",
         }}
       />
       <div className="font-pixel-en" style={{ color: "var(--muted)", letterSpacing: "0.2em", fontSize: 12 }}>
-        LOADING THE TOWN…
+        CHARGING UP THE TOWN…
       </div>
       <div
         style={{

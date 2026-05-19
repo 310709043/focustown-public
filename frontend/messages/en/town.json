@@ -84,16 +84,26 @@
     },
     "feedback": {
       "title": "FEEDBACK",
+      "categoryLabel": "Category",
+      "categoryBug": "Bug report",
+      "categorySuggestion": "Suggestion",
+      "categoryPraise": "Praise",
+      "categoryOther": "Other",
       "subjectLabel": "Subject",
       "subjectPlaceholder": "A quick headline…",
       "bodyLabel": "Your thoughts",
       "bodyPlaceholder": "Tell us what's on your mind, where you got stuck, what you wish we'd build next…",
+      "contactLabel": "Contact email (optional)",
+      "contactPlaceholder": "Leave an email if you want a reply.",
       "emptyError": "Please write something before sending",
+      "rateLimitedError": "Slow down a little — try again in a few minutes.",
+      "submittingCta": "Sending…",
       "submitCta": "Send feedback",
       "cancelCta": "Cancel",
       "doneCta": "Done",
       "successHeading": "Got it — thank you",
-      "successBody": "We read every message. Catch you later!"
+      "successBody": "We read every message. Catch you later!",
+      "failureGeneric": "Could not send right now. Please try again later."
     },
     "support": {
       "title": "SUPPORT",
@@ -136,8 +146,8 @@
   "todayRank": "TODAY",
   "skyAd": "AD",
   "liveOnline": "LIVE · {count, number} ONLINE",
-  "channel": "CH 04 · FOCUSTOWN.TV",
-  "adContact": "Want to advertise here? ad@focustown.app",
+  "channel": "CH 04 · LBT.TV",
+  "adContact": "Want to advertise here? ad@lowbatterytown.app",
   "onlineCount": "ONLINE {count, number}",
   "weatherSunny": "Sunny",
   "weatherCloudy": "Cloudy",
@@ -261,5 +271,12 @@
       "idPrefix": "id:",
       "backLink": "◂ Back to town"
     }
+  },
+  "userProfile": {
+    "backCta": "Back to town",
+    "registry": "Citizen registry",
+    "loadingState": "Tuning signal · stand by",
+    "notFound": "Citizen not found",
+    "notFoundHint": "Double-check the ID, or head back to town."
   }
 }

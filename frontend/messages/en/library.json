@@ -13,7 +13,7 @@
     "empty": "(Curating your library — please bear with us)",
     "trackCount": "♪ {current}/{total} · {mood}",
     "uploadHint": "Explore our curated library →",
-    "phaseNote": "Curated by Focus Town"
+    "phaseNote": "Curated by Low Battery Town"
   },
   "moods": {
     "all": "All",
@@ -30,7 +30,7 @@
     "addToRoom": "+ Add to room"
   },
   "page": {
-    "breadcrumb": "FOCUS TOWN / LIBRARY",
+    "breadcrumb": "LBT / LIBRARY",
     "title": "Curated music library",
     "backCta": "← Back to town",
     "intro": "A calm collection of tracks we have curated for focus. Sign in when you are ready, and you can save your favourites to your own room.",

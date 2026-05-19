@@ -159,7 +159,7 @@ export default function SplashPage() {
           data-testid="signin-submit"
           type="submit"
           disabled={loading}
-          className="pixel-btn primary touch:min-h-[48px] disabled:opacity-60 disabled:cursor-not-allowed"
+          className="pixel-btn touch:min-h-[48px] disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
             padding: "12px 18px",
             display: "flex",
@@ -167,6 +167,13 @@ export default function SplashPage() {
             justifyContent: "center",
             gap: 8,
             fontSize: 13,
+            background: "linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)",
+            borderColor: "#f59e0b",
+            color: "#1a0f2e",
+            letterSpacing: "0.25em",
+            textShadow: "none",
+            boxShadow:
+              "0 0 14px rgba(245,158,11,0.45), 0 0 28px rgba(245,158,11,0.25)",
           }}
         >
           {loading ? (

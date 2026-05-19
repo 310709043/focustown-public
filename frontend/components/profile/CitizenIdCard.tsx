@@ -4,12 +4,10 @@ import { useMemo } from "react";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { PixelWord } from "@/components/pixel/PixelWord";
+import { XpBar } from "@/components/profile/XpBar";
 import { Link } from "@/i18n/routing";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import type { PublicUserProfile } from "@/lib/api/endpoints";
-
-/** Number of segmented cells in the XP bar. */
-const XP_CELLS = 16;
 
 interface CitizenIdCardProps {
   profile: PublicUserProfile;
@@ -56,11 +54,6 @@ export function CitizenIdCard({
   const avatar = characterKeyToAvatar(profile.character_key);
   const barcode = useMemo(() => buildBarcode(profile.id), [profile.id]);
   const idCode = useMemo(() => shortCode(profile.id), [profile.id]);
-  const filled = useMemo(() => {
-    if (xp == null || xpNextLevel == null || xpNextLevel === 0) return 0;
-    const ratio = Math.max(0, Math.min(1, xp / xpNextLevel));
-    return Math.round(ratio * XP_CELLS);
-  }, [xp, xpNextLevel]);
 
   const showXp = xp != null && xpNextLevel != null;
 
@@ -179,34 +172,12 @@ export function CitizenIdCard({
           </div>
 
           {showXp ? (
-            <div>
-              <div className="xp-bar">
-                {Array.from({ length: XP_CELLS }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`xp-cell${i < filled ? " on" : ""}`}
-                    style={
-                      i < filled
-                        ? {
-                            background: `linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%)`,
-                          }
-                        : undefined
-                    }
-                  />
-                ))}
-              </div>
-              <div
-                className="font-silkscreen"
-                style={{
-                  fontSize: 10,
-                  color: "var(--ink-dim)",
-                  letterSpacing: "0.15em",
-                  marginTop: 6,
-                }}
-              >
-                XP {xp} / {xpNextLevel}
-              </div>
-            </div>
+            <XpBar
+              xp={xp}
+              xpNext={xpNextLevel}
+              label={`XP ${xp} / ${xpNextLevel}`}
+              ariaLabel={`XP ${xp} of ${xpNextLevel}`}
+            />
           ) : null}
         </div>
       </section>

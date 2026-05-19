@@ -11,14 +11,23 @@ Naming convention: a Protocol ``IFooRepo`` in domain maps to a class
 """
 
 from app.infrastructure.db.repositories.achievement_repo import SqlAchievementRepo
+from app.infrastructure.db.repositories.feedback_repo import SqlFeedbackRepo
 from app.infrastructure.db.repositories.focus_session_repo import SqlFocusSessionRepo
+from app.infrastructure.db.repositories.friendship_repo import SqlFriendshipRepo
 from app.infrastructure.db.repositories.leaderboard_snapshot_repo import (
     SqlLeaderboardSnapshotRepo,
+)
+from app.infrastructure.db.repositories.match_realtime_repo import (
+    SqlMatchAgendaRepo,
+    SqlMatchMessageRepo,
 )
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 from app.infrastructure.db.repositories.note_repo import SqlNoteRepo
 from app.infrastructure.db.repositories.password_reset_token_repo import (
     SqlPasswordResetTokenRepo,
+)
+from app.infrastructure.db.repositories.redemption_code_repo import (
+    SqlRedemptionCodeRepo,
 )
 from app.infrastructure.db.repositories.room_item_repo import SqlRoomItemRepo
 from app.infrastructure.db.repositories.room_playback_repo import SqlRoomPlaybackRepo
@@ -29,6 +38,9 @@ from app.infrastructure.db.repositories.shop_item_price_repo import SqlShopItemP
 from app.infrastructure.db.repositories.shop_repo import SqlShopRepo
 from app.infrastructure.db.repositories.track_repo import SqlTrackRepo
 from app.infrastructure.db.repositories.user_item_repo import SqlUserItemRepo
+from app.infrastructure.db.repositories.user_preference_repo import (
+    SqlUserPreferenceRepo,
+)
 from app.infrastructure.db.repositories.user_repo import SqlUserRepo
 from app.infrastructure.db.repositories.wallet_repo import SqlWalletRepo
 from app.infrastructure.db.repositories.wallet_transaction_repo import (
@@ -37,11 +49,16 @@ from app.infrastructure.db.repositories.wallet_transaction_repo import (
 
 __all__ = [
     "SqlAchievementRepo",
+    "SqlFeedbackRepo",
     "SqlFocusSessionRepo",
+    "SqlFriendshipRepo",
     "SqlLeaderboardSnapshotRepo",
+    "SqlMatchAgendaRepo",
+    "SqlMatchMessageRepo",
     "SqlMatchRepo",
     "SqlNoteRepo",
     "SqlPasswordResetTokenRepo",
+    "SqlRedemptionCodeRepo",
     "SqlRoomItemRepo",
     "SqlRoomPlaybackRepo",
     "SqlRoomRepo",
@@ -51,6 +68,7 @@ __all__ = [
     "SqlShopRepo",
     "SqlTrackRepo",
     "SqlUserItemRepo",
+    "SqlUserPreferenceRepo",
     "SqlUserRepo",
     "SqlWalletRepo",
     "SqlWalletTransactionRepo",

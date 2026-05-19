@@ -139,6 +139,31 @@ async def get_current_user_id(
 CurrentUserId = Annotated[str, Depends(get_current_user_id)]
 
 
+async def get_current_user_id_optional(
+    auth: AuthProviderDep,
+    authorization: Annotated[str | None, Header()] = None,
+) -> str | None:
+    """Like ``get_current_user_id`` but returns ``None`` when no valid
+    bearer token is present. Used by endpoints that accept both signed-in
+    and anonymous callers (e.g. feedback submissions, observability
+    error sink). The router decides what to do with the missing identity.
+    """
+    if not authorization or not authorization.lower().startswith("bearer "):
+        return None
+    token = authorization.split(" ", 1)[1].strip()
+    try:
+        principal = await auth.verify_access_token(token)
+    except Exception:
+        # Bad / expired / forged token → treat as anonymous; the
+        # caller chooses what to do with a missing identity.
+        return None
+    structlog.contextvars.bind_contextvars(user_id=principal.user_id)
+    return principal.user_id
+
+
+CurrentUserIdOptional = Annotated[str | None, Depends(get_current_user_id_optional)]
+
+
 def get_notifier(settings: SettingsDep) -> IEmailSender:
     """Email-sender dispatch: LogNotifier (dev) → SESNotifier (prod).
 

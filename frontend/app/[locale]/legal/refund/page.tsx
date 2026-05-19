@@ -5,8 +5,8 @@ import { LEGAL } from "@/lib/config/legal";
 import { Link } from "@/i18n/routing";
 
 export const metadata = {
-  title: "退款政策 — Focus Town",
-  description: "Focus Town 付費項目之退款說明",
+  title: "退款政策｜低電量小鎮",
+  description: "了解低電量小鎮（Low Battery Town）付費商品的退款條件、申請流程與處理時程，協助您安心使用每一項服務。",
 };
 
 const TOC = [

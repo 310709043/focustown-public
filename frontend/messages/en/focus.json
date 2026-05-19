@@ -102,6 +102,8 @@
       "header": "FRIENDS NOW",
       "onlineCount": "{count} online",
       "joinCta": "+1",
+      "emptyState": "No friends online yet. Invite a few citizens to start co-focusing.",
+      "loading": "Loading…",
       "tasks": {
         "writing": "writing",
         "coding": "coding",
@@ -185,13 +187,9 @@
     "agenda": {
       "header": "SHARED AGENDA",
       "nowLabel": "NOW",
-      "items": {
-        "0": "Tomato #1 · each writes 25 min",
-        "1": "5 min — read each other's drafts aloud",
-        "2": "Tomato #2 · each writes 25 min",
-        "3": "Tomato #3 · revise + peer critique",
-        "4": "Celebrate at LOFI BAR together ✦"
-      }
+      "addPlaceholder": "Add a task, press Enter to send",
+      "loadError": "Could not load the shared agenda. Please try again.",
+      "saveError": "Save failed. Please try again."
     },
     "roomMusic": {
       "header": "ROOM SYNC",
@@ -217,7 +215,9 @@
       "shareMusicAria": "Share music",
       "pause": "Pause",
       "pauseAria": "Pause pomodoro",
-      "typeMsg": "Type a message…"
+      "typeMsg": "Type a message…",
+      "loadError": "Could not load chat history. Please try again.",
+      "sendError": "Could not send the message. Please try again."
     },
     "notes": {
       "defaultTitle": "Shared notes",

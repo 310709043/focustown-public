@@ -3,12 +3,16 @@ from fastapi import APIRouter
 from app.api.v1.achievements.router import router as achievements_router
 from app.api.v1.auth.router import router as auth_router
 from app.api.v1.equipment.router import router as equipment_router
+from app.api.v1.feedback.router import router as feedback_router
+from app.api.v1.friends.router import router as friends_router
 from app.api.v1.items.router import router as items_router
 from app.api.v1.leaderboard.router import router as leaderboard_router
+from app.api.v1.match_realtime.router import router as match_realtime_router
 from app.api.v1.matches.router import router as matches_router
 from app.api.v1.notes.router import router as notes_router
 from app.api.v1.observability.router import router as observability_router
 from app.api.v1.playback.router import router as playback_router
+from app.api.v1.preferences.router import router as preferences_router
 from app.api.v1.presence.router import router as presence_router
 from app.api.v1.rooms.router import me_room_router, rooms_router
 from app.api.v1.sessions.router import router as sessions_router
@@ -24,6 +28,9 @@ router.include_router(users_router, prefix="/users", tags=["users"])
 router.include_router(sessions_router, prefix="/sessions", tags=["sessions"])
 router.include_router(notes_router, prefix="/notes", tags=["notes"])
 router.include_router(matches_router, prefix="/matches", tags=["matches"])
+router.include_router(
+    match_realtime_router, prefix="/matches", tags=["match-realtime"]
+)
 router.include_router(leaderboard_router, prefix="/leaderboard", tags=["leaderboard"])
 router.include_router(achievements_router, prefix="/achievements", tags=["achievements"])
 router.include_router(shop_router, prefix="/shop", tags=["shop"])
@@ -36,4 +43,7 @@ router.include_router(rooms_router, prefix="/rooms", tags=["rooms"])
 router.include_router(tracks_router, prefix="/tracks", tags=["tracks"])
 router.include_router(playback_router, prefix="/playback", tags=["playback"])
 router.include_router(observability_router, prefix="/observability", tags=["observability"])
+router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
+router.include_router(friends_router, prefix="/friends", tags=["friends"])
+router.include_router(preferences_router, prefix="/me/preferences", tags=["preferences"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

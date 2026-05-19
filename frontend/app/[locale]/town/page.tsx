@@ -67,6 +67,7 @@ import { AchievementsModal } from "@/components/modals/AchievementsModal";
 import { FeedbackModal } from "@/components/modals/FeedbackModal";
 import { FriendsModal } from "@/components/modals/FriendsModal";
 import { SupportModal } from "@/components/modals/SupportModal";
+import { ProfileModal } from "@/components/modals/ProfileModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
 import { useRouter } from "@/i18n/routing";
 
@@ -319,6 +320,11 @@ export default function TownPage() {
       <SupportModal
         open={openModal === "support"}
         onClose={() => setOpenModal(null)}
+      />
+      <ProfileModal
+        open={openModal === "profile"}
+        onClose={() => setOpenModal(null)}
+        onRouteToModal={(k) => setOpenModal(k)}
       />
     </main>
     </FrameTicker>

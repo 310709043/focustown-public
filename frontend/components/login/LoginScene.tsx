@@ -5,13 +5,13 @@ import { useTranslations } from "next-intl";
 
 import { BlinkDot } from "@/components/pixel/BlinkDot";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { PixelWord } from "@/components/pixel/PixelWord";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { ShootingStars } from "@/components/pixel/ShootingStars";
 import { StarField } from "@/components/pixel/StarField";
 import { Logo } from "@/components/scene/Logo";
 import { MOON } from "@/lib/pixel/sprites/props";
 
+import { AboutTownPanel } from "./AboutTownPanel";
 import { AvatarFloatStrip } from "./AvatarFloatStrip";
 import { FloatingPixels } from "./FloatingPixels";
 import { LoginCitizens } from "./LoginCitizens";
@@ -156,9 +156,9 @@ export function LoginScene({
       >
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <span style={{ color: "var(--accent)" }}>
-            <BlinkDot color="var(--accent)" marginRight={4} /> FT
+            <BlinkDot color="var(--accent)" marginRight={4} /> LBT
           </span>
-          <span>v1.2.0</span>
+          <span>v1.4.0</span>
           <span>·</span>
           <span style={{ color: "#6ee7b7" }}>
             {t("citizensLabel")} <NumberRoll target={citizenCount} />
@@ -168,7 +168,10 @@ export function LoginScene({
             so we leave room for it but don't render a duplicate here. */}
       </div>
 
-      {/* Foreground stack — hero + form + (optional) avatar strip. */}
+      {/* Foreground stack — hero (logo · tagline · citizen-count · avatar
+          row) above the form, with a horizontal AboutTown banner below.
+          Mirrors signin.jpg reference: a centred vertical stack rather
+          than a three-column layout. */}
       <div
         className="relative animate-fadeUp"
         style={{
@@ -178,8 +181,8 @@ export function LoginScene({
           flexDirection: "column",
           alignItems: "center",
           justifyContent: topAlign ? "flex-start" : "center",
-          gap: 14,
-          padding: "70px 20px 30px",
+          gap: 18,
+          padding: "70px 20px 110px",
         }}
       >
         {showHero ? (
@@ -188,27 +191,42 @@ export function LoginScene({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 8,
+              gap: 10,
             }}
           >
             <div className="animate-logoBob">
-              <Logo scale={3.75} />
-            </div>
-            <div className="animate-neonFlicker">
-              <PixelWord
-                text="FOCUSTOWN"
-                scale={4}
-                color="var(--accent)"
-                glow="var(--accent-2)"
-              />
+              <Logo scale={3.6} />
             </div>
             <Tagline />
+            {showAvatarStrip ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                  marginTop: 4,
+                }}
+              >
+                <span
+                  className="font-silkscreen"
+                  style={{
+                    fontSize: 10,
+                    color: "var(--ink-mute)",
+                    letterSpacing: "0.28em",
+                  }}
+                >
+                  <NumberRoll target={citizenCount} /> {t("citizensFocusing")}
+                </span>
+                <AvatarFloatStrip count={6} />
+              </div>
+            ) : null}
           </div>
         ) : null}
 
         {children}
 
-        {showAvatarStrip ? <AvatarFloatStrip count={7} /> : null}
+        {showHero ? <AboutTownPanel /> : null}
       </div>
     </main>
   );

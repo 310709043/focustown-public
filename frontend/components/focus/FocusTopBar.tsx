@@ -5,17 +5,13 @@ import { useTranslations } from "next-intl";
 import { Logo } from "@/components/scene/Logo";
 import { MiniClock } from "@/components/chrome/MiniClock";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { PixelWord } from "@/components/pixel/PixelWord";
 import { CoinBadge } from "@/components/town/CoinBadge";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 
-/**
- * 56 px top bar for the solo focus room. Mirrors the reference layout:
- * back button + Logo + "FOCUSTOWN · SOLO ROOM" wordmark + avatar pill +
- * T-coin balance. Locale switcher is rendered globally by LocaleLayout.
- */
+/** Solo focus top bar — back / LBT logo · SOLO ROOM subtitle / avatar
+ *  pill / mini clock / T-coin balance. */
 export function FocusTopBar() {
   const router = useRouter();
   const t = useTranslations("focus.solo.topBar");
@@ -47,20 +43,17 @@ export function FocusTopBar() {
         >
           ◀ {t("backCta")}
         </button>
-        <Logo scale={1.1} />
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-          <PixelWord text="FOCUSTOWN" color="var(--accent)" glow="var(--accent)" scale={1.6} />
-          <span
-            className="font-silkscreen"
-            style={{
-              fontSize: 9,
-              color: "var(--accent-3)",
-              letterSpacing: "0.2em",
-            }}
-          >
-            · {t("subtitle")}
-          </span>
-        </div>
+        <Logo scale={0.9} />
+        <span
+          className="font-silkscreen"
+          style={{
+            fontSize: 10,
+            color: "var(--accent-3)",
+            letterSpacing: "0.28em",
+          }}
+        >
+          · {t("subtitle")}
+        </span>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>

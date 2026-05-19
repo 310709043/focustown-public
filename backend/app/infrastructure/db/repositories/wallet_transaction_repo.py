@@ -33,6 +33,7 @@ def _to_domain(row: WalletTransactionORM) -> WalletTransaction:
         ref_id=row.ref_id,
         balance_after_minor=row.balance_after_minor,
         created_at=row.created_at,
+        metadata=row.meta,
     )
 
 
@@ -51,6 +52,7 @@ class SqlWalletTransactionRepo(IWalletTransactionRepo):
         ref_type: str | None,
         ref_id: str | None,
         balance_after_minor: int,
+        metadata: dict | None = None,
     ) -> WalletTransaction:
         row = WalletTransactionORM(
             id=txn_id,
@@ -61,6 +63,7 @@ class SqlWalletTransactionRepo(IWalletTransactionRepo):
             ref_type=ref_type,
             ref_id=ref_id,
             balance_after_minor=balance_after_minor,
+            meta=metadata,
         )
         self._s.add(row)
         try:

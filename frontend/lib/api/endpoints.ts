@@ -126,6 +126,229 @@ export type NoteWithShare = Note & {
   shared_in_match_id?: string | null;
 };
 
+// ── wallet writes ──────────────────────────────────────
+export interface RedeemCodeResponse {
+  currency_code: string;
+  amount_minor: number;
+  balance_after_minor: number;
+  transaction_id: string;
+}
+
+export interface GiftResponse {
+  transaction_id: string;
+  balance_after_minor: number;
+  amount_minor: number;
+  recipient_user_id: string;
+}
+
+// Augment the read-only `walletApi` further down with write paths.
+// Defined here so the type inference picks up the wider shape.
+const walletWriteApi = {
+  redeem(code: string) {
+    return apiFetch<RedeemCodeResponse>("/api/v1/me/wallet/redeem", {
+      method: "POST",
+      body: { code },
+    });
+  },
+  gift(input: {
+    recipient_user_id: string;
+    amount_minor: number;
+    message?: string | null;
+  }) {
+    return apiFetch<GiftResponse>("/api/v1/me/wallet/gift", {
+      method: "POST",
+      body: input,
+    });
+  },
+};
+
+// ── match chat + agenda (buddy realtime) ───────────────
+export interface MatchChatMessage {
+  id: string;
+  match_id: string;
+  sender_id: string;
+  kind: "text" | "note_share" | "system";
+  body: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface MatchAgendaItem {
+  id: string;
+  match_id: string;
+  position: number;
+  body: string;
+  status: "pending" | "in_progress" | "done";
+  created_by: string;
+  checked_by: string | null;
+  checked_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const matchChatApi = {
+  list(matchId: string, before?: string, limit = 50) {
+    const qs = new URLSearchParams({ limit: String(limit) });
+    if (before) qs.set("before", before);
+    return apiFetch<{ messages: MatchChatMessage[] }>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/messages?${qs.toString()}`,
+      { method: "GET" },
+    );
+  },
+  send(
+    matchId: string,
+    body: string,
+    opts: { kind?: "text" | "note_share" | "system"; metadata?: Record<string, unknown> } = {},
+  ) {
+    return apiFetch<MatchChatMessage>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/messages`,
+      {
+        method: "POST",
+        body: {
+          kind: opts.kind ?? "text",
+          body,
+          metadata: opts.metadata ?? null,
+        },
+      },
+    );
+  },
+};
+
+export const matchAgendaApi = {
+  list(matchId: string) {
+    return apiFetch<{ items: MatchAgendaItem[] }>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda`,
+      { method: "GET" },
+    );
+  },
+  create(matchId: string, body: string) {
+    return apiFetch<MatchAgendaItem>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda`,
+      { method: "POST", body: { body } },
+    );
+  },
+  update(
+    matchId: string,
+    itemId: string,
+    patch: { body?: string; status?: MatchAgendaItem["status"]; position?: number },
+  ) {
+    return apiFetch<MatchAgendaItem>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda/${encodeURIComponent(itemId)}`,
+      { method: "PATCH", body: patch },
+    );
+  },
+  remove(matchId: string, itemId: string) {
+    return apiFetch<void>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda/${encodeURIComponent(itemId)}`,
+      { method: "DELETE" },
+    );
+  },
+};
+
+// ── user preferences ───────────────────────────────────
+export type PreferencesBundle = Record<string, unknown>;
+
+export const preferencesApi = {
+  get() {
+    return apiFetch<PreferencesBundle>("/api/v1/me/preferences", {
+      method: "GET",
+    });
+  },
+  patch(patch: PreferencesBundle) {
+    return apiFetch<PreferencesBundle>("/api/v1/me/preferences", {
+      method: "PATCH",
+      body: patch,
+    });
+  },
+};
+
+// ── friends ────────────────────────────────────────────
+export interface FriendSummary {
+  friendship_id: string;
+  user_id: string;
+  display_name: string;
+  character_key: string | null;
+  status: "requested" | "accepted" | "blocked";
+  requested_by_me: boolean;
+  created_at: string;
+  accepted_at: string | null;
+}
+
+export interface FocusingNowItem {
+  user_id: string;
+  display_name: string;
+  character_key: string | null;
+  session_id: string;
+  started_at: string;
+  minutes_planned: number | null;
+}
+
+export const friendsApi = {
+  list(status: "accepted" | "requested" = "accepted") {
+    return apiFetch<{ friends: FriendSummary[] }>(
+      `/api/v1/friends?status=${status}`,
+      { method: "GET" },
+    );
+  },
+  focusingNow() {
+    return apiFetch<{ friends_focusing: FocusingNowItem[] }>(
+      "/api/v1/friends/focusing-now",
+      { method: "GET" },
+    );
+  },
+  request(userId: string) {
+    return apiFetch<FriendSummary>("/api/v1/friends/requests", {
+      method: "POST",
+      body: { user_id: userId },
+    });
+  },
+  accept(friendshipId: string) {
+    return apiFetch<FriendSummary>(
+      `/api/v1/friends/requests/${encodeURIComponent(friendshipId)}/accept`,
+      { method: "POST" },
+    );
+  },
+  reject(friendshipId: string) {
+    return apiFetch<void>(
+      `/api/v1/friends/requests/${encodeURIComponent(friendshipId)}`,
+      { method: "DELETE" },
+    );
+  },
+  unfriend(friendshipId: string) {
+    return apiFetch<void>(
+      `/api/v1/friends/${encodeURIComponent(friendshipId)}`,
+      { method: "DELETE" },
+    );
+  },
+};
+
+// ── feedback ───────────────────────────────────────────
+export type FeedbackCategory = "bug" | "suggestion" | "praise" | "other";
+
+export interface FeedbackSubmitInput {
+  category: FeedbackCategory;
+  body: string;
+  contact_email?: string | null;
+  locale: string;
+  app_version?: string | null;
+  context?: Record<string, unknown> | null;
+}
+
+export interface FeedbackSubmitResponse {
+  id: string;
+  status: string;
+  created_at: string;
+}
+
+export const feedbackApi = {
+  submit(input: FeedbackSubmitInput) {
+    return apiFetch<FeedbackSubmitResponse>("/api/v1/feedback", {
+      method: "POST",
+      body: input,
+    });
+  },
+};
+
 export const notesApi = {
   list(opts: { matchId?: string } = {}) {
     const qs = opts.matchId
@@ -226,6 +449,8 @@ export const walletApi = {
       { method: "GET" },
     );
   },
+  redeem: walletWriteApi.redeem,
+  gift: walletWriteApi.gift,
 };
 
 export const userItemsApi = {

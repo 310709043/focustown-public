@@ -79,6 +79,7 @@ export function SharedPanel({
       </div>
       {tab === "chat" ? (
         <ChatStream
+          matchId={matchId}
           meAvatar={meAvatar}
           buddyAvatar={buddyAvatar}
           meName={meName}

@@ -49,12 +49,13 @@ export function SsoButtons({ onProvider, disabled }: SsoButtonsProps) {
         disabled={disabled}
         className="pixel-btn"
         style={{
-          padding: "10px 12px",
-          fontSize: 11,
+          padding: "12px 16px",
+          fontSize: 12,
+          letterSpacing: "0.18em",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 8,
+          gap: 10,
         }}
       >
         <GithubIcon /> {t("continueWithGithub")}

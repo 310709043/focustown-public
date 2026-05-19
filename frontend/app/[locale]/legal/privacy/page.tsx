@@ -4,8 +4,8 @@ import { LegalSection } from "@/components/legal/LegalSection";
 import { LEGAL } from "@/lib/config/legal";
 
 export const metadata = {
-  title: "隱私政策 — Focus Town",
-  description: "Focus Town 個人資料蒐集、處理及利用之說明",
+  title: "隱私政策｜低電量小鎮",
+  description: "了解低電量小鎮（Low Battery Town）如何依個人資料保護法蒐集、處理與利用您的個資，以及您享有的權利。",
 };
 
 const TOC = [
