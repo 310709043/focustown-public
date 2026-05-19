@@ -34,6 +34,9 @@ from app.infrastructure.db.repositories.shop_item_price_repo import SqlShopItemP
 from app.infrastructure.db.repositories.shop_repo import SqlShopRepo
 from app.infrastructure.db.repositories.track_repo import SqlTrackRepo
 from app.infrastructure.db.repositories.user_item_repo import SqlUserItemRepo
+from app.infrastructure.db.repositories.user_preference_repo import (
+    SqlUserPreferenceRepo,
+)
 from app.infrastructure.db.repositories.user_repo import SqlUserRepo
 from app.infrastructure.db.repositories.wallet_repo import SqlWalletRepo
 from app.infrastructure.db.repositories.wallet_transaction_repo import (
@@ -59,6 +62,7 @@ __all__ = [
     "SqlShopRepo",
     "SqlTrackRepo",
     "SqlUserItemRepo",
+    "SqlUserPreferenceRepo",
     "SqlUserRepo",
     "SqlWalletRepo",
     "SqlWalletTransactionRepo",

@@ -11,6 +11,7 @@ from app.api.v1.matches.router import router as matches_router
 from app.api.v1.notes.router import router as notes_router
 from app.api.v1.observability.router import router as observability_router
 from app.api.v1.playback.router import router as playback_router
+from app.api.v1.preferences.router import router as preferences_router
 from app.api.v1.presence.router import router as presence_router
 from app.api.v1.rooms.router import me_room_router, rooms_router
 from app.api.v1.sessions.router import router as sessions_router
@@ -40,4 +41,5 @@ router.include_router(playback_router, prefix="/playback", tags=["playback"])
 router.include_router(observability_router, prefix="/observability", tags=["observability"])
 router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
 router.include_router(friends_router, prefix="/friends", tags=["friends"])
+router.include_router(preferences_router, prefix="/me/preferences", tags=["preferences"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

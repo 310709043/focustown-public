@@ -180,6 +180,23 @@
     "saveError": "Save failed. Please try again.",
     "untitled": "(Untitled)"
   },
+  "settings": {
+    "title": "Settings",
+    "loading": "Loading…",
+    "saveError": "Could not save. Please try again later.",
+    "savedToast": "Saved",
+    "sectionNotifications": "Notifications",
+    "notificationsDailyLabel": "Daily focus reminder",
+    "notificationsDailyTimeLabel": "Reminder time",
+    "sectionLanguage": "Language",
+    "languageZh": "Traditional Chinese",
+    "languageEn": "English",
+    "sectionFocus": "Focus cadence",
+    "dailyGoalLabel": "Daily pomodoro goal",
+    "durationLabel": "Default focus length (minutes)",
+    "sectionAppearance": "Appearance",
+    "sceneRotationLabel": "Rotate through scenes (day / dusk / night)"
+  },
   "friends": {
     "title": "Friends",
     "tabFriends": "Friends",

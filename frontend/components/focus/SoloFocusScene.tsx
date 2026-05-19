@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AmbientBackdrop } from "@/components/focus/ambient/AmbientBackdrop";
 import { BigTimer } from "@/components/focus/BigTimer";
@@ -11,8 +11,22 @@ import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
 import { SoundMixer, type MixerVolumes } from "@/components/focus/SoundMixer";
 import { TasksPanel } from "@/components/focus/TasksPanel";
 import { findFocusBg, type FocusBgId } from "@/lib/data/focusBackgrounds";
+import {
+  PREF_SOUND_MIX,
+  type SoundMixValue,
+  usePreferencesStore,
+} from "@/lib/state/preferencesStore";
 
 const INITIAL_MIX: MixerVolumes = { music: 40, rain: 60, cafe: 30, fire: 0 };
+const PERSIST_DEBOUNCE_MS = 500;
+
+function mixerToPref(v: MixerVolumes): SoundMixValue {
+  return { lofi: v.music, rain: v.rain, cafe: v.cafe, fire: v.fire };
+}
+
+function prefToMixer(v: SoundMixValue): MixerVolumes {
+  return { music: v.lofi, rain: v.rain, cafe: v.cafe, fire: v.fire };
+}
 
 /**
  * Reference solo-room shell. Renders the gradient background + ambient
@@ -30,8 +44,54 @@ const INITIAL_MIX: MixerVolumes = { music: 40, rain: 60, cafe: 30, fire: 0 };
  */
 export function SoloFocusScene() {
   const [bg] = useState<FocusBgId>("rain");
-  const [volumes, setVolumes] = useState<MixerVolumes>(INITIAL_MIX);
   const bgOption = findFocusBg(bg);
+
+  // Hydrate the user-preference cache once on mount; the SoundMixer
+  // reads its initial values from the store and PATCHes back on change
+  // with a 500ms debounce so a single slider stroke doesn't fire N
+  // requests.
+  const ensureHydrated = usePreferencesStore((s) => s.ensureHydrated);
+  const persistedMix = usePreferencesStore(
+    (s) => (s.byKey[PREF_SOUND_MIX] as SoundMixValue | undefined),
+  );
+  const patch = usePreferencesStore((s) => s.patch);
+  useEffect(() => {
+    void ensureHydrated();
+  }, [ensureHydrated]);
+
+  const initialVolumes = useMemo<MixerVolumes>(
+    () => (persistedMix ? prefToMixer(persistedMix) : INITIAL_MIX),
+    // Initial render only; subsequent updates flow through `volumes`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const [volumes, setVolumesLocal] = useState<MixerVolumes>(initialVolumes);
+
+  // When the hydrate completes after first render, sync once.
+  const hydratedAppliedRef = useRef(false);
+  useEffect(() => {
+    if (!persistedMix || hydratedAppliedRef.current) return;
+    hydratedAppliedRef.current = true;
+    setVolumesLocal(prefToMixer(persistedMix));
+  }, [persistedMix]);
+
+  const debounceTimerRef = useRef<number | null>(null);
+  const handleMixerChange = (next: MixerVolumes) => {
+    setVolumesLocal(next);
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = window.setTimeout(() => {
+      void patch({ [PREF_SOUND_MIX]: mixerToPref(next) });
+    }, PERSIST_DEBOUNCE_MS);
+  };
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <main
@@ -86,7 +146,7 @@ export function SoloFocusScene() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
           <TasksPanel />
-          <SoundMixer volumes={volumes} onChange={setVolumes} />
+          <SoundMixer volumes={volumes} onChange={handleMixerChange} />
           <QuickActions />
         </div>
       </div>

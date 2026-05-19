@@ -162,6 +162,23 @@ const walletWriteApi = {
   },
 };
 
+// ── user preferences ───────────────────────────────────
+export type PreferencesBundle = Record<string, unknown>;
+
+export const preferencesApi = {
+  get() {
+    return apiFetch<PreferencesBundle>("/api/v1/me/preferences", {
+      method: "GET",
+    });
+  },
+  patch(patch: PreferencesBundle) {
+    return apiFetch<PreferencesBundle>("/api/v1/me/preferences", {
+      method: "PATCH",
+      body: patch,
+    });
+  },
+};
+
 // ── friends ────────────────────────────────────────────
 export interface FriendSummary {
   friendship_id: string;

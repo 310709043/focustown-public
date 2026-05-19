@@ -180,6 +180,23 @@
     "saveError": "儲存失敗，請再試一次。",
     "untitled": "（未命名）"
   },
+  "settings": {
+    "title": "個人設定 · SETTINGS",
+    "loading": "載入中…",
+    "saveError": "儲存失敗，請稍後再試。",
+    "savedToast": "已儲存",
+    "sectionNotifications": "通知",
+    "notificationsDailyLabel": "每日專注提醒",
+    "notificationsDailyTimeLabel": "提醒時間",
+    "sectionLanguage": "語言",
+    "languageZh": "繁體中文",
+    "languageEn": "English",
+    "sectionFocus": "專注節奏",
+    "dailyGoalLabel": "每日番茄目標",
+    "durationLabel": "預設專注時長（分鐘）",
+    "sectionAppearance": "畫面",
+    "sceneRotationLabel": "自動循環場景（白天 / 黃昏 / 夜晚）"
+  },
   "friends": {
     "title": "好友名單 · FRIENDS",
     "tabFriends": "好友",
