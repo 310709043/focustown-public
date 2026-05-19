@@ -3,15 +3,11 @@
 import { useTranslations } from "next-intl";
 
 import { Logo } from "@/components/scene/Logo";
-import { PixelWord } from "@/components/pixel/PixelWord";
 import { CoinBadge } from "@/components/town/CoinBadge";
 import { useRouter } from "@/i18n/routing";
 
-/**
- * Top bar — back to town + Logo + FOCUSTOWN wordmark + accent-2 pink
- * BUDDY ROOM subtitle + center "SAME FOCUS · ROOM #N · N min" status
- * line + T-coin badge. Reference: screen-buddy.jsx:L45-L67.
- */
+/** Buddy room top bar — leave/LBT logo/pink BUDDY ROOM subtitle on the
+ *  left, room status in the centre, T-coin badge on the right. */
 export function BuddyTopBar({ roomCode = "2847-A" }: { roomCode?: string }) {
   const t = useTranslations("focus.buddy.topBar");
   const router = useRouter();
@@ -40,25 +36,17 @@ export function BuddyTopBar({ roomCode = "2847-A" }: { roomCode?: string }) {
         >
           ◀ {t("leaveCta")}
         </button>
-        <Logo scale={0.7} />
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-          <PixelWord
-            text="FOCUSTOWN"
-            scale={1.6}
-            color="var(--accent)"
-            glow="var(--accent)"
-          />
-          <span
-            className="font-silkscreen"
-            style={{
-              fontSize: 9,
-              color: "var(--accent-2)",
-              letterSpacing: "0.2em",
-            }}
-          >
-            · {t("subtitle")}
-          </span>
-        </div>
+        <Logo scale={0.85} />
+        <span
+          className="font-silkscreen"
+          style={{
+            fontSize: 10,
+            color: "var(--accent-2)",
+            letterSpacing: "0.28em",
+          }}
+        >
+          · {t("subtitle")}
+        </span>
       </div>
 
       <div

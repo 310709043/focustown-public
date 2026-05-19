@@ -137,6 +137,13 @@ export function ProfileSidebar({
           onClick={() => onSelectView("stats")}
         />
         <ProfileNavItem
+          testId="profile-nav-wallet"
+          icon={<span style={{ color: "var(--accent-3)" }}>✦</span>}
+          label={tNav("wallet")}
+          active={activeView === "wallet"}
+          onClick={() => onSelectView("wallet")}
+        />
+        <ProfileNavItem
           testId="profile-nav-notes"
           icon={<span>✎</span>}
           label={tNav("notes")}

@@ -1,18 +1,18 @@
 {
   "shared": {
-    "companyName": "Focus Town",
+    "companyName": "低電量小鎮",
     "jurisdiction": "中華民國（台灣）",
     "contactLine": "如您對本政策有任何疑問，歡迎來信 {email}，我們會在 30 日內回覆。",
     "effectiveDateLabel": "生效日期",
     "versionLabel": "版本",
     "tocHeader": "目錄",
-    "backToApp": "返回 Focus Town"
+    "backToApp": "返回 低電量小鎮"
   },
   "privacy": {
     "title": "隱私政策",
     "subtitle": "{companyName} 個人資料蒐集、處理及利用之說明",
-    "metaTitle": "隱私政策 — Focus Town",
-    "metaDescription": "了解 Focus Town 如何蒐集、處理及保護您的個人資料，並依個資法說明您所擁有的權利。",
+    "metaTitle": "隱私政策｜低電量小鎮",
+    "metaDescription": "了解低電量小鎮（Low Battery Town）依個資法蒐集、處理及保護您個人資料的方式，並完整說明您可主張的當事人權利。",
     "toc": {
       "intro": "1. 政策宗旨",
       "collect": "2. 蒐集之個資項目",
@@ -31,16 +31,16 @@
   },
   "terms": {
     "title": "服務條款",
-    "subtitle": "歡迎使用 Focus Town，使用前請閱讀以下條款",
-    "metaTitle": "服務條款 — Focus Town",
-    "metaDescription": "了解您與 Focus Town 之間的權利與義務，包含帳號管理、付費機制、使用規範與爭議處理等重要事項。",
+    "subtitle": "歡迎使用 低電量小鎮，使用前請閱讀以下條款",
+    "metaTitle": "服務條款｜低電量小鎮",
+    "metaDescription": "閱讀低電量小鎮（Low Battery Town）服務條款，了解帳號管理、付費機制、使用規範與爭議處理等雙方權利義務。",
     "toc": {}
   },
   "refund": {
     "title": "退款政策",
     "subtitle": "我們希望您每一次購買都安心，以下是退款的相關說明",
-    "metaTitle": "退款政策 — Focus Town",
-    "metaDescription": "了解 Focus Town 商品的退款條件、申請流程與聯絡方式，協助您安心使用每一項服務。",
+    "metaTitle": "退款政策｜低電量小鎮",
+    "metaDescription": "低電量小鎮（Low Battery Town）付費商品的退款條件、申請流程與處理時程說明，幫助您安心完成每一次儲值與購買。",
     "toc": {}
   }
 }

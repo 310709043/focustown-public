@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
-import { PixelWord } from "@/components/pixel/PixelWord";
 import { StarField } from "@/components/pixel/StarField";
 import { Logo } from "@/components/scene/Logo";
 import { Link } from "@/i18n/routing";
@@ -20,13 +19,8 @@ interface SelectCharacterSceneProps {
   backHref?: string;
 }
 
-/**
- * Outer wrapper for `/select-character`. Radial sky gradient
- * background + StarField + 50 px header (◀ back, step counter,
- * progress dots, logo, FOCUSTOWN wordmark). The locale switcher
- * lives in the global LocaleLayout top-right slot, so this header
- * deliberately leaves that area empty.
- */
+/** Outer wrapper for /select-character — radial sky + StarField + a
+ *  50 px header (back · step · progress dots · LBT logo). */
 export function SelectCharacterScene({
   children,
   step = 2,
@@ -92,13 +86,7 @@ export function SelectCharacterScene({
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Logo scale={0.7} />
-          <PixelWord
-            text="FOCUSTOWN"
-            scale={2}
-            color="var(--accent)"
-            glow="var(--accent)"
-          />
+          <Logo scale={0.8} />
         </div>
         {/* Locale switcher slot — rendered globally in LocaleLayout. */}
         <div style={{ width: 64 }} aria-hidden />

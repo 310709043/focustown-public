@@ -14,12 +14,56 @@
   },
   "nav": {
     "stats": "我的數據",
+    "wallet": "T幣錢包",
     "notes": "筆記庫",
     "friends": "好友",
     "settings": "設定",
     "feedback": "意見回饋",
     "support": "客服中心",
     "activeIndicatorAria": "目前所在分頁"
+  },
+  "wallet": {
+    "title": "T 幣錢包 · WALLET",
+    "balanceEyebrow": "BALANCE",
+    "balanceSubtitle": "T COIN · LBT",
+    "weeklyIncoming": "+{amount} 本週",
+    "weeklyOutgoing": "-{amount} 本週",
+    "weeklyNet": "淨增 {amount}",
+    "actions": {
+      "topUp": "儲值",
+      "gift": "送禮",
+      "redeem": "兌換碼"
+    },
+    "topUp": {
+      "title": "儲值方案 · TOP-UP",
+      "paymentMethods": "TWD · 信用卡 · APPLE · GOOGLE",
+      "bonusBadge": "+{amount} 贈送",
+      "ribbonHot": "熱門",
+      "ribbonValue": "超值",
+      "ribbonBest": "BEST",
+      "currencySuffix": "T 幣",
+      "selectionLine": "你選了 {coins} + {bonus} T 幣 · 全額 NT${total}",
+      "confirmCta": "立即儲值 ▶"
+    },
+    "earn": {
+      "title": "免費賺 T 幣",
+      "pomodoro": "完成一顆番茄",
+      "deepNight": "深夜時段專注",
+      "groupFocus": "與他人一起專注 25min",
+      "streak": "連續登入 7 天",
+      "achievement": "解鎖新成就",
+      "feedback": "送出意見反饋"
+    },
+    "tx": {
+      "title": "交易紀錄",
+      "filterAll": "全部",
+      "filterIncome": "收入",
+      "filterOutgoing": "支出",
+      "filterTopUp": "儲值",
+      "empty": "尚無交易紀錄",
+      "reasonFallback": "交易"
+    },
+    "comingSoon": "此功能即將上線"
   },
   "stats": {
     "kpi": {

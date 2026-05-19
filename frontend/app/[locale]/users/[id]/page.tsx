@@ -7,7 +7,6 @@ import { CitizenIdCard } from "@/components/profile/CitizenIdCard";
 import { MiniClock } from "@/components/chrome/MiniClock";
 import { CelestialBody } from "@/components/town/scene/CelestialBody";
 import { Logo } from "@/components/scene/Logo";
-import { PixelWord } from "@/components/pixel/PixelWord";
 import { Sky } from "@/components/scene/Sky";
 import { StarsLayer } from "@/components/scene/StarsLayer";
 import { useRouter } from "@/i18n/routing";
@@ -94,20 +93,14 @@ export default function CitizenProfilePage() {
           >
             ◀ BACK
           </button>
-          <Logo scale={1} />
+          <Logo scale={0.9} />
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <PixelWord
-              text="FOCUSTOWN"
-              scale={2}
-              color="var(--accent)"
-              glow="var(--accent)"
-            />
             <span
               className="font-silkscreen"
               style={{
-                fontSize: 8,
-                color: "var(--ink-dim)",
-                letterSpacing: "0.2em",
+                fontSize: 10,
+                color: "var(--accent-3)",
+                letterSpacing: "0.28em",
               }}
             >
               · CITIZEN REGISTRY

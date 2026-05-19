@@ -38,7 +38,7 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(siteUrl),
-    title: "Focus Town",
+    title: "Low Battery Town",
     description: t("tagline"),
     alternates: {
       canonical: `/${safe}`,
@@ -50,7 +50,7 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       url: `/${safe}`,
-      title: "Focus Town",
+      title: "Low Battery Town",
       description: t("tagline"),
       locale: OG_LOCALE[safe],
       alternateLocale: routing.locales
@@ -58,10 +58,7 @@ export async function generateMetadata({
         .map((l) => OG_LOCALE[l]),
     },
     icons: {
-      icon: [
-        { url: "/logo.svg", type: "image/svg+xml" },
-        { url: "/logo.png", type: "image/png" },
-      ],
+      icon: [{ url: "/logo.png", type: "image/png" }],
       apple: "/logo.png",
     },
   };

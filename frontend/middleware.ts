@@ -147,6 +147,6 @@ export const config = {
   // image bytes is meaningless and slowing every static file with a middleware
   // pass is wasteful.
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|logo.png|logo.svg).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|logo.png).*)",
   ],
 };

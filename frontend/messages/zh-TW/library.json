@@ -12,8 +12,8 @@
     "spotifyTabLabel": "🎵 Spotify",
     "empty": "（音樂庫整理中，請稍候片刻）",
     "trackCount": "♪ {current}/{total} · {mood}",
-    "uploadHint": "探索 Focus Town 嚴選歌單 →",
-    "phaseNote": "由 Focus Town 嚴選"
+    "uploadHint": "探索 低電量小鎮 嚴選歌單 →",
+    "phaseNote": "由 低電量小鎮 嚴選"
   },
   "moods": {
     "all": "全部",
@@ -30,8 +30,8 @@
     "addToRoom": "+ 加入房間"
   },
   "page": {
-    "breadcrumb": "FOCUS TOWN / LIBRARY",
-    "title": "Focus Town 嚴選音樂庫",
+    "breadcrumb": "LBT / LIBRARY",
+    "title": "低電量小鎮 嚴選音樂庫",
     "backCta": "← 回小鎮",
     "intro": "我們為您嚴選了一系列陪伴專注的溫柔曲目。登入後，您可以挑選喜歡的歌加入自己的房間。",
     "signedOutHint": "登入後，您就能把喜歡的曲目加入自己的房間音樂庫。",

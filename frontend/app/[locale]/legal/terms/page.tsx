@@ -5,8 +5,8 @@ import { LEGAL } from "@/lib/config/legal";
 import { Link } from "@/i18n/routing";
 
 export const metadata = {
-  title: "服務條款 — Focus Town",
-  description: "Focus Town 服務條款",
+  title: "服務條款｜低電量小鎮",
+  description: "閱讀低電量小鎮（Low Battery Town）服務條款，了解使用本平台時雙方的權利與義務，包含帳號、付費機制與爭議處理。",
 };
 
 const TOC = [

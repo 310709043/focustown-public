@@ -5,12 +5,14 @@ import { useTranslations } from "next-intl";
 
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { StatsView } from "@/components/profile/StatsView";
+import { WalletView } from "@/components/profile/wallet/WalletView";
 import { useUserStats } from "@/lib/hooks/useUserStats";
 import { useAuthStore } from "@/lib/state/authStore";
 import type { TownModalKind } from "@/components/town/scene/TownTopHUD";
 
 export type ProfileView =
   | "stats"
+  | "wallet"
   | "notes"
   | "friends"
   | "settings"
@@ -113,6 +115,9 @@ interface RightPaneProps {
 function RightPane({ activeView, onClose, onBackToStats }: RightPaneProps) {
   if (activeView === "stats") {
     return <StatsView onClose={onClose} />;
+  }
+  if (activeView === "wallet") {
+    return <WalletView onClose={onClose} />;
   }
   return <StubView onClose={onClose} onBackToStats={onBackToStats} />;
 }

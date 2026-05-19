@@ -14,12 +14,56 @@
   },
   "nav": {
     "stats": "Your Stats",
+    "wallet": "T-Coin Wallet",
     "notes": "Notes Library",
     "friends": "Friends",
     "settings": "Settings",
     "feedback": "Send Feedback",
     "support": "Help Center",
     "activeIndicatorAria": "Current section"
+  },
+  "wallet": {
+    "title": "T-Coin Wallet",
+    "balanceEyebrow": "BALANCE",
+    "balanceSubtitle": "T COIN · LBT",
+    "weeklyIncoming": "+{amount} this week",
+    "weeklyOutgoing": "-{amount} this week",
+    "weeklyNet": "Net {amount}",
+    "actions": {
+      "topUp": "Top up",
+      "gift": "Gift",
+      "redeem": "Redeem code"
+    },
+    "topUp": {
+      "title": "TOP-UP packages",
+      "paymentMethods": "TWD · Card · Apple · Google",
+      "bonusBadge": "+{amount} bonus",
+      "ribbonHot": "HOT",
+      "ribbonValue": "BEST VALUE",
+      "ribbonBest": "BEST",
+      "currencySuffix": "T",
+      "selectionLine": "Selected {coins} + {bonus} T · Total NT${total}",
+      "confirmCta": "Top up ▶"
+    },
+    "earn": {
+      "title": "Earn T-coins free",
+      "pomodoro": "Finish a pomodoro",
+      "deepNight": "Late-night focus",
+      "groupFocus": "Co-focus 25 min",
+      "streak": "7-day streak",
+      "achievement": "Unlock an achievement",
+      "feedback": "Send feedback"
+    },
+    "tx": {
+      "title": "Transactions",
+      "filterAll": "All",
+      "filterIncome": "Income",
+      "filterOutgoing": "Outgoing",
+      "filterTopUp": "Top-ups",
+      "empty": "No transactions yet",
+      "reasonFallback": "Transaction"
+    },
+    "comingSoon": "Coming soon"
   },
   "stats": {
     "kpi": {

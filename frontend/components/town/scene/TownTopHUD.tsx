@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 
 import { MiniClock } from "@/components/chrome/MiniClock";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { PixelWord } from "@/components/pixel/PixelWord";
 import { Logo } from "@/components/scene/Logo";
 import { CoinBadge } from "@/components/town/CoinBadge";
 import { Link } from "@/i18n/routing";
@@ -81,7 +80,7 @@ const SCENE_TEMP: Record<SceneName, number> = {
  * Town top HUD — visual port of `reference/screen-town.jsx#TopHUD`.
  *
  * Three clusters separated by `space-between`:
- *  • LEFT: Logo + FOCUSTOWN pixelword + "v1.2 · ONLINE N" + weather/time chip
+ *  • LEFT: LBT logo + v1.4.0 + scene/weather/temp + ONLINE N
  *  • CENTER: `UserStatusPill` (avatar, name, LV, focusing status, tomato strip)
  *  • RIGHT: ACHV / SHOP / FRDS nav + my-room + clock + T-coin + sign out
  *
@@ -120,34 +119,26 @@ export function TownTopHUD({
           "linear-gradient(180deg, rgba(7,4,26,0.85) 0%, rgba(7,4,26,0) 100%)",
       }}
     >
-      {/* ═══ LEFT cluster ═══ */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Logo scale={1} />
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <PixelWord
-            text="FOCUSTOWN"
-            scale={2}
-            color="var(--accent)"
-            glow="var(--accent)"
-          />
-          <span
-            className="font-silkscreen"
-            style={{
-              fontSize: 8,
-              color: "var(--ink-dim)",
-              letterSpacing: "0.2em",
-            }}
-          >
-            v1.2 · {tHud("onlineCount", { count: onlineCount })}
-          </span>
-        </div>
+      {/* ═══ LEFT cluster: logo + version · scene/weather/temp · ONLINE ═══ */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <Logo scale={1.05} />
+        <span
+          className="font-silkscreen"
+          style={{
+            fontSize: 9,
+            color: "var(--ink-dim)",
+            letterSpacing: "0.2em",
+          }}
+        >
+          v1.4.0
+        </span>
         <div
           aria-hidden
           style={{
             width: 1,
-            height: 28,
+            height: 24,
             background: "var(--panel-stroke)",
-            margin: "0 4px",
+            margin: "0 2px",
           }}
         />
         <div
@@ -170,6 +161,18 @@ export function TownTopHUD({
           </span>
           <span style={{ color: "var(--ink-dim)" }}>·</span>
           <span>{SCENE_TEMP[scene]}°C</span>
+        </div>
+        <div
+          className="pixel-panel font-silkscreen"
+          style={{
+            padding: "5px 10px",
+            fontSize: 10,
+            letterSpacing: "0.2em",
+            color: "#6ee7b7",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {tHud("onlineCount", { count: onlineCount })}
         </div>
       </div>
 
@@ -209,41 +212,6 @@ export function TownTopHUD({
         <MiniClock />
 
         <CoinBadge />
-
-        {/* Compact feedback + support icon buttons — PR1 entry point. PR2
-            may consolidate these into the profile/sign-out menu. */}
-        <button
-          data-testid="nav-feedback"
-          onClick={() => onOpenModal("feedback")}
-          aria-label={tNav("feedbackAria")}
-          className="font-silkscreen"
-          style={{
-            background: "rgba(7,4,26,0.75)",
-            border: "1px solid var(--panel-stroke)",
-            padding: "6px 8px",
-            fontSize: 11,
-            color: "var(--ink-mute)",
-            cursor: "pointer",
-          }}
-        >
-          ✎
-        </button>
-        <button
-          data-testid="nav-support"
-          onClick={() => onOpenModal("support")}
-          aria-label={tNav("supportAria")}
-          className="font-silkscreen"
-          style={{
-            background: "rgba(7,4,26,0.75)",
-            border: "1px solid var(--panel-stroke)",
-            padding: "6px 8px",
-            fontSize: 11,
-            color: "var(--ink-mute)",
-            cursor: "pointer",
-          }}
-        >
-          ?
-        </button>
 
         <Link
           data-testid="nav-logout"

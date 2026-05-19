@@ -37,7 +37,7 @@ export default function SpriteGalleryPage() {
         <div className="flex items-end gap-8 flex-wrap">
           {[2, 3, 4, 6, 8].map((s) => (
             <div key={s} className="flex flex-col items-start gap-2">
-              <PixelWord text="FOCUSTOWN" color="var(--a2)" glow="var(--a3)" scale={s} />
+              <PixelWord text="LBT" color="var(--a2)" glow="var(--a3)" scale={s} />
               <span className="font-pixel-en text-xs text-muted">scale={s}</span>
             </div>
           ))}

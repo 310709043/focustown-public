@@ -37,7 +37,7 @@ function useTransientToast() {
  * /select-character — Page 2 of the focustwon/reference UI sync.
  *
  * Visual layout matches `reference/screen-character.jsx` 1:1:
- *  • 50 px top bar (back / step / dots / FOCUSTOWN wordmark)
+ *  • 50 px top bar (back / step / dots / LBT logo)
  *  • Left column (380 px): live preview card + form panel
  *      (nickname, age slider, region dropdown, daily-goal radio)
  *  • Right column (flex 1): tab bar (role / interests / skills / all)
