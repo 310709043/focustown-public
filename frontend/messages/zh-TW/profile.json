@@ -127,5 +127,22 @@
     "title": "整理中",
     "description": "這個區塊正在製作中，我們會在準備好後第一時間通知您。",
     "ctaBack": "回到我的數據"
+  },
+  "notes": {
+    "title": "筆記庫 · NOTES",
+    "newCta": "+ 新增筆記",
+    "emptyState": "尚未建立任何筆記，新增第一則來開始整理今天的專注主題。",
+    "titlePlaceholder": "標題（選填）",
+    "bodyPlaceholder": "寫下今日的主題、想法或下一步動作…",
+    "saveCta": "儲存",
+    "cancelCta": "取消",
+    "editAria": "編輯筆記",
+    "deleteAria": "刪除筆記",
+    "deleteConfirm": "確定要刪除這則筆記嗎？",
+    "doneToggleAria": "標記完成 / 未完成",
+    "loading": "載入中…",
+    "loadError": "無法載入筆記，請稍後再試。",
+    "saveError": "儲存失敗，請再試一次。",
+    "untitled": "（未命名）"
   }
 }

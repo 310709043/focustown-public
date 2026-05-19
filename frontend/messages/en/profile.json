@@ -127,5 +127,22 @@
     "title": "We are still building this",
     "description": "This section is on the way. We will let you know as soon as it is ready.",
     "ctaBack": "Back to your stats"
+  },
+  "notes": {
+    "title": "Notes Library",
+    "newCta": "+ New note",
+    "emptyState": "No notes yet — start one to capture today's focus theme.",
+    "titlePlaceholder": "Title (optional)",
+    "bodyPlaceholder": "Capture today's theme, thoughts, or next action…",
+    "saveCta": "Save",
+    "cancelCta": "Cancel",
+    "editAria": "Edit note",
+    "deleteAria": "Delete note",
+    "deleteConfirm": "Delete this note?",
+    "doneToggleAria": "Toggle done state",
+    "loading": "Loading…",
+    "loadError": "Could not load notes. Please try again.",
+    "saveError": "Save failed. Please try again.",
+    "untitled": "(Untitled)"
   }
 }

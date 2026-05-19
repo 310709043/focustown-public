@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { NotesView } from "@/components/profile/notes/NotesView";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { StatsView } from "@/components/profile/StatsView";
 import { WalletView } from "@/components/profile/wallet/WalletView";
@@ -118,6 +119,9 @@ function RightPane({ activeView, onClose, onBackToStats }: RightPaneProps) {
   }
   if (activeView === "wallet") {
     return <WalletView onClose={onClose} />;
+  }
+  if (activeView === "notes") {
+    return <NotesView onClose={onClose} />;
   }
   return <StubView onClose={onClose} onBackToStats={onBackToStats} />;
 }
