@@ -40,6 +40,7 @@ export function BuddyCard({
   return (
     <div
       data-testid={`buddy-card-${side}`}
+      data-side={side}
       style={{
         flex: 1,
         display: "flex",

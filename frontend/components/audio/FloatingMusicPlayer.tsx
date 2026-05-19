@@ -7,6 +7,14 @@ import {
   selectCurrentTrack,
   useAudioStore,
 } from "@/lib/state/audioStore";
+import type { PersonalPlaylistContext } from "@/lib/api/endpoints";
+
+interface FloatingMusicPlayerProps {
+  /** Playlist context. Defaults to "city" so /town keeps working unchanged. */
+  context?: PersonalPlaylistContext;
+  /** Context id (e.g. "solo", match id). Defaults to "city". */
+  contextId?: string | null;
+}
 
 /**
  * Floating mini music player — anchored bottom-right of its positioned
@@ -26,7 +34,10 @@ import {
  * `pixel-btn` / `xp-cell` primitives to stay cohesive with the
  * Citizen ID card + SkyWindow chrome.
  */
-export function FloatingMusicPlayer() {
+export function FloatingMusicPlayer({
+  context = "city",
+  contextId = "city",
+}: FloatingMusicPlayerProps = {}) {
   const t = useTranslations("focus.solo.floatingPlayer");
   const tracks = useAudioStore((s) => s.tracks);
   const index = useAudioStore((s) => s.index);
@@ -43,12 +54,13 @@ export function FloatingMusicPlayer() {
   const unlock = useAudioStore((s) => s.unlock);
   const setHidden = useAudioStore((s) => s.setHidden);
 
-  // Ensure a playlist is in place even when the user arrives at
-  // /focus/solo directly (no prior /town visit). Same context as the
-  // town's MusicPlayer so navigating between the two never refetches.
+  // Ensure a playlist is in place. The mounting screen passes its own
+  // (context, contextId): /focus/solo → ("focus", "solo"); buddy room →
+  // ("focus", matchId); /town → ("city", "city"). Default is "city" so
+  // existing call sites with no props keep their pre-port behavior.
   useEffect(() => {
-    void setContext("city", "city");
-  }, [setContext]);
+    void setContext(context, contextId);
+  }, [setContext, context, contextId]);
 
   const disabled = tracks.length === 0;
   const trackTitle = currentTrack?.title ?? t("trackTitleFallback");

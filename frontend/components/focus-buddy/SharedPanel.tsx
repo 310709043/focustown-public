@@ -55,10 +55,10 @@ export function SharedPanel({
         }}
       >
         <div style={{ display: "flex", gap: 6 }}>
-          <TabBtn active={tab === "chat"} onClick={() => setTab("chat")}>
+          <TabBtn tabId="chat" active={tab === "chat"} onClick={() => setTab("chat")}>
             💬 {t("chatTab")}
           </TabBtn>
-          <TabBtn active={tab === "notes"} onClick={() => setTab("notes")}>
+          <TabBtn tabId="notes" active={tab === "notes"} onClick={() => setTab("notes")}>
             ✎ {t("notesTab")}
           </TabBtn>
         </div>

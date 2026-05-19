@@ -147,6 +147,8 @@ export function TownTopHUD({
           }}
         />
         <div
+          data-testid="weather-badge"
+          data-scene={scene}
           className="pixel-panel font-silkscreen"
           style={{
             padding: "5px 10px",

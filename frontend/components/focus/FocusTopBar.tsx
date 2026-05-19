@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
+import { AutoEnvIndicator } from "@/components/focus/AutoEnvIndicator";
 import { Logo } from "@/components/scene/Logo";
 import { MiniClock } from "@/components/chrome/MiniClock";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
@@ -54,6 +55,7 @@ export function FocusTopBar() {
         >
           · {t("subtitle")}
         </span>
+        <AutoEnvIndicator />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>

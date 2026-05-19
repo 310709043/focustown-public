@@ -49,6 +49,7 @@ export function LoginCitizens() {
   return (
     <div
       aria-hidden
+      data-testid="login-citizens"
       className="pointer-events-none"
       style={{
         position: "absolute",

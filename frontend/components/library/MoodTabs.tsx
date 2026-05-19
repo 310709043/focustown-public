@@ -27,6 +27,7 @@ export function MoodTabs({ value, onChange }: Props) {
   return (
     <div
       data-testid="library-mood-tabs"
+      role="tablist"
       style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
     >
       {MOOD_KEYS.map((key) => {
@@ -35,6 +36,9 @@ export function MoodTabs({ value, onChange }: Props) {
           <button
             key={key}
             type="button"
+            role="tab"
+            aria-selected={active}
+            data-mood={key}
             onClick={() => onChange(key)}
             data-active={active || undefined}
             className="font-silkscreen"

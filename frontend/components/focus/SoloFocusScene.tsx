@@ -1,113 +1,130 @@
 "use client";
 
-import { useState } from "react";
-
-import { AmbientBackdrop } from "@/components/focus/ambient/AmbientBackdrop";
+import { BackdropLayer } from "@/components/focus/ambient/BackdropLayer";
 import { BigTimer } from "@/components/focus/BigTimer";
-import { FocusTopBar } from "@/components/focus/FocusTopBar";
-import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
-import { TasksPanel } from "@/components/focus/TasksPanel";
 import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
-import { findFocusBg, type FocusBgId } from "@/lib/data/focusBackgrounds";
+import { FocusTopBar } from "@/components/focus/FocusTopBar";
+import { FriendsNow } from "@/components/focus/FriendsNow";
+import { NextEnvCard } from "@/components/focus/NextEnvCard";
+import { QuickActions } from "@/components/focus/QuickActions";
+import { SessionInsight } from "@/components/focus/SessionInsight";
+import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
+import { SoundMixer } from "@/components/focus/SoundMixer";
+import { TasksPanel } from "@/components/focus/TasksPanel";
+import { findFocusBg, FOCUS_BG_OPTIONS } from "@/lib/data/focusBackgrounds";
+import { useAmbientCycle } from "@/lib/hooks/useAmbientCycle";
+import { useAmbientStore } from "@/lib/state/ambientStore";
 
 /**
- * Solo focus room — 2-column layout (goal round 4).
+ * Solo focus room — reference parity (reference/screen-focus.jsx).
  *
- *   LEFT (fixed-ish, 320 px): TasksPanel (today's goal absorbed) +
- *                              BigTimer.
- *   RIGHT (1fr, grows to viewport edge):
- *                              SoloNotesPanel (flex:1, fills height) +
- *                              FloatingMusicPlayer in bottom-right corner
- *                              (user-hideable; collapses to a 44×44 chip).
+ *   LEFT (2fr, wide):  `SoloNotesPanel` with the floating music player
+ *                      anchored bottom-right.
+ *   RIGHT (1fr, rail): `BigTimer` → `SessionInsight` → `FriendsNow` →
+ *                      `TasksPanel` → `SoundMixer` → `NextEnvCard` →
+ *                      `QuickActions`.
  *
- * Dropped from earlier iterations:
- *   • `SessionInsight` — merged into TasksPanel.
- *   • `SoundMixer` — deleted entirely (no real audio fan-out behind it).
- *   • `QuickActions` — out of the new layout.
- *   • `FriendsNow`, `AmbientPanel` — already removed in round 1.
- *
- * Music is now owned by the global `useAudioStore` + `<GlobalAudioMount>`
- * in the locale layout; this scene only renders the visual player.
- * Navigating between /town and /focus/[id] never restarts playback.
+ * The ambient backdrop is a two-stack of `BackdropLayer`s crossfading on
+ * a 90 s cycle (25 s fade) driven by `useAmbientCycle`. No user-facing
+ * picker — the picker was removed in the reference too; the only
+ * override is the E2E lock at `localStorage.focustown.ambient.lock`.
  */
 export function SoloFocusScene() {
-  // Background scene is fixed to "rain" — the AmbientPanel picker that
-  // would let users change it was rejected as having no purpose; we'll
-  // revisit ambient backdrops as a top-bar dropdown if telemetry shows
-  // it back.
-  const [bg] = useState<FocusBgId>("rain");
-  const bgOption = findFocusBg(bg);
+  useAmbientCycle();
+  const fromIdx = useAmbientStore((s) => s.fromIdx);
+  const toIdx = useAmbientStore((s) => s.toIdx);
+  const t01 = useAmbientStore((s) => s.t);
+
+  // Defensive lookups so a transient out-of-bounds idx (e.g. during HMR
+  // or a persist-driven mismatch) can't throw and bring the whole scene
+  // down with an error boundary.
+  const fromBg = (FOCUS_BG_OPTIONS[fromIdx] ?? FOCUS_BG_OPTIONS[0]).id;
+  const toBg = (FOCUS_BG_OPTIONS[toIdx] ?? FOCUS_BG_OPTIONS[0]).id;
+  void findFocusBg; // re-export keeps the helper bundled for tests.
 
   return (
     <main
       data-testid="focus-solo-scene"
+      className="crt"
       style={{
         position: "absolute",
         inset: 0,
         display: "flex",
         flexDirection: "column",
-        overflowX: "hidden",
-        overflowY: "auto",
-        background: bgOption.gradient,
-        transition: "background 0.6s ease",
+        overflow: "hidden",
+        background: "#02020a",
       }}
     >
-      {/* Ambient backdrop sticks to the viewport; the scrolling main
-          slides over it. `position: fixed` keeps it from scrolling away
-          when the right column overflows on shorter viewports. */}
+      {/* Two stacked backdrops crossfading by opacity */}
+      <BackdropLayer bg={fromBg} opacity={1 - t01} />
+      <BackdropLayer bg={toBg} opacity={t01} />
+
+      {/* Reading-comfort overlay — darkens bright skies so UI stays readable */}
       <div
         aria-hidden
         style={{
-          position: "fixed",
+          position: "absolute",
           inset: 0,
+          zIndex: 1,
           pointerEvents: "none",
-          zIndex: 0,
+          background:
+            "radial-gradient(ellipse at center, rgba(7,4,26,0.35) 0%, rgba(7,4,26,0.62) 75%, rgba(7,4,26,0.78) 100%)",
         }}
-      >
-        <AmbientBackdrop bg={bg} />
-      </div>
+      />
 
       <div style={{ position: "relative", zIndex: 2, flexShrink: 0 }}>
         <FocusTopBar />
       </div>
 
       <div
+        data-testid="solo-body-grid"
         style={{
-          flex: 1,
-          minHeight: 0,
-          display: "grid",
-          gridTemplateColumns: "minmax(280px, 340px) 1fr",
-          gap: 12,
-          padding: 12,
           position: "relative",
           zIndex: 2,
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
+          gap: 12,
+          padding: 12,
+          flex: 1,
+          minHeight: 0,
+          overflow: "hidden",
         }}
       >
-        {/* LEFT column — tasks (today's goal merged) above the big timer */}
+        {/* Left wide: notes + floating music player anchored bottom-right */}
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            minWidth: 0,
-          }}
-        >
-          <TasksPanel />
-          <BigTimer partnerId={null} />
-        </div>
-
-        {/* RIGHT column — notes fill the height; floating player anchors
-            absolutely in the bottom-right of THIS positioned wrapper. */}
-        <div
+          data-testid="notes-panel"
           style={{
             position: "relative",
             display: "flex",
             flexDirection: "column",
+            minHeight: 0,
             minWidth: 0,
           }}
         >
           <SoloNotesPanel />
-          <FloatingMusicPlayer />
+          <FloatingMusicPlayer context="focus" contextId="solo" />
+        </div>
+
+        {/* Right rail — 7 reference panels in order */}
+        <div
+          data-testid="solo-right-rail"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            overflow: "auto",
+            paddingRight: 4,
+            minHeight: 0,
+            minWidth: 0,
+          }}
+        >
+          <BigTimer partnerId={null} />
+          <SessionInsight />
+          <FriendsNow />
+          <TasksPanel />
+          <SoundMixer />
+          <NextEnvCard />
+          <QuickActions />
         </div>
       </div>
     </main>

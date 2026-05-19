@@ -20,6 +20,8 @@ export async function LegalLayout({ active, toc, children }: Props) {
   const t = await getTranslations("common.legal");
   return (
     <main
+      data-testid="legal-layout"
+      data-legal-active={active}
       className="min-h-screen px-4 md:px-10 py-10"
       style={{
         background:
@@ -35,17 +37,29 @@ export async function LegalLayout({ active, toc, children }: Props) {
             active: r.key === active,
           }))}
         />
-        <article className="flex-1 max-w-3xl bg-card border border-border rounded-lg p-6 md:p-10">
+        <article
+          data-testid="legal-article"
+          className="pixel-panel flex-1 max-w-3xl"
+          style={{ padding: "24px 28px" }}
+        >
           {children}
           <footer
-            className="mt-12 pt-6 border-t border-border text-muted"
+            className="font-silkscreen"
             style={{
+              marginTop: 48,
+              paddingTop: 24,
+              borderTop: "1px solid var(--panel-stroke)",
               fontSize: "var(--font-size-label)",
               lineHeight: 1.5,
+              color: "var(--ink-mute)",
+              letterSpacing: "0.1em",
             }}
           >
-            <Link href="/" className="hover:text-accent-2">
-              {t("backHome")}
+            <Link
+              href="/"
+              style={{ color: "var(--accent-2)", textDecoration: "none" }}
+            >
+              ◀ {t("backHome")}
             </Link>
           </footer>
         </article>

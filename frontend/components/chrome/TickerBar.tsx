@@ -44,6 +44,7 @@ export function TickerBar({ durationSeconds = 60, className }: TickerBarProps) {
 
   return (
     <div
+      data-testid="ticker-bar"
       className={className}
       style={{
         position: "absolute",

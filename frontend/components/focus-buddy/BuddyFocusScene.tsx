@@ -1,5 +1,6 @@
 "use client";
 
+import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { StarField } from "@/components/pixel/StarField";
 import { useAuthStore } from "@/lib/state/authStore";
@@ -123,6 +124,11 @@ export function BuddyFocusScene({
           buddyName={partnerName}
         />
       </div>
+
+      {/* Buddy room shares the same per-context audio surface as solo.
+          Playlist context is ("focus", matchId) so the backend can track
+          per-room playback; visually anchored bottom-right of the scene. */}
+      <FloatingMusicPlayer context="focus" contextId={matchId} />
     </main>
   );
 }

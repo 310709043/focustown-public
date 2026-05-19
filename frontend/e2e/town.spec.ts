@@ -28,6 +28,27 @@ test.describe("/town navigation", () => {
     await expect(page.getByTestId("nav-logout")).toBeVisible();
   });
 
+  test("/town shows reference scene chrome: weather badge, sky window, ticker bars, NPCs, buildings", async ({ page }) => {
+    await page.goto("/town");
+    await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
+
+    await expect(page.getByTestId("weather-badge")).toBeVisible();
+    await expect(page.getByTestId("sky-window")).toBeVisible();
+    await expect(page.getByTestId("ticker-bar")).toHaveCount(2);
+
+    // Named buildings — 10 in the foreground row.
+    const buildings = page
+      .getByTestId("named-buildings")
+      .locator("[data-building]");
+    await expect.poll(async () => await buildings.count()).toBeGreaterThan(0);
+
+    // Scenery NPCs: 7 walkers + 2 cats + 3 cars + 3 birds.
+    await expect.poll(async () => await page.getByTestId("named-walker").count()).toBe(7);
+    await expect.poll(async () => await page.getByTestId("named-cat").count()).toBe(2);
+    await expect.poll(async () => await page.getByTestId("named-car").count()).toBe(3);
+    await expect.poll(async () => await page.getByTestId("named-bird").count()).toBe(3);
+  });
+
   test("🏆 ACHV opens the awards modal", async ({ page }) => {
     await page.goto("/town");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
@@ -37,18 +58,24 @@ test.describe("/town navigation", () => {
     });
   });
 
-  test("🛒 SHOP opens the shop modal", async ({ page }) => {
+  test("🛒 SHOP is disabled with coming-soon tooltip", async ({ page }) => {
+    // Shop is a v1 stub (see memory: MVP-only stubs).  The nav-shop button
+    // is intentionally disabled with a "Coming soon" tooltip; assert that
+    // contract instead of trying to click a disabled button.
     await page.goto("/town");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    await page.getByTestId("nav-shop").click();
-    await expect(page.getByTestId("shop-modal")).toBeVisible({ timeout: 5_000 });
+    const shopBtn = page.getByTestId("nav-shop");
+    await expect(shopBtn).toBeVisible();
+    await expect(shopBtn).toBeDisabled();
+    await expect(shopBtn).toHaveAttribute("title", /coming soon/i);
   });
 
-  test("登出 clears tokens and returns to /", async ({ page }) => {
+  test("登出 clears tokens and returns to landing", async ({ page }) => {
     await page.goto("/town");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
     await page.getByTestId("nav-logout").click();
-    await expect(page).toHaveURL("/");
+    // Landing URL with localePrefix="always" is /zh-TW or /en, not bare "/".
+    await expect(page).toHaveURL(/\/(zh-TW|en)\/?$/);
     const tokens = await page.evaluate(() =>
       window.localStorage.getItem("focustown.tokens"),
     );

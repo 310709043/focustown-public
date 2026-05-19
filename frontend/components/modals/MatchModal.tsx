@@ -117,12 +117,17 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
       {/* Segmented compatibility bar — wraps to two rows on very narrow
           viewports so the 10 boxes always read at one glance. */}
       <div className="flex flex-col items-center gap-2 mb-4">
-        <div className="flex gap-1 flex-wrap justify-center max-w-full">
+        <div
+          data-testid="compat-bar"
+          className="flex gap-1 flex-wrap justify-center max-w-full"
+        >
           {Array.from({ length: SEGMENTS }).map((_, i) => {
             const lit = i < litCount;
             return (
               <span
                 key={i}
+                data-segment={i}
+                data-lit={lit || undefined}
                 style={{
                   width: 22,
                   height: 14,
@@ -165,7 +170,8 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
 
       <div className="flex gap-3 justify-center flex-wrap">
         <button
-          className="pixel-btn touch:min-h-[48px]"
+          data-testid="match-accept"
+          className="pixel-btn primary touch:min-h-[48px]"
           style={{ fontSize: 11, padding: "12px 24px", letterSpacing: 2 }}
           disabled={accepting || skipping}
           onClick={async () => {
@@ -177,6 +183,7 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
           {accepting ? t("acceptLoadingCta") : t("acceptCta")}
         </button>
         <button
+          data-testid="match-skip"
           className="pixel-btn touch:min-h-[48px]"
           style={{
             fontSize: 11,

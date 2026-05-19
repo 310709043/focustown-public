@@ -67,11 +67,13 @@ test.describe("Phase 7 — per-room playlist", () => {
     await page.goto("/town/library");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
 
-    // Locate the row that owns our seeded track, then the playlist toggle
-    // inside it. The button's accessible name flips between "+ 加入房間"
-    // and "✓ 房間" — match either, distinguish by aria-pressed.
-    const row = page.getByRole("listitem").filter({ hasText: "E2E Seed Track" });
-    const toggleBefore = row.getByRole("button", { name: /加入房間/ });
+    // Resolve the row + toggle by testid + data-track-id; locale-agnostic
+    // and immune to i18n copy drift in `+ 加入房間` / `Add to room`.
+    const row = page.locator(
+      '[data-testid="track-row"][data-track-id="t-seed-1"]',
+    );
+    await expect(row).toBeVisible({ timeout: 10_000 });
+    const toggleBefore = row.getByTestId("track-room-toggle");
     await expect(toggleBefore).toBeVisible();
     await expect(toggleBefore).toHaveAttribute("aria-pressed", "false");
 
@@ -84,21 +86,21 @@ test.describe("Phase 7 — per-room playlist", () => {
       toggleBefore.click(),
     ]);
 
-    // Optimistic UI: same button now reads "✓ 房間" with aria-pressed=true.
-    const toggleAfter = row.getByRole("button", { name: /房間/ });
-    await expect(toggleAfter).toHaveAttribute("aria-pressed", "true", {
+    // Optimistic UI: aria-pressed flips to true.
+    await expect(toggleBefore).toHaveAttribute("aria-pressed", "true", {
       timeout: 5000,
     });
 
-    // Reload: GET /me/room/tracks now returns the persisted entry; the
-    // page should re-derive `inPlaylist` and render "✓ 房間" again.
+    // Reload: GET /me/room/tracks returns the persisted entry; the page
+    // re-derives `inPlaylist` and renders the same toggle as pressed.
     await page.reload();
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
 
-    const rowReloaded = page
-      .getByRole("listitem")
-      .filter({ hasText: "E2E Seed Track" });
-    const toggleReloaded = rowReloaded.getByRole("button", { name: /房間/ });
+    const rowReloaded = page.locator(
+      '[data-testid="track-row"][data-track-id="t-seed-1"]',
+    );
+    await expect(rowReloaded).toBeVisible({ timeout: 10_000 });
+    const toggleReloaded = rowReloaded.getByTestId("track-room-toggle");
     await expect(toggleReloaded).toHaveAttribute("aria-pressed", "true", {
       timeout: 5000,
     });

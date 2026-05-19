@@ -22,7 +22,7 @@ test.describe("Sign up", () => {
     await page.getByTestId("signup-terms").check();
     await page.getByTestId("signup-submit").click();
 
-    await expect(page).toHaveURL(/\/select-character$/, { timeout: 5000 });
+    await expect(page).toHaveURL(/\/(zh-TW|en)\/select-character\/?$/, { timeout: 5000 });
     const tokens = await page.evaluate(() =>
       window.localStorage.getItem("focustown.tokens"),
     );
@@ -47,7 +47,7 @@ test.describe("Sign up", () => {
     await page.getByTestId("signup-submit").click();
 
     await expect(page.getByTestId("signup-error")).toContainText("已被使用");
-    await expect(page).toHaveURL(/\/signup$/);
+    await expect(page).toHaveURL(/\/(zh-TW|en)\/signup\/?$/);
   });
 
   test("network down → friendly Chinese message (R-3)", async ({ page }) => {
@@ -72,6 +72,20 @@ test.describe("Sign up", () => {
   });
 });
 
+test.describe("Login scene — reference parity", () => {
+  test("/ renders skyline parallax + login citizens + avatar strip", async ({ page }) => {
+    await mockApi(page, {
+      "GET  /api/v1/auth/me": (r) => json(r, 200, fixtures.user),
+    });
+    await page.goto("/");
+    await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
+    await expect(page.getByTestId("login-scene")).toBeVisible();
+    await expect(page.getByTestId("skyline-layer")).toHaveCount(3);
+    await expect(page.getByTestId("login-citizens")).toBeAttached();
+    await expect(page.getByTestId("avatar-strip")).toBeVisible();
+  });
+});
+
 test.describe("Sign in", () => {
   test("happy path → /town", async ({ page }) => {
     await mockApi(page, {
@@ -93,7 +107,7 @@ test.describe("Sign in", () => {
     await page.getByTestId("signin-password").fill("Smoketest123");
     await page.getByTestId("signin-submit").click();
 
-    await expect(page).toHaveURL(/\/town$/, { timeout: 5000 });
+    await expect(page).toHaveURL(/\/(zh-TW|en)\/town\/?$/, { timeout: 5000 });
   });
 
   test("401 invalid credentials → error banner, URL stays", async ({ page }) => {
@@ -112,6 +126,6 @@ test.describe("Sign in", () => {
     await page.getByTestId("signin-submit").click();
 
     await expect(page.getByTestId("signin-error")).toContainText("帳號或密碼");
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL(/\/(zh-TW|en)\/?$/);
   });
 });

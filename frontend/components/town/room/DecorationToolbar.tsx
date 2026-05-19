@@ -94,6 +94,7 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
         </span>
         <button
           type="button"
+          data-testid="decoration-edit-toggle"
           onClick={onToggle}
           className="pixel-btn"
           style={{ padding: "4px 10px", fontSize: 10 }}

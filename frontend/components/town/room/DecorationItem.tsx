@@ -125,6 +125,8 @@ export function DecorationItem({
         lineHeight: 1,
       }}
       aria-label={editable ? t("dragAria") : t("iconAria")}
+      data-testid="decoration-item"
+      data-editable={editable || undefined}
       role={editable ? "button" : "img"}
     >
       <span>{icon}</span>

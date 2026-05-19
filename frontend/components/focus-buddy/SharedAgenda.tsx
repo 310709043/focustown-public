@@ -160,6 +160,8 @@ export function SharedAgenda({ matchId }: SharedAgendaProps) {
         return (
           <div
             key={it.id}
+            data-agenda-item={it.id}
+            data-status={it.status}
             style={{
               display: "flex",
               alignItems: "center",

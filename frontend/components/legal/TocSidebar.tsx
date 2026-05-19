@@ -17,26 +17,43 @@ type Props = {
 export function TocSidebar({ items, related }: Props) {
   const t = useTranslations("common.legal");
   return (
-    <aside className="hidden md:block sticky top-6 self-start w-64 shrink-0">
-      <div className="bg-card border border-border rounded-lg p-5">
+    <aside
+      data-testid="toc-sidebar"
+      className="hidden md:block sticky top-6 self-start w-64 shrink-0"
+    >
+      <div
+        className="pixel-panel"
+        style={{
+          padding: 18,
+          display: "flex",
+          flexDirection: "column",
+          gap: 14,
+        }}
+      >
         <div
-          className="font-pixel tracking-widest text-accent-2 mb-4"
+          className="font-silkscreen"
           style={{
             fontSize: "var(--font-size-caption)",
-            lineHeight: 1.3,
+            color: "var(--accent-2)",
+            letterSpacing: "0.2em",
+            textShadow: "var(--neon-glow-pink)",
           }}
         >
-          {t("toc")}
+          ● {t("toc")}
         </div>
-        <nav className="flex flex-col gap-2">
+        <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {items.map((it) => (
             <a
               key={it.id}
+              data-toc-entry={it.id}
               href={`#${it.id}`}
-              className="text-muted hover:text-accent-2 transition-colors"
+              className="font-silkscreen"
               style={{
                 fontSize: "var(--font-size-label)",
+                color: "var(--ink-mute)",
                 lineHeight: 1.45,
+                letterSpacing: "0.05em",
+                textDecoration: "none",
               }}
             >
               {it.title}
@@ -46,26 +63,28 @@ export function TocSidebar({ items, related }: Props) {
         {related?.length ? (
           <>
             <div
-              className="font-pixel tracking-widest text-accent-2 mt-6 mb-4"
+              className="font-silkscreen"
               style={{
                 fontSize: "var(--font-size-caption)",
-                lineHeight: 1.3,
+                color: "var(--accent-2)",
+                letterSpacing: "0.2em",
               }}
             >
-              {t("related")}
+              ● {t("related")}
             </div>
-            <nav className="flex flex-col gap-2">
+            <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {related.map((r) => (
                 <Link
                   key={r.href}
                   href={r.href as never}
-                  className={
-                    r.active
-                      ? "text-accent-1"
-                      : "text-muted hover:text-accent-2"
-                  }
+                  className="font-silkscreen"
+                  data-toc-related={r.href}
                   style={{
                     fontSize: "var(--font-size-label)",
+                    color: r.active ? "var(--accent)" : "var(--ink-mute)",
+                    textShadow: r.active ? "var(--neon-glow)" : "none",
+                    letterSpacing: "0.05em",
+                    textDecoration: "none",
                     lineHeight: 1.45,
                   }}
                 >

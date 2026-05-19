@@ -47,6 +47,7 @@ export function LeaderboardSection({ leaders }: { leaders: LeaderboardEntry[] })
           {leaders.map((l, i) => (
             <li
               key={l.user_id}
+              data-testid="leaderboard-entry"
               style={{
                 display: "flex",
                 alignItems: "center",

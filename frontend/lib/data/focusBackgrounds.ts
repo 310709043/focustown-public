@@ -1,72 +1,79 @@
 /**
- * Six ambient backgrounds for the solo focus room. Each entry pairs a
- * gradient with a canvas/CSS effect rendered by
- * `components/focus/ambient/AmbientBackdrop.tsx`. Reference seeds the
- * solo room with `rain` (see `reference/screen-focus.jsx`).
+ * Six sky-themed ambient backdrops for the solo focus room.
+ *
+ * Aligned with the reference's `BG_OPTIONS` (reference/screen-focus.jsx) — a
+ * platform-driven cycle moves through these in order with a 25 s crossfade.
+ * No user-facing picker; the only override is the E2E test-mode lock via
+ * `localStorage.focustown.ambient.lock`.
  */
 
 export type FocusBgId =
-  | "cafe"
-  | "rain"
-  | "forest"
-  | "space"
-  | "lofi"
-  | "fire";
+  | "day"
+  | "dawn"
+  | "dusk_warm"
+  | "dusk_cool"
+  | "night"
+  | "synth";
 
 export interface FocusBgOption {
   readonly id: FocusBgId;
   readonly emoji: string;
-  /** Full-bleed background gradient applied to the scene root. */
-  readonly gradient: string;
-  readonly labels: { readonly "zh-TW": string; readonly en: string };
+  /** i18n key under the `focus.solo.ambient.labels` namespace. */
+  readonly labelKey: FocusBgId;
+  /** Full-bleed sky gradient applied to the matching `BackdropLayer`. */
+  readonly skyGradient: string;
 }
 
 export const FOCUS_BG_OPTIONS: readonly FocusBgOption[] = [
   {
-    id: "cafe",
-    emoji: "☕",
-    gradient:
-      "linear-gradient(180deg, #3a2820 0%, #5a3a2a 60%, #7c4a2a 100%)",
-    labels: { "zh-TW": "咖啡館", en: "Cafe" },
+    id: "day",
+    emoji: "☀",
+    labelKey: "day",
+    skyGradient:
+      "linear-gradient(180deg,#0c4a6e 0%,#0ea5e9 35%,#7dd3fc 65%,#e0f2fe 100%)",
   },
   {
-    id: "rain",
-    emoji: "☂",
-    gradient:
-      "linear-gradient(180deg, #03061a 0%, #0a1845 60%, #1a2a6a 100%)",
-    labels: { "zh-TW": "雨夜", en: "Rain" },
+    id: "dawn",
+    emoji: "🌅",
+    labelKey: "dawn",
+    skyGradient:
+      "linear-gradient(180deg,#0d0428 0%,#4c1d95 25%,#9d174d 50%,#ea580c 75%,#fcd34d 100%)",
   },
   {
-    id: "forest",
-    emoji: "🌲",
-    gradient:
-      "linear-gradient(180deg, #0d2818 0%, #1f4a32 60%, #2d6e48 100%)",
-    labels: { "zh-TW": "森林", en: "Forest" },
+    id: "dusk_warm",
+    emoji: "🌇",
+    labelKey: "dusk_warm",
+    skyGradient:
+      "linear-gradient(180deg,#1e1040 0%,#7c2d12 30%,#c2410c 55%,#f97316 75%,#fcd34d 100%)",
   },
   {
-    id: "space",
+    id: "dusk_cool",
+    emoji: "🌆",
+    labelKey: "dusk_cool",
+    skyGradient:
+      "linear-gradient(180deg,#1a0d3d 0%,#2a1854 60%,#6e3a6e 100%)",
+  },
+  {
+    id: "night",
+    emoji: "🌙",
+    labelKey: "night",
+    skyGradient:
+      "linear-gradient(180deg,#020109 0%,#06011a 25%,#0c0330 50%,#160845 70%,#0d1040 100%)",
+  },
+  {
+    id: "synth",
     emoji: "🌌",
-    gradient:
-      "linear-gradient(180deg, #02020a 0%, #0a0524 60%, #2a1854 100%)",
-    labels: { "zh-TW": "太空", en: "Space" },
-  },
-  {
-    id: "lofi",
-    emoji: "☁",
-    gradient:
-      "linear-gradient(180deg, #1a0d3d 0%, #2a1854 60%, #6e3a6e 100%)",
-    labels: { "zh-TW": "lofi 房", en: "lofi room" },
-  },
-  {
-    id: "fire",
-    emoji: "🔥",
-    gradient:
-      "linear-gradient(180deg, #2a0d0a 0%, #5a2a1a 60%, #8a3a1a 100%)",
-    labels: { "zh-TW": "火爐", en: "Fireplace" },
+    labelKey: "synth",
+    skyGradient:
+      "linear-gradient(180deg,#0a0524 0%,#3b1a6e 50%,#ec4899 100%)",
   },
 ];
 
-/** Resolve an option by id; never returns null (clamps to `rain` default). */
 export function findFocusBg(id: FocusBgId): FocusBgOption {
-  return FOCUS_BG_OPTIONS.find((o) => o.id === id) ?? FOCUS_BG_OPTIONS[1];
+  return FOCUS_BG_OPTIONS.find((o) => o.id === id) ?? FOCUS_BG_OPTIONS[0];
+}
+
+export function focusBgIndex(id: FocusBgId): number {
+  const i = FOCUS_BG_OPTIONS.findIndex((o) => o.id === id);
+  return i < 0 ? 0 : i;
 }

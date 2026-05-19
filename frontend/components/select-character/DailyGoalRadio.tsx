@@ -17,12 +17,18 @@ interface DailyGoalRadioProps {
 export function DailyGoalRadio({ value, onChange }: DailyGoalRadioProps) {
   const t = useTranslations("characters.selectPage");
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+    <div
+      data-testid="daily-goal-radio"
+      role="radiogroup"
+      style={{ display: "flex", flexDirection: "column", gap: 4 }}
+    >
       <div style={{ display: "flex", gap: 6 }}>
         {DAILY_GOALS.map((n) => (
           <button
             key={n}
             type="button"
+            role="radio"
+            aria-checked={value === n}
             data-testid={`daily-goal-${n}`}
             data-active={value === n || undefined}
             onClick={() => onChange(n)}

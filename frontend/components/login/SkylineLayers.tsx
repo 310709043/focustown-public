@@ -72,6 +72,7 @@ export function SkylineLayers({ direction = "neon" }: SkylineLayersProps) {
       <canvas
         ref={farthestRef}
         aria-hidden
+        data-testid="skyline-layer"
         className="pointer-events-none"
         style={{
           position: "absolute",
@@ -87,6 +88,7 @@ export function SkylineLayers({ direction = "neon" }: SkylineLayersProps) {
       <canvas
         ref={farRef}
         aria-hidden
+        data-testid="skyline-layer"
         className="pointer-events-none"
         style={{
           position: "absolute",
@@ -102,6 +104,7 @@ export function SkylineLayers({ direction = "neon" }: SkylineLayersProps) {
       <canvas
         ref={nearRef}
         aria-hidden
+        data-testid="skyline-layer"
         className="pointer-events-none"
         style={{
           position: "absolute",

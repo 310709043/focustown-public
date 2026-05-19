@@ -57,7 +57,25 @@
       "subtitle": "SOLO ROOM",
       "guestName": "Guest",
       "statusLine": "{minutes} min streak",
-      "focusingLine": "Focusing · {minutes} min streak"
+      "focusingLine": "Focusing · {minutes} min streak",
+      "autoLabel": "AUTO",
+      "fadingFrom": "fading from {label}…"
+    },
+    "ambient": {
+      "labels": {
+        "day": "Bright Day",
+        "dawn": "Pink Dawn",
+        "dusk_warm": "Warm Dusk",
+        "dusk_cool": "Violet Dusk",
+        "night": "Moonlit Night",
+        "synth": "Synth Sky"
+      }
+    },
+    "nextEnv": {
+      "header": "NEXT ENVIRONMENT",
+      "autoTuned": "auto-tuned",
+      "switching": "switching · {pct}%",
+      "inAbout": "~60 min from now"
     },
     "bigTimer": {
       "headerFocus": "DEEP FOCUS",

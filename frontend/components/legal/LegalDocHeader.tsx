@@ -10,35 +10,51 @@ type Props = {
 export async function LegalDocHeader({ title, subtitle, effectiveDate, version }: Props) {
   const t = await getTranslations("common.legal");
   return (
-    <header className="mb-10 pb-6 border-b border-border">
+    <header
+      data-testid="legal-doc-header"
+      style={{
+        marginBottom: 40,
+        paddingBottom: 24,
+        borderBottom: "1px solid var(--panel-stroke)",
+      }}
+    >
       <h1
-        className="font-pixel tracking-wider mb-3"
+        className="font-silkscreen"
         style={{
           fontSize: "var(--font-size-page-title)",
           lineHeight: "var(--line-height-tight)",
-          color: "var(--a2)",
-          textShadow: "0 0 14px var(--a1)",
+          color: "var(--accent-2)",
+          textShadow: "var(--neon-glow-pink)",
+          letterSpacing: "0.12em",
+          margin: 0,
+          marginBottom: 12,
         }}
       >
         ✦ {title} ✦
       </h1>
       {subtitle ? (
         <p
-          className="text-muted"
           style={{
             fontSize: "var(--font-size-body)",
             lineHeight: "var(--line-height-body)",
+            color: "var(--ink-mute)",
+            margin: 0,
           }}
         >
           {subtitle}
         </p>
       ) : null}
       <div
-        className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-muted"
+        className="font-silkscreen"
         style={{
+          marginTop: 16,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "4px 16px",
           fontSize: "var(--font-size-caption)",
-          letterSpacing: 0.4,
+          letterSpacing: "0.1em",
           lineHeight: 1.5,
+          color: "var(--ink-dim)",
         }}
       >
         <span>{t("effectiveDate", { date: effectiveDate })}</span>

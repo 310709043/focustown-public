@@ -44,6 +44,7 @@ export function AwardsTopBar() {
       </div>
       <button
         type="button"
+        data-testid="awards-close"
         className="pixel-btn"
         style={{ fontSize: 10, padding: "6px 12px" }}
         onClick={() => router.push("/town")}

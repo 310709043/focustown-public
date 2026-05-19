@@ -57,7 +57,25 @@
       "subtitle": "SOLO ROOM",
       "guestName": "訪客",
       "statusLine": "連續 {minutes} 分鐘",
-      "focusingLine": "專注中 · 連續 {minutes} min"
+      "focusingLine": "專注中 · 連續 {minutes} min",
+      "autoLabel": "AUTO",
+      "fadingFrom": "fading from {label}…"
+    },
+    "ambient": {
+      "labels": {
+        "day": "晴朗白晝",
+        "dawn": "黎明粉霞",
+        "dusk_warm": "黃昏暖陽",
+        "dusk_cool": "紫色黃昏",
+        "night": "深夜月光",
+        "synth": "霓虹合成"
+      }
+    },
+    "nextEnv": {
+      "header": "接下來的環境",
+      "autoTuned": "由平台自動調整",
+      "switching": "正在切換 · {pct}%",
+      "inAbout": "約 60 分鐘後"
     },
     "bigTimer": {
       "headerFocus": "DEEP FOCUS",

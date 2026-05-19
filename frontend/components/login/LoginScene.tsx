@@ -79,6 +79,7 @@ export function LoginScene({
 
   return (
     <main
+      data-testid="login-scene"
       className="absolute inset-0 overflow-auto"
       style={{
         background:
@@ -200,6 +201,7 @@ export function LoginScene({
             <Tagline />
             {showAvatarStrip ? (
               <div
+                data-testid="avatar-strip"
                 style={{
                   display: "flex",
                   flexDirection: "column",

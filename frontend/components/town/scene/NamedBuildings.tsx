@@ -72,6 +72,7 @@ export function NamedBuildings({ showLabels = true }: NamedBuildingsProps = {}) 
         {BUILDINGS.map((b, i) => (
           <div
             key={b.key}
+            data-building={b.key}
             className="relative flex flex-col items-center"
             style={{ gap: 4 }}
           >

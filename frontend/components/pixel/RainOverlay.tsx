@@ -94,6 +94,7 @@ export function RainOverlay({
     <canvas
       ref={canvasRef}
       aria-hidden
+      data-overlay="rain"
       className={className}
       style={{
         position: "absolute",

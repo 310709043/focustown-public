@@ -76,14 +76,16 @@ test.describe("Phase 5 — room decoration", () => {
     await page.goto(`/town/room/${ROOM_ID}`);
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
 
-    // Item starts at (30, 30) as the read-only "裝飾" role.
-    const itemReadOnly = page.getByRole("img", { name: "裝飾" });
+    // Item starts at (30, 30) — use the testid to dodge locale drift.
+    const itemReadOnly = page.getByTestId("decoration-item");
     await expect(itemReadOnly).toBeVisible({ timeout: 5000 });
 
-    // Enter edit mode → item becomes role="button" with the drag aria-label.
-    const editToggle = page.getByRole("button", { name: /(編輯|完成)/ });
+    // Enter edit mode.
+    const editToggle = page.getByTestId("decoration-edit-toggle");
     await editToggle.click();
-    const draggable = page.getByRole("button", { name: "拖動以重新擺放" });
+    const draggable = page.locator(
+      '[data-testid="decoration-item"][data-editable="true"]',
+    );
     await expect(draggable).toBeVisible({ timeout: 5000 });
 
     // Find the canvas (the item's parent) so we can compute relative
@@ -127,7 +129,7 @@ test.describe("Phase 5 — room decoration", () => {
     // Reload → GET returns the moved item; canvas re-renders it.
     await page.reload();
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    const itemReloaded = page.getByRole("img", { name: "裝飾" });
+    const itemReloaded = page.getByTestId("decoration-item");
     await expect(itemReloaded).toBeVisible({ timeout: 5000 });
     const reloadedXY = await itemReloaded.evaluate((el) => {
       const style = (el as HTMLElement).style;

@@ -56,6 +56,7 @@ export function AchievementsSection({
           {achievements.map((a) => (
             <div
               key={a.code}
+              data-testid="achievement-card"
               className="pixel-panel"
               style={{
                 padding: "9px 11px",

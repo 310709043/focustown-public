@@ -132,6 +132,7 @@ export function TrackList({
             <li
               key={track.id}
               data-testid="track-row"
+              data-track-id={track.id}
               data-playing={isPlaying || undefined}
               className="pixel-panel"
               style={{
@@ -190,6 +191,7 @@ export function TrackList({
               {canCurateRoom && (
                 <button
                   type="button"
+                  data-testid="track-room-toggle"
                   onClick={() => handleTogglePlaylist(track.id)}
                   disabled={playlistBusyId === track.id}
                   data-in-room={isInRoom || undefined}

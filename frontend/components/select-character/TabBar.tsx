@@ -21,17 +21,17 @@ interface TabBarProps {
 export function TabBar({ active, onChange, interestsCount, skillsCount }: TabBarProps) {
   const t = useTranslations("characters.selectPage");
   return (
-    <div style={{ display: "flex", gap: 4 }}>
-      <TabButton active={active === "role"} onClick={() => onChange("role")}>
+    <div data-testid="tab-bar" style={{ display: "flex", gap: 4 }}>
+      <TabButton tabId="role" active={active === "role"} onClick={() => onChange("role")}>
         {t("role")}
       </TabButton>
-      <TabButton active={active === "interests"} onClick={() => onChange("interests")}>
+      <TabButton tabId="interests" active={active === "interests"} onClick={() => onChange("interests")}>
         {t("interests")} <Badge>{interestsCount}</Badge>
       </TabButton>
-      <TabButton active={active === "skills"} onClick={() => onChange("skills")}>
+      <TabButton tabId="skills" active={active === "skills"} onClick={() => onChange("skills")}>
         {t("skills")} <Badge>{skillsCount}</Badge>
       </TabButton>
-      <TabButton active={active === "all"} onClick={() => onChange("all")}>
+      <TabButton tabId="all" active={active === "all"} onClick={() => onChange("all")}>
         ALL
       </TabButton>
     </div>
@@ -42,16 +42,20 @@ function TabButton({
   children,
   active,
   onClick,
+  tabId,
 }: {
   children: ReactNode;
   active: boolean;
   onClick: () => void;
+  tabId: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       data-active={active || undefined}
+      data-tab={tabId}
+      data-testid={`tab-${tabId}`}
       className="font-silkscreen"
       style={{
         padding: "6px 12px",

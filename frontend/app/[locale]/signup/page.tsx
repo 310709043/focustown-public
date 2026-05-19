@@ -162,6 +162,7 @@ export default function SignUpPage() {
           }}
         >
           <PixelCheckbox
+            testId="signup-terms"
             checked={form.termsAccepted}
             onClick={() => update("termsAccepted", !form.termsAccepted)}
           />
@@ -299,12 +300,15 @@ function ErrorLine({ children }: { children: React.ReactNode }) {
 function PixelCheckbox({
   checked,
   onClick,
+  testId,
 }: {
   checked: boolean;
   onClick: () => void;
+  testId?: string;
 }) {
   return (
     <span
+      data-testid={testId}
       role="checkbox"
       aria-checked={checked}
       tabIndex={0}

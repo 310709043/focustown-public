@@ -29,6 +29,7 @@ export function SummaryFooter({
   const t = useTranslations("characters.selectPage");
   return (
     <div
+      data-testid="summary-footer"
       style={{
         display: "flex",
         justifyContent: "space-between",

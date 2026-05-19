@@ -20,6 +20,8 @@ export function AvatarCell({ avatar, selected, onSelect }: AvatarCellProps) {
       type="button"
       onClick={onSelect}
       title={avatar.name}
+      data-testid="avatar-cell"
+      data-avatar-id={avatar.id}
       data-selected={selected || undefined}
       className="font-silkscreen"
       style={{

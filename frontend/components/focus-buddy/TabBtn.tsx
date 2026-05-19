@@ -6,6 +6,8 @@ interface TabBtnProps {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
+  /** Forwarded to `data-tab` for E2E selectors. */
+  tabId?: string;
 }
 
 /**
@@ -15,12 +17,13 @@ interface TabBtnProps {
  *
  * Reference: screen-buddy.jsx:L303-L314.
  */
-export function TabBtn({ active, onClick, children }: TabBtnProps) {
+export function TabBtn({ active, onClick, children, tabId }: TabBtnProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       data-active={active || undefined}
+      data-tab={tabId}
       className="font-silkscreen"
       style={{
         padding: "5px 12px",
