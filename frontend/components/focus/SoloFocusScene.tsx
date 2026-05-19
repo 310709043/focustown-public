@@ -5,32 +5,37 @@ import { useState } from "react";
 import { AmbientBackdrop } from "@/components/focus/ambient/AmbientBackdrop";
 import { BigTimer } from "@/components/focus/BigTimer";
 import { FocusTopBar } from "@/components/focus/FocusTopBar";
-import { QuickActions } from "@/components/focus/QuickActions";
-import { SessionInsight } from "@/components/focus/SessionInsight";
 import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
-import { SoundMixer, type MixerVolumes } from "@/components/focus/SoundMixer";
 import { TasksPanel } from "@/components/focus/TasksPanel";
+import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
 import { findFocusBg, type FocusBgId } from "@/lib/data/focusBackgrounds";
 
-const INITIAL_MIX: MixerVolumes = { music: 40, rain: 60, cafe: 30, fire: 0 };
-
 /**
- * Reference solo-room shell. Renders the gradient background + ambient
- * canvas overlay, the top bar, and the 3-column grid (1.05fr / 1.3fr /
- * 0.95fr) that hosts every solo panel. State that only matters to this
- * scene (current ambient bg, mixer volumes) lives here so the page-level
- * wrapper stays thin.
+ * Solo focus room — 2-column layout (goal round 4).
  *
- * QA round 1: dropped `<FriendsNow />` (soloing should feel solo —
- * seeing other people focusing is a distraction during deep work) and
- * `<AmbientPanel />` (the scene picker had no functional purpose since
- * the background already animates per-scene). Background is fixed to
- * the initial `rain` scene; it can be reintroduced later as a top-bar
- * dropdown if telemetry shows people want it back.
+ *   LEFT (fixed-ish, 320 px): TasksPanel (today's goal absorbed) +
+ *                              BigTimer.
+ *   RIGHT (1fr, grows to viewport edge):
+ *                              SoloNotesPanel (flex:1, fills height) +
+ *                              FloatingMusicPlayer in bottom-right corner
+ *                              (user-hideable; collapses to a 44×44 chip).
+ *
+ * Dropped from earlier iterations:
+ *   • `SessionInsight` — merged into TasksPanel.
+ *   • `SoundMixer` — deleted entirely (no real audio fan-out behind it).
+ *   • `QuickActions` — out of the new layout.
+ *   • `FriendsNow`, `AmbientPanel` — already removed in round 1.
+ *
+ * Music is now owned by the global `useAudioStore` + `<GlobalAudioMount>`
+ * in the locale layout; this scene only renders the visual player.
+ * Navigating between /town and /focus/[id] never restarts playback.
  */
 export function SoloFocusScene() {
+  // Background scene is fixed to "rain" — the AmbientPanel picker that
+  // would let users change it was rejected as having no purpose; we'll
+  // revisit ambient backdrops as a top-bar dropdown if telemetry shows
+  // it back.
   const [bg] = useState<FocusBgId>("rain");
-  const [volumes, setVolumes] = useState<MixerVolumes>(INITIAL_MIX);
   const bgOption = findFocusBg(bg);
 
   return (
@@ -47,6 +52,9 @@ export function SoloFocusScene() {
         transition: "background 0.6s ease",
       }}
     >
+      {/* Ambient backdrop sticks to the viewport; the scrolling main
+          slides over it. `position: fixed` keeps it from scrolling away
+          when the right column overflows on shorter viewports. */}
       <div
         aria-hidden
         style={{
@@ -68,26 +76,38 @@ export function SoloFocusScene() {
           flex: 1,
           minHeight: 0,
           display: "grid",
-          gridTemplateColumns: "1.05fr 1.3fr 0.95fr",
+          gridTemplateColumns: "minmax(280px, 340px) 1fr",
           gap: 12,
           padding: 12,
           position: "relative",
           zIndex: 2,
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
-          <BigTimer partnerId={null} />
-          <SessionInsight />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-          <SoloNotesPanel />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
+        {/* LEFT column — tasks (today's goal merged) above the big timer */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            minWidth: 0,
+          }}
+        >
           <TasksPanel />
-          <SoundMixer volumes={volumes} onChange={setVolumes} />
-          <QuickActions />
+          <BigTimer partnerId={null} />
+        </div>
+
+        {/* RIGHT column — notes fill the height; floating player anchors
+            absolutely in the bottom-right of THIS positioned wrapper. */}
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+          }}
+        >
+          <SoloNotesPanel />
+          <FloatingMusicPlayer />
         </div>
       </div>
     </main>

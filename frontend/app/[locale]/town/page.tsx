@@ -29,9 +29,7 @@ import { SCENES } from "@/lib/data/scenes";
 // `Billboard` / `VenueCards` / `WeatherBadge` / `TownClock` set with
 // the named 9-building cityscape, pixel celestial sprite, FOCUS
 // BROADCAST sky window, and 3-cluster top HUD respectively.
-// NamedBuildings hidden per QA round 1; import kept lazy via unused
-// for future re-enable. eslint-disable-next-line @typescript-eslint/no-unused-vars
-// import { NamedBuildings } from "@/components/town/scene/NamedBuildings";
+import { NamedBuildings } from "@/components/town/scene/NamedBuildings";
 import { CelestialBody } from "@/components/town/scene/CelestialBody";
 import { SkyWindow } from "@/components/town/scene/SkyWindow";
 import { TownTopHUD, type TownModalKind } from "@/components/town/scene/TownTopHUD";
@@ -244,10 +242,11 @@ export default function TownPage() {
             which renders presence-driven users. */}
         <NamedBirds />
 
-        {/* Named buildings hidden per QA round 1 (update_04) — people
-            and tags were not landing right; revisit in a future round
-            once the cityscape design is reworked.
-            <NamedBuildings /> */}
+        {/* 9 named pixel buildings, silent silhouettes — QA round 1
+            rejected the floating accent-color labels above each, so
+            we render the skyline without `BuildingTag`. Weather +
+            time-of-day tints + night radial halo all preserved. */}
+        <NamedBuildings showLabels={false} />
 
         {/* sidewalk props (lamps/trees/bench/cat) sit under moving crowd */}
         <StreetProps />

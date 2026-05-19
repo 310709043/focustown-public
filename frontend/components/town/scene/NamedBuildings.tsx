@@ -37,14 +37,22 @@ const TIME_TINT: Record<SceneName, string> = {
 
 const NIGHTY: readonly SceneName[] = ["night", "midnight", "storm"];
 
+interface NamedBuildingsProps {
+  /** When false, the floating `BuildingTag` labels are skipped — useful
+   *  on /town where QA preferred a clean cityscape silhouette without
+   *  the accent-colored name pills competing with the NPC tags below. */
+  showLabels?: boolean;
+}
+
 /**
  * Foreground cityscape — 9 named pixel buildings (CAFE PIXEL →
- * INK STORE), each with a floating `BuildingTag`, weather + time-of-day
- * tint overlays, and a radial halo at night. Replaces the geometric
- * `Buildings.tsx` for the duration of this visual port; the old
- * component remains importable for any pages that still depend on it.
+ * INK STORE), each with optional floating `BuildingTag`, weather +
+ * time-of-day tint overlays, and a radial halo at night. Replaces the
+ * geometric `Buildings.tsx` for the duration of this visual port; the
+ * old component remains importable for any pages that still depend on
+ * it.
  */
-export function NamedBuildings() {
+export function NamedBuildings({ showLabels = true }: NamedBuildingsProps = {}) {
   const scene = useSceneStore((s) => s.current);
   const t = useTranslations("town");
   const weatherTint = WEATHER_TINT[scene];
@@ -67,7 +75,7 @@ export function NamedBuildings() {
             className="relative flex flex-col items-center"
             style={{ gap: 4 }}
           >
-            <BuildingTag label={t(b.labelKey)} idx={i} />
+            {showLabels ? <BuildingTag label={t(b.labelKey)} idx={i} /> : null}
             <div style={{ position: "relative" }}>
               <PixelSprite
                 sprite={b.sprite}

@@ -16,12 +16,38 @@ const SEED: ReadonlyArray<Task> = [
   { id: "t4", label: "10 分鐘伸展", done: false },
 ];
 
+// Today's goal is hardcoded for this round — the editable/persisted
+// variant is a separate workstream. Reusing the existing
+// `focus.solo.sessionInsight.*` translation keys avoids new JSON churn.
+const DEFAULT_GOAL = 4;
+const DEFAULT_COMPLETED = 3;
+
+interface TasksPanelProps {
+  /** Optional override for the daily 🍅 goal pill. Defaults to 4. */
+  goal?: number;
+  /** Optional override for completed-pomodoros count. Defaults to 3. */
+  completed?: number;
+}
+
 /**
- * Solo-room local todo list. Local state only — the reference design
- * uses tasks as a per-session worksheet rather than a persistent list.
+ * Solo-room tasks + today's goal in one panel.
+ *
+ * Round-4 merge: absorbs the goal-progress strip that previously lived
+ * in `SessionInsight.tsx`. SRP stays clean — this panel still has one
+ * job ("show what you intend to get done today"), it just covers both
+ * the per-day 🍅 target and the per-session task list under one
+ * pixel-panel.
+ *
+ * Local state only — tasks reset per session, goal is decorative for
+ * now. Persistent goals + backend wiring are tracked as follow-ups so
+ * the shape is in place for a future `useGoalStore`.
  */
-export function TasksPanel() {
+export function TasksPanel({
+  goal = DEFAULT_GOAL,
+  completed = DEFAULT_COMPLETED,
+}: TasksPanelProps = {}) {
   const t = useTranslations("focus.solo.tasksPanel");
+  const tGoal = useTranslations("focus.solo.sessionInsight");
   const [tasks, setTasks] = useState<Task[]>([...SEED]);
   const [draft, setDraft] = useState("");
 
@@ -48,9 +74,110 @@ export function TasksPanel() {
     <div
       data-testid="tasks-panel"
       className="pixel-panel"
-      style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}
+      style={{
+        padding: 12,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {/* Today's goal — segmented progress strip + counter */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span
+            className="font-silkscreen"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 10,
+              color: "var(--ink-mute)",
+              letterSpacing: "0.18em",
+            }}
+          >
+            <span
+              aria-hidden
+              className="animate-blinkSoft"
+              style={{
+                width: 6,
+                height: 6,
+                background: "var(--accent-2)",
+                boxShadow: "var(--neon-glow-pink)",
+              }}
+            />
+            ● {tGoal("goalLabel", { goal })}
+          </span>
+          <span
+            className="font-silkscreen"
+            style={{
+              fontSize: 10,
+              color: "var(--accent)",
+              letterSpacing: "0.15em",
+            }}
+          >
+            {tGoal("progressCounter", { done: completed, goal })}
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          {Array.from({ length: goal }).map((_, i) => {
+            const isDone = i < completed;
+            const isCursor = i === completed;
+            return (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: 12,
+                  border: "1px solid var(--panel-stroke)",
+                  background: isDone ? "var(--accent)" : "rgba(0,0,0,0.4)",
+                  boxShadow: isDone ? "0 0 6px var(--accent)" : "none",
+                  position: "relative",
+                }}
+              >
+                <span
+                  className="font-silkscreen"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 9,
+                    color: isDone ? "#0a0524" : "var(--ink-dim)",
+                  }}
+                >
+                  {isDone ? "✓" : isCursor ? tGoal("hereLabel") : ""}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Divider — dashed line so the goal block reads as its own section */}
+      <div
+        aria-hidden
+        style={{
+          height: 0,
+          borderTop: "1px dashed var(--panel-stroke)",
+          margin: "2px 0",
+        }}
+      />
+
+      {/* Tasks header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <span
           className="font-silkscreen"
           style={{
@@ -81,6 +208,8 @@ export function TasksPanel() {
           {t("doneOf", { done, total: tasks.length })}
         </span>
       </div>
+
+      {/* Task rows */}
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         {tasks.map((task) => (
           <div
@@ -144,6 +273,8 @@ export function TasksPanel() {
           </div>
         ))}
       </div>
+
+      {/* Add-task input */}
       <div style={{ display: "flex", gap: 4 }}>
         <input
           className="pixel-input"

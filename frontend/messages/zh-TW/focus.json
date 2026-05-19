@@ -115,6 +115,19 @@
       "addPlaceholder": "新增任務，按 Enter…",
       "addCta": "新增"
     },
+    "floatingPlayer": {
+      "header": "NOW PLAYING",
+      "trackTitleFallback": "未選擇曲目",
+      "playlistEmpty": "等待播放清單…",
+      "hideAria": "收合播放器",
+      "showAria": "展開播放器",
+      "playAria": "播放",
+      "pauseAria": "暫停",
+      "prevAria": "上一首",
+      "nextAria": "下一首",
+      "volumeAria": "音量",
+      "unlockHint": "點擊聆聽"
+    },
     "ambientPanel": {
       "header": "BACKGROUND",
       "bg": {

@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { NOTE } from "@/lib/pixel/sprites/props";
-import { useRadioPlaylist } from "@/lib/hooks/useRadioPlaylist";
+import {
+  selectCurrentTrack,
+  useAudioStore,
+} from "@/lib/state/audioStore";
 
 import { EQViz } from "./EQViz";
 
@@ -24,19 +27,27 @@ const GENRES: ReadonlyArray<GenreKey> = ["lofi", "classical", "rain", "cafe", "f
  */
 export function MusicPlayer() {
   const t = useTranslations("town.bottom.musicPlayer");
-  const {
-    tracks,
-    index,
-    currentTrack,
-    isPlaying,
-    audioUnlocked,
-    audioRef,
-    toggle,
-    unlock,
-    next,
-    prev,
-    onEnded,
-  } = useRadioPlaylist({ context: "city", contextId: "city" });
+  // Pure controller — every state lives in the global audio store, the
+  // single <audio> element lives in <GlobalAudioMount/> in the locale
+  // layout. We never touch the DOM here.
+  const tracks = useAudioStore((s) => s.tracks);
+  const index = useAudioStore((s) => s.index);
+  const currentTrack = useAudioStore(selectCurrentTrack);
+  const isPlaying = useAudioStore((s) => s.isPlaying);
+  const audioUnlocked = useAudioStore((s) => s.audioUnlocked);
+  const setContext = useAudioStore((s) => s.setContext);
+  const toggle = useAudioStore((s) => s.toggle);
+  const unlock = useAudioStore((s) => s.unlock);
+  const next = useAudioStore((s) => s.next);
+  const prev = useAudioStore((s) => s.prev);
+
+  // Adopt the "city" radio context on mount. Idempotent in the store —
+  // navigating back to /town after visiting /focus keeps the same
+  // playlist (no refetch, no playback restart).
+  useEffect(() => {
+    void setContext("city", "city");
+  }, [setContext]);
+
   const [activeGenre, setActiveGenre] = useState<GenreKey>("lofi");
   const [pos, setPos] = useState(60);
 
@@ -194,13 +205,9 @@ export function MusicPlayer() {
         })}
       </div>
 
-      <audio
-        ref={audioRef}
-        preload="none"
-        onEnded={onEnded}
-        style={{ display: "none" }}
-        aria-hidden
-      />
+      {/* The <audio> element + onEnded handler live in
+          <GlobalAudioMount /> (mounted once in the locale layout). This
+          component is a pure controller — no DOM media node here. */}
     </div>
   );
 }

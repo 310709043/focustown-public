@@ -1,26 +1,29 @@
 "use client";
 
 /**
- * Personal radio — per-user, server-randomized local playlist.
+ * Personal radio — pure UI shell consuming the global audio store.
  *
- * SRP-pure UI shell. All playlist + playback state lives in the shared
- * `useRadioPlaylist` hook (`lib/hooks/useRadioPlaylist.ts`); this
- * component owns the visual chrome (panel, EQ bars, transport buttons,
- * volume slider) plus the hidden `<audio>` element the hook binds to.
+ * SRP: visual chrome only — panel + EQ + transport buttons + volume.
+ * No DOM `<audio>` here; that lives in `<GlobalAudioMount />` (locale
+ * layout). All state flows through `useAudioStore`, which means a
+ * room's PersonalRadio, the town BottomHUD MusicPlayer, and the solo
+ * FloatingMusicPlayer are all surfaces over the same single audio
+ * element. Cross-route navigation never restarts playback.
  *
- * Cross-route reuse:
- *   • `/focus/[id]` — `context="focus"`
- *   • `/town/room/[id]` — `context="room"`
- *   • `/town` (deprecated) — now wrapped by `<MusicPlayer>` which uses
- *     the same hook against `context="city"`
+ * Mounted at:
+ *   • `/town/room/[id]` — context="room"
+ *   • (room scenes for future routes — keep the prop for OCP)
  */
 
 import { clsx } from "clsx";
+import { useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
 
 import type { PersonalPlaylistContext } from "@/lib/api/endpoints";
-import { useRadioPlaylist } from "@/lib/hooks/useRadioPlaylist";
+import {
+  selectCurrentTrack,
+  useAudioStore,
+} from "@/lib/state/audioStore";
 
 interface Props {
   context: PersonalPlaylistContext;
@@ -33,21 +36,22 @@ interface Props {
 
 export function PersonalRadio({ context, contextId, label, className }: Props) {
   const t = useTranslations("town.personalRadio");
-  const {
-    tracks,
-    index,
-    currentTrack,
-    audioUnlocked,
-    isPlaying,
-    volume,
-    audioRef,
-    toggle,
-    unlock,
-    next,
-    prev,
-    setVolume,
-    onEnded,
-  } = useRadioPlaylist({ context, contextId });
+  const tracks = useAudioStore((s) => s.tracks);
+  const index = useAudioStore((s) => s.index);
+  const currentTrack = useAudioStore(selectCurrentTrack);
+  const isPlaying = useAudioStore((s) => s.isPlaying);
+  const audioUnlocked = useAudioStore((s) => s.audioUnlocked);
+  const volume = useAudioStore((s) => s.volume);
+  const setContext = useAudioStore((s) => s.setContext);
+  const toggle = useAudioStore((s) => s.toggle);
+  const unlock = useAudioStore((s) => s.unlock);
+  const next = useAudioStore((s) => s.next);
+  const prev = useAudioStore((s) => s.prev);
+  const setVolume = useAudioStore((s) => s.setVolume);
+
+  useEffect(() => {
+    void setContext(context, contextId ?? null);
+  }, [context, contextId, setContext]);
 
   const headerLabel = useMemo(
     () => label ?? (context === "city" ? t("headerCity") : t("headerPersonal")),
@@ -139,14 +143,6 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
           🔊 點擊聆聽
         </button>
       ) : null}
-
-      <audio
-        ref={audioRef}
-        preload="none"
-        onEnded={onEnded}
-        style={{ display: "none" }}
-        aria-hidden
-      />
     </div>
   );
 }

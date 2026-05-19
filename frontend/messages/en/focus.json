@@ -115,6 +115,19 @@
       "addPlaceholder": "Add a task, press Enter…",
       "addCta": "Add"
     },
+    "floatingPlayer": {
+      "header": "NOW PLAYING",
+      "trackTitleFallback": "No track selected",
+      "playlistEmpty": "Loading playlist…",
+      "hideAria": "Hide music player",
+      "showAria": "Show music player",
+      "playAria": "Play",
+      "pauseAria": "Pause",
+      "prevAria": "Previous track",
+      "nextAria": "Next track",
+      "volumeAria": "Volume",
+      "unlockHint": "Tap to listen"
+    },
     "ambientPanel": {
       "header": "BACKGROUND",
       "bg": {

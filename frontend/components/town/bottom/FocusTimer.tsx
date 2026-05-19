@@ -146,16 +146,10 @@ export function FocusTimer() {
         >
           {starting ? "…" : running ? `⏸ ${t("pauseCta")}` : `▶ ${t("startCta")}`}
         </button>
-        <button
-          type="button"
-          aria-label={t("skipAria")}
-          data-testid="bottom-timer-skip"
-          className="pixel-btn"
-          style={{ padding: "5px 8px", fontSize: 11 }}
-          onClick={() => useTimerStore.setState({ remaining: 0 })}
-        >
-          ⏭
-        </button>
+        {/* Skip / ⏭ button removed in goal-set round — let users cheese
+            their pomodoro streak with a tap was bad UX. Translation
+            keys `skipAria` / `skipCta` stay in JSON until the matching
+            BigTimer skip is also retired. */}
         <span
           aria-hidden
           style={{

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 
+import { GlobalAudioMount } from "@/components/audio/GlobalAudioMount";
 import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { SplashGate } from "@/components/chrome/SplashGate";
 import { Toaster } from "@/components/chrome/Toaster";
@@ -94,6 +95,11 @@ export default async function LocaleLayout({
       <DirectionSync locale={locale} />
       <SplashGate />
       <Toaster />
+      {/* Single global <audio> element + store subscriber. Mounted once
+          here so playback survives page navigation; every UI player
+          surface (MusicPlayer, FloatingMusicPlayer, PersonalRadio) is
+          a pure controller that dispatches to useAudioStore. */}
+      <GlobalAudioMount />
       <div className="fixed top-3 right-3 z-[20] pointer-events-auto">
         <LocaleSwitcher
           className="flex gap-1 bg-glass border border-border rounded px-2 py-1 touch:px-3 touch:py-2 backdrop-blur-md shadow-[0_0_12px_rgba(167,139,250,0.18)]"
