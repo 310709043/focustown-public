@@ -77,16 +77,26 @@
     },
     "feedback": {
       "title": "FEEDBACK",
+      "categoryLabel": "Category",
+      "categoryBug": "Bug report",
+      "categorySuggestion": "Suggestion",
+      "categoryPraise": "Praise",
+      "categoryOther": "Other",
       "subjectLabel": "Subject",
       "subjectPlaceholder": "A quick headline…",
       "bodyLabel": "Your thoughts",
       "bodyPlaceholder": "Tell us what's on your mind, where you got stuck, what you wish we'd build next…",
+      "contactLabel": "Contact email (optional)",
+      "contactPlaceholder": "Leave an email if you want a reply.",
       "emptyError": "Please write something before sending",
+      "rateLimitedError": "Slow down a little — try again in a few minutes.",
+      "submittingCta": "Sending…",
       "submitCta": "Send feedback",
       "cancelCta": "Cancel",
       "doneCta": "Done",
       "successHeading": "Got it — thank you",
-      "successBody": "We read every message. Catch you later!"
+      "successBody": "We read every message. Catch you later!",
+      "failureGeneric": "Could not send right now. Please try again later."
     },
     "support": {
       "title": "SUPPORT",

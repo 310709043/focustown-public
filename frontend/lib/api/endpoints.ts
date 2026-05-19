@@ -126,6 +126,33 @@ export type NoteWithShare = Note & {
   shared_in_match_id?: string | null;
 };
 
+// ── feedback ───────────────────────────────────────────
+export type FeedbackCategory = "bug" | "suggestion" | "praise" | "other";
+
+export interface FeedbackSubmitInput {
+  category: FeedbackCategory;
+  body: string;
+  contact_email?: string | null;
+  locale: string;
+  app_version?: string | null;
+  context?: Record<string, unknown> | null;
+}
+
+export interface FeedbackSubmitResponse {
+  id: string;
+  status: string;
+  created_at: string;
+}
+
+export const feedbackApi = {
+  submit(input: FeedbackSubmitInput) {
+    return apiFetch<FeedbackSubmitResponse>("/api/v1/feedback", {
+      method: "POST",
+      body: input,
+    });
+  },
+};
+
 export const notesApi = {
   list(opts: { matchId?: string } = {}) {
     const qs = opts.matchId
