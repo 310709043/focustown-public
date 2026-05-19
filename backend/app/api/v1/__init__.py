@@ -7,6 +7,7 @@ from app.api.v1.feedback.router import router as feedback_router
 from app.api.v1.friends.router import router as friends_router
 from app.api.v1.items.router import router as items_router
 from app.api.v1.leaderboard.router import router as leaderboard_router
+from app.api.v1.match_realtime.router import router as match_realtime_router
 from app.api.v1.matches.router import router as matches_router
 from app.api.v1.notes.router import router as notes_router
 from app.api.v1.observability.router import router as observability_router
@@ -27,6 +28,9 @@ router.include_router(users_router, prefix="/users", tags=["users"])
 router.include_router(sessions_router, prefix="/sessions", tags=["sessions"])
 router.include_router(notes_router, prefix="/notes", tags=["notes"])
 router.include_router(matches_router, prefix="/matches", tags=["matches"])
+router.include_router(
+    match_realtime_router, prefix="/matches", tags=["match-realtime"]
+)
 router.include_router(leaderboard_router, prefix="/leaderboard", tags=["leaderboard"])
 router.include_router(achievements_router, prefix="/achievements", tags=["achievements"])
 router.include_router(shop_router, prefix="/shop", tags=["shop"])

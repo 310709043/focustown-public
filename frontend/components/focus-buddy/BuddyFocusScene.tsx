@@ -110,7 +110,7 @@ export function BuddyFocusScene({
               task: "寫小說第七章",
             }}
           />
-          <SharedAgenda />
+          <SharedAgenda matchId={matchId} />
           <RoomMusic />
         </div>
 

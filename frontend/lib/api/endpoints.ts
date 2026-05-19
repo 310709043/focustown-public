@@ -162,6 +162,89 @@ const walletWriteApi = {
   },
 };
 
+// ── match chat + agenda (buddy realtime) ───────────────
+export interface MatchChatMessage {
+  id: string;
+  match_id: string;
+  sender_id: string;
+  kind: "text" | "note_share" | "system";
+  body: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface MatchAgendaItem {
+  id: string;
+  match_id: string;
+  position: number;
+  body: string;
+  status: "pending" | "in_progress" | "done";
+  created_by: string;
+  checked_by: string | null;
+  checked_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const matchChatApi = {
+  list(matchId: string, before?: string, limit = 50) {
+    const qs = new URLSearchParams({ limit: String(limit) });
+    if (before) qs.set("before", before);
+    return apiFetch<{ messages: MatchChatMessage[] }>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/messages?${qs.toString()}`,
+      { method: "GET" },
+    );
+  },
+  send(
+    matchId: string,
+    body: string,
+    opts: { kind?: "text" | "note_share" | "system"; metadata?: Record<string, unknown> } = {},
+  ) {
+    return apiFetch<MatchChatMessage>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/messages`,
+      {
+        method: "POST",
+        body: {
+          kind: opts.kind ?? "text",
+          body,
+          metadata: opts.metadata ?? null,
+        },
+      },
+    );
+  },
+};
+
+export const matchAgendaApi = {
+  list(matchId: string) {
+    return apiFetch<{ items: MatchAgendaItem[] }>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda`,
+      { method: "GET" },
+    );
+  },
+  create(matchId: string, body: string) {
+    return apiFetch<MatchAgendaItem>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda`,
+      { method: "POST", body: { body } },
+    );
+  },
+  update(
+    matchId: string,
+    itemId: string,
+    patch: { body?: string; status?: MatchAgendaItem["status"]; position?: number },
+  ) {
+    return apiFetch<MatchAgendaItem>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda/${encodeURIComponent(itemId)}`,
+      { method: "PATCH", body: patch },
+    );
+  },
+  remove(matchId: string, itemId: string) {
+    return apiFetch<void>(
+      `/api/v1/matches/${encodeURIComponent(matchId)}/agenda/${encodeURIComponent(itemId)}`,
+      { method: "DELETE" },
+    );
+  },
+};
+
 // ── user preferences ───────────────────────────────────
 export type PreferencesBundle = Record<string, unknown>;
 

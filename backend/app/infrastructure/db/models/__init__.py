@@ -4,6 +4,10 @@ from app.infrastructure.db.models.focus_session import FocusSessionORM
 from app.infrastructure.db.models.friendship import FriendshipORM
 from app.infrastructure.db.models.leaderboard_snapshot import LeaderboardSnapshotORM
 from app.infrastructure.db.models.match import MatchORM
+from app.infrastructure.db.models.match_realtime import (
+    MatchAgendaItemORM,
+    MatchMessageORM,
+)
 from app.infrastructure.db.models.note import NoteORM
 from app.infrastructure.db.models.password_reset_token import PasswordResetTokenORM
 from app.infrastructure.db.models.redemption_code import (
@@ -30,6 +34,8 @@ __all__ = [
     "FocusSessionORM",
     "FriendshipORM",
     "LeaderboardSnapshotORM",
+    "MatchAgendaItemORM",
+    "MatchMessageORM",
     "MatchORM",
     "NoteORM",
     "PasswordResetTokenORM",

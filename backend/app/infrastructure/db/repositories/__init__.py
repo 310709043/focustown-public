@@ -17,6 +17,10 @@ from app.infrastructure.db.repositories.friendship_repo import SqlFriendshipRepo
 from app.infrastructure.db.repositories.leaderboard_snapshot_repo import (
     SqlLeaderboardSnapshotRepo,
 )
+from app.infrastructure.db.repositories.match_realtime_repo import (
+    SqlMatchAgendaRepo,
+    SqlMatchMessageRepo,
+)
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 from app.infrastructure.db.repositories.note_repo import SqlNoteRepo
 from app.infrastructure.db.repositories.password_reset_token_repo import (
@@ -49,6 +53,8 @@ __all__ = [
     "SqlFocusSessionRepo",
     "SqlFriendshipRepo",
     "SqlLeaderboardSnapshotRepo",
+    "SqlMatchAgendaRepo",
+    "SqlMatchMessageRepo",
     "SqlMatchRepo",
     "SqlNoteRepo",
     "SqlPasswordResetTokenRepo",
