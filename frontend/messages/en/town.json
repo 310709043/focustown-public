@@ -254,5 +254,12 @@
       "idPrefix": "id:",
       "backLink": "◂ Back to town"
     }
+  },
+  "userProfile": {
+    "backCta": "Back to town",
+    "registry": "Citizen registry",
+    "loadingState": "Tuning signal · stand by",
+    "notFound": "Citizen not found",
+    "notFoundHint": "Double-check the ID, or head back to town."
   }
 }

@@ -37,6 +37,7 @@
     "topUp": {
       "title": "TOP-UP packages",
       "paymentMethods": "TWD · Card · Apple · Google",
+      "paymentLabel": "Payment methods",
       "bonusBadge": "+{amount} bonus",
       "ribbonHot": "HOT",
       "ribbonValue": "BEST VALUE",
@@ -61,7 +62,20 @@
       "filterOutgoing": "Outgoing",
       "filterTopUp": "Top-ups",
       "empty": "No transactions yet",
-      "reasonFallback": "Transaction"
+      "reasonFallback": "Transaction",
+      "reasons": {
+        "session_complete": "Focus session complete",
+        "pomodoro_complete": "Pomodoro complete",
+        "group_focus": "Co-focus session",
+        "streak_bonus": "Login streak reward",
+        "achievement_unlock": "Achievement unlocked",
+        "purchase": "Shop purchase",
+        "top_up": "T-coin top-up",
+        "gift_sent": "Gift sent",
+        "gift_received": "Gift received",
+        "redeem_code": "Redeem code",
+        "feedback_reward": "Feedback reward"
+      }
     },
     "comingSoon": "Coming soon"
   },

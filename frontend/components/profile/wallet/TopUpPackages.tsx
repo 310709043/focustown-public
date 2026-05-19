@@ -207,10 +207,22 @@ export function TopUpPackages() {
         style={{
           display: "flex",
           flexWrap: "wrap",
+          alignItems: "center",
           gap: 6,
           marginTop: 6,
         }}
       >
+        <span
+          className="font-silkscreen"
+          style={{
+            fontSize: 9,
+            letterSpacing: "0.28em",
+            color: "var(--ink-dim)",
+            marginRight: 4,
+          }}
+        >
+          {t("topUp.paymentLabel")} ·
+        </span>
         {PAYMENT_METHODS.map((m) => (
           <button
             key={m}

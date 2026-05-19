@@ -12,19 +12,22 @@ interface TransactionLogProps {
   loading: boolean;
 }
 
-const REASON_LABELS_ZH: Record<string, string> = {
-  session_complete: "完成專注時段",
-  pomodoro_complete: "完成番茄",
-  group_focus: "與他人共同專注",
-  streak_bonus: "連續登入獎勵",
-  achievement_unlock: "解鎖成就",
-  purchase: "購買道具",
-  top_up: "儲值 T 幣",
-  gift_sent: "送出禮物",
-  gift_received: "收到禮物",
-  redeem_code: "兌換碼",
-  feedback_reward: "送出意見反饋",
-};
+// TODO(wallet): once focus_session_sequence is exposed via the
+// wallet transactions API, append "#N" to the description (e.g.
+// "完成 #5 連續番茄") to match profile_supply.jpg.
+const KNOWN_REASONS = new Set([
+  "session_complete",
+  "pomodoro_complete",
+  "group_focus",
+  "streak_bonus",
+  "achievement_unlock",
+  "purchase",
+  "top_up",
+  "gift_sent",
+  "gift_received",
+  "redeem_code",
+  "feedback_reward",
+]);
 
 function fromMinor(amountMinor: number): number {
   return Math.round(amountMinor / 100);
@@ -44,7 +47,13 @@ function isTopUpReason(reason: string | null | undefined): boolean {
 
 export function TransactionLog({ rows, loading }: TransactionLogProps) {
   const t = useTranslations("profile.wallet.tx");
+  const tReasons = useTranslations("profile.wallet.tx.reasons");
   const [filter, setFilter] = useState<Filter>("all");
+
+  const labelForReason = (reason: string | null | undefined): string => {
+    if (reason && KNOWN_REASONS.has(reason)) return tReasons(reason);
+    return reason ? reason.replace(/_/g, " ") : t("reasonFallback");
+  };
 
   const filtered = useMemo(() => {
     return rows.filter((tx) => {
@@ -146,9 +155,7 @@ export function TransactionLog({ rows, loading }: TransactionLogProps) {
                   : tx.delta_minor < 0
                     ? "#f472b6"
                     : "var(--ink-mute)";
-            const reasonLabel = tx.reason
-              ? REASON_LABELS_ZH[tx.reason] ?? tx.reason.replace(/_/g, " ")
-              : t("reasonFallback");
+            const reasonLabel = labelForReason(tx.reason);
             return (
               <li
                 key={tx.id}

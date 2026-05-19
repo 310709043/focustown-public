@@ -37,6 +37,7 @@
     "topUp": {
       "title": "儲值方案 · TOP-UP",
       "paymentMethods": "TWD · 信用卡 · APPLE · GOOGLE",
+      "paymentLabel": "付款方式",
       "bonusBadge": "+{amount} 贈送",
       "ribbonHot": "熱門",
       "ribbonValue": "超值",
@@ -61,7 +62,20 @@
       "filterOutgoing": "支出",
       "filterTopUp": "儲值",
       "empty": "尚無交易紀錄",
-      "reasonFallback": "交易"
+      "reasonFallback": "交易",
+      "reasons": {
+        "session_complete": "完成專注時段",
+        "pomodoro_complete": "完成番茄",
+        "group_focus": "與他人共同專注",
+        "streak_bonus": "連續登入獎勵",
+        "achievement_unlock": "解鎖成就",
+        "purchase": "購買道具",
+        "top_up": "儲值 T 幣",
+        "gift_sent": "送出禮物",
+        "gift_received": "收到禮物",
+        "redeem_code": "兌換碼",
+        "feedback_reward": "送出意見反饋"
+      }
     },
     "comingSoon": "此功能即將上線"
   },

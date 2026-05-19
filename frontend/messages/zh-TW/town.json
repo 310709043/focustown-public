@@ -254,5 +254,12 @@
       "idPrefix": "id:",
       "backLink": "◂ 回街景"
     }
+  },
+  "userProfile": {
+    "backCta": "返回小鎮",
+    "registry": "鎮民名冊",
+    "loadingState": "訊號調頻中…",
+    "notFound": "查無此鎮民",
+    "notFoundHint": "再次確認 ID，或回到小鎮繼續探索。"
   }
 }

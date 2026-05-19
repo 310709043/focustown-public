@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { CitizenIdCard } from "@/components/profile/CitizenIdCard";
 import { MiniClock } from "@/components/chrome/MiniClock";
@@ -31,6 +32,7 @@ export default function CitizenProfilePage() {
   const userId = typeof params?.id === "string" ? params.id : "";
   const viewer = useAuthStore((s) => s.user);
   const hydrate = useAuthStore((s) => s.hydrate);
+  const t = useTranslations("town.userProfile");
   const [profile, setProfile] = useState<PublicUserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,7 +93,7 @@ export default function CitizenProfilePage() {
             style={{ fontSize: 11, padding: "6px 12px" }}
             onClick={() => router.push("/town")}
           >
-            ◀ BACK
+            ◀ {t("backCta")}
           </button>
           <Logo scale={0.9} />
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -103,7 +105,7 @@ export default function CitizenProfilePage() {
                 letterSpacing: "0.28em",
               }}
             >
-              · CITIZEN REGISTRY
+              · {t("registry")}
             </span>
           </div>
         </div>
@@ -134,6 +136,7 @@ export default function CitizenProfilePage() {
 }
 
 function LoadingState() {
+  const t = useTranslations("town.userProfile");
   return (
     <div
       className="pixel-panel font-silkscreen"
@@ -144,12 +147,13 @@ function LoadingState() {
         fontSize: 12,
       }}
     >
-      ◌ TUNING SIGNAL · STAND BY
+      ◌ {t("loadingState")}
     </div>
   );
 }
 
 function ErrorState({ message }: { message: string }) {
+  const t = useTranslations("town.userProfile");
   return (
     <div
       className="pixel-panel font-silkscreen"
@@ -162,7 +166,7 @@ function ErrorState({ message }: { message: string }) {
         maxWidth: 420,
       }}
     >
-      ✦ CITIZEN NOT FOUND
+      ✦ {t("notFound")}
       <div
         style={{
           marginTop: 10,
