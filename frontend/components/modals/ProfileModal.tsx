@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { FriendsView } from "@/components/profile/friends/FriendsView";
 import { NotesView } from "@/components/profile/notes/NotesView";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { StatsView } from "@/components/profile/StatsView";
@@ -30,9 +31,10 @@ interface ProfileModalProps {
 }
 
 /** Profile rail items that already have a dedicated town modal — clicking
- *  them closes this modal and opens the routed one. */
+ *  them closes this modal and opens the routed one. `friends` now stays
+ *  inside the profile modal (renders FriendsView); `notes` and `wallet`
+ *  also stay in-modal. */
 const ROUTED_VIEWS: Partial<Record<ProfileView, TownModalKind>> = {
-  friends: "frds",
   feedback: "feedback",
   support: "support",
 };
@@ -122,6 +124,9 @@ function RightPane({ activeView, onClose, onBackToStats }: RightPaneProps) {
   }
   if (activeView === "notes") {
     return <NotesView onClose={onClose} />;
+  }
+  if (activeView === "friends") {
+    return <FriendsView onClose={onClose} />;
   }
   return <StubView onClose={onClose} onBackToStats={onBackToStats} />;
 }

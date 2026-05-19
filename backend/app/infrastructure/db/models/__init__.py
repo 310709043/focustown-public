@@ -1,6 +1,7 @@
 from app.infrastructure.db.models.achievement import AchievementORM, UserAchievementORM
 from app.infrastructure.db.models.feedback import FeedbackSubmissionORM
 from app.infrastructure.db.models.focus_session import FocusSessionORM
+from app.infrastructure.db.models.friendship import FriendshipORM
 from app.infrastructure.db.models.leaderboard_snapshot import LeaderboardSnapshotORM
 from app.infrastructure.db.models.match import MatchORM
 from app.infrastructure.db.models.note import NoteORM
@@ -26,6 +27,7 @@ __all__ = [
     "AchievementORM",
     "FeedbackSubmissionORM",
     "FocusSessionORM",
+    "FriendshipORM",
     "LeaderboardSnapshotORM",
     "MatchORM",
     "NoteORM",

@@ -162,6 +162,66 @@ const walletWriteApi = {
   },
 };
 
+// ── friends ────────────────────────────────────────────
+export interface FriendSummary {
+  friendship_id: string;
+  user_id: string;
+  display_name: string;
+  character_key: string | null;
+  status: "requested" | "accepted" | "blocked";
+  requested_by_me: boolean;
+  created_at: string;
+  accepted_at: string | null;
+}
+
+export interface FocusingNowItem {
+  user_id: string;
+  display_name: string;
+  character_key: string | null;
+  session_id: string;
+  started_at: string;
+  minutes_planned: number | null;
+}
+
+export const friendsApi = {
+  list(status: "accepted" | "requested" = "accepted") {
+    return apiFetch<{ friends: FriendSummary[] }>(
+      `/api/v1/friends?status=${status}`,
+      { method: "GET" },
+    );
+  },
+  focusingNow() {
+    return apiFetch<{ friends_focusing: FocusingNowItem[] }>(
+      "/api/v1/friends/focusing-now",
+      { method: "GET" },
+    );
+  },
+  request(userId: string) {
+    return apiFetch<FriendSummary>("/api/v1/friends/requests", {
+      method: "POST",
+      body: { user_id: userId },
+    });
+  },
+  accept(friendshipId: string) {
+    return apiFetch<FriendSummary>(
+      `/api/v1/friends/requests/${encodeURIComponent(friendshipId)}/accept`,
+      { method: "POST" },
+    );
+  },
+  reject(friendshipId: string) {
+    return apiFetch<void>(
+      `/api/v1/friends/requests/${encodeURIComponent(friendshipId)}`,
+      { method: "DELETE" },
+    );
+  },
+  unfriend(friendshipId: string) {
+    return apiFetch<void>(
+      `/api/v1/friends/${encodeURIComponent(friendshipId)}`,
+      { method: "DELETE" },
+    );
+  },
+};
+
 // ── feedback ───────────────────────────────────────────
 export type FeedbackCategory = "bug" | "suggestion" | "praise" | "other";
 

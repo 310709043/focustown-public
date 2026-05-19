@@ -16,7 +16,7 @@
     "stats": "Your Stats",
     "wallet": "T-Coin Wallet",
     "notes": "Notes Library",
-    "friends": "Friends",
+    "friends": "Friends list",
     "settings": "Settings",
     "feedback": "Send Feedback",
     "support": "Help Center",
@@ -179,5 +179,29 @@
     "loadError": "Could not load notes. Please try again.",
     "saveError": "Save failed. Please try again.",
     "untitled": "(Untitled)"
+  },
+  "friends": {
+    "title": "Friends",
+    "tabFriends": "Friends",
+    "tabIncoming": "Incoming",
+    "tabOutgoing": "Sent",
+    "emptyFriends": "No friends yet. Invite citizens from the leaderboard or paste an ID below.",
+    "emptyIncoming": "No incoming requests right now.",
+    "emptyOutgoing": "You have no pending invitations.",
+    "addCta": "+ Add friend",
+    "addPlaceholder": "Paste a citizen ID",
+    "addSubmit": "Send invite",
+    "addSubmitting": "Sending…",
+    "addEmptyError": "Please enter a citizen ID first.",
+    "addInvalidError": "Citizen not found — double-check the ID.",
+    "addSelfError": "You can't invite yourself.",
+    "addExistingError": "You're already friends.",
+    "addGenericError": "Could not send the invite. Please try again later.",
+    "actionAccept": "Accept",
+    "actionReject": "Decline",
+    "actionUnfriend": "Unfriend",
+    "unfriendConfirm": "Unfriend this citizen?",
+    "loading": "Loading…",
+    "loadError": "Could not load friends. Please try again."
   }
 }

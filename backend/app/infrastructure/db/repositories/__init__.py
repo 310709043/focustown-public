@@ -13,6 +13,7 @@ Naming convention: a Protocol ``IFooRepo`` in domain maps to a class
 from app.infrastructure.db.repositories.achievement_repo import SqlAchievementRepo
 from app.infrastructure.db.repositories.feedback_repo import SqlFeedbackRepo
 from app.infrastructure.db.repositories.focus_session_repo import SqlFocusSessionRepo
+from app.infrastructure.db.repositories.friendship_repo import SqlFriendshipRepo
 from app.infrastructure.db.repositories.leaderboard_snapshot_repo import (
     SqlLeaderboardSnapshotRepo,
 )
@@ -43,6 +44,7 @@ __all__ = [
     "SqlAchievementRepo",
     "SqlFeedbackRepo",
     "SqlFocusSessionRepo",
+    "SqlFriendshipRepo",
     "SqlLeaderboardSnapshotRepo",
     "SqlMatchRepo",
     "SqlNoteRepo",

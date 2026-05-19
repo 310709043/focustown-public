@@ -16,7 +16,7 @@
     "stats": "我的數據",
     "wallet": "T幣錢包",
     "notes": "筆記庫",
-    "friends": "好友",
+    "friends": "好友名單",
     "settings": "設定",
     "feedback": "意見回饋",
     "support": "客服中心",
@@ -179,5 +179,29 @@
     "loadError": "無法載入筆記，請稍後再試。",
     "saveError": "儲存失敗，請再試一次。",
     "untitled": "（未命名）"
+  },
+  "friends": {
+    "title": "好友名單 · FRIENDS",
+    "tabFriends": "好友",
+    "tabIncoming": "邀請我的",
+    "tabOutgoing": "我發出的",
+    "emptyFriends": "尚未加入好友。可以從排行榜或好友 ID 開始邀請。",
+    "emptyIncoming": "目前沒有人邀請你。",
+    "emptyOutgoing": "你目前沒有送出中的邀請。",
+    "addCta": "+ 邀請好友",
+    "addPlaceholder": "輸入鎮民 ID",
+    "addSubmit": "送出邀請",
+    "addSubmitting": "送出中…",
+    "addEmptyError": "請先輸入鎮民 ID。",
+    "addInvalidError": "找不到這位鎮民，請確認 ID。",
+    "addSelfError": "不能邀請自己。",
+    "addExistingError": "你們已經是好友了。",
+    "addGenericError": "邀請失敗，請稍後再試。",
+    "actionAccept": "接受",
+    "actionReject": "拒絕",
+    "actionUnfriend": "解除好友",
+    "unfriendConfirm": "確定要解除這位好友嗎？",
+    "loading": "載入中…",
+    "loadError": "無法載入好友名單，請稍後再試。"
   }
 }

@@ -4,6 +4,7 @@ from app.api.v1.achievements.router import router as achievements_router
 from app.api.v1.auth.router import router as auth_router
 from app.api.v1.equipment.router import router as equipment_router
 from app.api.v1.feedback.router import router as feedback_router
+from app.api.v1.friends.router import router as friends_router
 from app.api.v1.items.router import router as items_router
 from app.api.v1.leaderboard.router import router as leaderboard_router
 from app.api.v1.matches.router import router as matches_router
@@ -38,4 +39,5 @@ router.include_router(tracks_router, prefix="/tracks", tags=["tracks"])
 router.include_router(playback_router, prefix="/playback", tags=["playback"])
 router.include_router(observability_router, prefix="/observability", tags=["observability"])
 router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
+router.include_router(friends_router, prefix="/friends", tags=["friends"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

@@ -102,6 +102,8 @@
       "header": "FRIENDS NOW",
       "onlineCount": "{count} online",
       "joinCta": "+1",
+      "emptyState": "No friends online yet. Invite a few citizens to start co-focusing.",
+      "loading": "Loading…",
       "tasks": {
         "writing": "writing",
         "coding": "coding",
