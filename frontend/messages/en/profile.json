@@ -180,6 +180,37 @@
     "saveError": "Save failed. Please try again.",
     "untitled": "(Untitled)"
   },
+  "support": {
+    "title": "Help Center",
+    "subtitle": "Browse common questions below. Can't find what you need? Send us feedback any time.",
+    "feedbackCta": "Send feedback →",
+    "faqs": [
+      {
+        "q": "Do T-coins expire?",
+        "a": "T-coins never expire. Whatever you top up or earn freely can be spent at your own pace on items, gifts to friends, or unlocking decorations for your home."
+      },
+      {
+        "q": "Why didn't my focus session show up on the leaderboard?",
+        "a": "Only complete FOCUS pomodoros count. Sessions you pause or cancel are excluded. Finish at least one full session to appear on the daily leaderboard."
+      },
+      {
+        "q": "How do I co-focus with a friend?",
+        "a": "Tap \"Find a partner\" on the town screen for automatic matching, or invite a friend directly from your friends list. Once they accept, you'll be dropped into a shared focus room."
+      },
+      {
+        "q": "Can I change my display name or character?",
+        "a": "Display name and most profile fields are editable from Settings. The character class chosen at sign-up is fixed for now and cannot be reset."
+      },
+      {
+        "q": "My redeem code returned an error — what now?",
+        "a": "First check the code is still active and hasn't been used. If it's still failing, drop your citizen ID and the code into the feedback form and we'll look into it."
+      },
+      {
+        "q": "Will my sound mixer levels sync across devices?",
+        "a": "Yes. The mixer values are saved per citizen, so signing in on any device picks up the same volumes you left."
+      }
+    ]
+  },
   "settings": {
     "title": "Settings",
     "loading": "Loading…",

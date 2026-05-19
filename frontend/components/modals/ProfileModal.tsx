@@ -8,6 +8,7 @@ import { NotesView } from "@/components/profile/notes/NotesView";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { SettingsView } from "@/components/profile/settings/SettingsView";
 import { StatsView } from "@/components/profile/StatsView";
+import { SupportView } from "@/components/profile/support/SupportView";
 import { WalletView } from "@/components/profile/wallet/WalletView";
 import { useUserStats } from "@/lib/hooks/useUserStats";
 import { useAuthStore } from "@/lib/state/authStore";
@@ -37,7 +38,6 @@ interface ProfileModalProps {
  *  also stay in-modal. */
 const ROUTED_VIEWS: Partial<Record<ProfileView, TownModalKind>> = {
   feedback: "feedback",
-  support: "support",
 };
 
 export function ProfileModal({ open, onClose, onRouteToModal }: ProfileModalProps) {
@@ -104,7 +104,15 @@ export function ProfileModal({ open, onClose, onRouteToModal }: ProfileModalProp
           xp={stats.xp}
           xpNextLevel={stats.xpNextLevel}
         />
-        <RightPane activeView={activeView} onClose={onClose} onBackToStats={() => setActiveView("stats")} />
+        <RightPane
+          activeView={activeView}
+          onClose={onClose}
+          onBackToStats={() => setActiveView("stats")}
+          onOpenFeedback={() => {
+            onClose();
+            onRouteToModal?.("feedback");
+          }}
+        />
       </div>
     </div>
   );
@@ -114,9 +122,15 @@ interface RightPaneProps {
   activeView: ProfileView;
   onClose: () => void;
   onBackToStats: () => void;
+  onOpenFeedback: () => void;
 }
 
-function RightPane({ activeView, onClose, onBackToStats }: RightPaneProps) {
+function RightPane({
+  activeView,
+  onClose,
+  onBackToStats,
+  onOpenFeedback,
+}: RightPaneProps) {
   if (activeView === "stats") {
     return <StatsView onClose={onClose} />;
   }
@@ -131,6 +145,11 @@ function RightPane({ activeView, onClose, onBackToStats }: RightPaneProps) {
   }
   if (activeView === "settings") {
     return <SettingsView onClose={onClose} />;
+  }
+  if (activeView === "support") {
+    return (
+      <SupportView onClose={onClose} onOpenFeedback={onOpenFeedback} />
+    );
   }
   return <StubView onClose={onClose} onBackToStats={onBackToStats} />;
 }
