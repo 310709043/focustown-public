@@ -77,7 +77,42 @@
         "feedback_reward": "Feedback reward"
       }
     },
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "redeem": {
+      "title": "Redeem a code",
+      "subtitle": "Paste a campaign or friend-shared code to credit T-coins to your wallet.",
+      "placeholder": "e.g. WELCOME-2026",
+      "submitCta": "Redeem",
+      "submittingCta": "Redeeming…",
+      "cancelCta": "Cancel",
+      "successHeading": "Redeemed",
+      "successBody": "+{amount} T credited. New balance: {balance} T.",
+      "errorNotFound": "That code doesn't exist. Double-check and try again.",
+      "errorUsed": "You've already redeemed this code.",
+      "errorExhausted": "This code is no longer usable or has expired.",
+      "errorGeneric": "Could not redeem right now. Please try again later.",
+      "emptyError": "Please enter a code first."
+    },
+    "gift": {
+      "title": "Gift a fellow citizen",
+      "subtitle": "Send T-coins to keep a friend's focus going.",
+      "recipientLabel": "Recipient citizen ID",
+      "recipientPlaceholder": "Paste their citizen ID (visible on their profile)",
+      "amountLabel": "Amount (T-coins)",
+      "amountPlaceholder": "1 – 1000",
+      "messageLabel": "Note to attach (optional)",
+      "messagePlaceholder": "e.g. Crushing today's pomodoros together 🍅",
+      "submitCta": "Send gift",
+      "submittingCta": "Sending…",
+      "cancelCta": "Cancel",
+      "successHeading": "Gift delivered",
+      "successBody": "Sent {amount} T. New balance: {balance} T.",
+      "errorRecipient": "Citizen not found. Double-check the ID.",
+      "errorSelf": "You can't gift yourself.",
+      "errorInsufficient": "Not enough T-coins to send that gift.",
+      "errorAmount": "Amount must be between 1 and 1000 T.",
+      "errorGeneric": "Could not send right now. Please try again later."
+    }
   },
   "stats": {
     "kpi": {

@@ -126,6 +126,42 @@ export type NoteWithShare = Note & {
   shared_in_match_id?: string | null;
 };
 
+// ── wallet writes ──────────────────────────────────────
+export interface RedeemCodeResponse {
+  currency_code: string;
+  amount_minor: number;
+  balance_after_minor: number;
+  transaction_id: string;
+}
+
+export interface GiftResponse {
+  transaction_id: string;
+  balance_after_minor: number;
+  amount_minor: number;
+  recipient_user_id: string;
+}
+
+// Augment the read-only `walletApi` further down with write paths.
+// Defined here so the type inference picks up the wider shape.
+const walletWriteApi = {
+  redeem(code: string) {
+    return apiFetch<RedeemCodeResponse>("/api/v1/me/wallet/redeem", {
+      method: "POST",
+      body: { code },
+    });
+  },
+  gift(input: {
+    recipient_user_id: string;
+    amount_minor: number;
+    message?: string | null;
+  }) {
+    return apiFetch<GiftResponse>("/api/v1/me/wallet/gift", {
+      method: "POST",
+      body: input,
+    });
+  },
+};
+
 // ── feedback ───────────────────────────────────────────
 export type FeedbackCategory = "bug" | "suggestion" | "praise" | "other";
 
@@ -253,6 +289,8 @@ export const walletApi = {
       { method: "GET" },
     );
   },
+  redeem: walletWriteApi.redeem,
+  gift: walletWriteApi.gift,
 };
 
 export const userItemsApi = {

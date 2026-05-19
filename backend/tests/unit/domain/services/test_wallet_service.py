@@ -74,7 +74,8 @@ class FakeWalletTransactionRepo(IWalletTransactionRepo):
         self._seen: set[tuple[str, str, str, str | None, str | None]] = set()
 
     async def insert(self, *, txn_id, user_id, currency_code, delta_minor,
-                     reason, ref_type, ref_id, balance_after_minor):
+                     reason, ref_type, ref_id, balance_after_minor,
+                     metadata=None):
         key = (user_id, currency_code, reason, ref_type, ref_id)
         if reason in {"session_complete", "purchase"} and key in self._seen:
             raise IdempotencyViolationError("wallet_ledger_idempotent")
@@ -84,6 +85,7 @@ class FakeWalletTransactionRepo(IWalletTransactionRepo):
             delta_minor=delta_minor, reason=reason, ref_type=ref_type,
             ref_id=ref_id, balance_after_minor=balance_after_minor,
             created_at=datetime.now(UTC),
+            metadata=metadata,
         )
         self.rows.append(t)
         return t

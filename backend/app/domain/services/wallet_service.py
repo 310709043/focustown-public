@@ -52,6 +52,7 @@ class WalletService:
         reason: str,
         ref_type: str | None = None,
         ref_id: str | None = None,
+        metadata: dict | None = None,
     ) -> WalletTransaction:
         if amount_minor <= 0:
             raise ValueError("amount_minor must be positive")
@@ -62,6 +63,7 @@ class WalletService:
             reason=reason,
             ref_type=ref_type,
             ref_id=ref_id,
+            metadata=metadata,
         )
 
     async def debit(
@@ -73,6 +75,7 @@ class WalletService:
         reason: str,
         ref_type: str | None = None,
         ref_id: str | None = None,
+        metadata: dict | None = None,
     ) -> WalletTransaction:
         if amount_minor <= 0:
             raise ValueError("amount_minor must be positive")
@@ -83,6 +86,7 @@ class WalletService:
             reason=reason,
             ref_type=ref_type,
             ref_id=ref_id,
+            metadata=metadata,
         )
 
     async def get_balance_minor(self, user_id: str, currency_code: str) -> int:
@@ -100,6 +104,7 @@ class WalletService:
         reason: str,
         ref_type: str | None,
         ref_id: str | None,
+        metadata: dict | None = None,
     ) -> WalletTransaction:
         wallet = await self._wallets.get_or_create(
             user_id=user_id,
@@ -121,6 +126,7 @@ class WalletService:
             ref_type=ref_type,
             ref_id=ref_id,
             balance_after_minor=new_balance,
+            metadata=metadata,
         )
         if self._pub is not None:
             await self._pub.publish(

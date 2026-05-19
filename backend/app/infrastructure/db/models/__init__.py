@@ -5,6 +5,10 @@ from app.infrastructure.db.models.leaderboard_snapshot import LeaderboardSnapsho
 from app.infrastructure.db.models.match import MatchORM
 from app.infrastructure.db.models.note import NoteORM
 from app.infrastructure.db.models.password_reset_token import PasswordResetTokenORM
+from app.infrastructure.db.models.redemption_code import (
+    RedemptionCodeORM,
+    RedemptionCodeUseORM,
+)
 from app.infrastructure.db.models.room import RoomORM
 from app.infrastructure.db.models.room_item import RoomItemORM
 from app.infrastructure.db.models.room_playback import RoomPlaybackORM
@@ -26,6 +30,8 @@ __all__ = [
     "MatchORM",
     "NoteORM",
     "PasswordResetTokenORM",
+    "RedemptionCodeORM",
+    "RedemptionCodeUseORM",
     "RoomItemORM",
     "RoomORM",
     "RoomPlaybackORM",

@@ -1,9 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { useToastStore } from "@/lib/state/toastStore";
+
+import { GiftDialog } from "./GiftDialog";
+import { RedeemDialog } from "./RedeemDialog";
 
 interface ActionTileProps {
   testId: string;
@@ -46,35 +49,47 @@ function ActionTile({ testId, icon, label, onClick }: ActionTileProps) {
 export function WalletActions() {
   const t = useTranslations("profile.wallet");
   const push = useToastStore((s) => s.push);
-  const comingSoon = () =>
+  const [openDialog, setOpenDialog] = useState<"gift" | "redeem" | null>(null);
+  const topUpStillStub = () =>
     push({ kind: "info", message: t("comingSoon") });
 
   return (
-    <section
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
-        gap: 10,
-      }}
-    >
-      <ActionTile
-        testId="wallet-action-topup"
-        icon="+"
-        label={t("actions.topUp")}
-        onClick={comingSoon}
+    <>
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 10,
+        }}
+      >
+        <ActionTile
+          testId="wallet-action-topup"
+          icon="+"
+          label={t("actions.topUp")}
+          onClick={topUpStillStub}
+        />
+        <ActionTile
+          testId="wallet-action-gift"
+          icon="↗"
+          label={t("actions.gift")}
+          onClick={() => setOpenDialog("gift")}
+        />
+        <ActionTile
+          testId="wallet-action-redeem"
+          icon="▦"
+          label={t("actions.redeem")}
+          onClick={() => setOpenDialog("redeem")}
+        />
+      </section>
+
+      <GiftDialog
+        open={openDialog === "gift"}
+        onClose={() => setOpenDialog(null)}
       />
-      <ActionTile
-        testId="wallet-action-gift"
-        icon="↗"
-        label={t("actions.gift")}
-        onClick={comingSoon}
+      <RedeemDialog
+        open={openDialog === "redeem"}
+        onClose={() => setOpenDialog(null)}
       />
-      <ActionTile
-        testId="wallet-action-redeem"
-        icon="▦"
-        label={t("actions.redeem")}
-        onClick={comingSoon}
-      />
-    </section>
+    </>
   );
 }

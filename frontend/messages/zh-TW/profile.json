@@ -77,7 +77,42 @@
         "feedback_reward": "送出意見反饋"
       }
     },
-    "comingSoon": "此功能即將上線"
+    "comingSoon": "此功能即將上線",
+    "redeem": {
+      "title": "輸入兌換碼",
+      "subtitle": "貼上活動或好友分享的代碼，立即把 T 幣存入你的錢包。",
+      "placeholder": "例如：WELCOME-2026",
+      "submitCta": "兌換",
+      "submittingCta": "兌換中…",
+      "cancelCta": "取消",
+      "successHeading": "兌換成功",
+      "successBody": "已存入 +{amount} T 幣，現在的餘額是 {balance} T。",
+      "errorNotFound": "查無此兌換碼，請確認後再試一次。",
+      "errorUsed": "你已經兌換過這個代碼囉。",
+      "errorExhausted": "這個代碼目前無法使用或已過期。",
+      "errorGeneric": "兌換失敗，請稍後再試。",
+      "emptyError": "請先輸入兌換碼。"
+    },
+    "gift": {
+      "title": "送禮給其他鎮民",
+      "subtitle": "把 T 幣送給好友，鼓勵他們繼續專注。",
+      "recipientLabel": "對方鎮民 ID",
+      "recipientPlaceholder": "貼上對方的鎮民 ID（在個人檔案可看到）",
+      "amountLabel": "送出數量（T 幣）",
+      "amountPlaceholder": "1 - 1000",
+      "messageLabel": "留下一句話（選填）",
+      "messagePlaceholder": "例如：今天的番茄一起加油 🍅",
+      "submitCta": "送出禮物",
+      "submittingCta": "送出中…",
+      "cancelCta": "取消",
+      "successHeading": "禮物已送達",
+      "successBody": "送出 {amount} T 幣，現在的餘額是 {balance} T。",
+      "errorRecipient": "找不到這位鎮民，請確認 ID。",
+      "errorSelf": "不能送禮給自己喔。",
+      "errorInsufficient": "T 幣餘額不夠，這份禮物送不出去。",
+      "errorAmount": "送出數量需在 1 ～ 1000 T 之間。",
+      "errorGeneric": "送出失敗，請稍後再試。"
+    }
   },
   "stats": {
     "kpi": {
