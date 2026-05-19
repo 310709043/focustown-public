@@ -1,11 +1,34 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { BlinkDot } from "@/components/pixel/BlinkDot";
 
+interface Tip {
+  icon: string;
+  heading: string;
+  body: string;
+}
+
+const ROTATE_MS = 7000;
+
 export function AboutTownPanel() {
   const t = useTranslations("auth.about");
+  const tips = t.raw("tips") as Tip[];
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (tips.length <= 1) return;
+    const id = window.setInterval(
+      () => setIndex((i) => (i + 1) % tips.length),
+      ROTATE_MS,
+    );
+    return () => window.clearInterval(id);
+  }, [tips.length]);
+
+  const tip = tips[index] ?? tips[0];
+  const advance = () => setIndex((i) => (i + 1) % tips.length);
 
   return (
     <aside
@@ -34,8 +57,7 @@ export function AboutTownPanel() {
           gap: 6,
           minWidth: 124,
           paddingRight: 14,
-          borderRight:
-            "1px dashed rgba(45,212,191,0.45)",
+          borderRight: "1px dashed rgba(45,212,191,0.45)",
         }}
       >
         <span
@@ -65,6 +87,9 @@ export function AboutTownPanel() {
       </div>
 
       <div
+        key={index}
+        className="animate-fadeUp"
+        data-testid="about-town-tip"
         style={{
           display: "flex",
           alignItems: "flex-start",
@@ -88,19 +113,19 @@ export function AboutTownPanel() {
             flexShrink: 0,
           }}
         >
-          ⌁
+          {tip.icon}
         </span>
         <div style={{ minWidth: 0 }}>
           <div
             className="font-pixel"
             style={{
               fontSize: 13,
-              color: "var(--ink)",
+              color: "#f9a8d4",
               letterSpacing: "0.1em",
               marginBottom: 4,
             }}
           >
-            {t("title")}
+            {tip.heading}
           </div>
           <p
             style={{
@@ -111,10 +136,31 @@ export function AboutTownPanel() {
               letterSpacing: "0.12em",
             }}
           >
-            {t("body")}
+            {tip.body}
           </p>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={advance}
+        aria-label={t("nextTipAria")}
+        data-testid="about-town-next"
+        className="font-silkscreen"
+        style={{
+          flexShrink: 0,
+          width: 28,
+          height: 28,
+          background: "rgba(45,212,191,0.10)",
+          border: "1px solid rgba(45,212,191,0.45)",
+          color: "var(--accent-2)",
+          fontSize: 14,
+          lineHeight: 1,
+          cursor: "pointer",
+        }}
+      >
+        ≡
+      </button>
     </aside>
   );
 }
