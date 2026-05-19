@@ -299,8 +299,16 @@ async def _seed_tracks(db, settings, ids) -> None:
 
     for path in mp3_files:
         filename = path.name
+        meta = SEED_TRACK_MOOD_BY_FILENAME.get(filename, {})
+        # Existence check MUST use the same title computation as the insert,
+        # otherwise mapped titles ("Sunlight on the Floor") never match the
+        # `.title()`-derived form ("Sunlight On The Floor") and every
+        # cold-start re-inserts the row. Bug pre-2026-05-19 produced 11
+        # tracks from 5 files across 4 deploys; the canonical title is
+        # whatever ends up in TrackORM.title below.
+        title = meta.get("title") or _seed_title(filename)
         existing = (
-            await db.execute(_select(TrackORM).where(TrackORM.title == _seed_title(filename)))
+            await db.execute(_select(TrackORM).where(TrackORM.title == title))
         ).scalar_one_or_none()
         if existing is not None:
             # Backfill is_official on rows seeded before the
@@ -312,11 +320,10 @@ async def _seed_tracks(db, settings, ids) -> None:
         track_id = ids.new_id()
         file_key = f"tracks/{track_id}.mp3"
         await storage.put(key=file_key, data=data, content_type="audio/mpeg")
-        meta = SEED_TRACK_MOOD_BY_FILENAME.get(filename, {})
         db.add(
             TrackORM(
                 id=track_id,
-                title=meta.get("title", _seed_title(filename)),
+                title=title,
                 artist=None,
                 mood=meta.get("mood", "lofi"),
                 duration_ms=None,

@@ -97,7 +97,25 @@ function buildCsp(nonce: string): string {
 
 const intlMiddleware = createIntlMiddleware(routing);
 
+// Legacy alias: external links / typos use `/zh/...` thinking it's the
+// Chinese locale, but the canonical locale is `zh-TW`. next-intl's
+// middleware treats unknown prefixes as no-locale and prepends the
+// detected locale, producing `/zh-TW/zh/foo` which 404s. Catch the
+// alias first and issue a permanent redirect to the canonical path.
+// /zh → /zh-TW, /zh/ → /zh-TW, /zh/foo/bar → /zh-TW/foo/bar.
+function redirectLegacyZhAlias(request: NextRequest): NextResponse | null {
+  const path = request.nextUrl.pathname;
+  if (path !== "/zh" && !path.startsWith("/zh/")) return null;
+  const rest = path === "/zh" ? "" : path.slice(3); // strip "/zh"
+  const url = request.nextUrl.clone();
+  url.pathname = `/zh-TW${rest}`;
+  return NextResponse.redirect(url, 308);
+}
+
 export function middleware(request: NextRequest) {
+  const legacy = redirectLegacyZhAlias(request);
+  if (legacy) return legacy;
+
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp(nonce);
 
