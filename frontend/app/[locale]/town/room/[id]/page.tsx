@@ -24,6 +24,7 @@ import { roomApi } from "@/lib/api/endpoints";
 import type { Room, RoomTheme } from "@/lib/api/types.gen";
 import { findCharacter } from "@/lib/data/characters";
 import { SCENES } from "@/lib/data/scenes";
+import { useRoomPlaybackOwnerSync } from "@/lib/hooks/useRoomPlaybackOwnerSync";
 import { useAuthStore } from "@/lib/state/authStore";
 
 import { Wall } from "@/components/town/room/Wall";
@@ -35,6 +36,7 @@ import { MissingRoom } from "@/components/town/room/MissingRoom";
 import { DecorationCanvas } from "@/components/town/room/DecorationCanvas";
 import { VisitorPanel } from "@/components/town/room/VisitorPanel";
 import { PersonalRadio } from "@/components/audio/PersonalRadio";
+import { SyncedRoomPlayer } from "@/components/audio/SyncedRoomPlayer";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 const THEME_KEYS: Array<{ key: RoomTheme; chip: string }> = [
@@ -94,6 +96,7 @@ export default function RoomPage() {
   }, [roomId]);
 
   const isOwner = !!(room && user && room.owner_user_id === user.id);
+  useRoomPlaybackOwnerSync(isOwner);
   const character = useMemo(
     () => findCharacter(user?.character_key),
     [user?.character_key],
@@ -268,17 +271,21 @@ export default function RoomPage() {
           ownerUserId={room.owner_user_id}
           currentUserId={user?.id ?? null}
         />
-        {/* Each visitor hears their own randomized shuffle of the
-            official catalog — deliberately NOT synchronized to the
-            owner's playback. Phase 9's room_playback table stays in
-            place server-side but is no longer wired to the UI.
-            Position mirrors /town and /focus: bottom-right, 16px from
-            each edge, 244px wide. */}
+        {/* Owner drives playback (PersonalRadio talks to RoomPlaybackService
+            via owner-only `/me/room/playback/*` endpoints). Visitors mirror
+            that timeline via SyncedRoomPlayer, which subscribes to the
+            `music.{play,pause,change}` WS events on `room:{id}` and
+            drift-corrects against `started_at_ms`. Position mirrors /town
+            and /focus: bottom-right, 16px from each edge, 244px wide. */}
         <div
           className="absolute z-10 hidden md:block"
           style={{ right: 16, bottom: 16, width: 244 }}
         >
-          <PersonalRadio context="room" contextId={roomId} label="房間音樂" />
+          {isOwner ? (
+            <PersonalRadio context="room" contextId={roomId} label="房間音樂" />
+          ) : (
+            <SyncedRoomPlayer roomId={roomId} label="房間音樂" />
+          )}
         </div>
 
         {isOwner && (
