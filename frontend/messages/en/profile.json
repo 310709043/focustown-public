@@ -1,0 +1,73 @@
+{
+  "modal": {
+    "title": "Your Focus Profile",
+    "subtitle": "A calm view of your recent focus sessions and progress",
+    "closeAria": "Close your profile panel",
+    "close": "Close"
+  },
+  "sidebar": {
+    "levelLabel": "LV.{level}",
+    "xpLabel": "XP {current} / {next}",
+    "xpAria": "Experience progress",
+    "metaUnknown": "—",
+    "signOut": "Sign out"
+  },
+  "nav": {
+    "stats": "Your Stats",
+    "notes": "Notes Library",
+    "friends": "Friends",
+    "settings": "Settings",
+    "feedback": "Send Feedback",
+    "support": "Help Center",
+    "activeIndicatorAria": "Current section"
+  },
+  "stats": {
+    "kpi": {
+      "tomatoes": "Total Tomatoes",
+      "focusHours": "Focus Hours",
+      "streak": "Day Streak",
+      "weeklyRank": "Weekly Rank",
+      "valueWithUnitHours": "{value}H",
+      "valueWithUnitDays": "{value} D",
+      "valueWithRank": "#{value}"
+    },
+    "heatmap": {
+      "title": "7-DAY FOCUS",
+      "weeklyTotal": "{hours}H this week",
+      "dayShort": {
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat",
+        "7": "Sun"
+      },
+      "hourTick": {
+        "0": "0h",
+        "6": "6",
+        "12": "12",
+        "18": "18",
+        "24": "24"
+      },
+      "cellAria": "{day} {hour}:00 · {minutes} focused minutes"
+    },
+    "achievements": {
+      "title": "Recent Achievements",
+      "emptyHint": "Finish your first focus session to start unlocking badges here."
+    },
+    "tags": {
+      "title": "Focus Tags",
+      "coding": "Coding",
+      "writing": "Writing",
+      "research": "Research & Reading",
+      "other": "Other",
+      "rowAria": "{label} accounts for {percent}%"
+    }
+  },
+  "stub": {
+    "title": "We are still building this",
+    "description": "This section is on the way. We will let you know as soon as it is ready.",
+    "ctaBack": "Back to your stats"
+  }
+}

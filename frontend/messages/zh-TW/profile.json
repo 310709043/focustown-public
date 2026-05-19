@@ -1,0 +1,73 @@
+{
+  "modal": {
+    "title": "我的數據",
+    "subtitle": "您的專注紀錄與成長軌跡",
+    "closeAria": "關閉個人專區",
+    "close": "關閉"
+  },
+  "sidebar": {
+    "levelLabel": "LV.{level}",
+    "xpLabel": "XP {current} / {next}",
+    "xpAria": "經驗值進度",
+    "metaUnknown": "—",
+    "signOut": "登出"
+  },
+  "nav": {
+    "stats": "我的數據",
+    "notes": "筆記庫",
+    "friends": "好友",
+    "settings": "設定",
+    "feedback": "意見回饋",
+    "support": "客服中心",
+    "activeIndicatorAria": "目前所在分頁"
+  },
+  "stats": {
+    "kpi": {
+      "tomatoes": "總番茄",
+      "focusHours": "累計專注",
+      "streak": "連續打卡",
+      "weeklyRank": "本週排名",
+      "valueWithUnitHours": "{value}H",
+      "valueWithUnitDays": "{value} 天",
+      "valueWithRank": "#{value}"
+    },
+    "heatmap": {
+      "title": "7-DAY FOCUS",
+      "weeklyTotal": "本週共 {hours}H",
+      "dayShort": {
+        "1": "一",
+        "2": "二",
+        "3": "三",
+        "4": "四",
+        "5": "五",
+        "6": "六",
+        "7": "日"
+      },
+      "hourTick": {
+        "0": "0時",
+        "6": "6",
+        "12": "12",
+        "18": "18",
+        "24": "24"
+      },
+      "cellAria": "{day} {hour}時 · 專注 {minutes} 分鐘"
+    },
+    "achievements": {
+      "title": "最近成就",
+      "emptyHint": "完成第一段專注後，這裡會記錄您解鎖的徽章"
+    },
+    "tags": {
+      "title": "標籤分布",
+      "coding": "寫程式",
+      "writing": "寫作",
+      "research": "研究 / 閱讀",
+      "other": "其他",
+      "rowAria": "{label} 佔比 {percent}%"
+    }
+  },
+  "stub": {
+    "title": "整理中",
+    "description": "這個區塊正在製作中，我們會在準備好後第一時間通知您。",
+    "ctaBack": "回到我的數據"
+  }
+}

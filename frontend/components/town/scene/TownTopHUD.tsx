@@ -174,7 +174,7 @@ export function TownTopHUD({
       </div>
 
       {/* ═══ CENTER: status pill ═══ */}
-      <UserStatusPill />
+      <UserStatusPill onClick={() => onOpenModal("profile")} />
 
       {/* ═══ RIGHT cluster ═══ */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
