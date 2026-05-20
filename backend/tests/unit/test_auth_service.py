@@ -152,6 +152,35 @@ async def test_sign_in_happy_returns_tokens():
 
 
 @pytest.mark.asyncio
+async def test_sign_in_backfills_null_character_key():
+    """Legacy users who signed up before Phase 8.C have NULL
+    character_key. Phase 9 (2026-05-20) backfills on next sign-in so
+    they appear on /town without a manual migration. Idempotent — once
+    set, a subsequent sign-in is a no-op."""
+    from app.domain.services.auth_service import _DEFAULT_CHARACTER_KEYS
+
+    users = FakeUserRepo()
+    await users.create(
+        user_id="legacy-1",
+        email="legacy@x.dev",
+        password_hash=hash_password("goodpass123"),
+        display_name="Legacy",
+        # character_key intentionally omitted → NULL
+    )
+    assert users.users["legacy-1"].character_key is None
+    svc, _, _, _ = _make_service(users=users)
+
+    outcome = await svc.sign_in(email="legacy@x.dev", password="goodpass123")
+
+    assert outcome.user.character_key is not None
+    assert outcome.user.character_key in _DEFAULT_CHARACTER_KEYS
+    # Idempotent: signing in again doesn't change the assigned key
+    chosen = outcome.user.character_key
+    outcome2 = await svc.sign_in(email="legacy@x.dev", password="goodpass123")
+    assert outcome2.user.character_key == chosen
+
+
+@pytest.mark.asyncio
 async def test_sign_in_rejects_unknown_email():
     svc, _, _, _ = _make_service()
 

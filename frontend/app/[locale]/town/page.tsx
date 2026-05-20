@@ -20,7 +20,6 @@ import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { FrameTicker } from "@/components/pixel/FrameTicker";
-import { TickerBar } from "@/components/chrome/TickerBar";
 import { StreetProps } from "@/components/scene/StreetProps";
 import { Road } from "@/components/scene/Road";
 import { SCENES } from "@/lib/data/scenes";
@@ -301,12 +300,6 @@ export default function TownPage() {
             density={currentScene === "storm" ? 1.2 : 1}
           />
         ) : null}
-
-        {/* news ticker — drifts above the bottom HUD. Rendered twice
-            per reference (screen-town.jsx:L127-L128) so the two
-            independent setInterval phases layer into a subtle cross-fade. */}
-        <TickerBar />
-        <TickerBar />
 
         {/* Reference-aligned 180 px BottomHUD: FocusTimer + MatchPanel
             + MusicPlayer in a 1.05fr / 1fr / 1fr grid. Replaces the

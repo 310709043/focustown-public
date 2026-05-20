@@ -145,11 +145,22 @@ class AuthService:
         creds = await self._users.get_credentials_by_email(email)
         if creds is None or not verify_password(password, creds.password_hash):
             raise AuthError("invalid_credentials")
+        # Backfill character_key for legacy accounts that pre-date the
+        # sign-up default (2026-05-20). Without this, users who signed up
+        # before Phase 8.C still render via the frontend fallback and may
+        # not appear on /town for themselves. Idempotent — once set, the
+        # branch never re-fires for the same user.
+        user = creds.user
+        if user.character_key is None:
+            user = await self._users.update_profile(
+                user_id=user.id,
+                character_key=_default_character_key_for(user.id),
+            )
         tokens = await self._auth.issue_tokens(
-            user_id=creds.user.id,
+            user_id=user.id,
             credentials=AuthCredentials(email=email, password=password),
         )
-        return AuthOutcome(user=creds.user, tokens=tokens)
+        return AuthOutcome(user=user, tokens=tokens)
 
     async def get_me_with_vehicle(
         self,
