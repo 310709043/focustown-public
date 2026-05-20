@@ -165,9 +165,20 @@ export const config = {
   // image bytes is meaningless and slowing every static file with a middleware
   // pass is wasteful.
   matcher: [
-    // `audio` excluded so `/audio/lofi-*.mp3` from the public fallback
-    // bypasses the locale prefix injection (was redirecting to
-    // `/en/audio/...` and 404ing the static asset).
-    "/((?!api|_next/static|_next/image|audio|favicon.ico|logo.png).*)",
+    // Negative lookahead excludes paths that should bypass next-intl's
+    // locale prefix:
+    //   api          REST endpoints
+    //   _next/static Next.js bundle chunks
+    //   _next/image  Next.js Image Optimizer
+    //   audio        public /audio/lofi-*.mp3 fallback (was redirecting to
+    //                /en/audio/... and 404ing the static asset)
+    //   assets       public /assets/v6/** Craftpix sprite library (city /
+    //                clouds / walkers / birds / cars) — same gotcha as
+    //                /audio above; without this, the live deploy 307s
+    //                /assets/v6/MANIFEST.json into /zh-TW/assets/... → 404
+    //                and the new sprites silently fail to render.
+    //   favicon.ico  small static file
+    //   logo.png     static image
+    "/((?!api|_next/static|_next/image|audio|assets|favicon.ico|logo.png).*)",
   ],
 };
