@@ -52,7 +52,8 @@ export function NamedCats() {
           style={{
             position: "absolute",
             left: `${pos[i]}%`,
-            bottom: 55,
+            // 2026-05-20: lifted +152 to sit above the slimmed BottomHUD.
+            bottom: 207,
             zIndex: 6,
             display: "flex",
             flexDirection: "column",

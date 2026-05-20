@@ -123,7 +123,9 @@ export function CarsLane() {
   return (
     <div
       className="absolute left-0 right-0 pointer-events-none z-[5]"
-      style={{ bottom: 57, height: 56 }}
+      // 2026-05-20: lifted +152 so the lane sits over the visible road
+      // surface (now at bottom: 202..266) above the slimmed BottomHUD.
+      style={{ bottom: 209, height: 56 }}
       aria-hidden
     >
       {users.map((u, idx) => (

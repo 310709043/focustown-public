@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
@@ -8,9 +7,6 @@ import { useAuthStore } from "@/lib/state/authStore";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-
-type TagKey = "code" | "write" | "study" | "design" | "all";
-const TAG_KEYS: ReadonlyArray<TagKey> = ["code", "write", "study", "design", "all"];
 
 interface MatchPanelProps {
   /** Triggered when the user clicks "Find Buddy". Parent lifts the
@@ -24,14 +20,12 @@ interface MatchPanelProps {
  * - Header: blink dot + FIND BUDDY label + right "~8s avg wait" hint.
  * - Slot row: self avatar (accent glow) + `+` glyph + dashed `?` placeholder
  *   for the to-be-matched candidate + caption.
- * - Tag filter chips: 5 options (#程式 / #寫作 / #學習 / #設計 / #任何).
- *   Local state — the active tag is decorative this PR (future: forward to
- *   `matchesApi.auto` once the backend accepts a tag filter).
  * - Bottom row: "✦ Find Buddy" pink-primary CTA (wires to onFindBuddy) +
  *   "Solo Focus" cyan-outlined button (routes to /focus/solo).
  *
- * SOLID: SRP (one panel concern), DIP (useMatchStore + useAuthStore +
- * useRouter, no direct API calls).
+ * The 5 tag-filter chips were dropped 2026-05-20 — they were decorative
+ * (no backend filter param) and consumed vertical space that pushed the
+ * BottomHUD past the street band.
  */
 export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
   const t = useTranslations("town.bottom.matchPanel");
@@ -39,7 +33,6 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
   const user = useAuthStore((s) => s.user);
   const proposing = useMatchStore((s) => s.proposing);
   const avatar = characterKeyToAvatar(user?.character_key);
-  const [tag, setTag] = useState<TagKey>("all");
 
   return (
     <div
@@ -129,32 +122,6 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
             {t("candidateMeta")}
           </span>
         </div>
-      </div>
-
-      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-        {TAG_KEYS.map((k) => {
-          const active = tag === k;
-          return (
-            <button
-              key={k}
-              type="button"
-              onClick={() => setTag(k)}
-              data-active={active || undefined}
-              className="font-silkscreen"
-              style={{
-                padding: "3px 7px",
-                fontSize: 9,
-                background: active ? "var(--accent)" : "transparent",
-                color: active ? "#0a0524" : "var(--ink-mute)",
-                border: `1px solid ${active ? "var(--accent)" : "var(--panel-stroke)"}`,
-                letterSpacing: "0.1em",
-                cursor: "pointer",
-              }}
-            >
-              #{t(`tags.${k}` as const)}
-            </button>
-          );
-        })}
       </div>
 
       <div

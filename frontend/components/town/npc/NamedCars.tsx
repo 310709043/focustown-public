@@ -70,7 +70,9 @@ export function NamedCars() {
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
-              bottom: 4,
+              // 2026-05-20: lifted +152 to drive on the visible road
+              // band (now at bottom: 202..266) above the slimmed BottomHUD.
+              bottom: 156,
               zIndex: 5,
               display: "flex",
               flexDirection: "column",

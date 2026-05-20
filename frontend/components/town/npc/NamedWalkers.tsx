@@ -72,7 +72,8 @@ export function NamedWalkers() {
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
-              bottom: 56,
+              // 2026-05-20: lifted +152 to sit above the slimmed BottomHUD.
+              bottom: 208,
               zIndex: 6,
               pointerEvents: "none",
             }}

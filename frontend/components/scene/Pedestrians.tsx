@@ -69,7 +69,9 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
       className="absolute animate-userPop"
       style={{
         left: `${x}%`,
-        bottom: 104,
+        // 2026-05-20: lifted from 104 → 256 so pedestrians sit above
+        // the (now 144 px) BottomHUD instead of being hidden behind it.
+        bottom: 256,
         transition: "left 9s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >

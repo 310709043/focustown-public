@@ -1,10 +1,14 @@
 "use client";
 
 /**
- * Neon pixel asphalt that anchors Pedestrians (sidewalk at bottom 104px)
- * to CarsLane (cars at bottom 57px, height 56px). The wrapper occupies
- * a 64px-tall band from bottom 50 → 114 so cars visually drive on its
- * surface while the dashed center line drifts under them.
+ * Neon pixel asphalt that anchors Pedestrians (sidewalk at bottom 256px)
+ * to CarsLane (cars at bottom 209px). The wrapper occupies a 64px-tall
+ * band from bottom 202 → 266 so cars visually drive on its surface while
+ * the dashed center line drifts under them.
+ *
+ * 2026-05-20: lifted +152 from the original `bottom: 50` so the street
+ * band sits above the (now 144 px) BottomHUD instead of being hidden
+ * behind it.
  *
  * Pure CSS — no JS, no rAF, no image assets. The single animation
  * (`roadDash`) is GPU-friendly (background-position-x only) and respects
@@ -14,7 +18,7 @@ export function Road() {
   return (
     <div
       className="absolute left-0 right-0 z-[5] pointer-events-none"
-      style={{ bottom: 50, height: 64 }}
+      style={{ bottom: 202, height: 64 }}
       aria-hidden
     >
       {/* asphalt base + scanline texture */}

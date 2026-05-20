@@ -48,7 +48,8 @@ function Dog({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
       className="absolute animate-userPop"
       style={{
         left: `${x}%`,
-        bottom: 100,
+        // 2026-05-20: lifted +152 so dogs sit above the slimmed BottomHUD.
+        bottom: 252,
         transition: "left 11s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >

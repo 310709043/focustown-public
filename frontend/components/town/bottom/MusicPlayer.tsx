@@ -13,9 +13,6 @@ import {
 
 import { EQViz } from "./EQViz";
 
-type GenreKey = "lofi" | "classical" | "rain" | "cafe" | "forest";
-const GENRES: ReadonlyArray<GenreKey> = ["lofi", "classical", "rain", "cafe", "forest"];
-
 /**
  * Bottom-HUD right cluster — reference-aligned music UI for /town.
  *
@@ -24,7 +21,10 @@ const GENRES: ReadonlyArray<GenreKey> = ["lofi", "classical", "rain", "cafe", "f
  * /focus/[id] and /town/room/[id]). DIP: depends on the hook, not on
  * direct `personalRadioApi` / `<audio>` plumbing.
  *
- * Reference: screen-town.jsx:L1234-L1283.
+ * The 5 genre tabs + standalone unlock CTA were dropped 2026-05-20 —
+ * the tabs didn't filter anything (no backend genre routing) and the
+ * unlock CTA is now folded into the play button (first ▶ click both
+ * satisfies browser autoplay policy and starts playback).
  */
 export function MusicPlayer() {
   const t = useTranslations("town.bottom.musicPlayer");
@@ -50,7 +50,14 @@ export function MusicPlayer() {
     void setContext("city", "city");
   }, [setContext]);
 
-  const [activeGenre, setActiveGenre] = useState<GenreKey>("lofi");
+  // First click both unlocks audio (browser autoplay policy needs the
+  // play() call inside a user gesture) and toggles playback. Subsequent
+  // clicks are pure toggle.
+  const onPlayClick = async () => {
+    if (!audioUnlocked) await unlock();
+    toggle();
+  };
+
   const [pos, setPos] = useState(60);
 
   // Decorative progress bar — drifts visually while playing. The track
@@ -121,7 +128,7 @@ export function MusicPlayer() {
           data-testid="music-toggle"
           className="pixel-btn primary"
           style={{ padding: "4px 8px", fontSize: 10 }}
-          onClick={toggle}
+          onClick={onPlayClick}
         >
           {isPlaying ? "⏸" : "▶"}
         </button>
@@ -161,58 +168,15 @@ export function MusicPlayer() {
         </span>
       </div>
 
-      {!audioUnlocked && tracks.length > 0 ? (
-        <button
-          type="button"
-          onClick={unlock}
-          className="font-silkscreen"
-          style={{
-            alignSelf: "center",
-            fontSize: 9,
-            padding: "2px 8px",
-            border: "1px solid var(--accent-4)",
-            color: "var(--accent-4)",
-            background: "transparent",
-            cursor: "pointer",
-            letterSpacing: "0.1em",
-          }}
-        >
-          🔊 {t("unlockHint")}
-        </button>
-      ) : null}
-
-      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-        {GENRES.map((g) => {
-          const active = activeGenre === g;
-          return (
-            <button
-              key={g}
-              type="button"
-              onClick={() => setActiveGenre(g)}
-              data-active={active || undefined}
-              className="font-silkscreen"
-              style={{
-                fontSize: 8,
-                padding: "1px 5px",
-                border: `1px solid ${active ? "var(--accent-3)" : "var(--panel-stroke)"}`,
-                color: active ? "var(--accent-3)" : "var(--ink-dim)",
-                background: "transparent",
-                cursor: "pointer",
-                letterSpacing: "0.1em",
-              }}
-            >
-              #{t(`genres.${g}` as const)}
-            </button>
-          );
-        })}
+      <div style={{ display: "flex", alignItems: "center" }}>
         <Link
           href="/town/library"
           data-testid="music-library-link"
           className="font-silkscreen"
           style={{
             marginLeft: "auto",
-            fontSize: 8,
-            padding: "1px 5px",
+            fontSize: 9,
+            padding: "2px 8px",
             border: "1px solid var(--panel-stroke)",
             color: "var(--accent-1)",
             background: "transparent",
