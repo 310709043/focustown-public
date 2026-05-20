@@ -41,7 +41,7 @@ export function CelestialBody() {
       <PixelSprite
         sprite={showMoon ? MOON.sprite : SUN.sprite}
         palette={showMoon ? MOON.palette : SUN.palette}
-        scale={6}
+        scale={8}
         glow={
           showMoon
             ? "rgba(252,211,77,0.4)"
