@@ -24,7 +24,11 @@ export function BuildingTag({ label, idx }: BuildingTagProps) {
   const c = COLORS[idx % COLORS.length];
   return (
     <div
-      className="font-silkscreen animate-pixelFloat"
+      // Idle opacity intentionally low so the pixel-art skyline dominates
+      // the scene (matches the reference/follow.mp4 visual). On hover the
+      // tag pops back to full strength so the building name remains a
+      // legitimate navigation affordance.
+      className="font-silkscreen animate-pixelFloat opacity-30 transition-opacity duration-200 hover:opacity-100 focus-within:opacity-100"
       style={{
         padding: "3px 8px",
         background: "rgba(7,4,26,0.92)",

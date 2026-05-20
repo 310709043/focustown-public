@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { presenceApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
-import { useSceneStore } from "@/lib/state/sceneStore";
+import { SCENE_TICK_MS, useSceneStore } from "@/lib/state/sceneStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
 import { useWalletStore } from "@/lib/state/walletStore";
 import { useRealtime } from "@/lib/ws/useRealtime";
@@ -96,8 +96,7 @@ export default function TownPage() {
   }, [user, hydrate]);
 
   useEffect(() => {
-    // Auto-rotate scenes every 2 minutes for the demo loop.
-    const id = setInterval(advanceScene, 2 * 60_000);
+    const id = setInterval(advanceScene, SCENE_TICK_MS);
     return () => clearInterval(id);
   }, [advanceScene]);
 
