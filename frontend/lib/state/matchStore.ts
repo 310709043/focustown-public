@@ -97,8 +97,13 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       // available do we clear `current` and let the parent page close
       // the modal naturally.
       try {
+        // ``auto()`` resolves with ``Match`` when a next candidate is
+        // available and ``undefined`` (or null) when the server has no
+        // one else to surface. Normalise both to ``null`` so consumers
+        // (and store-shape contracts like ``current: Match | null``)
+        // never see ``undefined`` leak in from the API layer.
         const next = await matchesApi.auto();
-        set({ current: next });
+        set({ current: next ?? null });
       } catch {
         set({ current: null });
       }
