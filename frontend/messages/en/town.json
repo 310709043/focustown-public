@@ -58,6 +58,27 @@
         "cafe": "cafe",
         "forest": "forest"
       }
+    },
+    "stationPlayer": {
+      "cityHeader": "city radio · LIVE",
+      "pairHeader": "pair channel · LIVE",
+      "loadingTrack": "tuning in…",
+      "listeners": "{count, plural, =0 {just you for now} one {# listening together} other {# listening together}}",
+      "listenersUnknown": "listening together",
+      "disconnect": "Disconnect",
+      "disconnectAria": "Step out of the shared station and switch to personal playback",
+      "disconnectedLabel": "personal mix",
+      "reconnectCity": "Reconnect to city",
+      "reconnectPair": "Reconnect to pair",
+      "prevAria": "Previous track",
+      "playAria": "Play",
+      "pauseAria": "Pause",
+      "nextAria": "Next track",
+      "volumeAria": "Volume",
+      "muteAria": "Mute",
+      "unmuteAria": "Unmute",
+      "unlockHint": "Tap to play",
+      "playlistEmpty": "Playlist empty"
     }
   },
   "presence": {

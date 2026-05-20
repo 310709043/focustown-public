@@ -33,7 +33,9 @@
       "AWS_ACCESS_KEY_ID": "${AWS_APP_ACCESS_KEY_ID}",
       "AWS_SECRET_ACCESS_KEY": "${AWS_APP_SECRET_ACCESS_KEY}",
       "RESET_URL_BASE": "https://${PUBLIC_HOST}/reset-password",
-      "TERMS_CURRENT_VERSION": "${TERMS_CURRENT_VERSION}"
+      "TERMS_CURRENT_VERSION": "${TERMS_CURRENT_VERSION}",
+      "FEAT_SHARED_STATION": "true",
+      "DEFAULT_CITY_ID": "lowbatterytown"
     }
   },
   "frontend": {

@@ -108,6 +108,25 @@ class Settings(BaseSettings):
     read_rl_leaderboard_per_ip_per_min: int = 120
     read_rl_presence_per_ip_per_min: int = 60
 
+    # Shared cohort music station (Phase 10 — connection feature). When
+    # disabled, the worker jobs no-op, /stations/* returns 404, and the
+    # WS router skips station: subscriptions. The frontend stationStore
+    # becomes a no-op so the existing per-room/per-user music flow is
+    # untouched.
+    feat_shared_station: bool = False
+    # Single-city MVP: LowBatteryTown is one place. Promote to a table
+    # lookup when the product introduces multiple cities.
+    default_city_id: str = "lowbatterytown"
+    # How often the worker advances the city + pair cursors. 5s is a hard
+    # ceiling on post-track silence; inaudible vs. ~180s average track
+    # length. Lower is cheap (one PUBLISH per advance), but every tick
+    # SCANs Redis once.
+    station_advance_interval_seconds: int = 5
+    # Crash-recovery snapshot interval. Worker persists each live cursor
+    # to ``station_snapshots`` so Redis restarts don't mid-song teleport
+    # every listener.
+    station_snapshot_interval_seconds: int = 300
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.app_cors_origins.split(",") if o.strip()]

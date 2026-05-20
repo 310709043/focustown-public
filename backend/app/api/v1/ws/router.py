@@ -14,6 +14,7 @@ from app.core.logging import get_logger
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.services.presence_service import STREET_CHANNEL, PresenceService
 from app.infrastructure.cache.redis_client import get_redis
+from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
 from app.infrastructure.db.repositories.room_visit_repo import SqlRoomVisitRepo
 from app.infrastructure.db.session import get_session_factory
@@ -53,6 +54,24 @@ async def _is_room_subscriber(
             return True
         visit = await SqlRoomVisitRepo(session).get_by_user(user_id)
         return visit is not None and visit.room_id == room_id
+
+
+async def _is_match_member(
+    *, database_url: str, user_id: str, match_id: str
+) -> bool:
+    """Membership gate for pair-station subscribe.
+
+    Returns True iff the user is either side of an accepted match. Fresh
+    per-call session for the same reason ``_is_room_subscriber`` uses one.
+    """
+    factory = get_session_factory(database_url)
+    async with factory() as session:
+        match = await SqlMatchRepo(session).get(match_id)
+        if match is None:
+            return False
+        if match.status != "accepted":
+            return False
+        return user_id in (match.requester_id, match.candidate_id)
 
 
 def extract_ws_token(
@@ -146,13 +165,24 @@ async def ws_connect(
             await ws_mgr.deliver(user_id, payload)
         elif channel.startswith("room:"):
             await ws_mgr.deliver(user_id, payload)
+        elif channel.startswith("station:"):
+            await ws_mgr.deliver(user_id, payload)
         elif channel == STREET_CHANNEL:
             await ws_mgr.deliver(user_id, payload)
 
-    await pub.start(
-        handler=_on_message,
-        channels=[IRealtimePublisher.user_channel(user_id), STREET_CHANNEL],
-    )
+    initial_channels = [
+        IRealtimePublisher.user_channel(user_id),
+        STREET_CHANNEL,
+    ]
+    if settings.feat_shared_station:
+        # Auto-subscribe every WS to the single global city station. Cheap
+        # (one extra SUBSCRIBE on connect); the frontend disconnect
+        # preference is store-only and never unsubscribes — that's what
+        # makes reconnect instant.
+        initial_channels.append(
+            IRealtimePublisher.station_channel("city", settings.default_city_id)
+        )
+    await pub.start(handler=_on_message, channels=initial_channels)
     await presence.connect(user_id)
 
     try:
@@ -208,6 +238,31 @@ async def ws_connect(
             elif kind == "presence":
                 status = (data.get("status") or "focus").strip() or "focus"
                 await presence.set_status(user_id, status)
+            elif kind == "join_pair_station":
+                # Pair-station subscribe. Separate from `join` because
+                # match membership lives in ``matches``, not ``rooms``,
+                # and the gate is different (member-of-match, not
+                # owner/public/visit). Frontend sends this on entering
+                # /focus/{matchId}.
+                if not settings.feat_shared_station:
+                    continue
+                match_id = data.get("match_id")
+                if not match_id:
+                    continue
+                if not await _is_match_member(
+                    database_url=settings.database_url,
+                    user_id=user_id,
+                    match_id=match_id,
+                ):
+                    log.warning(
+                        "ws_pair_station_membership_denied",
+                        user_id=user_id,
+                        match_id=match_id,
+                    )
+                    continue
+                await pub.add_channels(
+                    [IRealtimePublisher.station_channel("pair", match_id)]
+                )
             else:
                 log.debug("ws_unknown_message", kind=kind)
     except WebSocketDisconnect:

@@ -3,13 +3,24 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 
+import { ConnectedShared } from "@/components/audio/ConnectedShared";
+import { DisconnectedPersonal } from "@/components/audio/DisconnectedPersonal";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { Link } from "@/i18n/routing";
 import { NOTE } from "@/lib/pixel/sprites/props";
 import {
+  personalRadioApi,
+  type PersonalPlaylistTrack,
+} from "@/lib/api/endpoints";
+import {
   selectCurrentTrack,
   useAudioStore,
 } from "@/lib/state/audioStore";
+import { usePresenceStore } from "@/lib/state/presenceStore";
+import {
+  selectActiveConnection,
+  useStationStore,
+} from "@/lib/state/stationStore";
 
 import { EQViz } from "./EQViz";
 
@@ -43,12 +54,63 @@ export function MusicPlayer() {
   const next = useAudioStore((s) => s.next);
   const prev = useAudioStore((s) => s.prev);
 
+  const stationCity = useStationStore((s) => s.city);
+  const setActiveScope = useStationStore((s) => s.setActiveScope);
+  const hydrateCity = useStationStore((s) => s.hydrateCity);
+  const stationConnection = useStationStore(selectActiveConnection);
+  const setPersonalPlaylist = useStationStore((s) => s.setPersonalPlaylist);
+  const personalPlaylistLen = useStationStore(
+    (s) => s.personalPlaylist.length,
+  );
+  // "N listening" — reuse street presence count for city scope (cheap;
+  // dedicated SCARD on station channel would need new infra).
+  const listenerCount = usePresenceStore(
+    (s) => Object.keys(s.byId).length,
+  );
+
   // Adopt the "city" radio context on mount. Idempotent in the store —
   // navigating back to /town after visiting /focus keeps the same
   // playlist (no refetch, no playback restart).
   useEffect(() => {
     void setContext("city", "city");
   }, [setContext]);
+
+  // Tune into the city station on mount. Frontend hydrateCity swallows
+  // the 404 when the backend flag is off, so this is safe even before
+  // the worker has shipped.
+  useEffect(() => {
+    if (!stationCity) {
+      void hydrateCity();
+    }
+    setActiveScope({ kind: "city", id: stationCity?.scopeId ?? "lowbatterytown" });
+  }, [hydrateCity, setActiveScope, stationCity]);
+
+  // Seed the personal fallback playlist used by the disconnected view.
+  // Loaded lazily — only fetch when the user has stepped out at least
+  // once. The first ``disconnect()`` triggers this effect through the
+  // length-changed dep.
+  useEffect(() => {
+    if (stationConnection !== "disconnected" || personalPlaylistLen > 0) return;
+    void personalRadioApi
+      .getPlaylist({ context: "city", contextId: "personal" })
+      .then((res: { tracks: PersonalPlaylistTrack[] }) => {
+        setPersonalPlaylist(res.tracks);
+      })
+      .catch(() => {
+        // Empty playlist — disconnect view shows "playlist empty"
+      });
+  }, [stationConnection, personalPlaylistLen, setPersonalPlaylist]);
+
+  if (stationCity) {
+    if (stationConnection === "connected") {
+      return (
+        <ConnectedShared scopeKind="city" listenerCount={listenerCount} />
+      );
+    }
+    return <DisconnectedPersonal scopeKind="city" />;
+  }
+  // Feature flag off OR station not yet hydrated → fall back to the
+  // legacy per-user player so /town never goes silent.
 
   // First click both unlocks audio (browser autoplay policy needs the
   // play() call inside a user gesture) and toggles playback. Subsequent

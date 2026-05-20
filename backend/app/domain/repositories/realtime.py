@@ -15,3 +15,14 @@ class IRealtimePublisher(Protocol):
     @staticmethod
     def room_channel(room_id: str) -> str:
         return f"room:{room_id}"
+
+    @staticmethod
+    def station_channel(kind: str, scope_id: str) -> str:
+        """Cohort music station fan-out channel.
+
+        ``kind`` is ``"city"`` or ``"pair"``; ``scope_id`` is the city id
+        (single city for MVP) or the match id. Single PUBLISH per song
+        advance reaches every connected process via Redis Pub/Sub; each
+        process's WSManager fans out to local sockets.
+        """
+        return f"station:{kind}:{scope_id}"

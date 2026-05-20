@@ -58,6 +58,27 @@
         "cafe": "咖啡館",
         "forest": "森林"
       }
+    },
+    "stationPlayer": {
+      "cityHeader": "城市電台 · LIVE",
+      "pairHeader": "雙人頻道 · LIVE",
+      "loadingTrack": "連線中…",
+      "listeners": "{count, plural, =0 {目前只有你} one {# 人一起聽} other {# 人一起聽}}",
+      "listenersUnknown": "與大家一起聽",
+      "disconnect": "斷開連結",
+      "disconnectAria": "離開共聽，切換到個人播放",
+      "disconnectedLabel": "個人播放中",
+      "reconnectCity": "重新連結城市",
+      "reconnectPair": "重新連結雙人",
+      "prevAria": "上一首",
+      "playAria": "播放",
+      "pauseAria": "暫停",
+      "nextAria": "下一首",
+      "volumeAria": "音量",
+      "muteAria": "靜音",
+      "unmuteAria": "取消靜音",
+      "unlockHint": "點擊聆聽",
+      "playlistEmpty": "尚無歌單"
     }
   },
   "presence": {

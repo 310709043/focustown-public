@@ -21,6 +21,7 @@ from app.infrastructure.db.models.room_track import RoomTrackORM
 from app.infrastructure.db.models.room_visit import RoomVisitORM
 from app.infrastructure.db.models.shop_item import ShopItemORM
 from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM
+from app.infrastructure.db.models.station import StationSnapshotORM
 from app.infrastructure.db.models.track import TrackORM
 from app.infrastructure.db.models.user import UserORM
 from app.infrastructure.db.models.user_item import UserItemORM
@@ -48,6 +49,7 @@ __all__ = [
     "RoomVisitORM",
     "ShopItemORM",
     "ShopItemPriceORM",
+    "StationSnapshotORM",
     "TrackORM",
     "UserAchievementORM",
     "UserItemORM",

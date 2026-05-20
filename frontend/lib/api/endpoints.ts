@@ -586,6 +586,47 @@ export const personalRadioApi = {
   },
 };
 
+// ── shared cohort stations (Phase 10) ──────────────────
+// City + matched-pair stations: one canonical cursor per scope, fan-out
+// via WS ``station.cursor`` events. Both endpoints require auth; pair
+// returns 403 to non-members. When ``feat_shared_station=false`` on the
+// backend, both 404 (frontend stationStore.hydrate* swallows that and
+// the source-selector falls back to the personal player).
+export interface StationCursorDTO {
+  kind: "city" | "pair";
+  scope_id: string;
+  playlist_ids: string[];
+  cursor_index: number;
+  started_at_ms: number;
+  version: number;
+}
+
+export interface StationTrackDTO {
+  id: string;
+  title: string;
+  artist: string | null;
+  mood: string;
+  duration_ms: number | null;
+  content_type: string;
+}
+
+export interface StationResponse {
+  cursor: StationCursorDTO;
+  tracks: StationTrackDTO[];
+}
+
+export const stationsApi = {
+  getCity() {
+    return apiFetch<StationResponse>("/api/v1/stations/city", { method: "GET" });
+  },
+  getPair(matchId: string) {
+    return apiFetch<StationResponse>(
+      `/api/v1/stations/pair/${encodeURIComponent(matchId)}`,
+      { method: "GET" },
+    );
+  },
+};
+
 // ── per-room playlist (Phase 7) ────────────────────────
 // add(): pass the body object — apiFetch JSON-stringifies for us. Earlier
 // versions of this module called JSON.stringify here too, which
