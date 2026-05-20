@@ -72,8 +72,9 @@ export function NamedWalkers() {
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
-              // 2026-05-20: lifted +152 to sit above the slimmed BottomHUD.
-              bottom: 208,
+              // Sidewalk lane (same as <Pedestrians>). Cars drive on the
+              // road band above (220 px), people walk on this strip.
+              bottom: 172,
               zIndex: 6,
               pointerEvents: "none",
             }}

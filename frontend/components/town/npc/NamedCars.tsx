@@ -70,9 +70,9 @@ export function NamedCars() {
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
-              // 2026-05-20: lifted +152 to drive on the visible road
-              // band (now at bottom: 202..266) above the slimmed BottomHUD.
-              bottom: 156,
+              // Road lane (same as <CarsLane>). Cars drive on the road
+              // band; pedestrians walk on the sidewalk strip below.
+              bottom: 220,
               zIndex: 5,
               display: "flex",
               flexDirection: "column",

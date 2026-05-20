@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
@@ -57,22 +57,6 @@ export function MusicPlayer() {
     if (!audioUnlocked) await unlock();
     toggle();
   };
-
-  const [pos, setPos] = useState(60);
-
-  // Decorative progress bar — drifts visually while playing. The track
-  // currentTime would be more accurate but reading it on every tick from
-  // the audio element is wasteful for a sub-second-precision visual.
-  useEffect(() => {
-    if (!isPlaying) return;
-    const id = window.setInterval(() => setPos((p) => (p + 0.3) % 100), 300);
-    return () => window.clearInterval(id);
-  }, [isPlaying]);
-
-  const total = (currentTrack?.duration_ms ?? 90_000) / 1000;
-  const elapsed = (pos / 100) * total;
-  const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
-  const ss = String(Math.floor(elapsed) % 60).padStart(2, "0");
 
   return (
     <div
@@ -142,30 +126,6 @@ export function MusicPlayer() {
         >
           ▶▶
         </button>
-        <div
-          style={{
-            flex: 1,
-            height: 6,
-            background: "rgba(0,0,0,0.5)",
-            border: "1px solid var(--panel-stroke)",
-            position: "relative",
-          }}
-        >
-          <div
-            style={{
-              width: `${pos}%`,
-              height: "100%",
-              background: "var(--accent-3)",
-              boxShadow: "var(--neon-glow-cyan)",
-            }}
-          />
-        </div>
-        <span
-          className="font-silkscreen"
-          style={{ fontSize: 9, color: "var(--ink-mute)" }}
-        >
-          {mm}:{ss}
-        </span>
       </div>
 
       <div style={{ display: "flex", alignItems: "center" }}>

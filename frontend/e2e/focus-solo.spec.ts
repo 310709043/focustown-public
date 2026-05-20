@@ -4,11 +4,18 @@ import { baselineTownMocks, fixtures, json, mockApi } from "./helpers/mock-backe
 import { seedAuthTokens } from "./helpers/session";
 
 /**
- * Structural alignment for /focus/solo (Solo focus room). Asserts the
- * reference layout: ambient cycle indicator, 7-panel right rail, wide
- * notes left column. The ambient cycle is locked to `day` via
- * `localStorage.lowbatterytown.ambient.lock` so assertions don't flake on
- * the 90 s rAF cycle.
+ * Structural alignment for /focus/solo. Post-QA round-1 layout:
+ *   • Wide notes left column.
+ *   • Right rail: BigTimer → TasksPanel (with today's-goal strip in
+ *     header) → SessionInsight (rotating tips) → QuickActions.
+ *   • FloatingMusicPlayer anchored bottom-right of the whole viewport
+ *     (sibling of the body grid, not inside the notes column).
+ *
+ * Removed in round-1: FriendsNow / SoundMixer / NextEnvCard panels and
+ * the BigTimer skip button (timer must only pause + restart). The
+ * ambient cycle is locked to `day` via
+ * `localStorage.lowbatterytown.ambient.lock` so assertions don't flake
+ * on the 90 s rAF cycle.
  */
 test.describe("/focus/solo — reference parity", () => {
   test.beforeEach(async ({ page }) => {
@@ -24,7 +31,7 @@ test.describe("/focus/solo — reference parity", () => {
     );
   });
 
-  test("solo scene mounts all 7 reference panels in the right rail", async ({ page }) => {
+  test("solo scene mounts the 4-panel right rail + lifted music player", async ({ page }) => {
     await page.goto("/focus/solo");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
 
@@ -38,41 +45,44 @@ test.describe("/focus/solo — reference parity", () => {
     await expect(page.getByTestId("notes-panel")).toBeVisible();
     await expect(page.getByTestId("solo-notes")).toBeVisible();
 
-    // Right rail — 7 panels in reference order
+    // Right rail — 4 panels after QA round-1 trim
     const rail = page.getByTestId("solo-right-rail");
     await expect(rail).toBeVisible();
     await expect(rail.getByTestId("big-timer")).toBeVisible();
-    await expect(rail.getByTestId("session-insight")).toBeVisible();
-    await expect(rail.getByTestId("friends-now")).toBeVisible();
     await expect(rail.getByTestId("tasks-panel")).toBeVisible();
-    await expect(rail.getByTestId("sound-mixer")).toBeVisible();
-    await expect(rail.getByTestId("next-env-card")).toBeVisible();
+    await expect(rail.getByTestId("session-insight")).toBeVisible();
     await expect(rail.getByTestId("quick-actions")).toBeVisible();
+
+    // Removed panels MUST NOT be present anywhere on the page.
+    await expect(page.getByTestId("friends-now")).toHaveCount(0);
+    await expect(page.getByTestId("sound-mixer")).toHaveCount(0);
+    await expect(page.getByTestId("next-env-card")).toHaveCount(0);
+
+    // Music player lives outside the notes column now — must be
+    // mounted (either expanded or collapsed chrome) as a sibling of
+    // the body grid.
+    await expect(
+      page
+        .getByTestId("floating-music-player")
+        .or(page.getByTestId("floating-music-toggle")),
+    ).toBeAttached();
   });
 
-  test("BigTimer renders the 3 reference controls", async ({ page }) => {
+  test("BigTimer only renders reset + play/pause (no fast-forward)", async ({ page }) => {
     await page.goto("/focus/solo");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
     const timer = page.getByTestId("big-timer");
     await expect(timer.getByTestId("timer-reset")).toBeVisible();
     await expect(timer.getByTestId("timer-toggle")).toBeVisible();
-    await expect(timer.getByTestId("timer-skip")).toBeVisible();
+    // Skip / fast-forward button removed in QA round 1.
+    await expect(timer.getByTestId("timer-skip")).toHaveCount(0);
   });
 
-  test("SessionInsight has 4 progress chips", async ({ page }) => {
+  test("TasksPanel header shows the merged daily-goal strip (4 chips)", async ({ page }) => {
     await page.goto("/focus/solo");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    const chips = page.getByTestId("session-insight").getByTestId("progress-chip");
+    const chips = page.getByTestId("tasks-panel").getByTestId("progress-chip");
     await expect(chips).toHaveCount(4);
-  });
-
-  test("SoundMixer has 4 sliders", async ({ page }) => {
-    await page.goto("/focus/solo");
-    await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    const sliders = page
-      .getByTestId("sound-mixer")
-      .locator('input[type="range"]');
-    await expect(sliders).toHaveCount(4);
   });
 
   test("QuickActions has 3 buttons", async ({ page }) => {
@@ -82,18 +92,6 @@ test.describe("/focus/solo — reference parity", () => {
       .getByTestId("quick-actions")
       .locator("button.pixel-btn");
     await expect(buttons).toHaveCount(3);
-  });
-
-  test("NextEnvCard renders the next env emoji + 4-cell timeline", async ({ page }) => {
-    await page.goto("/focus/solo");
-    await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    const card = page.getByTestId("next-env-card");
-    await expect(card).toBeVisible();
-    await expect(card.locator("[data-next-env-emoji]")).toBeVisible();
-    const timelineCells = card
-      .getByTestId("next-env-timeline")
-      .locator("[data-timeline-slot]");
-    await expect(timelineCells).toHaveCount(4);
   });
 });
 

@@ -91,7 +91,17 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     set({ skipping: true });
     try {
       await matchesApi.skip(cur.id);
-      set({ current: null });
+      // Clicking "next" means "show me another", not "exit matching".
+      // Chain a fresh auto-match so the modal stays open with the next
+      // candidate. Only when the backend says there's no one else
+      // available do we clear `current` and let the parent page close
+      // the modal naturally.
+      try {
+        const next = await matchesApi.auto();
+        set({ current: next });
+      } catch {
+        set({ current: null });
+      }
     } finally {
       set({ skipping: false });
     }

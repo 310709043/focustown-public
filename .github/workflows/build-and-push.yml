@@ -84,6 +84,16 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
+      # NEXT_PUBLIC_* env vars are baked into the JS bundle at `pnpm build`
+      # time (see frontend/Dockerfile lines 27-32). The CSP media-src list
+      # must include every host the backend can redirect <audio> requests
+      # to — that's the public host (where /api/v1/tracks/.../stream is
+      # served) plus the regional S3 endpoint (where the backend 302s
+      # presigned URLs). path-style addressing means the bucket name is in
+      # the URL path, not the hostname, so we don't have to template
+      # S3_BUCKET into the allow-list. Both `s3.<region>` and `s3-<region>`
+      # variants exist depending on the AWS region; allow-listing both
+      # avoids region-specific surprises.
       - name: Build & push frontend (${{ matrix.env }})
         uses: docker/build-push-action@v6
         with:
@@ -97,7 +107,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_BASE_URL=https://${{ steps.host.outputs.host }}
             NEXT_PUBLIC_WS_BASE_URL=wss://${{ steps.host.outputs.host }}
-            NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=https://${{ steps.host.outputs.host }}
+            NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=https://${{ steps.host.outputs.host }},https://s3.${{ vars.AWS_REGION }}.amazonaws.com,https://s3-${{ vars.AWS_REGION }}.amazonaws.com
           cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:cache-${{ matrix.env }}
           cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:cache-${{ matrix.env }},mode=max
 

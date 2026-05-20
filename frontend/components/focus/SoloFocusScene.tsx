@@ -4,30 +4,29 @@ import { BackdropLayer } from "@/components/focus/ambient/BackdropLayer";
 import { BigTimer } from "@/components/focus/BigTimer";
 import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
 import { FocusTopBar } from "@/components/focus/FocusTopBar";
-import { FriendsNow } from "@/components/focus/FriendsNow";
-import { NextEnvCard } from "@/components/focus/NextEnvCard";
 import { QuickActions } from "@/components/focus/QuickActions";
 import { SessionInsight } from "@/components/focus/SessionInsight";
 import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
-import { SoundMixer } from "@/components/focus/SoundMixer";
 import { TasksPanel } from "@/components/focus/TasksPanel";
 import { findFocusBg, FOCUS_BG_OPTIONS } from "@/lib/data/focusBackgrounds";
 import { useAmbientCycle } from "@/lib/hooks/useAmbientCycle";
 import { useAmbientStore } from "@/lib/state/ambientStore";
 
 /**
- * Solo focus room — reference parity (reference/screen-focus.jsx).
+ * Solo focus room.
  *
- *   LEFT (2fr, wide):  `SoloNotesPanel` with the floating music player
- *                      anchored bottom-right.
- *   RIGHT (1fr, rail): `BigTimer` → `SessionInsight` → `FriendsNow` →
- *                      `TasksPanel` → `SoundMixer` → `NextEnvCard` →
- *                      `QuickActions`.
+ *   LEFT (2fr, wide):  `SoloNotesPanel`.
+ *   RIGHT (1fr, rail): `BigTimer` → `TasksPanel` (with today's-goal
+ *                      strip merged into its header) → `SessionInsight`
+ *                      (rotating tips) → `QuickActions`.
+ *   FLOATING:          `FloatingMusicPlayer` anchored bottom-right of
+ *                      the whole viewport (sibling of the body grid).
  *
- * The ambient backdrop is a two-stack of `BackdropLayer`s crossfading on
- * a 90 s cycle (25 s fade) driven by `useAmbientCycle`. No user-facing
- * picker — the picker was removed in the reference too; the only
- * override is the E2E lock at `localStorage.lowbatterytown.ambient.lock`.
+ * FriendsNow / SoundMixer / NextEnvCard panels were removed in the
+ * 2026-05-20 QA round-1 pass. The ambient backdrop is still a two-stack
+ * of `BackdropLayer`s crossfading on a 90 s cycle driven by
+ * `useAmbientCycle`. No user-facing picker — the override is the E2E
+ * lock at `localStorage.lowbatterytown.ambient.lock`.
  */
 export function SoloFocusScene() {
   useAmbientCycle();
@@ -90,7 +89,7 @@ export function SoloFocusScene() {
           overflow: "hidden",
         }}
       >
-        {/* Left wide: notes + floating music player anchored bottom-right */}
+        {/* Left wide: notes panel only — music player lifted to <main> */}
         <div
           data-testid="notes-panel"
           style={{
@@ -102,10 +101,10 @@ export function SoloFocusScene() {
           }}
         >
           <SoloNotesPanel />
-          <FloatingMusicPlayer context="focus" contextId="solo" />
         </div>
 
-        {/* Right rail — 7 reference panels in order */}
+        {/* Right rail — BigTimer / TasksPanel (with goal strip) /
+            SessionInsight tips / QuickActions */}
         <div
           data-testid="solo-right-rail"
           style={{
@@ -119,14 +118,17 @@ export function SoloFocusScene() {
           }}
         >
           <BigTimer partnerId={null} />
-          <SessionInsight />
-          <FriendsNow />
           <TasksPanel />
-          <SoundMixer />
-          <NextEnvCard />
+          <SessionInsight />
           <QuickActions />
         </div>
       </div>
+
+      {/* Floating music player — anchored bottom-right of the whole
+          viewport (sibling of the body grid, not nested in the notes
+          column). Uses `position: absolute; right: 14; bottom: 14;` so
+          it resolves against this <main> rather than the notes column. */}
+      <FloatingMusicPlayer context="focus" contextId="solo" />
     </main>
   );
 }

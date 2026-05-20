@@ -133,7 +133,9 @@
       "header": "TASKS",
       "doneOf": "{done} / {total}",
       "addPlaceholder": "Add a task, press Enter…",
-      "addCta": "Add"
+      "addCta": "Add",
+      "editAria": "Edit task",
+      "deleteAria": "Delete task"
     },
     "floatingPlayer": {
       "header": "NOW PLAYING",

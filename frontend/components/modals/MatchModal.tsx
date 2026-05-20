@@ -198,7 +198,11 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
           disabled={accepting || skipping}
           onClick={async () => {
             await skipMatch();
-            onClose();
+            // skipMatch() chains to matchesApi.auto() internally — if a
+            // next candidate was found, `current` is set to it and the
+            // modal re-renders. Only close when the store ended up with
+            // no candidate (e.g. backend returned 409 no_match_available).
+            if (!useMatchStore.getState().current) onClose();
           }}
         >
           {skipping ? t("nextLoadingCta") : t("nextCta")}

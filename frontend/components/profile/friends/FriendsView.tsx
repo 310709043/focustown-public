@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { ApiError } from "@/lib/api/client";
@@ -48,24 +48,35 @@ export function FriendsView({ onClose }: FriendsViewProps) {
   const incoming = useFriendsStore(selectIncomingRequests);
   const outgoing = useFriendsStore(selectOutgoingRequests);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [a, p] = await Promise.all([
-        friendsApi.list("accepted"),
-        friendsApi.list("requested"),
-      ]);
-      hydrate({ accepted: a.friends, incoming: p.friends });
-    } catch {
-      pushErrorToast(t("loadError"));
-    } finally {
-      setLoading(false);
-    }
-  }, [hydrate, t]);
-
+  // Mount-once fetch. Previous implementation wrapped this in useCallback
+  // with `[hydrate, t]` deps and ran it inside a useEffect keyed on the
+  // callback — under certain hydration sequences `t` from next-intl
+  // returns a new function reference each render, which made `reload` a
+  // new ref every render and triggered React #185 "Maximum update depth
+  // exceeded". Inlining the fetch with no deps breaks the cycle.
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [a, p] = await Promise.all([
+          friendsApi.list("accepted"),
+          friendsApi.list("requested"),
+        ]);
+        if (!cancelled) hydrate({ accepted: a.friends, incoming: p.friends });
+      } catch {
+        if (!cancelled) pushErrorToast(t("loadError"));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // `hydrate` (zustand action) and `t` (next-intl) are stable in
+    // practice; leaving them out of the deps array is intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const rows = useMemo(() => {
     if (tab === "friends") return accepted;

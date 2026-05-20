@@ -105,7 +105,12 @@ export function SkyWindow() {
           </div>
         </div>
 
-        {tab === "rank" ? <RankBoard /> : <AdSpace />}
+        {/* Lock the body to a single height so toggling between rank and
+            ad tabs doesn't reflow the floating panel (AdSpace is naturally
+            taller than RankBoard). */}
+        <div style={{ height: 220, overflow: "hidden" }}>
+          {tab === "rank" ? <RankBoard /> : <AdSpace />}
+        </div>
 
         {/* Bottom signal bar */}
         <div

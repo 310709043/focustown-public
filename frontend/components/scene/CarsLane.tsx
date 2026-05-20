@@ -123,9 +123,10 @@ export function CarsLane() {
   return (
     <div
       className="absolute left-0 right-0 pointer-events-none z-[5]"
-      // 2026-05-20: lifted +152 so the lane sits over the visible road
-      // surface (now at bottom: 202..266) above the slimmed BottomHUD.
-      style={{ bottom: 209, height: 56 }}
+      // Cars drive on the road band (Road: bottom 202..266). Wrapper
+      // bottom 220 + height 56 spans the road surface. Pedestrians /
+      // NamedWalkers occupy the sidewalk strip below (bottom 172).
+      style={{ bottom: 220, height: 56 }}
       aria-hidden
     >
       {users.map((u, idx) => (

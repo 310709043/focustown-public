@@ -133,7 +133,9 @@
       "header": "TASKS",
       "doneOf": "{done} / {total}",
       "addPlaceholder": "新增任務，按 Enter…",
-      "addCta": "新增"
+      "addCta": "新增",
+      "editAria": "編輯任務",
+      "deleteAria": "刪除任務"
     },
     "floatingPlayer": {
       "header": "NOW PLAYING",

@@ -14,9 +14,12 @@ interface BigTimerProps {
 }
 
 /**
- * Reference's solo-room timer card. Header (● DEEP FOCUS / BREAK +
- * 8 tomato strip), huge `PixelDigits` countdown, progress bar, three
- * control buttons (reset / play-pause / skip), and a 3-stat footer.
+ * Solo-room timer card. Header (● DEEP FOCUS / BREAK + 8 tomato strip),
+ * huge `PixelDigits` countdown, progress bar, two control buttons
+ * (reset / play-pause), and a 3-stat footer. Skip / fast-forward was
+ * dropped 2026-05-20 — the timer must only pause and restart, never
+ * jump forward.
+ *
  * Wraps the existing `useTimerStore` + `useTimer` so the session
  * lifecycle (start API call, tick interval, completion) is unchanged.
  */
@@ -105,7 +108,8 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
         />
       </div>
 
-      {/* Controls */}
+      {/* Controls — reset + play/pause only. Fast-forward / skip removed
+          per QA: the timer must not allow jumping the countdown. */}
       <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
         <button
           type="button"
@@ -131,19 +135,6 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
             : running
               ? `⏸ ${t("pauseCta")}`
               : `▶ ${t("startCta")}`}
-        </button>
-        <button
-          type="button"
-          data-testid="timer-skip"
-          className="pixel-btn"
-          style={{ padding: "8px 14px", fontSize: 11 }}
-          onClick={() => {
-            // Skipping by jumping to 0 lets the existing complete() hook
-            // run on the next tick; no special API needed.
-            useTimerStore.setState({ remaining: 0 });
-          }}
-        >
-          {t("skipCta")} ⏭
         </button>
       </div>
 

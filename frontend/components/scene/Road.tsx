@@ -1,14 +1,11 @@
 "use client";
 
 /**
- * Neon pixel asphalt that anchors Pedestrians (sidewalk at bottom 256px)
- * to CarsLane (cars at bottom 209px). The wrapper occupies a 64px-tall
- * band from bottom 202 → 266 so cars visually drive on its surface while
- * the dashed center line drifts under them.
- *
- * 2026-05-20: lifted +152 from the original `bottom: 50` so the street
- * band sits above the (now 144 px) BottomHUD instead of being hidden
- * behind it.
+ * Neon pixel asphalt. Cars drive on top (CarsLane / NamedCars at bottom
+ * 220px); pedestrians walk on the sidewalk strip just above the
+ * BottomHUD (Pedestrians / NamedWalkers at bottom 172px). The wrapper
+ * occupies a 64px-tall band from bottom 202 → 266 so the dashed center
+ * line drifts under the cars.
  *
  * Pure CSS — no JS, no rAF, no image assets. The single animation
  * (`roadDash`) is GPU-friendly (background-position-x only) and respects

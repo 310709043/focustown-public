@@ -28,21 +28,18 @@ export function BottomHUD({ onFindBuddy }: BottomHUDProps) {
   return (
     <div
       data-testid="bottom-hud"
-      // Desktop: 3-col grid, fixed 144 px tall (was 204; shrunk
-      // 2026-05-20 after dropping MatchPanel tag chips + MusicPlayer
-      // genre tabs + standalone unlock CTA — uncovers the street band).
-      // Mobile (< md): single-column stack with auto height, capped at
-      // 50vh so it never eats more than half the viewport. Scroll if
-      // needed — the panels are compact enough that on most phones
-      // they'll fit naturally.
-      className="md:grid md:grid-cols-[0.95fr_1.15fr_0.9fr] flex flex-col h-auto max-h-[50vh] overflow-y-auto md:h-[144px] md:max-h-none md:overflow-visible"
+      // Desktop: 3-col grid, fixed 168 px tall. Mobile (< md): single-
+      // column stack with auto height, capped at 50vh so it never eats
+      // more than half the viewport. Scroll if needed — the panels are
+      // compact enough that on most phones they'll fit naturally.
+      className="md:grid md:grid-cols-[0.95fr_1.15fr_0.9fr] flex flex-col h-auto max-h-[50vh] overflow-y-auto md:h-[168px] md:max-h-none md:overflow-visible"
       style={{
         position: "absolute",
         left: 0,
         right: 0,
         bottom: 0,
         gap: 12,
-        padding: 12,
+        padding: 16,
         background:
           "linear-gradient(180deg, transparent 0%, rgba(7,4,26,0.92) 30%, rgba(7,4,26,1) 100%)",
         borderTop: "1px solid var(--panel-stroke)",

@@ -117,16 +117,9 @@ export function SharedTimer({ matchId }: SharedTimerProps) {
         >
           {running ? `⏸ ${t("pauseCta")}` : `▶ ${t("startCta")}`}
         </button>
-        <button
-          type="button"
-          data-testid="shared-timer-skip"
-          aria-label={t("skipAria")}
-          className="pixel-btn"
-          style={{ padding: "6px 12px", fontSize: 11 }}
-          onClick={() => useTimerStore.setState({ remaining: 0 })}
-        >
-          {t("skipCta")} ⏭
-        </button>
+        {/* Skip / fast-forward removed in QA round 1 — buddy-room timer
+            (like the solo BigTimer) must only pause and restart, never
+            jump the countdown. */}
       </div>
 
       <div

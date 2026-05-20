@@ -131,11 +131,36 @@ export function GlobalAudioMount() {
 
   const onEnded = () => useAudioStore.getState().next();
 
+  // Defensive handler — a track src can fail for reasons outside our
+  // control: expired S3 presigned URL, transient 5xx from the backend,
+  // CSP media-src not yet propagated after a deploy, a track row whose
+  // file was pruned from object storage. Without this hook a dead src
+  // produces silent failure: no UI feedback, no recovery, no signal in
+  // logs. Here we (a) emit a console.warn with the track id + numeric
+  // error code so AWS dev triage isn't guesswork, and (b) auto-advance
+  // so one bad URL doesn't poison the rest of the playlist.
+  //
+  // Privacy: we deliberately log only the track id (a UUID — not
+  // sensitive) and the integer error code. The full `audioRef.src`
+  // contains the presigned signature and MUST NOT be logged.
+  const onError = () => {
+    const s = useAudioStore.getState();
+    const t = selectCurrentTrack(s);
+    const code = audioRef.current?.error?.code;
+    console.warn("[audio] media error", { trackId: t?.id ?? null, code });
+    if (s.tracks.length > 1) s.next();
+  };
+
   return (
     <audio
       ref={audioRef}
       preload="metadata"
+      // `anonymous` keeps the request unauthenticated (no cookies sent
+      // cross-origin) but enables proper `error` event delivery for
+      // cross-origin redirects, which is what the S3 presigned flow is.
+      crossOrigin="anonymous"
       onEnded={onEnded}
+      onError={onError}
       style={{ display: "none" }}
       aria-hidden
     />
