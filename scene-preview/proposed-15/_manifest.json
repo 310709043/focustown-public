@@ -1,0 +1,117 @@
+{
+  "_about": "Static preview of 15 composed /town scenes. Open index.html in any browser (file:// works) — every scene is rendered as a 1106x720 stage. Each scene = one 322807 city composite as the full backdrop (already brings its own mood-matched sky) + 2-4 small 801184 cloud sprites scattered at top/mid/low tiers for a 'calm scattered clouds' feel. Three night scenes layer 281031 bg4 (moon+stars sky) above the city for added celestial weight. NO 995711 dramatic large clouds — replaced per 2026-05-20 feedback ('把那種超大朵的雲拿掉'). Aesthetic target: 放鬆體驗 — relaxation. Production implementation will animate the small sprites with slow parallax drift + soft flicker; this preview is frozen.",
+  "stage": { "w": 1106, "h": 720 },
+  "asset_packs": {
+    "city":   "reference/reference-latest/craftpix-net-322807-free-city-backgrounds-pixel-art",
+    "cloud":  "reference/reference-latest/craftpix-net-801184-free-clouds-pixel-art-asset-pack/PNG",
+    "sky_o":  "reference/reference-latest/craftpix-net-281031-free-1-bit-sky-and-clouds-pixel-backgrounds"
+  },
+  "cloud_tier_anchors": {
+    "top-l":  { "top": "6%",  "left":  "6%",  "width": "18%" },
+    "top-c":  { "top": "8%",  "left": "42%",  "width": "20%" },
+    "top-r":  { "top": "5%",  "right": "8%",  "width": "16%" },
+    "mid-l":  { "top": "26%", "left":  "8%",  "width": "26%" },
+    "mid-c":  { "top": "30%", "left": "40%",  "width": "22%" },
+    "mid-r":  { "top": "24%", "right": "10%", "width": "24%" },
+    "low-l":  { "top": "44%", "left":  "4%",  "width": "32%" },
+    "low-r":  { "top": "48%", "right": "6%",  "width": "30%" }
+  },
+  "scenes": [
+    { "id": "01", "name": "dawn-rose-puffs-city2",       "city": 2, "city_png": "city 2/7.png",
+      "clouds": [
+        { "png": "Clouds_white/Shape1/cloud_shape1_3.png",  "tier": "mid-l" },
+        { "png": "Clouds_white/Shape4/cloud_shape4_2.png",  "tier": "low-r" }
+      ] },
+    { "id": "02", "name": "dawn-cirrus-city4",            "city": 4, "city_png": "city 4/8.png",
+      "clouds": [
+        { "png": "Clouds_white/Shape1/cloud_shape1_2.png",  "tier": "top-r" },
+        { "png": "Clouds_white/Shape7/cloud_shape7_3.png",  "tier": "mid-l" }
+      ] },
+    { "id": "03", "name": "morning-bright-city3",         "city": 3, "city_png": "city 3/6.png",
+      "clouds": [
+        { "png": "Clouds_white/Shape2/cloud_shape2_3.png",  "tier": "top-c" },
+        { "png": "Clouds_white/Shape4/cloud_shape4_3.png",  "tier": "low-l" }
+      ] },
+    { "id": "04", "name": "midday-soft-city5",            "city": 5, "city_png": "city 5/6.png",
+      "clouds": [
+        { "png": "Clouds_white/Shape5/cloud_shape5_3.png",  "tier": "top-l" },
+        { "png": "Clouds_white/Shape8/clouds_shape8_3.png", "tier": "mid-r" }
+      ] },
+    { "id": "05", "name": "quiet-noon-city7",             "city": 7, "city_png": "city 7/6.png",
+      "clouds": [
+        { "png": "Clouds_white/Shape7/cloud_shape7_3.png",  "tier": "mid-c" },
+        { "png": "Clouds_white/Shape1/cloud_shape1_2.png",  "tier": "top-r" }
+      ] },
+    { "id": "06", "name": "afternoon-cool-city8",         "city": 8, "city_png": "city 8/6.png",
+      "clouds": [
+        { "png": "Clouds_white/Shape4/cloud_shape4_3.png",  "tier": "low-l" },
+        { "png": "Clouds_white/Shape5/cloud_shape5_3.png",  "tier": "top-c" }
+      ] },
+    { "id": "07", "name": "golden-hour-city2",            "city": 2, "city_png": "city 2/7.png",
+      "clouds": [
+        { "png": "Clouds_gray/Shape6/cloud_shape6_3.png",   "tier": "mid-r" },
+        { "png": "Clouds_white/Shape1/cloud_shape1_3.png",  "tier": "top-l" }
+      ] },
+    { "id": "08", "name": "synthwave-calm-city6",         "city": 6, "city_png": "city 6/7.png",
+      "clouds": [
+        { "png": "Clouds_gray/Shape6/cloud_shape6_3.png",   "tier": "mid-c" },
+        { "png": "Clouds_white/Shape5/cloud_shape5_3.png",  "tier": "top-l" }
+      ] },
+    { "id": "09", "name": "twilight-wisp-city4",          "city": 4, "city_png": "city 4/8.png",
+      "clouds": [
+        { "png": "Clouds_white/Shape8/clouds_shape8_3.png", "tier": "mid-c" },
+        { "png": "Clouds_white/Shape7/cloud_shape7_3.png",  "tier": "top-r" }
+      ] },
+    { "id": "10", "name": "evening-glow-city5",           "city": 5, "city_png": "city 5/6.png",
+      "clouds": [
+        { "png": "Clouds_gray/Shape6/cloud_shape6_3.png",   "tier": "mid-l" },
+        { "png": "Clouds_white/Shape4/cloud_shape4_3.png",  "tier": "low-r" }
+      ] },
+    { "id": "11", "name": "tranquil-night-city1",         "city": 1, "city_png": "city 1/6.png",
+      "clouds": [
+        { "png": "Clouds_gray/Shape6/cloud_shape6_3.png",   "tier": "top-c" },
+        { "png": "Clouds_gray/Shape3/cloud_shape3_3.png",   "tier": "low-l" }
+      ] },
+    { "id": "12", "name": "starlit-moon-city1",           "city": 1, "city_png": "city 1/6.png",
+      "sky_overlay": { "png": "background 4/1.png", "opacity": 0.55, "blend": "screen" },
+      "clouds": [
+        { "png": "Clouds_white/Shape5/cloud_shape5_3.png",  "tier": "mid-c" }
+      ] },
+    { "id": "13", "name": "deep-night-city8",             "city": 8, "city_png": "city 8/6.png",
+      "clouds": [
+        { "png": "Clouds_black/Shape3/cloud_shape3_3.png",  "tier": "low-l" },
+        { "png": "Clouds_gray/Shape6/cloud_shape6_3.png",   "tier": "mid-r" }
+      ] },
+    { "id": "14", "name": "moonrise-city6",               "city": 6, "city_png": "city 6/7.png",
+      "sky_overlay": { "png": "background 4/1.png", "opacity": 0.45, "blend": "screen" },
+      "clouds": [
+        { "png": "Clouds_white/Shape7/cloud_shape7_3.png",  "tier": "top-r" }
+      ] },
+    { "id": "15", "name": "sparse-stars-city7",           "city": 7, "city_png": "city 7/6.png",
+      "sky_overlay": { "png": "background 4/1.png", "opacity": 0.40, "blend": "screen" },
+      "clouds": [
+        { "png": "Clouds_white/Shape5/cloud_shape5_3.png",  "tier": "mid-c" },
+        { "png": "Clouds_black/Shape3/cloud_shape3_3.png",  "tier": "low-r" }
+      ] }
+  ],
+  "coverage": {
+    "cities":    { "1": ["11","12"], "2": ["01","07"], "3": ["03"], "4": ["02","09"], "5": ["04","10"], "6": ["08","14"], "7": ["05","15"], "8": ["06","13"] },
+    "shapes_801184": {
+      "Shape1": ["01","02","05","07"],
+      "Shape2": ["03"],
+      "Shape3": ["11","13","15"],
+      "Shape4": ["01","03","06","10"],
+      "Shape5": ["04","06","08","12","15"],
+      "Shape6": ["07","08","10","11","13"],
+      "Shape7": ["02","05","09","14"],
+      "Shape8": ["04","09"]
+    },
+    "palettes_801184": { "white": ["01","02","03","04","05","06","07","08","09","10","12","14","15"], "gray": ["07","08","10","11","13","15"], "black": ["13","15"] },
+    "sky_overlays_281031": ["12","14","15"]
+  },
+  "design_rationale": {
+    "no_dramatic_clouds": "Removed all 995711 cloud-mountain overlays per 2026-05-20 user feedback. 801184 small sprites at natural pixel size (18-32% stage width) give 'scattered relaxed clouds' instead of looming.",
+    "sky_source": "Each 322807 city composite (the highest 576x324 layer per city folder) already bakes a beautifully painted mood-matched sky. That IS the sky source for 12 of the 15 scenes. The 3 deep-night scenes (12, 14, 15) layer 281031 bg4/1 (moon+stars sky) above the city via screen-blend at 40-55% to amplify celestial presence without overwriting the city.",
+    "relaxation_aesthetic": "All scenes follow 放鬆 cues: small sparse clouds (no towers, no dense banks), no lightning/storm, gentle gradients via city composites, palette restraint per city's natural mood. Coverage guarantee retained: all 8 cities used, all 8 cloud shapes used, all 3 cloud palettes represented."
+  }
+}

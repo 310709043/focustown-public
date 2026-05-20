@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>/town — 15 scene preview (放鬆 v2, 2026-05-20)</title>
+<style>
+  :root {
+    --bg: #15131e;
+    --card-border: #2a2735;
+    --text: #f4ecd8;
+    --muted: #8c87a3;
+    --accent: #e9a76e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  header {
+    padding: 24px 32px 8px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  header h1 { margin: 0 0 6px; font-size: 18px; letter-spacing: 0.04em; }
+  header p { margin: 4px 0; font-size: 12px; color: var(--muted); max-width: 1100px; line-height: 1.5; }
+  header .accent { color: var(--accent); }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 24px 32px 64px;
+  }
+  .card {
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    background: #0e0c16;
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #1b1828;
+    border-bottom: 1px solid var(--card-border);
+    font-size: 12px;
+  }
+  .card-head .id { color: var(--accent); font-weight: 700; margin-right: 10px; }
+  .card-head .name { color: var(--text); }
+  .card-head .meta { color: var(--muted); font-size: 11px; }
+  .stage {
+    position: relative;
+    width: 1106px;
+    height: 720px;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    background: #000;
+  }
+  @media (max-width: 1106px) {
+    .stage { width: 100%; height: auto; aspect-ratio: 1106 / 720; }
+  }
+  .stage img, .stage .sky-overlay {
+    position: absolute;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .city-bg {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom;
+  }
+  .sky-overlay {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  /* Cloud sprites render at natural pixel aspect (height: auto) at a
+     small percentage width of the stage so they stay clearly
+     'scattered small clouds' — never full-width cloud-mountains. */
+  .cloud { height: auto; }
+  .tier-top-l { top: 6%;  left: 6%;   width: 18%; }
+  .tier-top-c { top: 8%;  left: 42%;  width: 20%; }
+  .tier-top-r { top: 5%;  right: 8%;  width: 16%; }
+  .tier-mid-l { top: 26%; left: 8%;   width: 26%; }
+  .tier-mid-c { top: 30%; left: 40%;  width: 22%; }
+  .tier-mid-r { top: 24%; right: 10%; width: 24%; }
+  .tier-low-l { top: 44%; left: 4%;   width: 32%; }
+  .tier-low-r { top: 48%; right: 6%;  width: 30%; }
+</style>
+</head>
+<body>
+<header>
+  <h1>/town — 15 scene preview <span class="accent">(放鬆 v2, 2026-05-20)</span></h1>
+  <p>
+    Each stage is 1106×720. Backdrop = one 322807 city composite (the city already brings its
+    mood-matched sky). Cloud overlay sprites are from
+    <span class="accent">craftpix-net-801184/PNG</span> — small natural-sized sprites
+    scattered at top / mid / low tier anchors, not full-width cloud-mountains. Three night scenes
+    (12, 14, 15) layer 281031 bg4/1 (moon + stars) at 40–55% screen-blend for added celestial weight.
+  </p>
+  <p>
+    Coverage: all 8 cities, all 8 cloud shapes, 3 cloud palettes (white / gray / black) — see
+    <code>_manifest.json</code> for the full mapping. Production implementation will animate the
+    sprites with slow horizontal parallax drift (top slower, low faster) + soft 6–10 s opacity
+    breathing; this preview is frozen for art-direction review.
+  </p>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<script>
+  const REF = "../../reference/reference-latest";
+  const CITY_BASE  = REF + "/craftpix-net-322807-free-city-backgrounds-pixel-art";
+  const CLOUD_BASE = REF + "/craftpix-net-801184-free-clouds-pixel-art-asset-pack/PNG";
+  const SKY_BASE   = REF + "/craftpix-net-281031-free-1-bit-sky-and-clouds-pixel-backgrounds";
+
+  function asset(base, relPath) {
+    return base + "/" + relPath.split("/").map(encodeURIComponent).join("/");
+  }
+
+  const SCENES = [
+    { id: "01", name: "dawn-rose-puffs-city2",   city: "city 2/7.png",
+      clouds: [["Clouds_white/Shape1/cloud_shape1_3.png", "mid-l"],
+               ["Clouds_white/Shape4/cloud_shape4_2.png", "low-r"]] },
+    { id: "02", name: "dawn-cirrus-city4",       city: "city 4/8.png",
+      clouds: [["Clouds_white/Shape1/cloud_shape1_2.png", "top-r"],
+               ["Clouds_white/Shape7/cloud_shape7_3.png", "mid-l"]] },
+    { id: "03", name: "morning-bright-city3",    city: "city 3/6.png",
+      clouds: [["Clouds_white/Shape2/cloud_shape2_3.png", "top-c"],
+               ["Clouds_white/Shape4/cloud_shape4_3.png", "low-l"]] },
+    { id: "04", name: "midday-soft-city5",       city: "city 5/6.png",
+      clouds: [["Clouds_white/Shape5/cloud_shape5_3.png", "top-l"],
+               ["Clouds_white/Shape8/clouds_shape8_3.png","mid-r"]] },
+    { id: "05", name: "quiet-noon-city7",        city: "city 7/6.png",
+      clouds: [["Clouds_white/Shape7/cloud_shape7_3.png", "mid-c"],
+               ["Clouds_white/Shape1/cloud_shape1_2.png", "top-r"]] },
+    { id: "06", name: "afternoon-cool-city8",    city: "city 8/6.png",
+      clouds: [["Clouds_white/Shape4/cloud_shape4_3.png", "low-l"],
+               ["Clouds_white/Shape5/cloud_shape5_3.png", "top-c"]] },
+    { id: "07", name: "golden-hour-city2",       city: "city 2/7.png",
+      clouds: [["Clouds_gray/Shape6/cloud_shape6_3.png",  "mid-r"],
+               ["Clouds_white/Shape1/cloud_shape1_3.png", "top-l"]] },
+    { id: "08", name: "synthwave-calm-city6",    city: "city 6/7.png",
+      clouds: [["Clouds_gray/Shape6/cloud_shape6_3.png",  "mid-c"],
+               ["Clouds_white/Shape5/cloud_shape5_3.png", "top-l"]] },
+    { id: "09", name: "twilight-wisp-city4",     city: "city 4/8.png",
+      clouds: [["Clouds_white/Shape8/clouds_shape8_3.png","mid-c"],
+               ["Clouds_white/Shape7/cloud_shape7_3.png", "top-r"]] },
+    { id: "10", name: "evening-glow-city5",      city: "city 5/6.png",
+      clouds: [["Clouds_gray/Shape6/cloud_shape6_3.png",  "mid-l"],
+               ["Clouds_white/Shape4/cloud_shape4_3.png", "low-r"]] },
+    { id: "11", name: "tranquil-night-city1",    city: "city 1/6.png",
+      clouds: [["Clouds_gray/Shape6/cloud_shape6_3.png",  "top-c"],
+               ["Clouds_gray/Shape3/cloud_shape3_3.png",  "low-l"]] },
+    { id: "12", name: "starlit-moon-city1",      city: "city 1/6.png",
+      sky:   { png: "background 4/1.png", opacity: 0.55 },
+      clouds: [["Clouds_white/Shape5/cloud_shape5_3.png", "mid-c"]] },
+    { id: "13", name: "deep-night-city8",        city: "city 8/6.png",
+      clouds: [["Clouds_black/Shape3/cloud_shape3_3.png", "low-l"],
+               ["Clouds_gray/Shape6/cloud_shape6_3.png",  "mid-r"]] },
+    { id: "14", name: "moonrise-city6",          city: "city 6/7.png",
+      sky:   { png: "background 4/1.png", opacity: 0.45 },
+      clouds: [["Clouds_white/Shape7/cloud_shape7_3.png", "top-r"]] },
+    { id: "15", name: "sparse-stars-city7",      city: "city 7/6.png",
+      sky:   { png: "background 4/1.png", opacity: 0.40 },
+      clouds: [["Clouds_white/Shape5/cloud_shape5_3.png", "mid-c"],
+               ["Clouds_black/Shape3/cloud_shape3_3.png", "low-r"]] }
+  ];
+
+  const grid = document.getElementById("grid");
+  for (const s of SCENES) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const head = document.createElement("div");
+    head.className = "card-head";
+    head.innerHTML = `<div><span class="id">${s.id}</span><span class="name">${s.name}</span></div>
+                      <div class="meta">city: ${s.city.replace(/\.png$/, "")} ·
+                        clouds: ${s.clouds.length}${s.sky ? " · +sky:" + s.sky.png.replace(/\.png$/, "") : ""}</div>`;
+
+    const stage = document.createElement("div");
+    stage.className = "stage";
+
+    const bg = document.createElement("img");
+    bg.className = "city-bg";
+    bg.src = asset(CITY_BASE, s.city);
+    bg.alt = "";
+    stage.appendChild(bg);
+
+    if (s.sky) {
+      const sky = document.createElement("img");
+      sky.className = "sky-overlay";
+      sky.src = asset(SKY_BASE, s.sky.png);
+      sky.alt = "";
+      sky.style.opacity = String(s.sky.opacity);
+      stage.appendChild(sky);
+    }
+
+    for (const [path, tier] of s.clouds) {
+      const c = document.createElement("img");
+      c.className = "cloud tier-" + tier;
+      c.src = asset(CLOUD_BASE, path);
+      c.alt = "";
+      stage.appendChild(c);
+    }
+
+    card.appendChild(head);
+    card.appendChild(stage);
+    grid.appendChild(card);
+  }
+</script>
+</body>
+</html>

@@ -36,6 +36,9 @@ test.describe("/town navigation", () => {
     await expect(page.getByTestId("sky-window")).toBeVisible();
     await expect(page.getByTestId("ticker-bar")).toHaveCount(2);
 
+    // v2 SceneBackdrop replaces the old Sky+Clouds+CityBackground stack.
+    await expect(page.getByTestId("scene-backdrop")).toBeVisible();
+
     // Named buildings — 10 in the foreground row.
     const buildings = page
       .getByTestId("named-buildings")

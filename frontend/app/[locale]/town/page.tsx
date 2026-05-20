@@ -13,29 +13,28 @@ import { useRealtimeMatch } from "@/lib/ws/useRealtimeMatch";
 import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionCompleted";
 import { useMatchStore } from "@/lib/state/matchStore";
 
-import { Sky } from "@/components/scene/Sky";
-import { CityBackground } from "@/components/scene/CityBackground";
-import { StarsLayer } from "@/components/scene/StarsLayer";
+import { SceneBackdrop } from "@/components/scene/SceneBackdrop";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { FrameTicker } from "@/components/pixel/FrameTicker";
 import { StreetProps } from "@/components/scene/StreetProps";
 import { Road } from "@/components/scene/Road";
-import { SCENES } from "@/lib/data/scenes";
 
 // Reference-design town visuals (Page 3 of UI sync). The named
-// 9-building cityscape, pixel celestial sprite, FOCUS BROADCAST sky
-// window, and 3-cluster top HUD.
+// 9-building cityscape, FOCUS BROADCAST sky window, and 3-cluster
+// top HUD. The pre-v2 Sky / Stars / CelestialBody / CityBackground /
+// Clouds stack is replaced by SceneBackdrop — each scene paints with
+// one 322807 city composite (sky + buildings + stars + moon baked in)
+// plus small 801184 sprite clouds and an optional 281031 moon-stars
+// sky overlay for night scenes.
 import { NamedBuildings } from "@/components/town/scene/NamedBuildings";
-import { CelestialBody } from "@/components/town/scene/CelestialBody";
 import { SkyWindow } from "@/components/town/scene/SkyWindow";
 import { TownTopHUD, type TownModalKind } from "@/components/town/scene/TownTopHUD";
 import { NamedWalkers } from "@/components/town/npc/NamedWalkers";
 import { NamedCats } from "@/components/town/npc/NamedCats";
 import { NamedBirds } from "@/components/town/npc/NamedBirds";
 import { NamedCars } from "@/components/town/npc/NamedCars";
-import { Clouds } from "@/components/scene/Clouds";
 
 // Ambient / animation-only scene entities lazy-load so they don't block
 // the first paint. Each runs an independent animation loop, none of them
@@ -52,10 +51,6 @@ const Birds = dynamic(
 );
 const Dogs = dynamic(
   () => import("@/components/scene/Dogs").then((m) => ({ default: m.Dogs })),
-  { ssr: false },
-);
-const ShootingStars = dynamic(
-  () => import("@/components/pixel/ShootingStars").then((m) => ({ default: m.ShootingStars })),
   { ssr: false },
 );
 
@@ -214,7 +209,6 @@ export default function TownPage() {
   });
 
   const currentScene = useSceneStore((s) => s.current);
-  const sceneHasStars = SCENES[currentScene].stars > 0;
   const sceneIsWet = currentScene === "rain" || currentScene === "storm";
 
   return (
@@ -226,26 +220,15 @@ export default function TownPage() {
       <TownTopHUD onOpenModal={setOpenModal} onOpenOwnProfile={onOpenOwnProfile} />
 
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
-           z-order: sky → stars → shooting stars → celestial sprite → planes →
-           named skyline → ground crowd → rain overlay → sky window → HUD. */}
+           z-order: scene backdrop (city composite + cloud sprites + optional
+           moon-stars sky overlay) → planes → named skyline → ground crowd →
+           rain overlay → sky window → HUD. */}
       <div className="flex-1 relative overflow-hidden">
-        <Sky />
-        <StarsLayer />
-        {sceneHasStars ? <ShootingStars /> : null}
-        <CelestialBody />
-
-        {/* City 1 distant skyline (832833 pack, 5 layers Day+Night) — sits
-            behind the named buildings so the canonical landmarks still
-            read as foreground. Layers 1-3 only for now; 4-5 reserved for
-            a future "extended depth" tuning if the named skyline feels
-            too thin against the new background. */}
-        <CityBackground />
-
-        {/* 801184 sprite clouds — mounted for ALL scenes (not just cloudy)
-            per Phase 1.E. Density + palette + opacity vary by scene; the
-            rAF tick is per-scene by render but always runs since clouds
-            are now part of every sky. */}
-        <Clouds />
+        {/* v2 放鬆 backdrop — one 322807 city composite + 1–2 drifting 801184
+            cloud sprites per scene; three night scenes also layer a 281031
+            moon-stars sky overlay. Replaces the previous Sky + StarsLayer +
+            ShootingStars + CelestialBody + CityBackground + Clouds stack. */}
+        <SceneBackdrop />
 
         {/* two airplanes with offset cycles so the sky always has movement */}
         <Airplane intervalSeconds={22} delaySeconds={0} />

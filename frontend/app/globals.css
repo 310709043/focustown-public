@@ -691,3 +691,73 @@ body {
   to { background-position: -12px 0; }
 }
 .animate-pixelTicker { animation: pixelTicker 6s linear infinite; }
+
+/* ──────────────────────────────────────────────────────────────────
+   SceneBackdrop (v2 放鬆) — see SceneBackdrop.tsx + DriftCloud.tsx.
+   ────────────────────────────────────────────────────────────────── */
+.scene-backdrop-city {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.scene-backdrop-sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+.scene-cloud-tier {
+  position: absolute;
+  pointer-events: none;
+}
+.scene-cloud-tier-top-l { top:  6%; left:   6%; width: 18%; }
+.scene-cloud-tier-top-c { top:  8%; left:  42%; width: 20%; }
+.scene-cloud-tier-top-r { top:  5%; right:  8%; width: 16%; }
+.scene-cloud-tier-mid-l { top: 26%; left:   8%; width: 26%; }
+.scene-cloud-tier-mid-c { top: 30%; left:  40%; width: 22%; }
+.scene-cloud-tier-mid-r { top: 24%; right: 10%; width: 24%; }
+.scene-cloud-tier-low-l { top: 44%; left:   4%; width: 32%; }
+.scene-cloud-tier-low-r { top: 48%; right:  6%; width: 30%; }
+.scene-cloud-sprite {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform, opacity;
+  animation: sceneCloudBreath 9s ease-in-out infinite;
+}
+@keyframes sceneCloudBreath {
+  0%, 100% { opacity: 0.78; }
+  50%      { opacity: 1.0;  }
+}
+@keyframes sceneBackdropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes sceneBackdropFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.scene-backdrop-fade-in  { animation: sceneBackdropFadeIn 6s ease-in-out forwards; }
+.scene-backdrop-fade-out { animation: sceneBackdropFadeOut 6s ease-in-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .scene-cloud-sprite { animation: none; opacity: 1; }
+  .scene-backdrop-fade-in,
+  .scene-backdrop-fade-out { animation-duration: 1ms; }
+}
