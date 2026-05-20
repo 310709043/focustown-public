@@ -43,7 +43,7 @@ import {
 // prefixed `local:` route through `resolveTrackSrc` to static
 // `/audio/*.mp3` files in the frontend public dir — guarantees the
 // player never sits idle even on a cold cache or backend hiccup.
-const LOCAL_FALLBACK_TRACKS: PersonalPlaylistTrack[] = [
+export const LOCAL_FALLBACK_TRACKS: PersonalPlaylistTrack[] = [
   {
     id: "local:lofi-1",
     title: "Lo-fi Drift",

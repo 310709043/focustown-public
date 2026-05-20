@@ -58,6 +58,24 @@
         -Server
     }
 
+    # Cache-busting for HTML / SSR responses. Without this, browsers and
+    # any upstream CDN cache the App Router HTML shell after a deploy, so
+    # users keep seeing the old build until they manually hard-refresh.
+    # Hashed static assets under /_next/static/* keep Next.js's built-in
+    # `immutable` long-cache (handled by the framework itself, not here),
+    # so we narrowly opt only the dynamic surfaces out of cacheing.
+    @dynamic {
+        not path /_next/static/*
+        not path /assets/*
+        not path /audio/*
+        not path /favicon.ico
+        not path /healthz
+    }
+    header @dynamic {
+        Cache-Control "no-cache, no-store, must-revalidate"
+        Pragma "no-cache"
+    }
+
     log {
         output stdout
         format json

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import {
+  LOCAL_FALLBACK_TRACKS,
   resolveTrackSrc,
   selectCurrentTrack,
   useAudioStore,
@@ -29,6 +30,15 @@ import { clearAudioUnlocked, isAudioUnlocked } from "@/lib/audio/unlock";
  */
 export function GlobalAudioMount() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Tracks which playlist ids have failed within a tight window. Once every
+  // track in the current playlist has thrown at least once in the same
+  // ~800 ms burst, we stop the rapid-cycle and swap to LOCAL_FALLBACK_TRACKS
+  // so the user actually hears something instead of watching the index
+  // flicker through every dead presigned URL.
+  const errorBudget = useRef<{ failed: Set<string>; lastAt: number }>({
+    failed: new Set(),
+    lastAt: 0,
+  });
 
   // Sync `audioUnlocked` from sessionStorage on first mount. The store's
   // persist `onRehydrateStorage` also handles this, but covering both
@@ -148,6 +158,29 @@ export function GlobalAudioMount() {
     const t = selectCurrentTrack(s);
     const code = audioRef.current?.error?.code;
     console.warn("[audio] media error", { trackId: t?.id ?? null, code });
+    if (!t) return;
+
+    // Reset the "failed this burst" set whenever errors stop coming for a
+    // beat — a one-off transient on a healthy playlist shouldn't poison
+    // future cycles.
+    const now = performance.now();
+    if (now - errorBudget.current.lastAt > 800) {
+      errorBudget.current.failed.clear();
+    }
+    errorBudget.current.lastAt = now;
+    errorBudget.current.failed.add(t.id);
+
+    // If every track in the current playlist has failed at least once in
+    // this burst, advancing won't help — swap to the static local fallback
+    // so the user hears actual audio instead of rapid-cycling silence.
+    if (errorBudget.current.failed.size >= s.tracks.length) {
+      console.warn(
+        "[audio] all tracks failed; switching to local fallback",
+      );
+      useAudioStore.setState({ tracks: LOCAL_FALLBACK_TRACKS, index: 0 });
+      errorBudget.current.failed.clear();
+      return;
+    }
     if (s.tracks.length > 1) s.next();
   };
 

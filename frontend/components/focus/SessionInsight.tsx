@@ -64,41 +64,43 @@ export function DailyGoalStrip({ goal = 4, completed = 3 }: Props = {}) {
           {t("progressCounter", { done: completed, goal })}
         </span>
       </div>
-      <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
-        {Array.from({ length: goal }).map((_, i) => {
-          const isDone = i < completed;
-          const isCursor = i === completed;
-          return (
-            <div
-              key={i}
-              data-testid="progress-chip"
-              style={{
-                flex: 1,
-                height: 12,
-                border: "1px solid var(--panel-stroke)",
-                background: isDone ? "var(--accent)" : "rgba(0,0,0,0.4)",
-                boxShadow: isDone ? "0 0 6px var(--accent)" : "none",
-                position: "relative",
-              }}
-            >
-              <span
-                className="font-silkscreen"
+      {goal > 0 ? (
+        <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+          {Array.from({ length: goal }).map((_, i) => {
+            const isDone = i < completed;
+            const isCursor = i === completed;
+            return (
+              <div
+                key={i}
+                data-testid="progress-chip"
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 9,
-                  color: isDone ? "#0a0524" : "var(--ink-dim)",
+                  flex: 1,
+                  height: 12,
+                  border: "1px solid var(--panel-stroke)",
+                  background: isDone ? "var(--accent)" : "rgba(0,0,0,0.4)",
+                  boxShadow: isDone ? "0 0 6px var(--accent)" : "none",
+                  position: "relative",
                 }}
               >
-                {isDone ? "✓" : isCursor ? t("hereLabel") : ""}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+                <span
+                  className="font-silkscreen"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 9,
+                    color: isDone ? "#0a0524" : "var(--ink-dim)",
+                  }}
+                >
+                  {isDone ? "✓" : isCursor ? t("hereLabel") : ""}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -53,7 +53,7 @@ export function SceneBackdrop() {
     <div
       data-testid="scene-backdrop"
       aria-hidden
-      className="absolute inset-0 overflow-hidden"
+      className="scene-backdrop absolute inset-0 overflow-hidden"
       style={{ zIndex: 0 }}
     >
       {fading ? (

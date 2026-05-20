@@ -88,8 +88,10 @@ export function TasksPanel() {
         gap: 10,
       }}
     >
-      {/* Today's goal strip — merged in from the standalone insight card */}
-      <DailyGoalStrip />
+      {/* Today's goal strip — merged in from the standalone insight card.
+          Wired live to the task list: chip count == tasks.length, filled ==
+          tasks.filter(done) so add/remove/toggle reflects immediately. */}
+      <DailyGoalStrip goal={tasks.length} completed={done} />
 
       {/* Tasks header */}
       <div
