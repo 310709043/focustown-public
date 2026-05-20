@@ -2,15 +2,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-focustown}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-focustown}
-      POSTGRES_DB: ${POSTGRES_DB:-focustown}
+      POSTGRES_USER: ${POSTGRES_USER:-lowbatterytown}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lowbatterytown}
+      POSTGRES_DB: ${POSTGRES_DB:-lowbatterytown}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-focustown}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lowbatterytown}"]
       interval: 5s
       timeout: 5s
       retries: 10

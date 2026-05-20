@@ -15,7 +15,7 @@ from app.core.config import get_settings
 from app.core.deps import DbDep, SecretsProviderDep, _event_bus
 from app.core.exceptions import (
     ConflictError,
-    FocusTownError,
+    LowBatteryTownError,
     InternalError,
     ValidationError,
 )
@@ -157,14 +157,14 @@ def create_app() -> FastAPI:
     # middleware emits a log line and cleared after they finish.
     app.add_middleware(RequestIDMiddleware)
 
-    def _envelope(exc: FocusTownError) -> JSONResponse:
+    def _envelope(exc: LowBatteryTownError) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": {"code": exc.code, "message": str(exc) or exc.code}},
         )
 
-    @app.exception_handler(FocusTownError)
-    async def _domain_error_handler(_: Request, exc: FocusTownError) -> JSONResponse:
+    @app.exception_handler(LowBatteryTownError)
+    async def _domain_error_handler(_: Request, exc: LowBatteryTownError) -> JSONResponse:
         return _envelope(exc)
 
     @app.exception_handler(IntegrityError)

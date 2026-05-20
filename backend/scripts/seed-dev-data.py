@@ -106,7 +106,7 @@ SEED_TRACK_MOOD_BY_FILENAME: dict[str, dict[str, str]] = {
     "sunday-window.mp3": {"title": "Sunday Window", "mood": "lofi"},
 }
 
-SEED_SYSTEM_USER_EMAIL = "seed-system@focustown.local"
+SEED_SYSTEM_USER_EMAIL = "seed-system@lowbatterytown.local"
 
 # Bot population. Each bot picks a character from the frontend roster
 # (frontend/lib/data/characters.ts) and a distinct hour-of-day band so the
@@ -123,7 +123,7 @@ BOTS: list[dict] = [
 ]
 
 BOT_SESSION_COUNT = 20
-BOT_EMAIL_FMT = "bot-{key}@bots.focustown.local"
+BOT_EMAIL_FMT = "bot-{key}@bots.lowbatterytown.local"
 
 
 async def main() -> None:
@@ -197,7 +197,7 @@ async def _seed_bots(db, ids) -> None:
     strategy uses always contains data — without this, the rows would
     decay out of the window after one week and overlap collapses to 0.
     """
-    rng = random.Random("focustown-bots-stable")
+    rng = random.Random("lowbatterytown-bots-stable")
     now = datetime.now(timezone.utc)
     seeded = 0
     for spec in BOTS:

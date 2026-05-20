@@ -12,7 +12,7 @@ export class ApiError extends Error {
 
 type Tokens = { access_token: string; refresh_token: string };
 
-const TOKEN_KEY = "focustown.tokens";
+const TOKEN_KEY = "lowbatterytown.tokens";
 
 export const tokenStore = {
   load(): Tokens | null {

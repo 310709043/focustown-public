@@ -13,7 +13,7 @@
   "rate_limited": "That is a lot of attempts. Please wait a little while and try again.",
   "unsupported_media_type": "This file format is not supported.",
   "invalid_room_id": "We could not find that room.",
-  "focustown_error": "Something unexpected happened. Please try again in a little while.",
+  "app_error": "Something unexpected happened. Please try again in a little while.",
   "not_found": "We could not find what you were looking for.",
   "conflict": "That action conflicts with something already in progress. Please refresh and try again.",
   "validation_error": "Some of the information looks incorrect. Please review and try again.",

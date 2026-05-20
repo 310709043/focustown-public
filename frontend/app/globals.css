@@ -7,24 +7,29 @@
    exposed to Tailwind's fontFamily tokens via tailwind.config.ts. */
 
 :root {
-  --bg: #030111;
-  --a1: #a78bfa;
-  --a2: #c4b5fd;
-  --a3: #7c3aed;
-  --a4: #4c1d95;
-  --teal: #34d399;
-  --amber: #fcd34d;
-  --pink: #f472b6;
-  --coral: #fb7185;
-  --blue: #60a5fa;
-  --green: #86efac;
-  --text: #e2d9f3;
-  --muted: #7c6fa0;
-  --dim: #2d1f50;
-  --card: rgba(12, 5, 35, 0.9);
-  --glass: rgba(18, 8, 48, 0.8);
-  --border: rgba(167, 139, 250, 0.18);
-  --border2: rgba(167, 139, 250, 0.4);
+  /* Era B refined palette — 2026-05-20 rebrand to LowBatteryTown.
+     Pre-rebrand (Era A) used --a1=#a78bfa purple + --a2=#c4b5fd lavender +
+     --pink=#f472b6 + --amber=#fcd34d for a neon-night theme. Era B drops
+     all neon for a single warm-peach + dusty-rose + slate direction. See
+     docs/qa/canonical-reference-index.md § 0 for the vocabulary lock. */
+  --bg: #0f1426;            /* deep indigo, was #030111 */
+  --a1: #e9a76e;            /* warm peach, primary accent */
+  --a2: #f4d289;            /* warm cream-yellow */
+  --a3: #c98aa3;            /* dusty rose, secondary accent */
+  --a4: #91a8c4;            /* slate blue, tertiary accent */
+  --teal: #a8c4a0;          /* muted sage (was #34d399 neon mint) */
+  --amber: #f4d289;         /* cream-yellow */
+  --pink: #c98aa3;          /* dusty rose */
+  --coral: #e9a76e;         /* peach (was salmon coral) */
+  --blue: #91a8c4;          /* slate */
+  --green: #a8c4a0;         /* muted sage */
+  --text: #f4ecd8;          /* warm cream, was #e2d9f3 cool lavender */
+  --muted: #b8b4cc;
+  --dim: #6b6788;
+  --card: rgba(15, 20, 38, 0.55);
+  --glass: rgba(22, 32, 60, 0.7);
+  --border: rgba(184, 180, 204, 0.18);
+  --border2: rgba(184, 180, 204, 0.32);
   --r: 6px;
   --r2: 10px;
 
@@ -37,17 +42,19 @@
   --t-2xl: 40px;
   --t-3xl: 72px;
 
-  /* Direction tokens (default = neon). DirectionSync flips
-     :root[data-direction] to "dusk" or "rain"; these vars layer on top of
-     the scene-driven --a1..--a4 palette without overwriting it. */
-  --dir-ink-mute:           #a89bd6;
-  --dir-ink-dim:            #6b5e9a;
-  --dir-panel-stroke:       rgba(167, 139, 250, 0.35);
-  --dir-panel-stroke-strong:rgba(167, 139, 250, 0.6);
-  --dir-button-fill:        rgba(183, 148, 246, 0.12);
-  --dir-accent-glow:        0 0 6px rgba(183, 148, 246, 0.6),  0 0 14px rgba(183, 148, 246, 0.35);
-  --dir-accent-glow-pink:   0 0 6px rgba(236,  72, 153, 0.7),  0 0 14px rgba(236,  72, 153, 0.4);
-  --dir-accent-glow-cyan:   0 0 6px rgba( 34, 211, 238, 0.7),  0 0 14px rgba( 34, 211, 238, 0.4);
+  /* Direction tokens — Era B has a single calm direction, no neon. The
+     dusk/rain :root[data-direction=...] rules below are kept as empty
+     no-ops so DirectionSync writes don't surprise anything; their values
+     no longer differ from this default. The names retain "neon-glow*"
+     for code-path compatibility — the actual values are calm now. */
+  --dir-ink-mute:           #b8b4cc;
+  --dir-ink-dim:            #6b6788;
+  --dir-panel-stroke:       rgba(184, 180, 204, 0.18);
+  --dir-panel-stroke-strong:rgba(184, 180, 204, 0.32);
+  --dir-button-fill:        rgba(233, 167, 110, 0.08);
+  --dir-accent-glow:        0 0 6px rgba(233, 167, 110, 0.4);
+  --dir-accent-glow-pink:   0 0 6px rgba(201, 138, 163, 0.45);
+  --dir-accent-glow-cyan:   0 0 6px rgba(145, 168, 196, 0.45);
 
   /* Immersive-app readability ladder. The pixel-font tokens above stay
      intentionally small for marquee ✦ headers; these semantic tokens are
@@ -78,23 +85,23 @@
      (`--accent`, `--sky-top`, `--ink-mute`, …). Aliasing here lets
      ported components reuse reference styles verbatim while staying
      on the Current palette below. Do NOT redefine in component CSS. */
-  --bg-0:                #07041a;
-  --bg-1:                #110826;
-  --bg-2:                #1c0f3d;
-  --sky-top:             #07041a;
-  --sky-mid:             #1a0d3d;
-  --sky-low:             #2a1854;
+  --bg-0:                #0f1426;
+  --bg-1:                #16203c;
+  --bg-2:                #1f2a4d;
+  --sky-top:             #15203d;
+  --sky-mid:             #2a3a64;
+  --sky-low:             #4d5e88;
   --ink:                 var(--text);
   --ink-mute:            var(--dir-ink-mute);
   --ink-dim:             var(--dir-ink-dim);
   --accent:              var(--a1);
-  --accent-2:            #ec4899;
-  --accent-3:            #22d3ee;
+  --accent-2:            #c98aa3;  /* dusty rose (was magenta #ec4899) */
+  --accent-3:            #91a8c4;  /* slate blue (was cyan #22d3ee) */
   --accent-4:            var(--amber);
-  --window-warm:         #fcd34d;
-  --window-cool:         #67e8f9;
-  --window-pink:         #f0abfc;
-  --window-mint:         #6ee7b7;
+  --window-warm:         #f4d289;  /* cream-yellow (was #fcd34d) */
+  --window-cool:         #91a8c4;  /* slate (was cyan #67e8f9) */
+  --window-pink:         #c98aa3;  /* rose (was fuchsia #f0abfc) */
+  --window-mint:         #a8c4a0;  /* sage (was neon mint #6ee7b7) */
   --panel-bg:            var(--card);
   --panel-stroke:        var(--dir-panel-stroke);
   --panel-stroke-strong: var(--dir-panel-stroke-strong);
@@ -104,27 +111,12 @@
   --neon-glow-cyan:      var(--dir-accent-glow-cyan);
 }
 
-:root[data-direction="dusk"] {
-  --dir-ink-mute:           #f0c7a3;
-  --dir-ink-dim:            #b8896e;
-  --dir-panel-stroke:       rgba(255, 184, 107, 0.35);
-  --dir-panel-stroke-strong:rgba(255, 184, 107, 0.6);
-  --dir-button-fill:        rgba(255, 184, 107, 0.12);
-  --dir-accent-glow:        0 0 6px rgba(255, 184, 107, 0.65), 0 0 14px rgba(255, 184, 107, 0.35);
-  --dir-accent-glow-pink:   0 0 6px rgba(255, 107, 157, 0.7),  0 0 14px rgba(255, 107, 157, 0.4);
-  --dir-accent-glow-cyan:   0 0 6px rgba(255, 209, 102, 0.7),  0 0 14px rgba(255, 209, 102, 0.4);
-}
-
-:root[data-direction="rain"] {
-  --dir-ink-mute:           #88a8d8;
-  --dir-ink-dim:            #4a6890;
-  --dir-panel-stroke:       rgba(  0, 245, 212, 0.3);
-  --dir-panel-stroke-strong:rgba(  0, 245, 212, 0.55);
-  --dir-button-fill:        rgba(  0, 245, 212, 0.1);
-  --dir-accent-glow:        0 0 6px rgba(  0, 245, 212, 0.65), 0 0 14px rgba(  0, 245, 212, 0.35);
-  --dir-accent-glow-pink:   0 0 6px rgba(255,   0, 110, 0.75), 0 0 14px rgba(255,   0, 110, 0.4);
-  --dir-accent-glow-cyan:   0 0 6px rgba(  0, 245, 212, 0.7),  0 0 14px rgba(  0, 245, 212, 0.4);
-}
+/* Era B has one direction. The dusk/rain rules are kept as empty no-ops
+   so DirectionSync (which still writes data-direction on scene change)
+   doesn't break — values just don't change anymore. Per
+   docs/qa/canonical-reference-index.md § 0. */
+:root[data-direction="dusk"] {}
+:root[data-direction="rain"] {}
 
 /* Shrink only headline tokens on phones; body/inputs stay at 16px so
    reading and tap-typing remain comfortable. Mirrors the supplied

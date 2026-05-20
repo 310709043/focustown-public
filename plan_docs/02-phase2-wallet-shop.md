@@ -318,7 +318,7 @@ GET    /api/v1/shop                                                            (
 4. 同一 DB session、依 `get_db` 已封裝的 commit-on-success/rollback-on-exception 自動處理 atomicity
 5. 返回 PurchaseResponse (item + new_balance + transaction_id)
 
-錯誤 → 領域例外 → `FocusTownError` exception handler (既有) → JSON error envelope
+錯誤 → 領域例外 → `LowBatteryTownError` exception handler (既有) → JSON error envelope
 
 ## Backend — Subscription Wiring (修正既有 EventBus 模式)
 

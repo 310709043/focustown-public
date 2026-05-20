@@ -138,7 +138,7 @@ Password reset flow:
 
 `INotificationService` lives in `app/domain/notifications.py` (not `infrastructure/`) so domain services depend only on the port. To switch from `LogNotifier` to `SESNotifier`, change `get_notifier()` in `core/deps.py` — no service-layer changes.
 
-Auth endpoints are rate-limited via `IRateLimiter` (Redis-backed in prod, `MemoryRateLimiter` for tests). Limits live in `api/v1/auth/router.py`; tune them there. The 429 response is wrapped in the standard `FocusTownError` envelope.
+Auth endpoints are rate-limited via `IRateLimiter` (Redis-backed in prod, `MemoryRateLimiter` for tests). Limits live in `api/v1/auth/router.py`; tune them there. The 429 response is wrapped in the standard `LowBatteryTownError` envelope.
 
 `SecurityHeadersMiddleware` (`core/middleware/security_headers.py`) adds `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` to every API response; HSTS only fires when `APP_ENV=production`. The frontend CSP lives in `frontend/next.config.mjs` and reads `NEXT_PUBLIC_API_BASE_URL` to whitelist the backend in `connect-src`.
 

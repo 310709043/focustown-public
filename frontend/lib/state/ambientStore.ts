@@ -10,7 +10,7 @@ import {
 
 const CYCLE_MS = 90 * 1000;
 const FADE_MS = 25 * 1000;
-const LOCK_KEY = "focustown.ambient.lock";
+const LOCK_KEY = "lowbatterytown.ambient.lock";
 
 interface AmbientState {
   /** Index of the currently dominant scene (opacity → 1). */

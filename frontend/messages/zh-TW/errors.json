@@ -13,7 +13,7 @@
   "rate_limited": "您嘗試的次數有些多，請稍後再試一次。",
   "unsupported_media_type": "目前不支援這個檔案格式。",
   "invalid_room_id": "找不到這個房間。",
-  "focustown_error": "發生未預期的狀況，請稍後再試一次。",
+  "app_error": "發生未預期的狀況，請稍後再試一次。",
   "not_found": "找不到您要的資料。",
   "conflict": "這個操作與其他正在進行的動作衝突，請重新整理後再試一次。",
   "validation_error": "資料看起來不太對，請重新確認後再試一次。",

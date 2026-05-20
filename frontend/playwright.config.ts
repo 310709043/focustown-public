@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Playwright config for FocusTown frontend E2E.
+ * Playwright config for LowBatteryTown frontend E2E.
  *
  * All tests run against a mocked backend (page.route in helpers/mock-backend.ts)
  * so they don't depend on docker / postgres / redis. The webServer block

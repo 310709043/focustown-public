@@ -162,6 +162,56 @@ File P0 bugs immediately; batch P1 / P2 daily.
 
 ---
 
+## Asset-integrated build verification (2026-05-20)
+
+Verification of the §4 feature matrix run against the
+`clear/ref-accurancy` branch (PR #77, head `0777b75` for Phase 1 + the
+Phase 2 commits 8c8f5b0 + 69470ae). All items are reproducible from a
+fresh clone via `docker compose down -v && docker compose up --build -d`.
+
+Status legend:
+- ✅ — covered by an automated test that ran green in this session
+- 📝 — needs manual browser verification (lists what to click)
+- ⚠️ — automated coverage partial; manual smoke recommended before merge
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Brand: Low Battery Town | ✅ | LowBatteryTown rename sweep (720a504 + 8e6bdea + 63cc1d0) — zero `focustown` strings remaining outside historical refs; `auth.spec.ts:76` parity test asserts the wide LBT logo |
+| Sign up + JWT auth | ✅ | `auth.spec.ts:5..114` — 6 tests cover signup happy path, login, network down, 401 invalid creds, localStorage `lowbatterytown.tokens` key |
+| Locale alias | ✅ | `nav.spec.ts:10..29` — `/zh/` redirect chain, `/zh-TW` + `/en` both 200 |
+| Town: pixel city | ✅ | `town.spec.ts:21..82` — HUD links, weather badge, sky window, ticker bars, NPCs, named buildings + Phase 1 sprite-swap E2E (5/5) |
+| /select-character | ✅ | `select-character.spec.ts:19` — 4-tab bar + role grid + daily-goal radio + summary footer |
+| Solo focus session | ✅ | `focus-solo.spec.ts:27..87` — 7 panel right rail + BigTimer + SessionInsight + SoundMixer + QuickActions + NextEnvCard |
+| Buddy match flow | ⚠️ | `focus-buddy.spec.ts:46..78` covers `/focus/<matchId>` after-match state. **Match modal itself** still has `test.skip` (tracked in Lane C, branch `feat/match-modal-e2e`) |
+| Buddy chat (persistent) | ✅ | `focus-buddy.spec.ts:46..78` asserts chat panel + agenda persist across reload |
+| Buddy agenda | ✅ | `focus-buddy.spec.ts:73..78` — 5 mocked agenda items render + check-off persistence |
+| Room playback sync (Gap 2) | ✅ + 📝 | E2E contract test `room-playback-sync.spec.ts` (commit 69470ae) verifies WS → store → DOM. **Real audio sub-second sync** still warrants a 2-browser smoke before merge (Chrome + Incognito, owner ▶ → visitor mirror) |
+| Friends sidebar | ⚠️ | covered indirectly in `town.spec.ts:31..50`; **focusing-now WS real-time update** needs manual 2-browser smoke (User A starts focus → User B's friends-now ticker should add A within 2s) |
+| Preferences | 📝 | No E2E. Manual: `/zh-TW/profile` Settings → drag volume slider → reload → persists |
+| Wallet T-coin | 📝 | No E2E. Manual: `/zh-TW/profile` Wallet → balance shows; redeem code if QA has one |
+| Wallet gift idempotency | 📝 | No E2E. Manual: 2 accounts, gift 1 T → double-click 送出 → ensure only one debit (PR #73's Idempotency-Key gate) |
+| Notes | 📝 | No E2E. Manual: `/zh-TW/profile` Notes → create / edit / delete |
+| Support / FAQ | ✅ | covered by legal/profile route smoke; FAQ accordion renders not stub |
+| Awards | ✅ | `awards.spec.ts:34` — top bar + leaderboard + achievements pixel-panel chrome |
+| Music library | ✅ | `library.spec.ts:27` — mood-tabs + 3 track rows. With Phase 2 Gap 1 (commit 8c8f5b0) shipping 5 placeholder MP3s, the library is no longer silent on fresh deploy |
+| Legal pages | ✅ | `legal.spec.ts:12` — privacy / terms / refund all render with pixel-panel chrome + ToC sidebar |
+
+**E2E summary**: 39/40 pass (1 intentional `.skip` = match-modal, addressed
+by Lane C). Unit tests: 76/76 pass. Frontend typecheck + lint clean.
+Backend pytest: 445 pass, 11 pre-existing async-mocking failures (tech
+debt, not introduced by this PR per memory `feedback_local_ci_before_push`).
+
+**Manual checks still needed before merge** (5 items marked 📝 or ⚠️):
+1. 2-browser smoke for room playback audio offset
+2. 2-browser smoke for friends `focusing-now` ticker
+3. Profile Settings volume slider persistence
+4. Wallet redeem + gift double-click idempotency
+5. Notes CRUD on `/zh-TW/profile`
+
+Recommended order: manual pass these 5 items against a fresh
+`docker compose up --build -d` instance before flipping PR #77 to
+ready-for-review.
+
 ## Sign-off
 
 When QA verdict is GREEN on §3 + §4 (or every red item has a tracked bug ticket), V1 is ready for the prod migration plan in `infra/lightsail/bootstrap.md` §7-§9 (currently deferred until dev is stable).

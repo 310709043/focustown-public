@@ -4,7 +4,7 @@
  * Aligned with the reference's `BG_OPTIONS` (reference/screen-focus.jsx) — a
  * platform-driven cycle moves through these in order with a 25 s crossfade.
  * No user-facing picker; the only override is the E2E test-mode lock via
- * `localStorage.focustown.ambient.lock`.
+ * `localStorage.lowbatterytown.ambient.lock`.
  */
 
 export type FocusBgId =

@@ -14,7 +14,7 @@ def _bot(uid: str, *, is_bot: bool = True) -> User:
     now = datetime(2026, 5, 17, 12, tzinfo=UTC)
     return User(
         id=uid,
-        email=f"{uid}@bots.focustown.local",
+        email=f"{uid}@bots.lowbatterytown.local",
         display_name=uid.title(),
         character_key=uid,
         role_label="tester",

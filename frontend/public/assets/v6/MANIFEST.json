@@ -1,0 +1,1197 @@
+{
+  "version": "v6",
+  "source": "craftpix.net packs 832833 / 801184 / 516149 / 291971 / 876810",
+  "canonical_ref": "docs/qa/canonical-reference-index.md",
+  "assets": {
+    "city/Day/1.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.0,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Day/2.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.25,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Day/3.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.45,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Day/4.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.7,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Day/5.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 1.0,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Night/1.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.0,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Night/2.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.25,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Night/3.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.45,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Night/4.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 0.7,
+      "tile_x": true,
+      "loop": true
+    },
+    "city/Night/5.png": {
+      "kind": "background_layer",
+      "w": 576,
+      "h": 324,
+      "parallax_speed": 1.0,
+      "tile_x": true,
+      "loop": true
+    },
+    "clouds/gray/cloud_shape1_1.png": {
+      "kind": "single_sprite",
+      "w": 161,
+      "h": 189,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape1_2.png": {
+      "kind": "single_sprite",
+      "w": 110,
+      "h": 135,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape1_3.png": {
+      "kind": "single_sprite",
+      "w": 75,
+      "h": 88,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape1_4.png": {
+      "kind": "single_sprite",
+      "w": 61,
+      "h": 59,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape1_5.png": {
+      "kind": "single_sprite",
+      "w": 33,
+      "h": 35,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape2_1.png": {
+      "kind": "single_sprite",
+      "w": 272,
+      "h": 62,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape2_2.png": {
+      "kind": "single_sprite",
+      "w": 190,
+      "h": 46,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape2_3.png": {
+      "kind": "single_sprite",
+      "w": 144,
+      "h": 33,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape2_4.png": {
+      "kind": "single_sprite",
+      "w": 103,
+      "h": 27,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape2_5.png": {
+      "kind": "single_sprite",
+      "w": 65,
+      "h": 16,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape3_1.png": {
+      "kind": "single_sprite",
+      "w": 187,
+      "h": 128,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape3_2.png": {
+      "kind": "single_sprite",
+      "w": 157,
+      "h": 100,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape3_3.png": {
+      "kind": "single_sprite",
+      "w": 99,
+      "h": 60,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape3_4.png": {
+      "kind": "single_sprite",
+      "w": 72,
+      "h": 51,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape3_5.png": {
+      "kind": "single_sprite",
+      "w": 47,
+      "h": 30,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape4_1.png": {
+      "kind": "single_sprite",
+      "w": 225,
+      "h": 137,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape4_2.png": {
+      "kind": "single_sprite",
+      "w": 146,
+      "h": 94,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape4_3.png": {
+      "kind": "single_sprite",
+      "w": 104,
+      "h": 48,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape4_4.png": {
+      "kind": "single_sprite",
+      "w": 82,
+      "h": 41,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape4_5.png": {
+      "kind": "single_sprite",
+      "w": 53,
+      "h": 29,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape5_1.png": {
+      "kind": "single_sprite",
+      "w": 198,
+      "h": 132,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape5_2.png": {
+      "kind": "single_sprite",
+      "w": 159,
+      "h": 90,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape5_3.png": {
+      "kind": "single_sprite",
+      "w": 100,
+      "h": 51,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape5_4.png": {
+      "kind": "single_sprite",
+      "w": 69,
+      "h": 37,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape5_5.png": {
+      "kind": "single_sprite",
+      "w": 44,
+      "h": 29,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape6_1.png": {
+      "kind": "single_sprite",
+      "w": 284,
+      "h": 57,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape6_2.png": {
+      "kind": "single_sprite",
+      "w": 224,
+      "h": 45,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape6_3.png": {
+      "kind": "single_sprite",
+      "w": 133,
+      "h": 23,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape6_4.png": {
+      "kind": "single_sprite",
+      "w": 84,
+      "h": 15,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape6_5.png": {
+      "kind": "single_sprite",
+      "w": 58,
+      "h": 9,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape7_1.png": {
+      "kind": "single_sprite",
+      "w": 187,
+      "h": 54,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape7_2.png": {
+      "kind": "single_sprite",
+      "w": 125,
+      "h": 41,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape7_3.png": {
+      "kind": "single_sprite",
+      "w": 83,
+      "h": 35,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape7_4.png": {
+      "kind": "single_sprite",
+      "w": 55,
+      "h": 28,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/cloud_shape7_5.png": {
+      "kind": "single_sprite",
+      "w": 45,
+      "h": 21,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/clouds_shape8_1.png": {
+      "kind": "single_sprite",
+      "w": 288,
+      "h": 73,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/clouds_shape8_2.png": {
+      "kind": "single_sprite",
+      "w": 240,
+      "h": 47,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/clouds_shape8_3.png": {
+      "kind": "single_sprite",
+      "w": 143,
+      "h": 33,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/clouds_shape8_4.png": {
+      "kind": "single_sprite",
+      "w": 92,
+      "h": 23,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/gray/clouds_shape8_5.png": {
+      "kind": "single_sprite",
+      "w": 66,
+      "h": 17,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "gray",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape1_1.png": {
+      "kind": "single_sprite",
+      "w": 161,
+      "h": 189,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape1_2.png": {
+      "kind": "single_sprite",
+      "w": 110,
+      "h": 135,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape1_3.png": {
+      "kind": "single_sprite",
+      "w": 75,
+      "h": 88,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape1_4.png": {
+      "kind": "single_sprite",
+      "w": 61,
+      "h": 59,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape1_5.png": {
+      "kind": "single_sprite",
+      "w": 33,
+      "h": 35,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape2_1.png": {
+      "kind": "single_sprite",
+      "w": 272,
+      "h": 62,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape2_2.png": {
+      "kind": "single_sprite",
+      "w": 190,
+      "h": 46,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape2_3.png": {
+      "kind": "single_sprite",
+      "w": 144,
+      "h": 33,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape2_4.png": {
+      "kind": "single_sprite",
+      "w": 103,
+      "h": 27,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape2_5.png": {
+      "kind": "single_sprite",
+      "w": 65,
+      "h": 16,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape3_1.png": {
+      "kind": "single_sprite",
+      "w": 187,
+      "h": 128,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape3_2.png": {
+      "kind": "single_sprite",
+      "w": 157,
+      "h": 100,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape3_3.png": {
+      "kind": "single_sprite",
+      "w": 99,
+      "h": 60,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape3_4.png": {
+      "kind": "single_sprite",
+      "w": 72,
+      "h": 51,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape3_5.png": {
+      "kind": "single_sprite",
+      "w": 47,
+      "h": 30,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape4_1.png": {
+      "kind": "single_sprite",
+      "w": 225,
+      "h": 137,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape4_2.png": {
+      "kind": "single_sprite",
+      "w": 146,
+      "h": 94,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape4_3.png": {
+      "kind": "single_sprite",
+      "w": 104,
+      "h": 48,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape4_4.png": {
+      "kind": "single_sprite",
+      "w": 82,
+      "h": 41,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape4_5.png": {
+      "kind": "single_sprite",
+      "w": 53,
+      "h": 29,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape5_1.png": {
+      "kind": "single_sprite",
+      "w": 198,
+      "h": 132,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape5_2.png": {
+      "kind": "single_sprite",
+      "w": 159,
+      "h": 90,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape5_3.png": {
+      "kind": "single_sprite",
+      "w": 100,
+      "h": 51,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape5_4.png": {
+      "kind": "single_sprite",
+      "w": 69,
+      "h": 37,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape5_5.png": {
+      "kind": "single_sprite",
+      "w": 44,
+      "h": 29,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape6_1.png": {
+      "kind": "single_sprite",
+      "w": 284,
+      "h": 57,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape6_2.png": {
+      "kind": "single_sprite",
+      "w": 224,
+      "h": 45,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape6_3.png": {
+      "kind": "single_sprite",
+      "w": 133,
+      "h": 23,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape6_4.png": {
+      "kind": "single_sprite",
+      "w": 84,
+      "h": 15,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape6_5.png": {
+      "kind": "single_sprite",
+      "w": 58,
+      "h": 9,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape7_1.png": {
+      "kind": "single_sprite",
+      "w": 187,
+      "h": 54,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape7_2.png": {
+      "kind": "single_sprite",
+      "w": 125,
+      "h": 41,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape7_3.png": {
+      "kind": "single_sprite",
+      "w": 83,
+      "h": 35,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape7_4.png": {
+      "kind": "single_sprite",
+      "w": 55,
+      "h": 28,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/cloud_shape7_5.png": {
+      "kind": "single_sprite",
+      "w": 45,
+      "h": 21,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/clouds_shape8_1.png": {
+      "kind": "single_sprite",
+      "w": 288,
+      "h": 73,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/clouds_shape8_2.png": {
+      "kind": "single_sprite",
+      "w": 240,
+      "h": 47,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/clouds_shape8_3.png": {
+      "kind": "single_sprite",
+      "w": 143,
+      "h": 33,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/clouds_shape8_4.png": {
+      "kind": "single_sprite",
+      "w": 92,
+      "h": 23,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "clouds/black/clouds_shape8_5.png": {
+      "kind": "single_sprite",
+      "w": 66,
+      "h": 17,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "palette_tag": "black",
+      "loop_drift_seconds_default": 60
+    },
+    "walkers/City_men_1_Idle.png": {
+      "kind": "sprite_sheet_h",
+      "w": 768,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 6,
+      "fps": 8,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_1_Walk.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1280,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 10,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_1_Run.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1280,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 10,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_2_Idle.png": {
+      "kind": "sprite_sheet_h",
+      "w": 768,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 6,
+      "fps": 8,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_2_Walk.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1280,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 10,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_2_Run.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1280,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 10,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_3_Idle.png": {
+      "kind": "sprite_sheet_h",
+      "w": 768,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 6,
+      "fps": 8,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_3_Walk.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1280,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 10,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "walkers/City_men_3_Run.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1280,
+      "h": 128,
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 10,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "birds/Chick.png": {
+      "kind": "sprite_sheet_grid",
+      "w": 96,
+      "h": 128,
+      "frame_w": 16,
+      "frame_h": 16,
+      "cols": 6,
+      "rows": 8,
+      "frames_per_animation": 6,
+      "directions": 8,
+      "fps": 8,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "birds/Rooster.png": {
+      "kind": "sprite_sheet_grid",
+      "w": 192,
+      "h": 256,
+      "frame_w": 32,
+      "frame_h": 32,
+      "cols": 6,
+      "rows": 8,
+      "frames_per_animation": 6,
+      "directions": 8,
+      "fps": 8,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "cars/Jeep_1_Idle.png": {
+      "kind": "sprite_sheet_h",
+      "w": 768,
+      "h": 192,
+      "frame_w": 192,
+      "frame_h": 192,
+      "frames": 4,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "cars/Jeep_1_Ride.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1536,
+      "h": 192,
+      "frame_w": 192,
+      "frame_h": 192,
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "cars/Jeep_1_Ride_back.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1536,
+      "h": 192,
+      "frame_w": 192,
+      "frame_h": 192,
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "cars/Passenger_Ride.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1536,
+      "h": 192,
+      "frame_w": 192,
+      "frame_h": 192,
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    },
+    "cars/Passenger_Ride_Back.png": {
+      "kind": "sprite_sheet_h",
+      "w": 1536,
+      "h": 192,
+      "frame_w": 192,
+      "frame_h": 192,
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "anchor": [
+        0.5,
+        1.0
+      ]
+    }
+  }
+}

@@ -109,7 +109,7 @@ Phase 1-3 已合並進 `main`。Roadmap 中除 Phase 6 外，所有其他 phase 
 - DI: `backend/app/core/deps.py` 既有 `DbDep`、`IdGenDep`、`CurrentUserId`。
 - ORM-only repo 樣板：`app/domain/repositories/note_repo.py:NoteRecord` + `infrastructure/db/repositories/note_repo.py:SqlNoteRepo`。
 - Router 樣板：`api/v1/notes/router.py`。
-- Error envelope：`app/core/errors.py:FocusTownError`。
+- Error envelope：`app/core/exceptions.py:LowBatteryTownError`。
 - 前端 API client：`frontend/lib/api/client.ts:apiFetch` (擴 FormData 分支)。
 
 ## 風險與緩解

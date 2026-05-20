@@ -68,7 +68,7 @@ async def test_signup_rejects_old_terms_version(client, signup_payload):
     signup_payload["terms_version"] = "1999-01-01"
     response = await client.post("/api/v1/auth/signup", json=signup_payload)
     assert response.status_code == 422
-    # `code` is the FocusTownError class code; the specific identifier
+    # `code` is the LowBatteryTownError class code; the specific identifier
     # lives in `message`.
     assert response.json()["error"]["message"] == "terms_version_mismatch"
 

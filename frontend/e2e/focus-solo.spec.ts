@@ -7,7 +7,7 @@ import { seedAuthTokens } from "./helpers/session";
  * Structural alignment for /focus/solo (Solo focus room). Asserts the
  * reference layout: ambient cycle indicator, 7-panel right rail, wide
  * notes left column. The ambient cycle is locked to `day` via
- * `localStorage.focustown.ambient.lock` so assertions don't flake on
+ * `localStorage.lowbatterytown.ambient.lock` so assertions don't flake on
  * the 90 s rAF cycle.
  */
 test.describe("/focus/solo — reference parity", () => {
@@ -20,7 +20,7 @@ test.describe("/focus/solo — reference parity", () => {
     await seedAuthTokens(page);
     // Lock the ambient cycle BEFORE navigating so the store reads it on init.
     await page.evaluate(() =>
-      window.localStorage.setItem("focustown.ambient.lock", "day"),
+      window.localStorage.setItem("lowbatterytown.ambient.lock", "day"),
     );
   });
 

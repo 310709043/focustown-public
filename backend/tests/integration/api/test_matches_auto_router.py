@@ -20,7 +20,7 @@ from app.infrastructure.db.models.user import UserORM
 async def _add_bot(db_session, *, key: str, name: str) -> str:
     bot = UserORM(
         id=f"bot-{key}",
-        email=f"bot-{key}@bots.focustown.local",
+        email=f"bot-{key}@bots.lowbatterytown.local",
         password_hash=hash_password("never-login"),
         display_name=name,
         character_key=key,

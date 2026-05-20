@@ -55,3 +55,14 @@ docker-compose.override.yml
 # Reference docs and binary audio assets
 reference/
 *.mp3
+
+# Exception: 5 sine-wave placeholder tracks shipped for V1 seed (Phase 2
+# Gap 1 closure). These are 10-sec 64kbps sine tones (~80 KB each, ~400 KB
+# total) so a fresh `docker compose up --build` doesn't leave the music
+# library silent. Replace with real CC0-licensed lofi clips before
+# launching public-facing.
+!backend/assets/seed-tracks/cold-ceramics.mp3
+!backend/assets/seed-tracks/sunlight-on-the-floor.mp3
+!backend/assets/seed-tracks/cold-windowpane.mp3
+!backend/assets/seed-tracks/midnight-at-the-overpass.mp3
+!backend/assets/seed-tracks/sunday-window.mp3

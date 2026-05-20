@@ -127,8 +127,8 @@ def test_sanitize_for_email_strips_controls():
 _PROD_AWS_STUBS: dict[str, object] = {
     "cognito_user_pool_id": "ap-northeast-1_XXXXX",
     "cognito_client_id": "client-id-stub",
-    "s3_bucket": "focustown-prod",
-    "ses_from_email": "noreply@focustown.example",
+    "s3_bucket": "lowbatterytown-prod",
+    "ses_from_email": "noreply@lowbatterytown.example",
     "notifier_backend": "ses",
     "storage_backend": "s3",
     "secrets_backend": "aws",
@@ -151,7 +151,7 @@ def test_reset_url_base_https_accepted_in_production():
         app_secret_key="x" * 40,
         database_url="postgresql+asyncpg://x:x@h/db",
         app_env="production",
-        reset_url_base="https://app.focustown.example/reset-password",
+        reset_url_base="https://app.lowbatterytown.example/reset-password",
         **_PROD_AWS_STUBS,
     )
     assert s.reset_url_base.startswith("https://")

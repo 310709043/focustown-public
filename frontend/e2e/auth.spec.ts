@@ -24,7 +24,7 @@ test.describe("Sign up", () => {
 
     await expect(page).toHaveURL(/\/(zh-TW|en)\/select-character\/?$/, { timeout: 5000 });
     const tokens = await page.evaluate(() =>
-      window.localStorage.getItem("focustown.tokens"),
+      window.localStorage.getItem("lowbatterytown.tokens"),
     );
     expect(tokens).toContain("fake.access.token");
   });

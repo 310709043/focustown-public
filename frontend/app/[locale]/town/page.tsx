@@ -14,6 +14,7 @@ import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionComplete
 import { useMatchStore } from "@/lib/state/matchStore";
 
 import { Sky } from "@/components/scene/Sky";
+import { CityBackground } from "@/components/scene/CityBackground";
 import { StarsLayer } from "@/components/scene/StarsLayer";
 import { Pedestrians } from "@/components/scene/Pedestrians";
 import { CarsLane } from "@/components/scene/CarsLane";
@@ -204,7 +205,6 @@ export default function TownPage() {
   const currentScene = useSceneStore((s) => s.current);
   const sceneHasStars = SCENES[currentScene].stars > 0;
   const sceneIsWet = currentScene === "rain" || currentScene === "storm";
-  const sceneIsCloudy = currentScene === "cloudy";
 
   return (
     <FrameTicker>
@@ -223,9 +223,18 @@ export default function TownPage() {
         {sceneHasStars ? <ShootingStars /> : null}
         <CelestialBody />
 
-        {/* Cloudy-weather drift overlay — only mounts for `scene === "cloudy"`
-            to avoid spinning rAF when the sky is clear. */}
-        {sceneIsCloudy ? <Clouds /> : null}
+        {/* City 1 distant skyline (832833 pack, 5 layers Day+Night) — sits
+            behind the named buildings so the canonical landmarks still
+            read as foreground. Layers 1-3 only for now; 4-5 reserved for
+            a future "extended depth" tuning if the named skyline feels
+            too thin against the new background. */}
+        <CityBackground />
+
+        {/* 801184 sprite clouds — mounted for ALL scenes (not just cloudy)
+            per Phase 1.E. Density + palette + opacity vary by scene; the
+            rAF tick is per-scene by render but always runs since clouds
+            are now part of every sky. */}
+        <Clouds />
 
         {/* two airplanes with offset cycles so the sky always has movement */}
         <Airplane intervalSeconds={22} delaySeconds={0} />

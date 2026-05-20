@@ -77,7 +77,7 @@ test.describe("/town navigation", () => {
     // Landing URL with localePrefix="always" is /zh-TW or /en, not bare "/".
     await expect(page).toHaveURL(/\/(zh-TW|en)\/?$/);
     const tokens = await page.evaluate(() =>
-      window.localStorage.getItem("focustown.tokens"),
+      window.localStorage.getItem("lowbatterytown.tokens"),
     );
     expect(tokens).toBeNull();
   });

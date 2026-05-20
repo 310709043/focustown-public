@@ -34,11 +34,11 @@ def _prod_cognito_s3_settings(**overrides: object) -> Settings:
         "storage_backend": "s3",
         "cognito_user_pool_id": "ap-northeast-1_XXXXX",
         "cognito_client_id": "client-id-stub",
-        "s3_bucket": "focustown-prod",
-        "ses_from_email": "noreply@focustown.app",
+        "s3_bucket": "lowbatterytown-prod",
+        "ses_from_email": "noreply@lowbatterytown.app",
         "notifier_backend": "ses",
         "secrets_backend": "aws",
-        "reset_url_base": "https://focustown.app/reset-password",
+        "reset_url_base": "https://lowbatterytown.app/reset-password",
         **overrides,
     }
     return Settings(**base)  # type: ignore[call-arg]
@@ -56,11 +56,11 @@ def _prod_lite_settings(**overrides: object) -> Settings:
         "app_env": "production",
         "auth_provider": "local_jwt",
         "storage_backend": "s3",
-        "s3_bucket": "focustown-storage",
+        "s3_bucket": "lowbatterytown-storage",
         "secrets_backend": "env",
         "notifier_backend": "ses",
-        "ses_from_email": "noreply@focustown.app",
-        "reset_url_base": "https://focustown.app/reset-password",
+        "ses_from_email": "noreply@lowbatterytown.app",
+        "reset_url_base": "https://lowbatterytown.app/reset-password",
         **overrides,
     }
     return Settings(**base)  # type: ignore[call-arg]

@@ -17,7 +17,7 @@ type Translator = (key: string) => string;
  * - `request_failed`     — legacy default when neither code nor message available
  */
 export type BackendErrorCode =
-  | "focustown_error"
+  | "app_error"
   | "not_found"
   | "conflict"
   | "unauthorized"

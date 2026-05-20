@@ -3,35 +3,40 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
-import { WALKERS } from "@/lib/pixel/sprites/walkers";
+import { PngAnimatedSprite } from "@/components/pixel/PngAnimatedSprite";
+import { PNG_WALKERS, WALKER_SCALE_DEFAULT } from "@/lib/pixel/sprites/walkersPng";
 
 /**
  * Reference-design named walkers — 7 scenery citizens that drift on the
- * sidewalk regardless of how many real users are online. Port of
- * `reference/screen-town.jsx#WalkingCitizens` (lines 851–899).
+ * sidewalk regardless of how many real users are online. Phase 1.F port:
+ * swaps the legacy 8×14 inline char-grid sprites (lib/pixel/sprites/walkers.ts)
+ * to the 516149 City_men PNG sheets via `<PngAnimatedSprite>`.
  *
- * Coexists with `<Pedestrians>` (presence-driven). Real users render
- * on top via DOM order so the player feels foregrounded among the
- * town's residents rather than competing for space with them.
+ * 7 named NPCs distribute over 3 City_men variants. Each NPC gets a fixed
+ * variant index to preserve identity across the day-cycle — Yuki always
+ * looks like City_men_1, Aria always like City_men_2, etc.
+ *
+ * Coexists with `<Pedestrians>` (presence-driven). Real users render on
+ * top via DOM order so the player feels foregrounded among the town's
+ * residents rather than competing for space with them.
  */
 
 type WalkerNPC = {
   readonly key: "yuki" | "aria" | "kai" | "doc" | "bear" | "milo" | "nova";
-  readonly walker: number; // index into WALKERS[]
+  readonly variantIdx: 0 | 1 | 2; // index into PNG_WALKERS
   readonly speed: number; // %/frame
   readonly startX: number; // initial left %
   readonly dir: 1 | -1;
 };
 
 const NPCS: readonly WalkerNPC[] = [
-  { key: "yuki", walker: 0, speed: 0.05, startX: 5,  dir: 1 },
-  { key: "aria", walker: 2, speed: 0.04, startX: 22, dir: 1 },
-  { key: "kai",  walker: 5, speed: 0.06, startX: 38, dir: 1 },
-  { key: "doc",  walker: 1, speed: 0.04, startX: 52, dir: -1 },
-  { key: "bear", walker: 4, speed: 0.05, startX: 66, dir: 1 },
-  { key: "milo", walker: 6, speed: 0.05, startX: 80, dir: -1 },
-  { key: "nova", walker: 7, speed: 0.05, startX: 93, dir: 1 },
+  { key: "yuki", variantIdx: 0, speed: 0.05, startX: 5,  dir: 1 },
+  { key: "aria", variantIdx: 1, speed: 0.04, startX: 22, dir: 1 },
+  { key: "kai",  variantIdx: 2, speed: 0.06, startX: 38, dir: 1 },
+  { key: "doc",  variantIdx: 0, speed: 0.04, startX: 52, dir: -1 },
+  { key: "bear", variantIdx: 1, speed: 0.05, startX: 66, dir: 1 },
+  { key: "milo", variantIdx: 2, speed: 0.05, startX: 80, dir: -1 },
+  { key: "nova", variantIdx: 0, speed: 0.05, startX: 93, dir: 1 },
 ];
 
 export function NamedWalkers() {
@@ -59,6 +64,7 @@ export function NamedWalkers() {
     <>
       {NPCS.map((n, i) => {
         const flipped = n.dir < 0;
+        const walk = PNG_WALKERS[n.variantIdx].walk;
         return (
           <div
             key={n.key}
@@ -68,7 +74,6 @@ export function NamedWalkers() {
               left: `${pos[i]}%`,
               bottom: 56,
               zIndex: 6,
-              transform: flipped ? "scaleX(-1)" : undefined,
               pointerEvents: "none",
             }}
           >
@@ -85,13 +90,11 @@ export function NamedWalkers() {
                 style={{
                   fontSize: 8,
                   color: "var(--ink)",
-                  background: "rgba(7,4,26,0.85)",
+                  background: "rgba(15,20,38,0.85)",
                   padding: "1px 4px",
                   border: "1px solid var(--panel-stroke)",
                   whiteSpace: "nowrap",
                   letterSpacing: "0.05em",
-                  // Keep label readable when the parent is mirrored.
-                  transform: flipped ? "scaleX(-1)" : undefined,
                   marginBottom: 1,
                 }}
               >
@@ -100,11 +103,15 @@ export function NamedWalkers() {
                   · {t(`${n.key}.status`)}
                 </span>
               </span>
-              <AnimatedSprite
-                frames={WALKERS[n.walker].frames}
-                palette={WALKERS[n.walker].palette}
-                scale={2.4}
-                fps={3}
+              <PngAnimatedSprite
+                url={walk.url}
+                frameW={walk.frameW}
+                frameH={walk.frameH}
+                frames={walk.frames}
+                fps={walk.fps}
+                scale={WALKER_SCALE_DEFAULT}
+                flip={flipped}
+                alt={t(`${n.key}.name`)}
               />
             </div>
           </div>

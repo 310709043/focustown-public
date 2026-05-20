@@ -14,7 +14,7 @@ export async function seedAuthTokens(page: Page): Promise<void> {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.evaluate(
     ({ tokens }) => {
-      window.localStorage.setItem("focustown.tokens", JSON.stringify(tokens));
+      window.localStorage.setItem("lowbatterytown.tokens", JSON.stringify(tokens));
       window.sessionStorage.setItem("ft.splash.seen", "1");
     },
     { tokens: fixtures.tokens },

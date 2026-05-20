@@ -66,7 +66,7 @@ V1 為策展型歌庫，**不開放使用者上傳**。歌曲由 seed 從本機 
    | http://localhost:9001 | MinIO console（帳密 `minioadmin` / `minioadmin`） |
    | http://localhost:9000 | MinIO S3 API（瀏覽器走 presigned URL 進這裡） |
 
-   驗收：MinIO console 內 `focustown-dev` bucket 應有 `tracks/<uuid>.mp3` × 5；前端 `/town` 的 PersonalRadio 播放時 DevTools Network 看到 `/api/v1/tracks/<id>/stream` 回 302 → `localhost:9000/...?X-Amz-Signature=...`。
+   驗收：MinIO console 內 `lowbatterytown-dev` bucket 應有 `tracks/<uuid>.mp3` × 5；前端 `/town` 的 PersonalRadio 播放時 DevTools Network 看到 `/api/v1/tracks/<id>/stream` 回 302 → `localhost:9000/...?X-Amz-Signature=...`。
 
    ⚠ 切到 S3 mode 後 `<audio>` 若仍被 CSP 擋，把 `.env` 的 `NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS` 加上 MinIO host（例：`http://localhost:8000,http://localhost:9000`）再 `docker compose restart frontend`。
 
@@ -130,7 +130,7 @@ docker compose exec backend pytest -q          # tests/ 目錄目前還空
 ./scripts/gen-api-types.sh
 
 # 進 Postgres
-docker compose exec postgres psql -U focustown -d focustown
+docker compose exec postgres psql -U lowbatterytown -d lowbatterytown
 ```
 
 ---

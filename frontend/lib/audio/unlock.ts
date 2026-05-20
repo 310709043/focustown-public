@@ -8,7 +8,7 @@
  * a second "🔊 點擊聆聽" click on `/town`.
  */
 
-export const AUDIO_UNLOCK_KEY = "focustown.audio_unlocked";
+export const AUDIO_UNLOCK_KEY = "lowbatterytown.audio_unlocked";
 
 export function isAudioUnlocked(): boolean {
   if (typeof window === "undefined") return false;

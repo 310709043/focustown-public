@@ -27,7 +27,7 @@ import { useAmbientStore } from "@/lib/state/ambientStore";
  * The ambient backdrop is a two-stack of `BackdropLayer`s crossfading on
  * a 90 s cycle (25 s fade) driven by `useAmbientCycle`. No user-facing
  * picker — the picker was removed in the reference too; the only
- * override is the E2E lock at `localStorage.focustown.ambient.lock`.
+ * override is the E2E lock at `localStorage.lowbatterytown.ambient.lock`.
  */
 export function SoloFocusScene() {
   useAmbientCycle();
