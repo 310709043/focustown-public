@@ -23,6 +23,10 @@ dependencies = [
   "httpx>=0.27",
   "structlog>=24.4",
   "boto3>=1.34",
+  # Pure-Python audio metadata reader. Only used by scripts/seed-dev-data.py
+  # to extract duration_ms from seeded MP3s; not on the request path. Zero
+  # transitive deps, ~few hundred KB.
+  "mutagen>=1.47",
 ]
 
 [project.optional-dependencies]

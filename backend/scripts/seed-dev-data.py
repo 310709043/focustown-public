@@ -307,6 +307,7 @@ async def _seed_tracks(db, settings, ids) -> None:
         # tracks from 5 files across 4 deploys; the canonical title is
         # whatever ends up in TrackORM.title below.
         title = meta.get("title") or _seed_title(filename)
+        duration_ms = _mp3_duration_ms(path)
         existing = (
             await db.execute(_select(TrackORM).where(TrackORM.title == title))
         ).scalar_one_or_none()
@@ -315,6 +316,12 @@ async def _seed_tracks(db, settings, ids) -> None:
             # 0012 migration introduced the column.
             if not existing.is_official:
                 existing.is_official = True
+            # Backfill duration_ms for rows seeded before the asset reader
+            # learned to extract it. Shared cohort stations need real
+            # durations so client-side cursor advancement matches the
+            # server's playlist timeline.
+            if existing.duration_ms is None and duration_ms is not None:
+                existing.duration_ms = duration_ms
             continue
         data = path.read_bytes()
         track_id = ids.new_id()
@@ -326,7 +333,7 @@ async def _seed_tracks(db, settings, ids) -> None:
                 title=title,
                 artist=None,
                 mood=meta.get("mood", "lofi"),
-                duration_ms=None,
+                duration_ms=duration_ms,
                 file_key=file_key,
                 content_type="audio/mpeg",
                 file_size_bytes=len(data),
@@ -335,6 +342,24 @@ async def _seed_tracks(db, settings, ids) -> None:
                 is_official=True,
             )
         )
+
+
+def _mp3_duration_ms(path) -> int | None:
+    """Return the track's duration in milliseconds, or None on failure.
+
+    Mutagen parses both CBR and VBR headers and is pure-Python with no
+    external deps. A best-effort read so a corrupt MP3 doesn't break the
+    seeder — the row still gets inserted with duration_ms=None, and the
+    frontend stationStore falls back to a 180s default.
+    """
+    try:
+        from mutagen.mp3 import MP3  # local import: seed-only dep
+
+        audio = MP3(str(path))
+        seconds = float(audio.info.length)
+        return int(seconds * 1000) if seconds > 0 else None
+    except Exception:
+        return None
 
 
 def _seed_title(filename: str) -> str:
