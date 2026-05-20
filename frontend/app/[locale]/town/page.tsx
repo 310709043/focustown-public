@@ -198,6 +198,19 @@ export default function TownPage() {
       // TODO Wave 4: surface a toast / auto-navigate to the focus room.
     },
   });
+
+  // Open the modal whenever a proposal appears in the store, regardless
+  // of source (WS fan-out, manual `requestAuto`, or the test-only
+  // `testInjectProposal` bridge). This is the single reactive contract
+  // that decouples "a match exists" from "how it got there".
+  const matchCurrent = useMatchStore((s) => s.current);
+  useEffect(() => {
+    if (matchCurrent && !matchOpen) setMatchOpen(true);
+    // Intentionally only reacts to a new proposal landing; the close
+    // path is driven by the modal's onClose handler, not by `current`
+    // going null (which also happens during accept/skip).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchCurrent?.id]);
   useRealtimeSessionCompleted((_sessionId) => {
     // TODO Wave 4: surface a "session complete" toast.
   });
