@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
@@ -68,12 +68,30 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
         elapsed_seconds: int,
         ended_at: datetime | None,
     ) -> FocusSession:
-        row = await self._s.get(FocusSessionORM, session_id)
+        # SQL-level guard against the race between /complete (or /cancel)
+        # and the worker's sweep_abandoned pass: terminal transitions are
+        # only persisted when the row is still `active`. If a competing
+        # writer flipped the status in the same second, the UPDATE affects
+        # zero rows and we raise NotFoundError — the caller (service) treats
+        # that as "someone else terminated it first" and skips its event so
+        # achievement / coin handlers don't double-fire.
+        stmt = (
+            update(FocusSessionORM)
+            .where(
+                FocusSessionORM.id == session_id,
+                FocusSessionORM.status == FocusSessionStatus.ACTIVE.value,
+            )
+            .values(
+                status=status.value,
+                elapsed_seconds=elapsed_seconds,
+                ended_at=ended_at,
+            )
+            .returning(FocusSessionORM)
+        )
+        result = await self._s.execute(stmt)
+        row = result.scalar_one_or_none()
         if row is None:
-            raise NotFoundError("focus_session_not_found")
-        row.status = status.value
-        row.elapsed_seconds = elapsed_seconds
-        row.ended_at = ended_at
+            raise NotFoundError("focus_session_not_active")
         await self._s.flush()
         return _to_domain(row)
 

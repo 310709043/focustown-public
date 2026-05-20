@@ -11,7 +11,8 @@ class StartSessionRequest(BaseModel):
     mode: FocusSessionMode = FocusSessionMode.FOCUS
     duration_seconds: int | None = Field(default=None, ge=60, le=3 * 3600)
     task_label: str | None = Field(default=None, max_length=256)
-    partner_user_id: str | None = None
+    # UUID width — defence in depth before service-layer Match membership check.
+    partner_user_id: str | None = Field(default=None, min_length=1, max_length=36)
 
 
 class FocusSessionResponse(BaseModel):

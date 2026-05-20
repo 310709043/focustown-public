@@ -37,7 +37,7 @@ from app.domain.repositories.leaderboard_snapshot_repo import (
     ILeaderboardSnapshotRepo,
     LeaderboardSnapshotRecord,
 )
-from app.domain.repositories.match_repo import IMatchRepo
+from app.domain.repositories.match_repo import IMatchReader, IMatchRepo
 from app.domain.repositories.password_reset_token_repo import (
     IPasswordResetTokenRepo,
     ResetTokenRecord,
@@ -882,6 +882,36 @@ def make_user(
 
 
 @dataclass
+@dataclass(slots=True)
+class FakeMatchReader(IMatchReader):
+    """Minimal IMatchReader for unit tests.
+
+    Defaults to "every pair has an accepted match" so existing
+    FocusSessionService tests that exercise the partnered path don't
+    need bespoke setup. Override ``accepted_pairs`` for negative tests.
+    """
+
+    accepted_pairs: set[tuple[str, str]] = field(default_factory=set)
+    accept_all: bool = True
+
+    async def get(self, match_id: str):  # type: ignore[override]
+        raise NotImplementedError
+
+    async def list_recent_for_user(self, *, user_id: str, limit: int):  # type: ignore[override]
+        raise NotImplementedError
+
+    async def has_accepted_pair_between(
+        self, *, user_a_id: str, user_b_id: str
+    ) -> bool:
+        if self.accept_all:
+            return True
+        return (
+            (user_a_id, user_b_id) in self.accepted_pairs
+            or (user_b_id, user_a_id) in self.accepted_pairs
+        )
+
+
+@dataclass(slots=True)
 class FakeFocusSessionRepo(IFocusSessionRepo):
     """In-memory IFocusSessionRepo with stable insertion order.
 

@@ -38,19 +38,12 @@ async def update_me(
     )
 
 
-@router.get("/{user_id}", response_model=UserResponse)
-async def get_user(user_id: str, db: DbDep) -> UserResponse:
-    repo = SqlUserRepo(db)
-    user = await repo.get_by_id(user_id)
-    if user is None:
-        raise NotFoundError("user_not_found")
-    return UserResponse(
-        id=user.id,
-        email=user.email,
-        display_name=user.display_name,
-        character_key=user.character_key,
-        role_label=user.role_label,
-    )
+# NOTE: a `GET /{user_id}` returning UserResponse (with email) used to exist
+# here unauthenticated. Removed 2026-05-20 — it was an open email-harvest
+# endpoint and the FE only ever called `/{user_id}/public` (which is
+# auth-gated and returns PublicUserProfile without email). If a future caller
+# needs the full record for an authenticated viewer, prefer adding a `/me`
+# self-read or extending PublicUserProfile rather than reviving this route.
 
 
 @router.get("/{user_id}/public", response_model=PublicUserProfile)

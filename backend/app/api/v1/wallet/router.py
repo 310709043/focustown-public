@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Header, Query
 
 from app.api.v1.wallet.schemas import (
     GiftRequest,
@@ -113,6 +113,7 @@ async def gift(
     ids: IdGenDep,
     clock: ClockDep,
     publisher: RealtimePublisherDep,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key", max_length=128),
 ) -> GiftResponse:
     wallets = _wallet_service(db, publisher, ids, clock)
     svc = GiftService(
@@ -125,6 +126,7 @@ async def gift(
         recipient_id=payload.recipient_user_id,
         amount_minor=payload.amount_minor,
         message=payload.message,
+        idempotency_key=idempotency_key,
     )
     return GiftResponse(
         transaction_id=debit.id,

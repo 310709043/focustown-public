@@ -53,6 +53,7 @@ class GiftService:
         recipient_id: str,
         amount_minor: int,
         message: str | None = None,
+        idempotency_key: str | None = None,
     ) -> tuple[WalletTransaction, WalletTransaction]:
         if not amount_minor or amount_minor < GIFT_MIN_MINOR:
             raise ValidationError("gift_amount_too_small")
@@ -69,14 +70,25 @@ class GiftService:
         if message:
             cleaned_message = message.strip()[:GIFT_MESSAGE_MAX_LEN] or None
 
-        pair_id = self._ids.new_id()  # ties both ledger rows together
+        # Per migration 0021, the partial unique index
+        # ``ux_wallet_txn_idempotent`` now covers ``gift_sent``/
+        # ``gift_received``. Using a single ``pair_id`` as ``ref_id`` for
+        # BOTH ledger halves means a double-click that re-sends the same
+        # Idempotency-Key produces an `IdempotencyViolationError` on the
+        # second attempt instead of a duplicate transfer. When the caller
+        # omits the key (legacy / unaware clients), we still mint a
+        # server-side UUID so the constraint never trips on legitimate
+        # repeat gifts — at the cost of NOT deduping double-clicks for
+        # those callers. Frontends should pass a stable Idempotency-Key
+        # per "Send" button click.
+        pair_id = idempotency_key or self._ids.new_id()
         debit = await self._wallets.debit(
             user_id=sender_id,
             currency_code=self._currency,
             amount_minor=amount_minor,
             reason="gift_sent",
-            ref_type="user",
-            ref_id=recipient_id,
+            ref_type="gift_pair",
+            ref_id=pair_id,
             metadata={
                 "pair_id": pair_id,
                 "recipient_id": recipient_id,
@@ -88,8 +100,8 @@ class GiftService:
             currency_code=self._currency,
             amount_minor=amount_minor,
             reason="gift_received",
-            ref_type="user",
-            ref_id=sender_id,
+            ref_type="gift_pair",
+            ref_id=pair_id,
             metadata={
                 "pair_id": pair_id,
                 "sender_id": sender_id,

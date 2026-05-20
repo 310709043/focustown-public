@@ -26,9 +26,16 @@ from app.infrastructure.db.models.user import UserORM
 
 def _load_seed_module() -> ModuleType:
     """Load ``scripts/seed-dev-data.py`` by path — the hyphen in the
-    filename makes a normal ``import`` impossible."""
+    filename makes a normal ``import`` impossible.
+
+    Path: file lives at ``backend/scripts/seed-dev-data.py``. From this test
+    (``backend/tests/integration/db/test_seed_bots.py``) → parents[3] is
+    ``backend/``. Earlier code used parents[4] (repo root) + ``scripts/`` —
+    correct when the seed script briefly lived at repo root, broken since
+    it moved under backend/. Fixed 2026-05-20.
+    """
     script_path = (
-        Path(__file__).resolve().parents[4] / "scripts" / "seed-dev-data.py"
+        Path(__file__).resolve().parents[3] / "scripts" / "seed-dev-data.py"
     )
     spec = importlib.util.spec_from_file_location("_seed_module", script_path)
     assert spec is not None and spec.loader is not None

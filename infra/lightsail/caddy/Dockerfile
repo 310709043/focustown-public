@@ -9,5 +9,12 @@
 # Build context = repo root, so the COPY can reach ../../../Caddyfile.
 FROM caddy:2-alpine
 COPY Caddyfile /etc/caddy/Caddyfile
+
+# Drop root before bind. Caddy 2 ships with `cap_net_bind_service` set on the
+# binary in the official image, so a non-privileged user can still listen on
+# :80 / :443. Without this, a parsing CVE in caddy = root in the public-facing
+# container.
+USER nobody
+
 # No CMD override needed — caddy:2-alpine's default entrypoint already runs
 # `caddy run --config /etc/caddy/Caddyfile --adapter caddyfile`.

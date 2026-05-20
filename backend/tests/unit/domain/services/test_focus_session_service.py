@@ -21,7 +21,7 @@ from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
 from app.domain.events import SessionAbandoned, SessionCompleted, SessionStarted
 from app.domain.models import FocusSessionMode, FocusSessionStatus
 from app.domain.services.focus_session_service import FocusSessionService
-from tests.unit.fakes import FakeFocusSessionRepo
+from tests.unit.fakes import FakeFocusSessionRepo, FakeMatchReader
 
 
 @pytest.fixture
@@ -30,8 +30,17 @@ def repo() -> FakeFocusSessionRepo:
 
 
 @pytest.fixture
-def service(repo, clock, ids, events) -> FocusSessionService:
-    return FocusSessionService(repo=repo, clock=clock, ids=ids, events=events)
+def matches() -> FakeMatchReader:
+    # accept_all=True → existing partnered tests keep passing without
+    # bespoke setup. Negative tests can flip and populate accepted_pairs.
+    return FakeMatchReader()
+
+
+@pytest.fixture
+def service(repo, matches, clock, ids, events) -> FocusSessionService:
+    return FocusSessionService(
+        repo=repo, clock=clock, ids=ids, events=events, matches=matches
+    )
 
 
 @pytest.fixture

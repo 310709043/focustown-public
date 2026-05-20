@@ -102,7 +102,9 @@ class Settings(BaseSettings):
 
     # WebSocket + expensive-read rate limits. Per-IP windows guard against
     # connection-spam (auth probing pre-JWT-decode) and scraping.
+    # Per-user chat window guards against single-connection room flooding.
     ws_rl_connect_per_ip_per_min: int = 30
+    ws_rl_chat_per_user_per_min: int = 60
     read_rl_leaderboard_per_ip_per_min: int = 120
     read_rl_presence_per_ip_per_min: int = 60
 

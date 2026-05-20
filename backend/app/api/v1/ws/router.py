@@ -14,12 +14,45 @@ from app.core.logging import get_logger
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.services.presence_service import STREET_CHANNEL, PresenceService
 from app.infrastructure.cache.redis_client import get_redis
+from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
+from app.infrastructure.db.repositories.room_visit_repo import SqlRoomVisitRepo
+from app.infrastructure.db.session import get_session_factory
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 log = get_logger(__name__)
 router = APIRouter()
 
 _BEARER_PREFIX = "bearer."
+
+# Server-side bound on chat payloads. Frontend already truncates user input
+# at the textarea, but a hostile client could send a megabyte string and
+# trigger a fan-out of that size to every other socket on the room channel.
+# 2000 chars covers any sane Buddy chat line.
+_CHAT_TEXT_MAX_CHARS = 2000
+
+
+async def _is_room_subscriber(
+    *, database_url: str, user_id: str, room_id: str
+) -> bool:
+    """Membership gate for `join` and `chat`. Returns True iff:
+       - the user owns the room, OR
+       - the room is `public` and the user is authenticated (any user), OR
+       - the room is `invite_only` and the user has an active visit row.
+
+    Uses a fresh session per call so the long-lived WS connection doesn't
+    hold a transaction open. Cost: 1-2 SELECTs per chat / join message.
+    """
+    factory = get_session_factory(database_url)
+    async with factory() as session:
+        room = await SqlRoomRepo(session).get_by_id(room_id)
+        if room is None:
+            return False
+        if room.owner_user_id == user_id:
+            return True
+        if room.visibility == "public":
+            return True
+        visit = await SqlRoomVisitRepo(session).get_by_user(user_id)
+        return visit is not None and visit.room_id == room_id
 
 
 def extract_ws_token(
@@ -128,8 +161,29 @@ async def ws_connect(
             kind = data.get("type")
             if kind == "chat":
                 room_id = data.get("room_id")
-                text = (data.get("text") or "").strip()
+                text = (data.get("text") or "").strip()[:_CHAT_TEXT_MAX_CHARS]
                 if not room_id or not text:
+                    continue
+                # Per-user chat token bucket — prevents a single connection
+                # from flooding every room. Key is per-user, not per-IP,
+                # because legitimate clients NAT through shared egress.
+                chat_decision = await limiter.hit(
+                    f"ws:chat:user:{user_id}",
+                    limit=settings.ws_rl_chat_per_user_per_min,
+                    window_seconds=60,
+                )
+                if not chat_decision.allowed:
+                    continue
+                if not await _is_room_subscriber(
+                    database_url=settings.database_url,
+                    user_id=user_id,
+                    room_id=room_id,
+                ):
+                    log.warning(
+                        "ws_chat_membership_denied",
+                        user_id=user_id,
+                        room_id=room_id,
+                    )
                     continue
                 await pub.publish(
                     IRealtimePublisher.room_channel(room_id),
@@ -137,8 +191,20 @@ async def ws_connect(
                 )
             elif kind == "join":
                 room_id = data.get("room_id")
-                if room_id:
-                    await pub.add_channels([IRealtimePublisher.room_channel(room_id)])
+                if not room_id:
+                    continue
+                if not await _is_room_subscriber(
+                    database_url=settings.database_url,
+                    user_id=user_id,
+                    room_id=room_id,
+                ):
+                    log.warning(
+                        "ws_join_membership_denied",
+                        user_id=user_id,
+                        room_id=room_id,
+                    )
+                    continue
+                await pub.add_channels([IRealtimePublisher.room_channel(room_id)])
             elif kind == "presence":
                 status = (data.get("status") or "focus").strip() or "focus"
                 await presence.set_status(user_id, status)

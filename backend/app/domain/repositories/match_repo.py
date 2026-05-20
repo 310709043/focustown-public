@@ -17,6 +17,14 @@ class IMatchReader(Protocol):
     async def list_recent_for_user(
         self, *, user_id: str, limit: int
     ) -> list[Match]: ...
+    async def has_accepted_pair_between(
+        self, *, user_a_id: str, user_b_id: str
+    ) -> bool:
+        """True iff an accepted Match exists with (requester, candidate)
+        equal to {user_a_id, user_b_id} in either order. Used to gate
+        partnered focus session start so attackers can't pin sessions
+        to arbitrary users."""
+        ...
 
 
 class IMatchWriter(Protocol):

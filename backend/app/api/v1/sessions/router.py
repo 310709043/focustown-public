@@ -7,6 +7,7 @@ from app.core.deps import ClockDep, CurrentUserId, DbDep, EventBusDep, IdGenDep
 from app.domain.models import FocusSession
 from app.domain.services.focus_session_service import FocusSessionService
 from app.infrastructure.db.repositories import SqlFocusSessionRepo
+from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 
 router = APIRouter()
 
@@ -33,6 +34,7 @@ def _service(db, clock, ids, events) -> FocusSessionService:
         clock=clock,
         ids=ids,
         events=events,
+        matches=SqlMatchRepo(db),
     )
 
 

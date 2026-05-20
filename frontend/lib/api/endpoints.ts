@@ -154,10 +154,17 @@ const walletWriteApi = {
     recipient_user_id: string;
     amount_minor: number;
     message?: string | null;
+    /** Optional per-click UUID. Backend treats the same key as a retry
+     *  (returns the original transaction) instead of duplicating the
+     *  transfer. Callers SHOULD generate one per Send-button click via
+     *  `crypto.randomUUID()` so double-click doesn't double-charge. */
+    idempotencyKey?: string;
   }) {
+    const { idempotencyKey, ...body } = input;
     return apiFetch<GiftResponse>("/api/v1/me/wallet/gift", {
       method: "POST",
-      body: input,
+      body,
+      headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
     });
   },
 };

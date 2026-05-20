@@ -95,17 +95,26 @@ async def test_gift_happy_path_debits_sender_and_credits_recipient() -> None:
         recipient_id="recipient",
         amount_minor=1000,
         message="thanks!",
+        idempotency_key="click-uuid-1",
     )
 
     assert debit.delta_minor == -1000
     assert debit.reason == "gift_sent"
-    assert debit.ref_id == "recipient"
+    # Post-PR (security Phase 1): ref_type/ref_id now carry the per-click
+    # pair id so the partial unique on wallet_transactions can dedupe
+    # double-clicks. Both halves share the same pair id; recipient/sender
+    # ids moved into ``metadata`` for downstream reconciliation.
+    assert debit.ref_type == "gift_pair"
+    assert debit.ref_id == "click-uuid-1"
     assert credit.delta_minor == 1000
     assert credit.reason == "gift_received"
-    assert credit.ref_id == "sender"
-    # Both halves share a pair_id in metadata for ledger reconciliation.
+    assert credit.ref_type == "gift_pair"
+    assert credit.ref_id == "click-uuid-1"
     assert debit.metadata is not None and credit.metadata is not None
-    assert debit.metadata["pair_id"] == credit.metadata["pair_id"]
+    assert debit.metadata["pair_id"] == "click-uuid-1"
+    assert credit.metadata["pair_id"] == "click-uuid-1"
+    assert debit.metadata["recipient_id"] == "recipient"
+    assert credit.metadata["sender_id"] == "sender"
     assert credit.metadata["message"] == "thanks!"
     # Sender's balance decreased; recipient's increased.
     assert await wallet.get_balance_minor("sender", "T") == 4000

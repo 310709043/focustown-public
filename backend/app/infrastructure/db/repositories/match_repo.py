@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
@@ -72,3 +72,25 @@ class SqlMatchRepo(IMatchRepo):
             .limit(limit)
         )
         return [_to_domain(r) for r in (await self._s.execute(stmt)).scalars().all()]
+
+    async def has_accepted_pair_between(
+        self, *, user_a_id: str, user_b_id: str
+    ) -> bool:
+        stmt = (
+            select(MatchORM.id)
+            .where(
+                MatchORM.status == MatchStatus.ACCEPTED.value,
+                or_(
+                    and_(
+                        MatchORM.requester_id == user_a_id,
+                        MatchORM.candidate_id == user_b_id,
+                    ),
+                    and_(
+                        MatchORM.requester_id == user_b_id,
+                        MatchORM.candidate_id == user_a_id,
+                    ),
+                ),
+            )
+            .limit(1)
+        )
+        return (await self._s.execute(stmt)).first() is not None

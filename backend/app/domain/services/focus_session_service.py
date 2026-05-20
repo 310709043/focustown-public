@@ -8,6 +8,7 @@ from app.domain.events import SessionAbandoned, SessionCompleted, SessionStarted
 from app.domain.models import FocusSession, FocusSessionMode, FocusSessionStatus
 from app.domain.models.focus_session import default_duration
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
+from app.domain.repositories.match_repo import IMatchReader
 
 
 class FocusSessionService:
@@ -23,11 +24,16 @@ class FocusSessionService:
         clock: IClock,
         ids: IIdGenerator,
         events: EventBus,
+        matches: IMatchReader | None = None,
     ) -> None:
         self._repo = repo
         self._clock = clock
         self._ids = ids
         self._events = events
+        # Optional so unit tests that don't exercise the partnered path
+        # don't have to wire a mock match reader. Production DI always
+        # supplies one (see api/v1/sessions/router.py `_service`).
+        self._matches = matches
 
     async def start(
         self,
@@ -38,6 +44,19 @@ class FocusSessionService:
         task_label: str | None,
         partner_user_id: str | None,
     ) -> FocusSession:
+        if partner_user_id:
+            if partner_user_id == user_id:
+                raise ConflictError("partner_cannot_be_self")
+            if self._matches is None:
+                # Defence in depth — callers must wire IMatchReader to use
+                # the partnered path. Refusing the start is safer than
+                # silently storing an unverified partner pointer.
+                raise ForbiddenError("partner_not_verified")
+            ok = await self._matches.has_accepted_pair_between(
+                user_a_id=user_id, user_b_id=partner_user_id
+            )
+            if not ok:
+                raise ForbiddenError("partner_not_matched")
         now = self._clock.now()
         session = await self._repo.create(
             session_id=self._ids.new_id(),
@@ -64,12 +83,18 @@ class FocusSessionService:
             raise ConflictError("session_not_active")
         now = self._clock.now()
         elapsed = min(session.duration_seconds, int((now - session.started_at).total_seconds()))
-        updated = await self._repo.update_status(
-            session_id=session.id,
-            status=FocusSessionStatus.COMPLETED,
-            elapsed_seconds=elapsed,
-            ended_at=now,
-        )
+        try:
+            updated = await self._repo.update_status(
+                session_id=session.id,
+                status=FocusSessionStatus.COMPLETED,
+                elapsed_seconds=elapsed,
+                ended_at=now,
+            )
+        except NotFoundError:
+            # Lost the race with sweep_abandoned or a concurrent /complete —
+            # the row already flipped to a terminal state. Surface as a
+            # state-machine conflict, not 404.
+            raise ConflictError("session_not_active") from None
         await self._events.publish(
             SessionCompleted(
                 session_id=updated.id,
@@ -87,32 +112,50 @@ class FocusSessionService:
             raise ConflictError("session_not_active")
         now = self._clock.now()
         elapsed = min(session.duration_seconds, int((now - session.started_at).total_seconds()))
-        return await self._repo.update_status(
-            session_id=session.id,
-            status=FocusSessionStatus.CANCELLED,
-            elapsed_seconds=elapsed,
-            ended_at=now,
-        )
+        try:
+            return await self._repo.update_status(
+                session_id=session.id,
+                status=FocusSessionStatus.CANCELLED,
+                elapsed_seconds=elapsed,
+                ended_at=now,
+            )
+        except NotFoundError:
+            raise ConflictError("session_not_active") from None
 
     async def sweep_abandoned(self) -> list[FocusSession]:
-        """Worker hook: mark sessions whose duration expired without explicit completion."""
+        """Worker hook: mark sessions whose duration expired without explicit completion.
+
+        Race correctness depends on `update_status` only writing when the row
+        is still `active` (see `IFocusSessionRepo.update_status` impl, which
+        scopes the UPDATE with `WHERE status = 'active' RETURNING id`). If the
+        user just completed/cancelled in the same second, the UPDATE returns
+        zero rows and `update_status` raises NotFoundError; we treat that as
+        "someone else terminated it first" and skip the event so achievement
+        handlers don't double-fire."""
         now = self._clock.now()
         result: list[FocusSession] = []
         for session in await self._repo.list_active():
             elapsed = int((now - session.started_at).total_seconds())
-            if elapsed >= session.duration_seconds + 60:  # 60s grace
+            if elapsed < session.duration_seconds + 60:  # 60s grace
+                continue
+            try:
                 updated = await self._repo.update_status(
                     session_id=session.id,
                     status=FocusSessionStatus.ABANDONED,
                     elapsed_seconds=session.duration_seconds,
                     ended_at=now,
                 )
-                await self._events.publish(
-                    SessionAbandoned(
-                        session_id=updated.id, user_id=updated.user_id, ended_at=now
-                    )
+            except NotFoundError:
+                # Raced with /complete or /cancel — the row is already
+                # terminal. Skip silently; the other path published its
+                # own event.
+                continue
+            await self._events.publish(
+                SessionAbandoned(
+                    session_id=updated.id, user_id=updated.user_id, ended_at=now
                 )
-                result.append(updated)
+            )
+            result.append(updated)
         return result
 
     async def get_owned(self, *, session_id: str, user_id: str) -> FocusSession:

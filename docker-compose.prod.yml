@@ -43,7 +43,7 @@ services:
     environment:
       APP_ENV: staging
       APP_DEBUG: "false"
-      APP_SECRET_KEY: dev_secret_at_least_32_characters_long_xxxxx
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY required — source from .env or shell before `docker compose up`. Reuse the dev_secret literal ONLY for laptop smoke tests; never on a host reachable beyond loopback.}
       APP_CORS_ORIGINS: http://localhost:8080
       DATABASE_URL: postgresql+asyncpg://focustown:focustown@postgres:5432/focustown
       REDIS_URL: redis://redis:6379/0
@@ -76,7 +76,7 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: staging
-      APP_SECRET_KEY: dev_secret_at_least_32_characters_long_xxxxx
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY required — source from .env before `docker compose up`.}
       DATABASE_URL: postgresql+asyncpg://focustown:focustown@postgres:5432/focustown
       REDIS_URL: redis://redis:6379/0
       AUTH_PROVIDER: local_jwt
