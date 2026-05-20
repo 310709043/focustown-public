@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { useAuthStore } from "@/lib/state/authStore";
 import { useMatchStore } from "@/lib/state/matchStore";
+import { useTimerStore } from "@/lib/state/timerStore";
 import { matchesApi } from "@/lib/api/endpoints";
 import { findCharacter } from "@/lib/data/characters";
 import { SoloFocusScene } from "@/components/focus/SoloFocusScene";
@@ -106,6 +107,20 @@ export default function FocusRoomPage() {
   useEffect(() => {
     if (!user) void hydrate();
   }, [user, hydrate]);
+
+  // Guard against accidental tab close / hard reload while a session is in
+  // flight. Only fires for browser-level navigation; client-side router.push
+  // (e.g. FocusTopBar's back button) is intentionally not guarded — the
+  // backend worker's 60s abandoned-session sweep handles those.
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!useTimerStore.getState().session) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
 
   // Resolve the partner's character_key for the pairing header. The
   // happy path reuses the just-accepted match from the in-memory store
