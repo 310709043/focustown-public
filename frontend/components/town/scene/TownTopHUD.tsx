@@ -6,7 +6,8 @@ import { MiniClock } from "@/components/chrome/MiniClock";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { Logo } from "@/components/scene/Logo";
 import { CoinBadge } from "@/components/town/CoinBadge";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
+import { roomApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import { useSceneStore, type SceneName } from "@/lib/state/sceneStore";
@@ -16,17 +17,13 @@ import { CAT_WALK } from "@/lib/pixel/sprites/walkers";
 import { NavButton } from "./NavButton";
 import { UserStatusPill } from "./UserStatusPill";
 
-/**
- * Modal targets the TopHUD can open. PR1 wires achv/shop/feedback/support;
- * PR2 will add friends + profile.
- */
+/** Modal targets the TopHUD can open. */
 export type TownModalKind =
   | "achv"
   | "shop"
   | "frds"
   | "profile"
-  | "feedback"
-  | "support";
+  | "feedback";
 
 const TIME_EMOJI: Record<SceneName, string> = {
   night: "🌙",
@@ -84,10 +81,8 @@ const SCENE_TEMP: Record<SceneName, number> = {
  *  • CENTER: `UserStatusPill` (avatar, name, LV, focusing status, tomato strip)
  *  • RIGHT: ACHV / SHOP / FRDS nav + my-room + clock + T-coin + sign out
  *
- * Replaces `TownNavbar` in `/town/page.tsx`. All click handlers
- * preserve Current's existing routing + store wiring (signOut,
- * roomApi.getMine, leaderboard nav). The locale switcher is rendered
- * by the global LocaleLayout top-right slot.
+ * Click handlers wire signOut, roomApi.getMine, and leaderboard nav.
+ * The locale switcher is rendered by the global LocaleLayout top-right slot.
  */
 export function TownTopHUD({
   onOpenModal,
@@ -100,6 +95,7 @@ export function TownTopHUD({
   onOpenOwnProfile?: () => void;
 }) {
   const signOut = useAuthStore((s) => s.signOut);
+  const router = useRouter();
   const scene = useSceneStore((s) => s.current);
   // Presence store may not be hydrated yet on initial paint (SSR + first WS
   // tick). Floor at 1 so the chip never reads as "ONLINE 0" — at minimum the
@@ -195,6 +191,18 @@ export function TownTopHUD({
           }
           label={tNav("achv")}
           onClick={() => onOpenModal("achv")}
+        />
+        <NavButton
+          testId="nav-my-room"
+          icon="🏠"
+          label={tNav("myRoom")}
+          title={tNav("myRoomTooltip")}
+          onClick={async () => {
+            const room = await roomApi.getMine();
+            router.push(
+              `/town/room/${room.id}` as Parameters<typeof router.push>[0],
+            );
+          }}
         />
         <NavButton
           testId="nav-shop"

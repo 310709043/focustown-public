@@ -6,12 +6,6 @@ export const MOOD_KEYS = ["all", "lofi", "jazz", "rain", "ambient"] as const;
 
 export type MoodKey = (typeof MOOD_KEYS)[number];
 
-// Back-compat export: existing consumers (UploadForm, MusicPanel) iterate
-// MOODS to render selectable options. The `label` field is filled in at the
-// call-site via useTranslations now; we keep the shape but mark the label
-// optional so non-translated callers (e.g. tests) still type-check.
-export const MOODS: ReadonlyArray<{ key: MoodKey }> = MOOD_KEYS.map((key) => ({ key }));
-
 interface Props {
   value: MoodKey;
   onChange: (key: MoodKey) => void;

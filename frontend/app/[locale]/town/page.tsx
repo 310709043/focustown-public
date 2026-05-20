@@ -24,11 +24,9 @@ import { StreetProps } from "@/components/scene/StreetProps";
 import { Road } from "@/components/scene/Road";
 import { SCENES } from "@/lib/data/scenes";
 
-// Reference-design town visuals (Page 3 of UI sync). These replace the
-// pre-port `Buildings` / `Moon` / `LeaderboardWindow` / `TownNavbar` /
-// `Billboard` / `VenueCards` / `WeatherBadge` / `TownClock` set with
-// the named 9-building cityscape, pixel celestial sprite, FOCUS
-// BROADCAST sky window, and 3-cluster top HUD respectively.
+// Reference-design town visuals (Page 3 of UI sync). The named
+// 9-building cityscape, pixel celestial sprite, FOCUS BROADCAST sky
+// window, and 3-cluster top HUD.
 import { NamedBuildings } from "@/components/town/scene/NamedBuildings";
 import { CelestialBody } from "@/components/town/scene/CelestialBody";
 import { SkyWindow } from "@/components/town/scene/SkyWindow";
@@ -66,16 +64,13 @@ import { ShopModal } from "@/components/modals/ShopModal";
 import { AchievementsModal } from "@/components/modals/AchievementsModal";
 import { FeedbackModal } from "@/components/modals/FeedbackModal";
 import { FriendsModal } from "@/components/modals/FriendsModal";
-import { SupportModal } from "@/components/modals/SupportModal";
 import { ProfileModal } from "@/components/modals/ProfileModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
-import { useRouter } from "@/i18n/routing";
 
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
 
 export default function TownPage() {
   const { user, hydrate } = useAuthStore();
-  const router = useRouter();
   const advanceScene = useSceneStore((s) => s.advance);
   const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
   const [matchOpen, setMatchOpen] = useState(false);
@@ -93,7 +88,7 @@ export default function TownPage() {
   };
 
   const onOpenOwnProfile = () => {
-    if (user?.id) router.push(`/users/${user.id}`);
+    setOpenModal("profile");
   };
 
   useEffect(() => {
@@ -315,10 +310,6 @@ export default function TownPage() {
       />
       <FeedbackModal
         open={openModal === "feedback"}
-        onClose={() => setOpenModal(null)}
-      />
-      <SupportModal
-        open={openModal === "support"}
         onClose={() => setOpenModal(null)}
       />
       <ProfileModal

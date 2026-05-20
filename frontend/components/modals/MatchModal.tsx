@@ -196,7 +196,10 @@ export function MatchModal({ open, onClose }: { open: boolean; onClose: () => vo
             textShadow: "none",
           }}
           disabled={accepting || skipping}
-          onClick={() => void skipMatch()}
+          onClick={async () => {
+            await skipMatch();
+            onClose();
+          }}
         >
           {skipping ? t("nextLoadingCta") : t("nextCta")}
         </button>

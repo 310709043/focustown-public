@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
+import { Link } from "@/i18n/routing";
 import { NOTE } from "@/lib/pixel/sprites/props";
 import {
   selectCurrentTrack,
@@ -27,6 +28,7 @@ const GENRES: ReadonlyArray<GenreKey> = ["lofi", "classical", "rain", "cafe", "f
  */
 export function MusicPlayer() {
   const t = useTranslations("town.bottom.musicPlayer");
+  const tNav = useTranslations("town.nav");
   // Pure controller — every state lives in the global audio store, the
   // single <audio> element lives in <GlobalAudioMount/> in the locale
   // layout. We never touch the DOM here.
@@ -203,6 +205,24 @@ export function MusicPlayer() {
             </button>
           );
         })}
+        <Link
+          href="/town/library"
+          data-testid="music-library-link"
+          className="font-silkscreen"
+          style={{
+            marginLeft: "auto",
+            fontSize: 8,
+            padding: "1px 5px",
+            border: "1px solid var(--panel-stroke)",
+            color: "var(--accent-1)",
+            background: "transparent",
+            letterSpacing: "0.1em",
+            textDecoration: "none",
+            cursor: "pointer",
+          }}
+        >
+          {tNav("library")}
+        </Link>
       </div>
 
       {/* The <audio> element + onEnded handler live in

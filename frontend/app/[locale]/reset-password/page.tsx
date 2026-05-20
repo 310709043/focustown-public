@@ -37,13 +37,22 @@ function ResetPasswordInner() {
         }}
       >
         <p className="mb-3">{t("invalidTokenMessage")}</p>
-        <Link
-          href="/forgot-password"
-          className="text-accent-2 hover:text-accent-1 active:text-accent-1 touch:inline-block touch:py-2"
-          style={{ fontSize: "var(--font-size-label)" }}
-        >
-          {t("requestAgain")}
-        </Link>
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/forgot-password"
+            className="text-accent-2 hover:text-accent-1 active:text-accent-1 touch:inline-block touch:py-2"
+            style={{ fontSize: "var(--font-size-label)" }}
+          >
+            {t("requestAgain")}
+          </Link>
+          <Link
+            href="/signin"
+            className="text-muted hover:text-text active:text-text touch:inline-block touch:py-2"
+            style={{ fontSize: "var(--font-size-label)" }}
+          >
+            ◂ {t("backToSigninShort")}
+          </Link>
+        </div>
       </div>
     );
   }
