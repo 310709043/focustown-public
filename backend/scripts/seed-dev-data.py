@@ -274,14 +274,21 @@ async def _seed_tracks(db, settings, ids) -> None:
 
     # Reuse the configured storage backend so the seeder works for both
     # local FS and S3 / MinIO. When S3 is configured we also need to make
-    # sure the target bucket exists — bucket creation is backend-specific
-    # and lives outside the IFileStorage protocol on purpose.
+    # sure the target bucket exists and a CORS policy is in place so the
+    # frontend's <audio> tags (cross-origin to S3) can fetch the bytes —
+    # see comment in app/main.py:lifespan for the silent-fail symptom.
     storage = make_storage(settings)
     if settings.storage_backend == "s3":
         from app.infrastructure.storage.s3 import S3Storage
 
         if isinstance(storage, S3Storage):
             storage.ensure_bucket()
+            try:
+                storage.ensure_cors_policy(
+                    allowed_origins=settings.cors_origin_list,
+                )
+            except Exception as exc:  # noqa: BLE001 — seed must not block on this
+                print(f"  (track seed) ensure_cors_policy failed: {exc}")
 
     system_user = (
         await db.execute(_select(UserORM).where(UserORM.email == SEED_SYSTEM_USER_EMAIL))

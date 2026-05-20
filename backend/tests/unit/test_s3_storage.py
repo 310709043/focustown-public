@@ -81,3 +81,108 @@ def test_ensure_bucket_swallows_errors_on_existing_bucket():
     stubber.add_response("head_bucket", {}, expected_params={"Bucket": "test-bucket"})
     with stubber:
         storage.ensure_bucket()  # no exception, returns cleanly
+
+
+# ----- ensure_cors_policy -----------------------------------------------------
+# Four-quadrant coverage (logic / boundary / error / object-state) for the
+# CORS policy that unblocks <audio> tags loading presigned URLs from a
+# cross-origin S3 host. See app/infrastructure/storage/s3.py for the symptom
+# this fix targets.
+
+
+def test_ensure_cors_policy_sends_get_and_head_with_browser_origin():
+    """logic: a non-empty origin list ends up verbatim in the AWS call."""
+    storage = _make_storage()
+    stubber = Stubber(storage._internal)  # type: ignore[attr-defined]
+    stubber.add_response(
+        "put_bucket_cors",
+        {},
+        expected_params={
+            "Bucket": "test-bucket",
+            "CORSConfiguration": {
+                "CORSRules": [
+                    {
+                        "AllowedMethods": ["GET", "HEAD"],
+                        "AllowedOrigins": ["https://dev.lowbatterytown.com"],
+                        "AllowedHeaders": ["Range", "If-Range", "If-None-Match"],
+                        "ExposeHeaders": [
+                            "Accept-Ranges",
+                            "Content-Range",
+                            "Content-Length",
+                            "ETag",
+                        ],
+                        "MaxAgeSeconds": 3600,
+                    }
+                ]
+            },
+        },
+    )
+    with stubber:
+        storage.ensure_cors_policy(
+            allowed_origins=["https://dev.lowbatterytown.com"]
+        )
+    stubber.assert_no_pending_responses()
+
+
+def test_ensure_cors_policy_empty_origins_falls_back_to_wildcard():
+    """boundary: an empty list collapses to ['*'] rather than rejecting the
+    config — fail-open is preferred over fail-silent for an audio-only bucket
+    that holds no private data."""
+    storage = _make_storage()
+    stubber = Stubber(storage._internal)  # type: ignore[attr-defined]
+    stubber.add_response(
+        "put_bucket_cors",
+        {},
+        expected_params={
+            "Bucket": "test-bucket",
+            "CORSConfiguration": {
+                "CORSRules": [
+                    {
+                        "AllowedMethods": ["GET", "HEAD"],
+                        "AllowedOrigins": ["*"],
+                        "AllowedHeaders": ["Range", "If-Range", "If-None-Match"],
+                        "ExposeHeaders": [
+                            "Accept-Ranges",
+                            "Content-Range",
+                            "Content-Length",
+                            "ETag",
+                        ],
+                        "MaxAgeSeconds": 3600,
+                    }
+                ]
+            },
+        },
+    )
+    with stubber:
+        storage.ensure_cors_policy(allowed_origins=[])
+
+
+def test_ensure_cors_policy_propagates_access_denied_error():
+    """error: when the IAM role lacks s3:PutBucketCORS, the ClientError must
+    propagate so the caller (main.py lifespan / seed script) can log it. The
+    method itself does not swallow — callers decide whether to crash."""
+    from botocore.exceptions import ClientError
+
+    storage = _make_storage()
+    stubber = Stubber(storage._internal)  # type: ignore[attr-defined]
+    stubber.add_client_error(
+        "put_bucket_cors",
+        service_error_code="AccessDenied",
+        service_message="Access Denied",
+        http_status_code=403,
+    )
+    with stubber, pytest.raises(ClientError):
+        storage.ensure_cors_policy(allowed_origins=["https://example.com"])
+
+
+def test_ensure_cors_policy_is_idempotent_across_calls():
+    """object-state: two consecutive calls each issue a fresh put_bucket_cors
+    (idempotent at the API level — put overwrites the rule set)."""
+    storage = _make_storage()
+    stubber = Stubber(storage._internal)  # type: ignore[attr-defined]
+    stubber.add_response("put_bucket_cors", {})
+    stubber.add_response("put_bucket_cors", {})
+    with stubber:
+        storage.ensure_cors_policy(allowed_origins=["https://example.com"])
+        storage.ensure_cors_policy(allowed_origins=["https://example.com"])
+    stubber.assert_no_pending_responses()

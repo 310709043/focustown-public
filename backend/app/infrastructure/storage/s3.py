@@ -143,3 +143,45 @@ class S3Storage(IFileStorage):
             code = exc.response.get("Error", {}).get("Code", "")
             if code not in {"BucketAlreadyOwnedByYou", "BucketAlreadyExists"}:
                 raise
+
+    def ensure_cors_policy(self, *, allowed_origins: list[str]) -> None:
+        """Apply a CORS policy on the bucket so the frontend can fetch presigned
+        URLs from ``<audio>`` tags loaded cross-origin.
+
+        Without this, the browser follows the backend's 302 to S3 and silently
+        drops the response because S3 emits no ``Access-Control-Allow-Origin``
+        header — confirmed in dev DevTools as the cause of the "no music plays"
+        symptom after PR #91 went live. ``put_bucket_cors`` overwrites the
+        entire CORSConfiguration each call, so this is idempotent.
+
+        ``allowed_origins`` should usually be ``settings.cors_origin_list`` —
+        the same source of truth FastAPI's CORSMiddleware uses for the API
+        itself. An empty list collapses to ``["*"]`` so a misconfigured deploy
+        falls back to "open" rather than "silent block": the audio bucket has
+        no private data and the frontend's CSP ``media-src`` already restricts
+        which origins can request it.
+        """
+        origins = allowed_origins or ["*"]
+        cors_config = {
+            "CORSRules": [
+                {
+                    "AllowedMethods": ["GET", "HEAD"],
+                    "AllowedOrigins": origins,
+                    # Range / If-Range / If-None-Match cover HTML5 audio's
+                    # byte-range probing; without these in the allow-list,
+                    # Safari's seekable=true probe fails CORS preflight.
+                    "AllowedHeaders": ["Range", "If-Range", "If-None-Match"],
+                    "ExposeHeaders": [
+                        "Accept-Ranges",
+                        "Content-Range",
+                        "Content-Length",
+                        "ETag",
+                    ],
+                    "MaxAgeSeconds": 3600,
+                }
+            ]
+        }
+        self._internal.put_bucket_cors(
+            Bucket=self._bucket,
+            CORSConfiguration=cors_config,
+        )

@@ -40,6 +40,7 @@ from app.infrastructure.db.session import dispose_engine, get_session_factory
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.presence.bot_seeder import refresh_bot_presence
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
+from app.infrastructure.storage.factory import make_storage
 
 log = get_logger(__name__)
 
@@ -107,6 +108,35 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             )
     except Exception:  # don't block startup on bot seeding
         log.exception("bot_presence_seed_failed")
+
+    # Music streaming on AWS: the /api/v1/tracks/{id}/stream endpoint 302s
+    # to a presigned S3 URL, and HTML5 <audio> follows redirects under CORS.
+    # Without a bucket CORS policy, S3 returns the bytes but no
+    # Access-Control-Allow-Origin, and the browser silently drops them
+    # (observed in dev DevTools after PR #91). Apply the policy on every
+    # boot — it's idempotent and cheap. seed-dev-data also calls
+    # ensure_bucket() which now triggers this same path, so dev MinIO works
+    # too. Failure logs but does not crash the app: if the IAM role lacks
+    # s3:PutBucketCORS the bucket may still serve audio if a manual policy
+    # is in place, and crashing here would block every other API for an
+    # audio-only problem.
+    if settings.storage_backend == "s3":
+        storage = make_storage(settings)
+        from app.infrastructure.storage.s3 import S3Storage
+
+        if isinstance(storage, S3Storage):
+            try:
+                await asyncio.to_thread(
+                    storage.ensure_cors_policy,
+                    allowed_origins=settings.cors_origin_list,
+                )
+                log.info(
+                    "s3_cors_policy_applied",
+                    bucket=storage.bucket,
+                    origins=settings.cors_origin_list or ["*"],
+                )
+            except Exception:
+                log.exception("s3_cors_policy_apply_failed", bucket=storage.bucket)
 
     try:
         yield

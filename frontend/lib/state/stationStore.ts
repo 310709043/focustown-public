@@ -352,3 +352,12 @@ export function selectActiveConnection(s: StationState): ConnectionState {
   if (!s.activeScope) return "connected";
   return s.connection[scopeKey(s.activeScope)] ?? "connected";
 }
+
+/** Selector: track ids of the cursor for the active scope, or [] when no
+ *  cursor is set. Used by GlobalAudioMount's station-mode error budget to
+ *  decide how many burst failures constitute "every track in the visible
+ *  playlist is broken" and we should fall back to a local lo-fi loop. */
+export function selectActivePlaylistIds(s: StationState): string[] {
+  const cursor = s.getCursorFor(s.activeScope);
+  return cursor?.playlistIds ?? [];
+}

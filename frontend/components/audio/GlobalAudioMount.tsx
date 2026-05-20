@@ -11,6 +11,7 @@ import {
 import { tracksApi } from "@/lib/api/endpoints";
 import {
   scopeKey,
+  selectActivePlaylistIds,
   useStationStore,
   type StationCursor,
   type StationTrackMeta,
@@ -318,17 +319,48 @@ export function GlobalAudioMount() {
       // the burst-window guard isn't needed here.
       const s = useStationStore.getState();
       if (s.personalPlaylist.length > 1) s.nextPersonal();
+    } else if (src.kind === "station") {
+      // Normally we lean on the next station.cursor event (≤5s worker
+      // tick) to repoint to the next track. But if every track in the
+      // visible playlist 404s inside one burst, no future cursor will
+      // help — the storage backend is unreachable for this client (S3
+      // CORS misconfig, presigned URL expiry, IAM regression, ...).
+      // Drop activeScope so the source selector promotes the local
+      // lo-fi fallback. The next successful station.cursor that arrives
+      // does NOT auto-resume station mode — re-entering /town (or a
+      // future reconnect button) re-sets activeScope.
+      const playlistIds = selectActivePlaylistIds(useStationStore.getState());
+      if (!tid || playlistIds.length === 0) return;
+      const now = performance.now();
+      if (now - errorBudget.current.lastAt > 800) {
+        errorBudget.current.failed.clear();
+      }
+      errorBudget.current.lastAt = now;
+      errorBudget.current.failed.add(tid);
+      if (errorBudget.current.failed.size >= playlistIds.length) {
+        console.warn(
+          "[audio] station all-tracks failed; switching to local fallback",
+        );
+        useAudioStore.setState({
+          tracks: LOCAL_FALLBACK_TRACKS,
+          index: 0,
+          isPlaying: true,
+        });
+        useStationStore.setState({ activeScope: null });
+        errorBudget.current.failed.clear();
+      }
     }
-    // src.kind === "station": rely on the next station.cursor event
-    // (≤5s worker tick) to repoint to the next track. Auto-advancing
-    // locally would let one client drift out of cohort sync.
   };
 
+  // crossOrigin intentionally omitted — plain <audio src> plays
+  // cross-origin without CORS validation. Setting crossOrigin="anonymous"
+  // would force the browser to require Access-Control-Allow-Origin on
+  // the redirected S3 object, which is exactly the failure mode that
+  // motivated this commit (no music in deployed AWS dev).
   return (
     <audio
       ref={audioRef}
       preload="metadata"
-      crossOrigin="anonymous"
       onEnded={onEnded}
       onError={onError}
       style={{ display: "none" }}

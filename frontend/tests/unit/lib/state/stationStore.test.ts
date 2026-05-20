@@ -22,6 +22,7 @@ import { beforeEach, expect, test } from "vitest";
 
 import {
   scopeKey,
+  selectActivePlaylistIds,
   useStationStore,
   type StationCursorPayload,
 } from "@/lib/state/stationStore";
@@ -127,6 +128,30 @@ test("reconnect always clears the muted-while-disconnected flag", () => {
   useStationStore.getState().setMuted(true);
   useStationStore.getState().reconnect();
   expect(useStationStore.getState().mutedWhileDisconnected).toBe(false);
+});
+
+// selectActivePlaylistIds is consumed by GlobalAudioMount's burst-failure
+// fallback (added in fix/aws-audio-streaming-cors). Its three observable
+// states need to hold for the fallback decision to be correct.
+
+test("selectActivePlaylistIds returns [] when no scope is active", () => {
+  useStationStore.getState().applyCursor(CITY_PAYLOAD);
+  expect(selectActivePlaylistIds(useStationStore.getState())).toEqual([]);
+});
+
+test("selectActivePlaylistIds returns [] when active scope has no cursor", () => {
+  useStationStore.getState().setActiveScope({ kind: "city", id: "lowbatterytown" });
+  expect(selectActivePlaylistIds(useStationStore.getState())).toEqual([]);
+});
+
+test("selectActivePlaylistIds returns the cursor's playlist ids for the active scope", () => {
+  useStationStore.getState().applyCursor(CITY_PAYLOAD);
+  useStationStore.getState().setActiveScope({ kind: "city", id: "lowbatterytown" });
+  expect(selectActivePlaylistIds(useStationStore.getState())).toEqual([
+    "t-1",
+    "t-2",
+    "t-3",
+  ]);
 });
 
 test("nextPersonal advances the cursor modulo playlist length", () => {

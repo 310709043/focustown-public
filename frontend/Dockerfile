@@ -24,6 +24,15 @@ CMD ["pnpm", "dev"]
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Cache-buster guard: the local-fallback lo-fi MP3s under public/audio/ ship
+# with the image and are the user-facing safety net when S3 streaming
+# breaks. If Docker buildx replays a stale cache layer that predates these
+# files, the deployed frontend 404s /audio/lofi-*.mp3 and the fallback is
+# silently broken — observed in dev DevTools after PR #91. Fail the build
+# here rather than ship a degraded image.
+RUN test -f public/audio/lofi-1.mp3 \
+    && test -f public/audio/lofi-2.mp3 \
+    && test -f public/audio/lofi-3.mp3
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_WS_BASE_URL
 ARG NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS
