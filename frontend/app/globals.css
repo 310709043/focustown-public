@@ -95,7 +95,13 @@
   --ink-mute:            var(--dir-ink-mute);
   --ink-dim:             var(--dir-ink-dim);
   --accent:              var(--a1);
-  --accent-2:            #c98aa3;  /* dusty rose (was magenta #ec4899) */
+  --accent-2:            #a78bfa;  /* Era A purple — reverted 2026-05-20 per
+                                       user request: CTA stroke / glow needs
+                                       to read as the "primary action" highlight
+                                       and the dusty rose blended into the
+                                       warm-peach palette too quietly. The rest
+                                       of Era B (warm peach `--a1`, slate
+                                       `--accent-3`, cream `--accent-4`) stays.*/
   --accent-3:            #91a8c4;  /* slate blue (was cyan #22d3ee) */
   --accent-4:            var(--amber);
   --window-warm:         #f4d289;  /* cream-yellow (was #fcd34d) */
@@ -238,9 +244,10 @@ body {
   cursor: not-allowed;
 }
 
-/* Primary variant: pink accent-2 stroke + ink + glow. Used for the
+/* Primary variant: --accent-2 stroke + ink + glow. Used for the
    reference's most-important CTAs (signin/signup submit, select-character
-   daily-goal toggle and "Enter Town", solo focus play/pause + tasks add). */
+   daily-goal toggle and "Enter Town", solo focus play/pause + tasks add).
+   --accent-2 is Era A purple (#a78bfa) so CTAs read as the primary action. */
 .pixel-btn.primary {
   border-color: var(--accent-2);
   color: var(--accent-2);
@@ -248,16 +255,20 @@ body {
 }
 .pixel-btn.primary:hover {
   color: #fff;
+  /* Glow tuned to --accent-2 (now #a78bfa Era A purple). The hardcoded
+     `rgba(236, 72, 153, …)` magenta these used to use was stale from
+     the original Era A neon palette and never updated when Era B
+     landed; fixed here in the same surgical revert. */
   box-shadow:
     inset 0 -3px 0 0 rgba(0, 0, 0, 0.35),
     0 3px 0 0 var(--a4),
-    0 0 28px rgba(236, 72, 153, 0.6);
+    0 0 28px rgba(167, 139, 250, 0.6);
 }
 .pixel-btn.primary:active {
   box-shadow:
     inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
     0 1px 0 0 var(--a4),
-    0 0 14px rgba(236, 72, 153, 0.4);
+    0 0 14px rgba(167, 139, 250, 0.4);
 }
 
 .pixel-edge {

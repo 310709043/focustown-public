@@ -64,6 +64,7 @@ class SqlUserRepo(IUserRepo):
         marketing_opt_in: bool = False,
         marketing_opt_in_at: datetime | None = None,
         cognito_sub: str | None = None,
+        character_key: str | None = None,
     ) -> User:
         existing = await self.get_credentials_by_email(email)
         if existing is not None:
@@ -79,6 +80,7 @@ class SqlUserRepo(IUserRepo):
             marketing_opt_in=marketing_opt_in,
             marketing_opt_in_at=marketing_opt_in_at,
             cognito_sub=cognito_sub,
+            character_key=character_key,
         )
         self._s.add(row)
         await self._s.flush()

@@ -20,6 +20,40 @@ from app.infrastructure.auth.providers.base import (
     TokenPair,
 )
 
+# Default character_key starter pool. New sign-ups get one of these
+# deterministically by user_id hash so they appear on /town immediately
+# (instead of rendering as a null-character fallback or silently being
+# omitted from presence renders). Users override via /select-character.
+#
+# Keys must exist in the frontend's CHARACTERS list
+# (`frontend/lib/data/characters.ts`); these 7 are also the seed-bot
+# character_keys (per `backend/scripts/seed-dev-data.py`), so they're
+# guaranteed-present in any deployed environment.
+_DEFAULT_CHARACTER_KEYS: tuple[str, ...] = (
+    "luna",
+    "kai",
+    "milo",
+    "aria",
+    "zoe",
+    "rex",
+    "nyx",
+)
+
+
+def _default_character_key_for(user_id: str) -> str:
+    """Pick a default character_key deterministically from the user_id.
+
+    Stable across reads: any caller resolving the same user_id gets the
+    same starter character. UUID4 hex distributes evenly so the modulo
+    bucketing has no bias. If `user_id` isn't valid hex (defensive — never
+    happens for `IIdGenerator` outputs in practice), fall back to "luna".
+    """
+    try:
+        bucket = int(user_id.replace("-", ""), 16) % len(_DEFAULT_CHARACTER_KEYS)
+    except ValueError:
+        return _DEFAULT_CHARACTER_KEYS[0]
+    return _DEFAULT_CHARACTER_KEYS[bucket]
+
 
 @dataclass(slots=True, frozen=True)
 class AuthOutcome:
@@ -84,8 +118,13 @@ class AuthService:
         external_id = await self._auth.sign_up_user(email=email, password=password)
 
         now = self._clock.now()
+        user_id = self._ids.new_id()
+        # Assign a default character so the user is renderable on /town
+        # the moment they sign in — even if they bypass the /select-
+        # character flow (direct-API sign-up or future deep-link).
+        # Per 2026-05-20 user feedback "登入後沒看到自己在走來走去".
         user = await self._users.create(
-            user_id=self._ids.new_id(),
+            user_id=user_id,
             email=email,
             password_hash=hash_password(password),
             display_name=display_name,
@@ -94,6 +133,7 @@ class AuthService:
             marketing_opt_in=marketing_opt_in,
             marketing_opt_in_at=now if marketing_opt_in else None,
             cognito_sub=external_id or None,
+            character_key=_default_character_key_for(user_id),
         )
         tokens = await self._auth.issue_tokens(
             user_id=user.id,

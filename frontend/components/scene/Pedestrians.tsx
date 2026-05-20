@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
@@ -9,17 +9,23 @@ import { statusByCode, type StatusCode } from "@/lib/data/statuses";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceByKind } from "@/lib/state/usePresenceByKind";
 
-import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
-import { WALKERS } from "@/lib/pixel/sprites/world";
+import { PngAnimatedSprite } from "@/components/pixel/PngAnimatedSprite";
+import { PNG_WALKERS, WALKER_SCALE_DEFAULT } from "@/lib/pixel/sprites/walkersPng";
 
 /**
- * Real online users walking the street. Each <Pedestrian> manages its own
- * jitter so adding & removing users from the parent list doesn't thrash
- * sibling timers. CSS animations (statusPop, userPop, selfHalo) still
- * carry the mount/focus feel; the *walking figure itself* is now a
- * canvas pixel sprite from `lib/pixel/sprites/world.ts` — the WALKERS
- * 2-frame walk cycle, with its clothes/pants palette remapped to the
- * user's character body/roof color so identity survives the swap.
+ * Real online users walking the street. Each <Pedestrian> manages its
+ * own jitter so adding & removing users from the parent list doesn't
+ * thrash sibling timers. CSS animations (statusPop, userPop, selfHalo)
+ * still carry the mount/focus feel.
+ *
+ * Phase 8.B (2026-05-20) — migrated the walking figure from the inline
+ * 8×14 char-grid `WALKERS` (from `lib/pixel/sprites/world.ts`) to the
+ * canonical 128×128 PNG sheets `PNG_WALKERS` (516149 City_men pack).
+ * Each user maps to one of 3 City_men variants by a stable hash of
+ * `user.id`; per-character color customisation is dropped (the PNG has
+ * fixed T-shirt + trouser colors), but identity is preserved via the
+ * 16×16 avatar head in `UserStatusPill` and the nameplate below the
+ * walker (amber for self).
  */
 
 const POSITIONS = [4, 13, 22, 32, 42, 52, 62, 72, 82, 91];
@@ -29,10 +35,11 @@ const pickPos = () => POSITIONS[Math.floor(Math.random() * POSITIONS.length)];
 const fallbackCharacter = (userId: string): CharacterDef =>
   CHARACTERS[hashUserId(userId) % CHARACTERS.length];
 
-// Stable per-user walker variant. The variant index never changes for a
-// given user.id, so list reorders from WS deltas don't reshuffle walkers.
-const walkerIndexFor = (userId: string): number =>
-  hashUserId(userId) % WALKERS.length;
+// Stable per-user City_men variant index. The variant never changes
+// for a given user.id, so list reorders from WS deltas don't reshuffle
+// who's walking which sprite. Maps any string into [0, PNG_WALKERS.length).
+const cityMenVariantFor = (userId: string): number =>
+  hashUserId(userId) % PNG_WALKERS.length;
 
 // Deterministic seed position based on user.id; same on SSR + CSR.
 const seedPos = (userId: string): number =>
@@ -54,20 +61,8 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
   const status = statusByCode((user.status as StatusCode) || "focus");
-  const walker = WALKERS[walkerIndexFor(user.id)];
-
-  // Remap walker palette so clothes (C, B) match the character's body color
-  // and pants (L) match the roof color. Stable identity = stable cache key
-  // in the sprite-engine LRU: `sprite + JSON.stringify(palette)`.
-  const palette = useMemo(
-    () => ({
-      ...walker.palette,
-      C: ch.bodyColor,
-      B: ch.bodyColor,
-      L: ch.roofColor,
-    }),
-    [walker.palette, ch.bodyColor, ch.roofColor],
-  );
+  const variant = PNG_WALKERS[cityMenVariantFor(user.id)];
+  const walk = variant.walk;
 
   return (
     <div
@@ -128,15 +123,25 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
         {isSelf ? `${ch.name} ・ ${t("youSuffix")}` : ch.name}
       </div>
 
-      {/* pixel walker (2-frame). Self carries a slow amber halo via the
-          shared selfHalo keyframe; we apply it to the sprite wrapper so
-          the glow surrounds the whole figure. */}
-      <div className={isSelf ? "animate-selfHalo" : undefined} style={{ display: "inline-block" }}>
-        <AnimatedSprite
-          frames={walker.frames}
-          palette={palette}
-          fps={3}
-          scale={3}
+      {/* 516149 City_men walking PNG (10-frame loop @ 10 fps). Self
+          carries a slow amber halo via the shared selfHalo keyframe;
+          we apply it to the sprite wrapper so the glow surrounds the
+          whole figure. Color identity per-character is preserved by
+          the 16×16 avatar head in UserStatusPill + the nameplate
+          above this sprite, not by the body sprite itself. */}
+      <div
+        className={isSelf ? "animate-selfHalo" : undefined}
+        style={{ display: "inline-block" }}
+        data-testid={`pedestrian-${user.id}`}
+      >
+        <PngAnimatedSprite
+          url={walk.url}
+          frameW={walk.frameW}
+          frameH={walk.frameH}
+          frames={walk.frames}
+          fps={walk.fps}
+          scale={WALKER_SCALE_DEFAULT}
+          alt={ch.name}
         />
       </div>
     </div>

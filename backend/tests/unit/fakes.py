@@ -145,13 +145,14 @@ class FakeUserRepo(IUserRepo):
         marketing_opt_in: bool = False,
         marketing_opt_in_at: datetime | None = None,
         cognito_sub: str | None = None,
+        character_key: str | None = None,
     ) -> User:
         now = datetime.now(UTC)
         user = User(
             id=user_id,
             email=email.lower(),
             display_name=display_name,
-            character_key=None,
+            character_key=character_key,
             role_label=None,
             is_active=True,
             equipped_vehicle_item_id=None,

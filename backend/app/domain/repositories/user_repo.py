@@ -45,6 +45,7 @@ class IUserWriter(Protocol):
         marketing_opt_in: bool = False,
         marketing_opt_in_at: datetime | None = None,
         cognito_sub: str | None = None,
+        character_key: str | None = None,
     ) -> User: ...
     async def set_cognito_sub(self, *, user_id: str, cognito_sub: str) -> None: ...
     async def update_profile(

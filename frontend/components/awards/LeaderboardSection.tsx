@@ -7,7 +7,19 @@ import type { LeaderboardEntry } from "@/lib/api/types.gen";
 
 const RANK_GLYPH = ["🥇", "🥈", "🥉"];
 
-export function LeaderboardSection({ leaders }: { leaders: LeaderboardEntry[] }) {
+interface LeaderboardSectionProps {
+  readonly leaders: LeaderboardEntry[];
+  /** Number of columns the inner list reflows into. `1` is the standard
+   *  vertical scan (used by the full-page /awards route); `2` packs more
+   *  rows into the visible area (used inside AchievementsModal where
+   *  vertical real-estate is constrained — 2026-05-20 user feedback). */
+  readonly columns?: 1 | 2;
+}
+
+export function LeaderboardSection({
+  leaders,
+  columns = 1,
+}: LeaderboardSectionProps) {
   const t = useTranslations("town.awards");
 
   return (
@@ -43,7 +55,19 @@ export function LeaderboardSection({ leaders }: { leaders: LeaderboardEntry[] })
           {t("leadersEmpty")}
         </div>
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        <ul
+          style={{
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+            // CSS column-count splits the list into N flowing columns
+            // without changing the DOM order. Each <li> stays a flex row
+            // (rank + name + count); break-inside avoids splitting a row
+            // mid-column. columnGap controls inter-column whitespace.
+            columnCount: columns,
+            columnGap: columns === 2 ? 24 : 0,
+          }}
+        >
           {leaders.map((l, i) => (
             <li
               key={l.user_id}
@@ -59,6 +83,7 @@ export function LeaderboardSection({ leaders }: { leaders: LeaderboardEntry[] })
                     : "1px solid var(--panel-stroke)",
                 fontSize: 12,
                 color: "var(--ink)",
+                breakInside: "avoid",
               }}
             >
               <span

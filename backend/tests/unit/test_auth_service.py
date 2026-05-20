@@ -59,6 +59,31 @@ async def test_sign_up_happy_creates_user_and_issues_tokens():
 
 
 @pytest.mark.asyncio
+async def test_sign_up_assigns_default_character_key():
+    """New users get a non-null character_key so they render on /town
+    even if they bypass the /select-character flow (per 2026-05-20 user
+    feedback: '登入後沒看到自己在走來走去'). The chosen key must come
+    from the default starter pool — guaranteed-present in any deployed
+    environment because those are also the seed-bot keys."""
+    from app.domain.services.auth_service import _DEFAULT_CHARACTER_KEYS
+
+    svc, users, _, _ = _make_service()
+    outcome = await svc.sign_up(
+        email="b@x.dev",
+        password="goodpass123",
+        display_name="Bob",
+        terms_accepted=True,
+        terms_version=TERMS_VERSION_CURRENT,
+        marketing_opt_in=False,
+        terms_current_version=TERMS_VERSION_CURRENT,
+    )
+
+    persisted = users.users[outcome.user.id]
+    assert persisted.character_key is not None
+    assert persisted.character_key in _DEFAULT_CHARACTER_KEYS
+
+
+@pytest.mark.asyncio
 async def test_sign_up_rejects_unaccepted_terms():
     svc, _, _, _ = _make_service()
 
