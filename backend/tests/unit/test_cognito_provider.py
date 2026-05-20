@@ -18,6 +18,7 @@ from jose import jwk, jwt
 from app.core.config import Settings
 from app.core.exceptions import AuthError
 from app.infrastructure.auth.providers import _cognito_jwks
+from app.infrastructure.auth.providers import cognito as cognito_mod
 from app.infrastructure.auth.providers.cognito import CognitoProvider
 from tests.unit.fakes import FakeUserRepo, make_user
 
@@ -82,6 +83,14 @@ def keypair():
 
 
 def _patch_jwks(monkeypatch, jwk_dict: dict[str, Any]) -> None:
+    """Replace the JWKS fetcher at every reachable bind site.
+
+    The cognito provider does `from ._cognito_jwks import get_jwk` at
+    module load (cognito.py:50), so it captures its OWN reference. Patching
+    only the source module (`_cognito_jwks.get_jwk`) doesn't affect callers
+    that already imported the name. Patch the consumer's bind too — that's
+    the one the provider actually calls.
+    """
     async def fake_get_jwk(*, region: str, pool_id: str, kid: str, **_):
         del region, pool_id
         if kid == jwk_dict["kid"]:
@@ -89,6 +98,7 @@ def _patch_jwks(monkeypatch, jwk_dict: dict[str, Any]) -> None:
         return None
 
     monkeypatch.setattr(_cognito_jwks, "get_jwk", fake_get_jwk)
+    monkeypatch.setattr(cognito_mod, "get_jwk", fake_get_jwk)
 
 
 async def test_verify_access_token_happy(settings, keypair, monkeypatch):
