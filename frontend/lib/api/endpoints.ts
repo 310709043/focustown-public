@@ -1,4 +1,3 @@
-import { config } from "../config";
 import { apiFetch, tokenStore } from "./client";
 import type {
   Achievement,
@@ -586,8 +585,15 @@ export const decorationApi = {
 
 // ── tracks (V1: seeded-only library) ───────────────────
 // V1 ships a curated official library only — no user upload / delete.
-// The streaming endpoint stays unauthenticated so <audio src> can follow
-// the 302 redirect into S3 / MinIO presigned URLs without bearer tokens.
+// Playback goes through the audio proxy (Cloudflare Worker in prod):
+// the frontend POSTs play-token to get a short-TTL JWT URL it then
+// hands to <audio src>. Tokens are per-track, ~5 min TTL, and bound
+// to the caller's session via Authorization on the issuing call.
+export interface PlayTokenResponse {
+  url: string;
+  expires_at: string;
+}
+
 export const tracksApi = {
   list(mood?: string) {
     const qs = mood ? `?mood=${encodeURIComponent(mood)}` : "";
@@ -596,9 +602,11 @@ export const tracksApi = {
   get(id: string) {
     return apiFetch<Track>(`/api/v1/tracks/${id}`, { method: "GET", auth: false });
   },
-  /** Absolute URL suitable for `<audio src={...}>`. */
-  streamUrl(id: string) {
-    return `${config.apiBaseUrl}/api/v1/tracks/${id}/stream`;
+  /** Issue a short-TTL signed URL the browser can pass to `<audio src>`. */
+  getPlayToken(id: string) {
+    return apiFetch<PlayTokenResponse>(`/api/v1/tracks/${id}/play-token`, {
+      method: "POST",
+    });
   },
 };
 

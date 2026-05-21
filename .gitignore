@@ -43,6 +43,11 @@ Thumbs.db
 .docker/
 docker-compose.override.yml
 
+# Operator-local data (R2 upload manifests, dev fixture exports).
+# Files here are inputs for one-off scripts (e.g. import-r2-manifest.py)
+# and contain machine-local paths — not appropriate for source control.
+backend/data/
+
 # Playwright / test output
 **/playwright/.auth/
 **/playwright-report/

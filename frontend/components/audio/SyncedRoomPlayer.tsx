@@ -16,7 +16,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { tracksApi } from "@/lib/api/endpoints";
+import { getPlayUrl } from "@/lib/audio/playUrlCache";
 import { useAudioStore } from "@/lib/state/audioStore";
 import { useRoomPlaybackStore } from "@/lib/state/roomPlaybackStore";
 import { useRealtime } from "@/lib/ws/useRealtime";
@@ -98,14 +98,26 @@ export function SyncedRoomPlayer({ roomId, label = "房間音樂" }: Props) {
       el.load();
       return;
     }
-    el.src = tracksApi.streamUrl(tid);
-    el.load();
-    if (snap.startedAtMs == null) {
-      el.currentTime = 0;
-    } else {
-      const nowMs = snap.isPlaying ? Date.now() : snap.pausedAtMs ?? Date.now();
-      el.currentTime = Math.max(0, (nowMs - snap.startedAtMs) / 1000);
-    }
+    // Resolve the signed proxy URL before binding to <audio>. The
+    // store-snapshot capture above stays sync — only the network
+    // round-trip is awaited here.
+    let cancelled = false;
+    void getPlayUrl(tid).then((url) => {
+      if (cancelled) return;
+      const el2 = audioRef.current;
+      if (!el2) return;
+      el2.src = url;
+      el2.load();
+      if (snap.startedAtMs == null) {
+        el2.currentTime = 0;
+      } else {
+        const nowMs = snap.isPlaying ? Date.now() : snap.pausedAtMs ?? Date.now();
+        el2.currentTime = Math.max(0, (nowMs - snap.startedAtMs) / 1000);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [trackVersion]);
 
   // (3) Playback intent.

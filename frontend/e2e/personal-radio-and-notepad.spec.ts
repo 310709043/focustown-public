@@ -79,6 +79,12 @@ function focusBaselineMocks() {
 // outbound HTTP request to ``/tracks/{id}/stream`` (which the audio
 // element fires before the decode failure) — that's the deterministic
 // signal that the radio bound its playlist correctly.
+//
+// As of the R2/Worker audio migration, the frontend first POSTs to
+// `/api/v1/tracks/{id}/play-token` to receive a signed URL it then
+// hands to <audio src>. In dev / test the signed URL falls back to the
+// backend's own /stream endpoint, so the stream-hit counter still works
+// — we just need to mock the play-token endpoint per track.
 const SILENT_MP3 = Buffer.from([
   0xff, 0xfb, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 ]);
@@ -89,6 +95,18 @@ function mockTrackStream(_trackId: string) {
       status: 200,
       contentType: "audio/mpeg",
       body: SILENT_MP3,
+    });
+}
+
+function mockPlayToken(trackId: string) {
+  return (r: Route) =>
+    r.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        url: `http://localhost:8000/api/v1/tracks/${trackId}/stream?t=fake-jwt`,
+        expires_at: new Date(Date.now() + 5 * 60_000).toISOString(),
+      }),
     });
 }
 
@@ -124,6 +142,12 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         };
         return json(r, 200, playlistResponse("focus", "solo"));
       },
+      [`POST /api/v1/tracks/${SEED_TRACK.id}/play-token`]: mockPlayToken(
+        SEED_TRACK.id,
+      ),
+      [`POST /api/v1/tracks/${SEED_TRACK_2.id}/play-token`]: mockPlayToken(
+        SEED_TRACK_2.id,
+      ),
       [`GET  /api/v1/tracks/${SEED_TRACK.id}/stream`]: mockTrackStream(
         SEED_TRACK.id,
       ),
@@ -252,6 +276,12 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         };
         return json(r, 200, playlistResponse("focus", MATCH_ID));
       },
+      [`POST /api/v1/tracks/${SEED_TRACK.id}/play-token`]: mockPlayToken(
+        SEED_TRACK.id,
+      ),
+      [`POST /api/v1/tracks/${SEED_TRACK_2.id}/play-token`]: mockPlayToken(
+        SEED_TRACK_2.id,
+      ),
       [`GET  /api/v1/tracks/${SEED_TRACK.id}/stream`]: mockTrackStream(
         SEED_TRACK.id,
       ),
@@ -324,6 +354,12 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         lastContext = new URL(r.request().url()).searchParams.get("context");
         return json(r, 200, playlistResponse("city", "city"));
       },
+      [`POST /api/v1/tracks/${SEED_TRACK.id}/play-token`]: mockPlayToken(
+        SEED_TRACK.id,
+      ),
+      [`POST /api/v1/tracks/${SEED_TRACK_2.id}/play-token`]: mockPlayToken(
+        SEED_TRACK_2.id,
+      ),
       [`GET  /api/v1/tracks/${SEED_TRACK.id}/stream`]: mockTrackStream(
         SEED_TRACK.id,
       ),

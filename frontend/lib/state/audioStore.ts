@@ -5,7 +5,6 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 import {
   personalRadioApi,
-  tracksApi,
   type PersonalPlaylistContext,
   type PersonalPlaylistTrack,
 } from "@/lib/api/endpoints";
@@ -14,6 +13,7 @@ import {
   isAudioUnlocked,
   markAudioUnlocked,
 } from "@/lib/audio/unlock";
+import { getPlayUrl, isLocalTrackId, localUrl } from "@/lib/audio/playUrlCache";
 
 /**
  * Global audio state.
@@ -70,20 +70,23 @@ export const LOCAL_FALLBACK_TRACKS: PersonalPlaylistTrack[] = [
   },
 ];
 
-const LOCAL_TRACK_URL: Record<string, string> = {
-  "local:lofi-1": "/audio/lofi-1.mp3",
-  "local:lofi-2": "/audio/lofi-2.mp3",
-  "local:lofi-3": "/audio/lofi-3.mp3",
-};
-
-/** Resolve a track id to a playable URL — handles both real backend
- *  tracks (`/api/v1/tracks/{id}/stream`) and the static-file fallback. */
+/** Resolve a track id to a playable URL. Local fallback tracks are
+ *  synchronous (static `/audio/*.mp3` from /public); backend tracks
+ *  resolve through `playUrlCache.getPlayUrl` which lazily issues +
+ *  caches a signed JWT URL. Callers that need the backend URL must
+ *  await `resolveTrackSrcAsync`. */
 export function resolveTrackSrc(track: PersonalPlaylistTrack | null): string {
   if (!track) return "";
-  if (track.id.startsWith("local:")) {
-    return LOCAL_TRACK_URL[track.id] ?? "";
-  }
-  return tracksApi.streamUrl(track.id);
+  if (isLocalTrackId(track.id)) return localUrl(track.id);
+  return ""; // backend tracks resolve via `resolveTrackSrcAsync`
+}
+
+export async function resolveTrackSrcAsync(
+  track: PersonalPlaylistTrack | null,
+): Promise<string> {
+  if (!track) return "";
+  if (isLocalTrackId(track.id)) return localUrl(track.id);
+  return getPlayUrl(track.id);
 }
 
 interface AudioState {

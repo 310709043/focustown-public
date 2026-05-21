@@ -1,0 +1,26 @@
+name = "lowbatterytown-audio"
+main = "src/index.ts"
+compatibility_date = "2026-05-15"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+# Custom domain — bound manually in Cloudflare dashboard
+# (Workers > lowbatterytown-audio > Settings > Domains & Routes >
+# Add Custom Domain → audio.lowbatterytown.com). Keeping the route
+# binding out of wrangler.toml lets `wrangler deploy` use an Account-only
+# API token (no Zone permissions required).
+
+[[r2_buckets]]
+binding = "AUDIO_BUCKET"
+bucket_name = "lowbatterytown-audio"
+
+[vars]
+# CORS origins permitted to embed <audio> from this worker. Comma-separated.
+# Keep in sync with backend APP_CORS_ORIGINS / NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS.
+ALLOWED_ORIGINS = "https://lowbatterytown.com,https://www.lowbatterytown.com"
+# Path prefix inside the R2 bucket where MP3s live. Matches the
+# upload-tracks-to-r2.py script.
+TRACK_KEY_PREFIX = "tracks/"
+
+# Secret set via: wrangler secret put AUDIO_PROXY_SECRET
+# Must match backend's AUDIO_PROXY_SECRET — HS256 shared key.

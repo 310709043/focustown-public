@@ -30,7 +30,9 @@ source "$STATE_FILE"
 for var in ACCOUNT_ID AWS_REGION ECR_REGISTRY PG_ENDPOINT \
            DEV_DB_PASSWORD DEV_APP_SECRET_KEY \
            AWS_APP_ACCESS_KEY_ID AWS_APP_SECRET_ACCESS_KEY \
-           TERMS_CURRENT_VERSION; do
+           TERMS_CURRENT_VERSION \
+           R2_ENDPOINT_URL R2_ACCESS_KEY R2_SECRET_KEY \
+           AUDIO_PROXY_BASE_URL AUDIO_PROXY_SECRET; do
     if [[ -z "${!var:-}" ]]; then
         echo "✗ $var is empty in $STATE_FILE — re-run bootstrap to repopulate" >&2
         exit 1
@@ -65,16 +67,12 @@ echo "    pushed: ${ECR_REGISTRY}/lowbatterytown-backend:${IMAGE_TAG}"
 
 # --- 3. Build + push frontend (dev variant) -------------------------------
 # CSP `media-src` must include every host the backend can 302-redirect
-# audio bytes to. The S3 storage adapter is pinned to path-style
-# addressing (`backend/app/infrastructure/storage/s3.py` Config
-# s3={"addressing_style":"path"}), so presigned URLs always emit
-# `s3.<region>.amazonaws.com/<bucket>/<key>` — that exact host has to be
-# in this allow-list. If `STORAGE_BACKEND` in
-# `infra/lightsail/dev/containers.json.tpl` flips to anything else
-# (virtual-hosted, CloudFront, custom subdomain), update MEDIA_ORIGINS in
-# lockstep or every audio fetch will silently CSP-block (root cause of
-# the round-3 "music still doesn't play" report).
-MEDIA_ORIGINS="https://${DEV_HOST},https://s3.${AWS_REGION}.amazonaws.com"
+# audio bytes to. Audio now flows through the Cloudflare Worker proxy at
+# audio.lowbatterytown.com (see `infra/worker-audio/`), so that host has
+# to be allow-listed. If the AUDIO_PROXY_BASE_URL hostname ever changes
+# (different env / re-brand), update MEDIA_ORIGINS in lockstep or every
+# `<audio src>` will silently CSP-block.
+MEDIA_ORIGINS="https://${DEV_HOST},https://audio.lowbatterytown.com"
 
 echo "==> [3/5] Building frontend image (env=dev, target=runner)..."
 docker buildx build --platform linux/amd64 --target runner \
@@ -109,7 +107,9 @@ export ECR_REGISTRY IMAGE_TAG FRONTEND_TAG AWS_REGION \
     APP_SECRET_KEY="$DEV_APP_SECRET_KEY" \
     AWS_APP_ACCESS_KEY_ID AWS_APP_SECRET_ACCESS_KEY \
     SES_FROM_EMAIL="noreply@lowbatterytown.com" \
-    S3_BUCKET="lowbatterytown-storage" \
+    S3_BUCKET="lowbatterytown-audio" \
+    R2_ENDPOINT_URL R2_ACCESS_KEY R2_SECRET_KEY \
+    AUDIO_PROXY_BASE_URL AUDIO_PROXY_SECRET \
     TERMS_CURRENT_VERSION
 
 envsubst < "$REPO_ROOT/infra/lightsail/dev/containers.json.tpl"     > "$RUN_DIR/containers.json"

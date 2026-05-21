@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api/client";
-import { tracksApi } from "@/lib/api/endpoints";
+import { getPlayUrl } from "@/lib/audio/playUrlCache";
 import type { Track } from "@/lib/api/types.gen";
 
 interface Props {
@@ -43,7 +43,7 @@ export function TrackList({
   const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
   const t = useTranslations("library.tracks");
 
-  function handleToggle(id: string) {
+  async function handleToggle(id: string) {
     setError(null);
     // Pause everything else, then toggle the target.
     Object.entries(audioRefs.current).forEach(([key, el]) => {
@@ -52,8 +52,19 @@ export function TrackList({
     const el = audioRefs.current[id];
     if (!el) return;
     if (el.paused) {
-      el.play().catch((e) => setError(e instanceof Error ? e.message : "play_failed"));
-      setPlayingId(id);
+      try {
+        // Lazy-resolve the signed proxy URL the first time the user
+        // plays a row — avoids issuing one play-token per visible
+        // track on every list render.
+        if (!el.src) {
+          const url = await getPlayUrl(id);
+          el.src = url;
+        }
+        await el.play();
+        setPlayingId(id);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "play_failed");
+      }
     } else {
       el.pause();
       setPlayingId(null);
@@ -215,7 +226,6 @@ export function TrackList({
                 ref={(el) => {
                   audioRefs.current[track.id] = el;
                 }}
-                src={tracksApi.streamUrl(track.id)}
                 preload="none"
                 onEnded={() => setPlayingId(null)}
               />

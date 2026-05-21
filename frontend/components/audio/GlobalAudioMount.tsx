@@ -5,10 +5,10 @@ import { useEffect, useRef } from "react";
 import {
   LOCAL_FALLBACK_TRACKS,
   resolveTrackSrc,
+  resolveTrackSrcAsync,
   selectCurrentTrack,
   useAudioStore,
 } from "@/lib/state/audioStore";
-import { tracksApi } from "@/lib/api/endpoints";
 import {
   scopeKey,
   selectActivePlaylistIds,
@@ -17,6 +17,7 @@ import {
   type StationTrackMeta,
 } from "@/lib/state/stationStore";
 import { clearAudioUnlocked, isAudioUnlocked } from "@/lib/audio/unlock";
+import { getPlayUrl, invalidate as invalidatePlayUrl } from "@/lib/audio/playUrlCache";
 
 /**
  * Singleton audio mount — the ONLY place in the app that touches an
@@ -107,20 +108,24 @@ function selectSource(): Source {
   };
 }
 
-function srcForSource(src: Source): string {
-  if (src.kind === "station") return tracksApi.streamUrl(src.trackId);
+async function srcForSource(src: Source): Promise<string> {
+  if (src.kind === "station") return getPlayUrl(src.trackId);
   if (src.kind === "personal") {
     const ss = useStationStore.getState();
     const track = ss.personalPlaylist[ss.personalIndex];
     if (!track) return "";
-    if (track.id.startsWith("local:")) {
-      const fallback = resolveTrackSrc(track);
-      return fallback;
-    }
-    return tracksApi.streamUrl(track.id);
+    if (track.id.startsWith("local:")) return resolveTrackSrc(track);
+    return getPlayUrl(track.id);
   }
   const as = useAudioStore.getState();
-  return resolveTrackSrc(selectCurrentTrack(as));
+  return resolveTrackSrcAsync(selectCurrentTrack(as));
+}
+
+function currentTrackId(src: Source): string | null {
+  if (src.kind === "station") return src.trackId;
+  if (src.kind === "personal") return src.trackId;
+  const as = useAudioStore.getState();
+  return selectCurrentTrack(as)?.id ?? null;
 }
 
 function targetVolume(src: Source): number {
@@ -151,8 +156,11 @@ function rampVolume(el: HTMLAudioElement, target: number, ms: number): void {
 
 export function GlobalAudioMount() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const currentSrcRef = useRef<string>("");
+  const currentIdentityRef = useRef<string>("");
   const lastSourceKindRef = useRef<Source["kind"] | null>(null);
+  // Monotonic counter so async URL fetches that resolve after a newer
+  // apply() pass can drop their stale result without touching <audio>.
+  const applyTokenRef = useRef<number>(0);
   // Tracks which playlist ids have failed within a tight window. Once every
   // track in the current playlist has thrown at least once in the same
   // ~800 ms burst, the audio-store path swaps to LOCAL_FALLBACK_TRACKS so
@@ -174,70 +182,26 @@ export function GlobalAudioMount() {
   // Re-evaluate the source whenever either store changes. Both stores
   // share one audio element; the selector decides which one drives.
   useEffect(() => {
-    const apply = () => {
-      const el = audioRef.current;
-      if (!el) return;
-      const src = selectSource();
-      const targetSrcUrl = srcForSource(src);
-      const sourceKindChanged = lastSourceKindRef.current !== src.kind;
-      const trackChanged = currentSrcRef.current !== targetSrcUrl;
-
-      if (trackChanged || sourceKindChanged) {
-        // Crossfade only on cross-source switches; same-source track
-        // changes (next personal song) do a quick hard swap because
-        // they're under direct user intent.
-        if (sourceKindChanged) {
-          rampVolume(el, 0, CROSSFADE_MS);
-          window.setTimeout(() => {
-            if (!el) return;
-            if (targetSrcUrl) {
-              el.src = targetSrcUrl;
-              el.load();
-              if (src.kind === "station") {
-                el.currentTime = Math.max(0, src.offsetMs / 1000);
-              } else {
-                el.currentTime = 0;
-              }
-            } else {
-              el.removeAttribute("src");
-              el.load();
-            }
-            currentSrcRef.current = targetSrcUrl;
-            lastSourceKindRef.current = src.kind;
-            const tv = targetVolume(src);
-            rampVolume(el, tv, CROSSFADE_MS);
-          }, CROSSFADE_MS);
+    const swapSrc = (
+      el: HTMLAudioElement,
+      src: Source,
+      url: string,
+    ): void => {
+      if (url) {
+        el.src = url;
+        el.load();
+        if (src.kind === "station") {
+          el.currentTime = Math.max(0, src.offsetMs / 1000);
         } else {
-          // Same-kind track change → hard swap; rely on el.load() to
-          // reset position. Station path also seeks to live offset.
-          if (targetSrcUrl) {
-            el.src = targetSrcUrl;
-            el.load();
-            if (src.kind === "station") {
-              el.currentTime = Math.max(0, src.offsetMs / 1000);
-            } else {
-              el.currentTime = 0;
-            }
-          } else {
-            el.removeAttribute("src");
-            el.load();
-          }
-          currentSrcRef.current = targetSrcUrl;
-          lastSourceKindRef.current = src.kind;
-          el.volume = targetVolume(src);
+          el.currentTime = 0;
         }
       } else {
-        // Source identity unchanged → just keep volume in sync (slider
-        // moves, mute toggles).
-        const tv = targetVolume(src);
-        if (Math.abs(el.volume - tv) > 0.001) {
-          el.volume = tv;
-        }
+        el.removeAttribute("src");
+        el.load();
       }
+    };
 
-      // Playback intent. Station mode auto-plays whenever audio is
-      // unlocked (no user pause control). Personal + audio-store
-      // honor the underlying store's isPlaying.
+    const applyPlaybackIntent = (el: HTMLAudioElement, src: Source): void => {
       const as = useAudioStore.getState();
       const wantPlay = (() => {
         if (!as.audioUnlocked) return false;
@@ -257,6 +221,60 @@ export function GlobalAudioMount() {
       } else if (!wantPlay && !el.paused) {
         el.pause();
       }
+    };
+
+    const apply = () => {
+      const el = audioRef.current;
+      if (!el) return;
+      const src = selectSource();
+      const tid = currentTrackId(src);
+      const identity = `${src.kind}|${tid ?? ""}`;
+      const sourceKindChanged = lastSourceKindRef.current !== src.kind;
+      const trackChanged = currentIdentityRef.current !== identity;
+
+      if (!(trackChanged || sourceKindChanged)) {
+        // Same identity → just keep volume in sync (slider, mute).
+        const tv = targetVolume(src);
+        if (Math.abs(el.volume - tv) > 0.001) el.volume = tv;
+        applyPlaybackIntent(el, src);
+        return;
+      }
+
+      // Identity changed — bump the token so any in-flight URL fetch
+      // started by an earlier apply() drops its result on resolve.
+      const myToken = ++applyTokenRef.current;
+      currentIdentityRef.current = identity;
+      lastSourceKindRef.current = src.kind;
+
+      void srcForSource(src).then((targetSrcUrl) => {
+        if (applyTokenRef.current !== myToken) return; // superseded
+        const elNow = audioRef.current;
+        if (!elNow) return;
+
+        if (sourceKindChanged) {
+          // Crossfade only on cross-source switches; same-source track
+          // changes (next personal song) hard-swap because they're
+          // under direct user intent.
+          rampVolume(elNow, 0, CROSSFADE_MS);
+          window.setTimeout(() => {
+            if (applyTokenRef.current !== myToken) return;
+            const el2 = audioRef.current;
+            if (!el2) return;
+            swapSrc(el2, src, targetSrcUrl);
+            const tv = targetVolume(src);
+            rampVolume(el2, tv, CROSSFADE_MS);
+            applyPlaybackIntent(el2, src);
+          }, CROSSFADE_MS);
+        } else {
+          swapSrc(elNow, src, targetSrcUrl);
+          elNow.volume = targetVolume(src);
+          applyPlaybackIntent(elNow, src);
+        }
+      }).catch(() => {
+        // URL fetch failed (e.g. play-token 401 / network). Onerror
+        // path on <audio> won't fire because we never set src.
+        // Defer to next apply() — store subscribers will retrigger.
+      });
     };
 
     const unStation = useStationStore.subscribe(apply);
@@ -291,6 +309,13 @@ export function GlobalAudioMount() {
         ? src.trackId
         : selectCurrentTrack(useAudioStore.getState())?.id ?? null;
     console.warn("[audio] media error", { trackId: tid, code, source: src.kind });
+
+    // Drop the cached signed URL so the next apply() re-issues a fresh
+    // play-token. Most playback failures are either a 401 from an
+    // expired token (5-min TTL) or a transient network blip; both are
+    // resolved by re-fetching. Repeated failures fall through to the
+    // burst-window guard below.
+    if (tid && !tid.startsWith("local:")) invalidatePlayUrl(tid);
 
     if (src.kind === "audio-store") {
       // PR #90: per-burst failure tracking. When every track in the

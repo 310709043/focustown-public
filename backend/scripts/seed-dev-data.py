@@ -10,6 +10,7 @@ Or locally with backend env vars exported:
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from pathlib import Path
 
@@ -33,14 +34,14 @@ if BACKEND_DIR is None:
         f"seed-dev-data.py could not locate backend/app from {SCRIPT_DIR}"
     )
 sys.path.insert(0, str(BACKEND_DIR))
-# Kept for callers that still reference `ROOT` further down (e.g. _seed_tracks).
-# Old contract: `ROOT / "backend" / "assets" / "seed-tracks"`. Same shape works
-# from either layout as long as ROOT is the repo root OR the backend dir.
+# Kept for any bot / achievement / shop seed code that still references
+# `ROOT`. Resolves to the repo root in host layout and the backend dir
+# in container layout — both have `assets/` underneath.
 ROOT = BACKEND_DIR.parent if (BACKEND_DIR / "assets").exists() and BACKEND_DIR.name == "backend" else BACKEND_DIR
 
 import random  # noqa: E402
 import secrets  # noqa: E402
-from datetime import datetime, timedelta, timezone  # noqa: E402
+from datetime import UTC, datetime, timedelta  # noqa: E402
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.ids import UUID4Generator  # noqa: E402
@@ -52,7 +53,17 @@ from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM  # noq
 from app.infrastructure.db.models.track import TrackORM  # noqa: E402
 from app.infrastructure.db.models.user import UserORM  # noqa: E402
 from app.infrastructure.db.session import get_session_factory  # noqa: E402
-from app.infrastructure.storage.factory import make_storage  # noqa: E402
+
+# Pure helpers shared with `scripts/import-r2-manifest.py` so the title /
+# mood derivation logic stays in one place.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _r2_helpers import (  # noqa: E402
+    MOOD_MAP_DEFAULT,
+    SEED_SYSTEM_USER_EMAIL,
+    derive_mood,
+    derive_title,
+    title_override,
+)
 
 ACHIEVEMENTS = [
     {"code": "streak_7", "icon": "🔥", "title": "連續 7 天", "description": "每天都有專注"},
@@ -89,24 +100,6 @@ SHOP_ITEMS = [
     {"category": "effect", "icon": "🎁", "name": "禮物盒", "description": "送給你的配對對象", "price_cT": 250, "price_cents": 9900, "featured": True},
     {"category": "effect", "icon": "💫", "name": "完成爆炸", "description": "番茄完成時的煙火特效", "price_cT": 80, "price_cents": 4900, "featured": False},
 ]
-
-# V1 official-only track library.
-#
-# Real audio is not shipped in git — drop royalty-free MP3 files into
-# backend/assets/seed-tracks/<name>.mp3 (gitignored) and this seeder will
-# publish them as official tracks owned by the seed system user. Files
-# missing from the mapping below still get seeded with mood=lofi and a
-# title derived from the filename, but explicit entries are preferred so
-# the curated set is reproducible across developers.
-SEED_TRACK_MOOD_BY_FILENAME: dict[str, dict[str, str]] = {
-    "cold-ceramics.mp3": {"title": "Cold Ceramics", "mood": "ambient"},
-    "sunlight-on-the-floor.mp3": {"title": "Sunlight on the Floor", "mood": "lofi"},
-    "cold-windowpane.mp3": {"title": "Cold Windowpane", "mood": "ambient"},
-    "midnight-at-the-overpass.mp3": {"title": "Midnight at the Overpass", "mood": "jazz"},
-    "sunday-window.mp3": {"title": "Sunday Window", "mood": "lofi"},
-}
-
-SEED_SYSTEM_USER_EMAIL = "seed-system@lowbatterytown.local"
 
 # Bot population. Each bot picks a character from the frontend roster
 # (frontend/lib/data/characters.ts) and a distinct hour-of-day band so the
@@ -182,7 +175,7 @@ async def main() -> None:
                 if meta is not None:
                     row.render_meta = meta
 
-        await _seed_tracks(db, settings, ids)
+        await _import_r2_track_catalog(db, ids)
         await _seed_bots(db, ids)
 
         await db.commit()
@@ -198,7 +191,7 @@ async def _seed_bots(db, ids) -> None:
     decay out of the window after one week and overlap collapses to 0.
     """
     rng = random.Random("lowbatterytown-bots-stable")
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     seeded = 0
     for spec in BOTS:
         email = BOT_EMAIL_FMT.format(key=spec["key"])
@@ -253,43 +246,39 @@ async def _seed_bots(db, ids) -> None:
     )
 
 
-async def _seed_tracks(db, settings, ids) -> None:
-    """Phase 6 Tier-2: copy any MP3 files found in `<backend>/assets/seed-tracks/`
-    into storage_root and insert tracks rows owned by a system seed user.
-    Idempotent — files already seeded (same filename → file_key) are skipped.
-    Silently no-ops when the assets directory is empty or missing.
+async def _import_r2_track_catalog(db, ids) -> None:
+    """Register every R2 object listed in `backend/assets/r2-manifests/*.json`
+    as a playable track row.
 
-    The asset dir lives next to the backend code, so search from BACKEND_DIR
-    rather than ROOT — the container layout has `/app/assets/seed-tracks`
-    while the host layout has `<repo>/backend/assets/seed-tracks`. Resolving
-    via BACKEND_DIR works for both.
+    Replaces the legacy "upload local seed-tracks/*.mp3 to storage then
+    insert" flow. Audio bytes now live in R2 (uploaded out-of-band via
+    `scripts/upload-tracks-to-r2.py`) and only the metadata + R2 object
+    key need to land in the DB on each container startup.
+
+    Self-healing:
+      - Inserts entries whose `file_key` doesn't already exist.
+      - Removes seed-owned rows whose `file_key` is no longer in any
+        manifest (operator removed a track → DB shrinks to match).
+
+    Non-seed user uploads are never touched.
     """
-    assets_dir = BACKEND_DIR / "assets" / "seed-tracks"
-    if not assets_dir.exists():
+    manifests_dir = BACKEND_DIR / "assets" / "r2-manifests"
+    if not manifests_dir.exists():
         return
-    mp3_files = sorted(assets_dir.glob("*.mp3"))
-    if not mp3_files:
-        print(f"  (track seed) no MP3s found in {assets_dir}; skipping")
+    manifest_files = sorted(manifests_dir.glob("*.json"))
+    if not manifest_files:
+        print(f"  (r2 catalog) no manifests in {manifests_dir}; skipping")
         return
 
-    # Reuse the configured storage backend so the seeder works for both
-    # local FS and S3 / MinIO. When S3 is configured we also need to make
-    # sure the target bucket exists and a CORS policy is in place so the
-    # frontend's <audio> tags (cross-origin to S3) can fetch the bytes —
-    # see comment in app/main.py:lifespan for the silent-fail symptom.
-    storage = make_storage(settings)
-    if settings.storage_backend == "s3":
-        from app.infrastructure.storage.s3 import S3Storage
+    entries: list[dict] = []
+    for mf in manifest_files:
+        entries.extend(json.loads(mf.read_text()))
+    if not entries:
+        print("  (r2 catalog) manifests parsed empty; skipping")
+        return
 
-        if isinstance(storage, S3Storage):
-            storage.ensure_bucket()
-            try:
-                storage.ensure_cors_policy(
-                    allowed_origins=settings.cors_origin_list,
-                )
-            except Exception as exc:  # noqa: BLE001 — seed must not block on this
-                print(f"  (track seed) ensure_cors_policy failed: {exc}")
-
+    # System user owns the catalog — created here on first run, reused
+    # on every subsequent run.
     system_user = (
         await db.execute(_select(UserORM).where(UserORM.email == SEED_SYSTEM_USER_EMAIL))
     ).scalar_one_or_none()
@@ -304,73 +293,55 @@ async def _seed_tracks(db, settings, ids) -> None:
         db.add(system_user)
         await db.flush()
 
-    for path in mp3_files:
-        filename = path.name
-        meta = SEED_TRACK_MOOD_BY_FILENAME.get(filename, {})
-        # Existence check MUST use the same title computation as the insert,
-        # otherwise mapped titles ("Sunlight on the Floor") never match the
-        # `.title()`-derived form ("Sunlight On The Floor") and every
-        # cold-start re-inserts the row. Bug pre-2026-05-19 produced 11
-        # tracks from 5 files across 4 deploys; the canonical title is
-        # whatever ends up in TrackORM.title below.
-        title = meta.get("title") or _seed_title(filename)
-        duration_ms = _mp3_duration_ms(path)
-        existing = (
-            await db.execute(_select(TrackORM).where(TrackORM.title == title))
-        ).scalar_one_or_none()
-        if existing is not None:
-            # Backfill is_official on rows seeded before the
-            # 0012 migration introduced the column.
-            if not existing.is_official:
-                existing.is_official = True
-            # Backfill duration_ms for rows seeded before the asset reader
-            # learned to extract it. Shared cohort stations need real
-            # durations so client-side cursor advancement matches the
-            # server's playlist timeline.
-            if existing.duration_ms is None and duration_ms is not None:
-                existing.duration_ms = duration_ms
+    desired_keys = {e["key"] for e in entries}
+    # Prune scope = every is_official row whose file_key is not in the
+    # current manifest set. Using is_official (not owner) catches stale
+    # rows seeded by an earlier system user — observed on 2026-05-21
+    # where a prior deploy left 5 ghost rows owned by a different UUID
+    # for the same email after a re-deploy, so owner-scoped pruning
+    # silently kept them attached to dead file_keys.
+    existing_rows = (
+        await db.execute(
+            _select(TrackORM).where(TrackORM.is_official.is_(True))
+        )
+    ).scalars().all()
+    existing_keys = {r.file_key for r in existing_rows}
+
+    pruned = 0
+    for row in existing_rows:
+        if row.file_key not in desired_keys:
+            await db.delete(row)
+            pruned += 1
+
+    # Insert new entries (idempotent by file_key unique constraint).
+    inserted = 0
+    for entry in entries:
+        if entry["key"] in existing_keys:
             continue
-        data = path.read_bytes()
-        track_id = ids.new_id()
-        file_key = f"tracks/{track_id}.mp3"
-        await storage.put(key=file_key, data=data, content_type="audio/mpeg")
+        filename = entry.get("filename") or entry["key"].rsplit("/", 1)[-1]
+        title = title_override(filename, MOOD_MAP_DEFAULT) or derive_title(filename)
+        mood = derive_mood(filename, MOOD_MAP_DEFAULT)
         db.add(
             TrackORM(
-                id=track_id,
+                id=ids.new_id(),
                 title=title,
                 artist=None,
-                mood=meta.get("mood", "lofi"),
-                duration_ms=duration_ms,
-                file_key=file_key,
+                mood=mood,
+                duration_ms=None,  # frontend defaults to 180s on NULL
+                file_key=entry["key"],
                 content_type="audio/mpeg",
-                file_size_bytes=len(data),
+                file_size_bytes=int(entry["size"]),
                 license="royalty-free-seed",
                 uploaded_by_user_id=system_user.id,
                 is_official=True,
             )
         )
+        inserted += 1
 
-
-def _mp3_duration_ms(path) -> int | None:
-    """Return the track's duration in milliseconds, or None on failure.
-
-    Mutagen parses both CBR and VBR headers and is pure-Python with no
-    external deps. A best-effort read so a corrupt MP3 doesn't break the
-    seeder — the row still gets inserted with duration_ms=None, and the
-    frontend stationStore falls back to a 180s default.
-    """
-    try:
-        from mutagen.mp3 import MP3  # local import: seed-only dep
-
-        audio = MP3(str(path))
-        seconds = float(audio.info.length)
-        return int(seconds * 1000) if seconds > 0 else None
-    except Exception:
-        return None
-
-
-def _seed_title(filename: str) -> str:
-    return filename[:-4].replace("-", " ").title() if filename.lower().endswith(".mp3") else filename
+    print(
+        f"  (r2 catalog) {len(entries)} manifest entries; "
+        f"+{inserted} inserted, -{pruned} pruned"
+    )
 
 
 def _select(model):

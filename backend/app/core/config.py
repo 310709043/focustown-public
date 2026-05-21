@@ -86,6 +86,15 @@ class Settings(BaseSettings):
     s3_secret_key: str = ""
     s3_presign_ttl_seconds: int = 3600
 
+    # Audio proxy. In production audio bytes are served by a Cloudflare
+    # Worker fronting a private R2 bucket; the backend issues short-TTL
+    # HS256 JWTs that the Worker validates with the same shared secret.
+    # audio_proxy_base_url empty → fall back to backend /stream (dev /
+    # local FS). When non-empty, all play-token URLs target the Worker.
+    audio_proxy_base_url: str = ""
+    audio_proxy_secret: str = ""
+    audio_token_ttl_seconds: int = 300
+
     # Auth-endpoint rate limits. Centralised here so an operator can tune
     # them per environment (e.g. relax in dev, tighten in prod) without
     # editing router code. Defaults preserve the original hardcoded values.
@@ -202,6 +211,22 @@ class Settings(BaseSettings):
         if not self.s3_bucket:
             raise ValueError(
                 "S3_BUCKET must be set when STORAGE_BACKEND=s3 in production"
+            )
+
+        # Audio proxy: in production we ship audio through the Cloudflare
+        # Worker so the R2 bucket can stay private. AUDIO_PROXY_SECRET is
+        # the HS256 key shared between this backend (issuer) and the Worker
+        # (verifier); AUDIO_PROXY_BASE_URL is the public hostname the
+        # browser hits (e.g. https://audio.focustown.app).
+        if not self.audio_proxy_secret:
+            raise ValueError(
+                "AUDIO_PROXY_SECRET must be set in production "
+                "(shared HS256 key for the Cloudflare audio Worker)"
+            )
+        if not self.audio_proxy_base_url:
+            raise ValueError(
+                "AUDIO_PROXY_BASE_URL must be set in production "
+                "(public hostname of the Cloudflare audio Worker)"
             )
 
         # Notifier: log is forbidden in prod (silent email loss).

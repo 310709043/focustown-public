@@ -16,3 +16,8 @@ class TrackResponse(BaseModel):
     license: str | None
     uploaded_by_user_id: str
     created_at: datetime
+
+
+class PlayTokenResponse(BaseModel):
+    url: str
+    expires_at: datetime

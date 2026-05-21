@@ -132,6 +132,8 @@ _PROD_AWS_STUBS: dict[str, object] = {
     "notifier_backend": "ses",
     "storage_backend": "s3",
     "secrets_backend": "aws",
+    "audio_proxy_base_url": "https://audio.example.app",
+    "audio_proxy_secret": "test-audio-secret-please-rotate-32chars",
 }
 
 

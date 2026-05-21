@@ -21,6 +21,11 @@ from pydantic import ValidationError
 
 from app.core.config import Settings
 
+_AUDIO_PROXY_STUBS: dict[str, object] = {
+    "audio_proxy_base_url": "https://audio.lowbatterytown.app",
+    "audio_proxy_secret": "test-audio-secret-please-rotate-32chars",
+}
+
 
 def _prod_cognito_s3_settings(**overrides: object) -> Settings:
     """Production posture using the cognito+s3 stack.
@@ -39,6 +44,7 @@ def _prod_cognito_s3_settings(**overrides: object) -> Settings:
         "notifier_backend": "ses",
         "secrets_backend": "aws",
         "reset_url_base": "https://lowbatterytown.app/reset-password",
+        **_AUDIO_PROXY_STUBS,
         **overrides,
     }
     return Settings(**base)  # type: ignore[call-arg]
@@ -61,6 +67,7 @@ def _prod_lite_settings(**overrides: object) -> Settings:
         "notifier_backend": "ses",
         "ses_from_email": "noreply@lowbatterytown.app",
         "reset_url_base": "https://lowbatterytown.app/reset-password",
+        **_AUDIO_PROXY_STUBS,
         **overrides,
     }
     return Settings(**base)  # type: ignore[call-arg]
@@ -121,6 +128,19 @@ def test_production_secrets_backend_env_warns_but_does_not_raise():
     with pytest.warns(RuntimeWarning, match="SECRETS_BACKEND=env"):
         s = _prod_cognito_s3_settings(secrets_backend="env")
     assert s.app_env == "production"
+
+
+# === Audio proxy enforcement (universal in prod) ===========================
+
+
+def test_production_missing_audio_proxy_secret_raises():
+    with pytest.raises(ValidationError, match="AUDIO_PROXY_SECRET"):
+        _prod_lite_settings(audio_proxy_secret="")
+
+
+def test_production_missing_audio_proxy_base_url_raises():
+    with pytest.raises(ValidationError, match="AUDIO_PROXY_BASE_URL"):
+        _prod_lite_settings(audio_proxy_base_url="")
 
 
 # === Non-prod environments are inert =======================================

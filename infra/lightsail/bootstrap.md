@@ -5,9 +5,9 @@ End state after running this runbook (dev + prod together):
 - 2 Lightsail Container Services: `lowbatterytown-prod` (Small, `--scale 1`) + `lowbatterytown-dev` (Nano, `--scale 1`). **Scale must stay at 1** until `WSManager` (`backend/app/infrastructure/messaging/ws_manager.py`) is moved to a Redis-backed broadcast — process-local state breaks scale>1.
 - 1 Lightsail Managed Database: `lowbatterytown-pg-prod` (Postgres Standard 1GB, single-AZ, 7-day PITR). Hosts **two databases on the same instance** — `lowbatterytown` (prod) and `lowbatterytown_dev` (dev) — each owned by a distinct role with no cross-DB grants. Trades $15/mo + strict env isolation against shared compute/RAM on a single instance.
 - 2 ECR repos: `lowbatterytown-backend`, `lowbatterytown-frontend` (shared across prod + dev, different image tags)
-- 1 S3 bucket: `lowbatterytown-storage` with prefixes `/prod/` + `/dev/`
 - 1 SES verified identity for `lowbatterytown.com`
-- 1 IAM user `lowbatterytown-app` (SES SendEmail + S3 read/write on the bucket) — long-lived access key used by the app at runtime
+- 1 IAM user `lowbatterytown-app` (SES SendEmail only) — long-lived access key used by the app at runtime
+- **Audio storage = Cloudflare R2** (private bucket `lowbatterytown-audio` in APAC, fronted by a Cloudflare Worker at `audio.lowbatterytown.com`). No S3 bucket needed; see `infra/worker-audio/`.
 - 1 IAM role `gha-lowbatterytown-deployer` assumed via GitHub OIDC for CI (ECR push + Lightsail deploy)
 - **DNS hosted at Cloudflare** (`lowbatterytown.com`). No Route 53, no CloudFront — Cloudflare's free tier covers DNS + CDN + DDoS for the prod-facing record. Sections that would have lived in Route 53 (DKIM CNAMEs, ACM validation CNAME, app A/CNAME records) are added in the Cloudflare console.
 - 1 CloudWatch metric alarm on LCS memory > 80% (free tier) for each container service
@@ -52,20 +52,21 @@ for repo in lowbatterytown-backend lowbatterytown-frontend; do
 done
 ```
 
-## 2. S3 storage bucket
+## 2. ~~S3 storage bucket~~ — replaced by Cloudflare R2
+
+Audio storage lives in Cloudflare R2 (`lowbatterytown-audio` bucket,
+APAC region, private), served via a Worker at `audio.lowbatterytown.com`.
+See `infra/worker-audio/README.md` for the Worker setup and
+`scripts/upload-tracks-to-r2.py` for the bulk upload tooling.
+
+If migrating from a prior S3 deployment, delete the unused AWS bucket:
 
 ```bash
-aws s3api create-bucket --bucket lowbatterytown-storage \
-    --region ap-northeast-1 \
-    --create-bucket-configuration LocationConstraint=ap-northeast-1
-
-aws s3api put-public-access-block --bucket lowbatterytown-storage \
-    --public-access-block-configuration \
-    BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
-
-aws s3api put-bucket-versioning --bucket lowbatterytown-storage \
-    --versioning-configuration Status=Enabled
+aws s3 rm s3://lowbatterytown-storage --recursive
+aws s3api delete-bucket --bucket lowbatterytown-storage
 ```
+
+The runtime IAM policy in §5 no longer grants any S3 permissions.
 
 ## 3. Managed Postgres (single instance, two databases)
 
@@ -173,7 +174,11 @@ aws sesv2 create-email-identity --region ap-northeast-1 \
 Request production sending access (sandbox limit is 200 emails/day):
 SES console → Account dashboard → Request production access.
 
-## 5. IAM user for the running app (SES + S3)
+## 5. IAM user for the running app (SES only)
+
+Audio storage moved to Cloudflare R2 (see `infra/worker-audio/`), so the
+runtime no longer needs S3 access. SES is the only AWS service the app
+calls at runtime.
 
 ```bash
 aws iam create-user --user-name lowbatterytown-app
@@ -186,16 +191,6 @@ aws iam put-user-policy --user-name lowbatterytown-app --policy-name lowbatteryt
           "Effect": "Allow",
           "Action": ["ses:SendEmail", "ses:SendRawEmail"],
           "Resource": "*"
-        },
-        {
-          "Effect": "Allow",
-          "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
-          "Resource": "arn:aws:s3:::lowbatterytown-storage/*"
-        },
-        {
-          "Effect": "Allow",
-          "Action": ["s3:ListBucket"],
-          "Resource": "arn:aws:s3:::lowbatterytown-storage"
         }
       ]
     }'
@@ -203,6 +198,10 @@ aws iam put-user-policy --user-name lowbatterytown-app --policy-name lowbatteryt
 aws iam create-access-key --user-name lowbatterytown-app
 # Save the AccessKeyId + SecretAccessKey for GitHub Actions secrets.
 ```
+
+To strip S3 from an EXISTING policy (already-deployed accounts), re-run
+the `put-user-policy` above with the trimmed JSON; it replaces the
+inline policy in place (idempotent).
 
 ## 6. GitHub OIDC role for CI
 
@@ -413,7 +412,7 @@ In repo settings → Secrets and variables → Actions:
 | `PROD_PUBLIC_HOST` | `lowbatterytown.com` | |
 | `DEV_PUBLIC_HOST` | `dev.lowbatterytown.com` | |
 | `SES_FROM_EMAIL` | `noreply@lowbatterytown.com` | |
-| `S3_BUCKET` | `lowbatterytown-storage` | |
+| `S3_BUCKET` | `lowbatterytown-audio` | R2 bucket name (S3-compat); backend reads it via `S3_*` env shape |
 | `TERMS_CURRENT_VERSION` | `2026-05-14` | Matches `frontend/lib/config/legal.ts` |
 
 **Repository secrets (sensitive):**
