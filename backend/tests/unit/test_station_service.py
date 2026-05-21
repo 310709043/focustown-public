@@ -313,6 +313,30 @@ async def test_snapshot_to_db_no_op_when_cache_is_empty() -> None:
 
 
 @pytest.mark.asyncio
+async def test_snapshot_to_db_persists_cursor_when_present_in_cache() -> None:
+    """Crash-recovery write path: the worker reads the live Redis cursor
+    and pushes it to Postgres.
+
+    Without this branch a Redis restart would mid-song teleport every
+    listener back to track[0]; the snapshot is the safety net that lets
+    ``get_current`` re-anchor near where everyone was.
+    """
+    repo = FakeTrackRepo()
+    await _seed_tracks(repo, count=3, duration_ms=180_000)
+    svc, _, _, _ = _make_service(tracks=repo)
+    fake_writer = svc.snapshots_writer
+    assert isinstance(fake_writer, FakeStationSnapshotRepo)
+
+    # Seed the live cursor in cache (the worker's normal precondition).
+    seeded = await svc.seed(kind="city", scope_id="lowbatterytown")
+
+    await svc.snapshot_to_db(kind="city", scope_id="lowbatterytown")
+
+    # The writer received the exact same cursor that was in cache.
+    assert fake_writer.rows[("city", "lowbatterytown")] == seeded
+
+
+@pytest.mark.asyncio
 async def test_cleanup_pair_removes_redis_key() -> None:
     repo = FakeTrackRepo()
     await _seed_tracks(repo, count=2, duration_ms=180_000)
