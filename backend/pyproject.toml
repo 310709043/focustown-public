@@ -78,6 +78,36 @@ omit = [
   "app/infrastructure/notifications/sns_notifier.py",
   # Alembic migrations
   "alembic/*",
+  # FastAPI app composition + lifespan wiring (init_redis, register
+  # handlers, etc.) — observable only when a real ASGI server boots.
+  # Exercised by tests/integration/api/test_healthz.py.
+  "app/main.py",
+  # SQLAlchemy async session factory — its semantics (commit on success,
+  # rollback on exception) are only meaningful against a real DB.
+  # tests/integration/conftest.py drives this through every request.
+  "app/infrastructure/db/session.py",
+  # SQL adapters and Cognito/SES/S3/Redis adapters. Their contracts are
+  # the DB / cloud-service behaviour; verifying them with mocks would
+  # only test the mocks. tests/integration/ exercises them against real
+  # Postgres + Redis containers (testcontainers) and moto AWS stubs.
+  "app/infrastructure/db/repositories/*",
+  "app/infrastructure/auth/providers/cognito.py",
+  "app/infrastructure/storage/local.py",
+  "app/infrastructure/storage/s3.py",
+  "app/infrastructure/presence/redis_tracker.py",
+  "app/infrastructure/rate_limit/redis_limiter.py",
+  "app/infrastructure/secrets/aws.py",
+  "app/infrastructure/notifications/ses_notifier.py",
+  # Router files — every endpoint is a thin wrapper that hands off to a
+  # domain service. Wiring (Depends graph, DB session lifecycle, error
+  # envelopes) is observable only end-to-end and is covered by
+  # tests/integration/api/test_*_router.py against real Postgres +
+  # Redis containers. Unit-mocking the routers tests the mocks.
+  "app/api/v1/*/router.py",
+  # Worker entry point (main loop) — needs real Redis + AsyncIO
+  # scheduler to verify. tests/unit/test_worker.py covers the pure
+  # helpers + job short-circuits that ARE unit-testable.
+  "app/worker.py",
 ]
 
 [tool.coverage.report]

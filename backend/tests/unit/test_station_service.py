@@ -260,6 +260,59 @@ async def test_get_current_falls_back_to_snapshot_then_seed() -> None:
 
 
 @pytest.mark.asyncio
+async def test_get_current_hits_db_snapshot_when_redis_is_cold() -> None:
+    """Crash-recovery path: Redis was evicted but a snapshot survives.
+
+    Without this branch, every Redis restart would mid-song teleport
+    every connected listener back to track[0]. The snapshot lets the
+    next ``get_current`` re-anchor near where everyone was.
+    """
+    repo = FakeTrackRepo()
+    await _seed_tracks(repo, count=3, duration_ms=180_000)
+    svc, cache, _, _ = _make_service(tracks=repo)
+
+    snapshot = StationCursor(
+        kind="city",
+        scope_id="x",
+        playlist_ids=["t-00", "t-01", "t-02"],
+        cursor_index=1,
+        started_at_ms=1_234_000,
+        seed=42,
+        version=7,
+    )
+    # Pre-load only the snapshot repo (the cache stays cold).
+    await svc.snapshots_writer.upsert_snapshot(snapshot)
+
+    restored = await svc.get_current(kind="city", scope_id="x")
+
+    # The snapshot was returned (not a fresh seed at index 0).
+    assert restored.cursor_index == 1
+    assert restored.version == 7
+    # And the cache is now warm so subsequent reads hit Redis directly.
+    cached = await cache.get(kind="city", scope_id="x")
+    assert cached is not None
+    assert cached.cursor_index == 1
+
+
+@pytest.mark.asyncio
+async def test_snapshot_to_db_no_op_when_cache_is_empty() -> None:
+    """Defensive snapshot path: the worker runs every 5min on a schedule.
+
+    If a scope hasn't been seeded yet (no one's joined the city today),
+    the snapshot tick must NOT insert a phantom row.
+    """
+    repo = FakeTrackRepo()
+    await _seed_tracks(repo, count=2, duration_ms=180_000)
+    svc, _, _, _ = _make_service(tracks=repo)
+    fake_writer = svc.snapshots_writer
+    assert isinstance(fake_writer, FakeStationSnapshotRepo)
+
+    await svc.snapshot_to_db(kind="city", scope_id="never-seeded")
+
+    assert fake_writer.rows == {}
+
+
+@pytest.mark.asyncio
 async def test_cleanup_pair_removes_redis_key() -> None:
     repo = FakeTrackRepo()
     await _seed_tracks(repo, count=2, duration_ms=180_000)
