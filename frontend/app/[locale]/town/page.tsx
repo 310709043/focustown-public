@@ -61,6 +61,7 @@ import { FeedbackModal } from "@/components/modals/FeedbackModal";
 import { FriendsModal } from "@/components/modals/FriendsModal";
 import { ProfileModal } from "@/components/modals/ProfileModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
 
@@ -314,6 +315,13 @@ export default function TownPage() {
         onClose={() => setOpenModal(null)}
         onRouteToModal={(k) => setOpenModal(k)}
       />
+
+      {/* First-time onboarding tour — auto-opens once per browser to
+          introduce the City / Solo / Together focus modes. Mounts last
+          so the spotlight overlay sits above the HUD but below other
+          modals (the tour pauses itself naturally when a modal is open
+          via z-index — modal backdrop is 50, tour overlay is 60). */}
+      <OnboardingTour />
     </main>
     </FrameTicker>
   );

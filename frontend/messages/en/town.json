@@ -42,6 +42,33 @@
       "soloCta": "Solo Focus",
       "soloSub": "enter focus room"
     },
+    "modeBar": {
+      "cityLabel": "CITY MODE",
+      "live": "LIVE",
+      "offline": "tuned out",
+      "pilotsFocusing": "{count, plural, =0 {no one focusing yet} one {# pilot focusing} other {# pilots focusing}}",
+      "soloExit": "→ SOLO",
+      "togetherExit": "→ TOGETHER",
+      "soloExitAria": "Switch to Solo Mode",
+      "togetherExitAria": "Switch to Together Mode"
+    },
+    "modes": {
+      "solo": {
+        "title": "SOLO",
+        "desc": "Private focus chamber. Just you and the timer.",
+        "cta": "Enter ▶",
+        "ctaAria": "Enter Solo focus room"
+      },
+      "together": {
+        "title": "TOGETHER",
+        "desc": "Match a buddy for a 25 min shared sprint.",
+        "cta": "Find ▶",
+        "ctaAria": "Find a focus buddy",
+        "resumeCta": "Resume ▶",
+        "resumeAria": "Resume your accepted match",
+        "matchedWith": "with {name}"
+      }
+    },
     "musicPlayer": {
       "liveLabel": "lofi · LIVE",
       "trackTitleFallback": "midnight city · lofi remix",

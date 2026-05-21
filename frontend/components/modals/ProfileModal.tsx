@@ -103,6 +103,7 @@ export function ProfileModal({ open, onClose, onRouteToModal }: ProfileModalProp
           level={stats.level}
           xp={stats.xp}
           xpNextLevel={stats.xpNextLevel}
+          onReplayTutorial={onClose}
         />
         <RightPane
           activeView={activeView}

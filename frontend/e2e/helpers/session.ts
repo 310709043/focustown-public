@@ -16,6 +16,13 @@ export async function seedAuthTokens(page: Page): Promise<void> {
     ({ tokens }) => {
       window.localStorage.setItem("lowbatterytown.tokens", JSON.stringify(tokens));
       window.sessionStorage.setItem("ft.splash.seen", "1");
+      // Mark the onboarding tour as completed for authed E2E sessions
+      // so its dim overlay + coach bubble don't intercept clicks. Tests
+      // that need to verify the tour can clear this key manually.
+      window.localStorage.setItem(
+        "lbt.onboarding.v1",
+        JSON.stringify({ state: { completed: true }, version: 1 }),
+      );
     },
     { tokens: fixtures.tokens },
   );

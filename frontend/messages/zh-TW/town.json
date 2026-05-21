@@ -42,6 +42,33 @@
       "soloCta": "獨自專注",
       "soloSub": "進入專注室"
     },
+    "modeBar": {
+      "cityLabel": "城市模式",
+      "live": "LIVE",
+      "offline": "離線中",
+      "pilotsFocusing": "{count, plural, =0 {目前還沒有人在專注} other {# 位鎮民正在專注}}",
+      "soloExit": "→ 獨自",
+      "togetherExit": "→ 一起",
+      "soloExitAria": "切換到獨自模式",
+      "togetherExitAria": "切換到一起模式"
+    },
+    "modes": {
+      "solo": {
+        "title": "獨自專注",
+        "desc": "私人專注室,只有你和計時器。",
+        "cta": "進入 ▶",
+        "ctaAria": "進入獨自專注室"
+      },
+      "together": {
+        "title": "一起專注",
+        "desc": "配對一位夥伴,一起完成 25 分鐘衝刺。",
+        "cta": "配對 ▶",
+        "ctaAria": "尋找專注夥伴",
+        "resumeCta": "返回 ▶",
+        "resumeAria": "返回已配對的夥伴",
+        "matchedWith": "與 {name}"
+      }
+    },
     "musicPlayer": {
       "liveLabel": "lofi · LIVE",
       "trackTitleFallback": "midnight city · lofi remix",

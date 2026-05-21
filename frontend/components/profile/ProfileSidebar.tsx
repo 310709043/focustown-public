@@ -8,6 +8,7 @@ import { XpBar } from "@/components/profile/XpBar";
 import { ProfileNavItem } from "@/components/profile/ProfileNavItem";
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useOnboardingStore } from "@/lib/state/onboardingStore";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import type { ProfileView } from "@/components/modals/ProfileModal";
 
@@ -17,6 +18,9 @@ interface ProfileSidebarProps {
   level: number;
   xp: number;
   xpNextLevel: number;
+  /** Closes the ProfileModal so the replayed onboarding tour can
+   *  spotlight the BottomHUD without being covered. */
+  onReplayTutorial: () => void;
 }
 
 export function ProfileSidebar({
@@ -25,9 +29,11 @@ export function ProfileSidebar({
   level,
   xp,
   xpNextLevel,
+  onReplayTutorial,
 }: ProfileSidebarProps) {
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
+  const restartOnboarding = useOnboardingStore((s) => s.restart);
   const router = useRouter();
   const tSidebar = useTranslations("profile.sidebar");
   const tNav = useTranslations("profile.nav");
@@ -36,6 +42,11 @@ export function ProfileSidebar({
   const handleSignOut = () => {
     signOut();
     router.replace("/signin");
+  };
+
+  const handleReplayTutorial = () => {
+    onReplayTutorial();
+    restartOnboarding();
   };
 
   return (
@@ -177,6 +188,13 @@ export function ProfileSidebar({
           label={tNav("support")}
           active={activeView === "support"}
           onClick={() => onSelectView("support")}
+        />
+        <ProfileNavItem
+          testId="profile-nav-tutorial"
+          icon={<span style={{ color: "var(--accent)" }}>✨</span>}
+          label={tNav("tutorial")}
+          active={false}
+          onClick={handleReplayTutorial}
         />
       </nav>
 

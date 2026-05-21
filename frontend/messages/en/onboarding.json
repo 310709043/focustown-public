@@ -1,0 +1,41 @@
+{
+  "controls": {
+    "skip": "Skip tour",
+    "back": "‹ Back",
+    "next": "Next ›",
+    "done": "Got it",
+    "stepIndicator": "Step {current} of {total}",
+    "closeAria": "Close tutorial"
+  },
+  "steps": {
+    "welcome": {
+      "eyebrow": "TUTORIAL",
+      "title": "Welcome to Low Battery Town",
+      "body": "A pixel city of fellow pilots focusing together. Three modes shape how you focus here — let's take a quick tour."
+    },
+    "city": {
+      "eyebrow": "MODE 1 OF 3",
+      "title": "CITY MODE — you're already in it",
+      "body": "The town is City Mode. Your timer and city lofi station sync with everyone online. Focus alongside the crowd without leaving the street."
+    },
+    "solo": {
+      "eyebrow": "MODE 2 OF 3",
+      "title": "SOLO — your private chamber",
+      "body": "Need silence? Enter a full-screen focus room with just your timer and notes. No buddy, no shared station."
+    },
+    "together": {
+      "eyebrow": "MODE 3 OF 3",
+      "title": "TOGETHER — match a buddy",
+      "body": "Pair up with another pilot for a 25-minute shared sprint. Same timer, same station, two of you working in parallel."
+    },
+    "done": {
+      "eyebrow": "ALL SET",
+      "title": "You're ready to focus",
+      "body": "Press ▶ on the timer when you're ready. You can replay this tour anytime from your profile."
+    }
+  },
+  "replay": {
+    "label": "Replay tutorial",
+    "description": "Walk through the three focus modes again"
+  }
+}
