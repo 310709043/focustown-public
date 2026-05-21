@@ -95,6 +95,33 @@ test("TOGETHER CTA is disabled while matchStore.proposing is true (no accepted m
   expect(onFindBuddy).not.toHaveBeenCalled();
 });
 
+test("Resume state disappears after matchStore.clear() — audit F1 path", () => {
+  // Audit F1: when useRealtimeSessionCompleted fires, the town page
+  // calls matchStore.clear() so the Together card reverts from
+  // "Resume ▶ with {partner}" back to "Find ▶". Simulate that
+  // transition here and confirm the CTA no longer routes to a stale
+  // /focus/{matchId}.
+  useMatchStore.setState({
+    accepted: makeMatch({ id: "m-finished-1", status: "accepted" }),
+  });
+  const onFindBuddy = vi.fn();
+  const { rerender } = render(<MatchPanel onFindBuddy={onFindBuddy} />);
+
+  // Sanity: before clear, Together routes to the accepted match.
+  fireEvent.click(screen.getByTestId("mode-card-together-cta"));
+  expect(pushMock).toHaveBeenCalledWith("/focus/m-finished-1");
+  pushMock.mockReset();
+
+  // Session-completed handler clears the store; town page re-renders.
+  useMatchStore.getState().clear();
+  rerender(<MatchPanel onFindBuddy={onFindBuddy} />);
+
+  fireEvent.click(screen.getByTestId("mode-card-together-cta"));
+
+  expect(onFindBuddy).toHaveBeenCalledOnce();
+  expect(pushMock).not.toHaveBeenCalled();
+});
+
 test("TOGETHER CTA stays clickable in Resume mode even while a new proposal is in flight", () => {
   // User has an accepted match AND another proposal is being requested
   // somewhere else. The Resume affordance should still let them re-enter

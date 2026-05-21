@@ -30,6 +30,7 @@ beforeEach(() => {
     completed: false,
     active: false,
     currentStep: 0,
+    hasHydrated: false,
   });
 });
 
@@ -38,6 +39,7 @@ afterEach(() => {
     completed: false,
     active: false,
     currentStep: 0,
+    hasHydrated: false,
   });
 });
 
@@ -109,6 +111,15 @@ test("complete marks completed and deactivates", () => {
   const state = useOnboardingStore.getState();
   expect(state.active).toBe(false);
   expect(state.completed).toBe(true);
+});
+
+test("setHydrated flips hasHydrated to true (audit F4)", () => {
+  // OnboardingTour gates its auto-fire on hasHydrated so a returning
+  // user (completed: true persisted) never sees the welcome bubble
+  // flash before zustand finishes reading localStorage.
+  useOnboardingStore.getState().setHydrated();
+
+  expect(useOnboardingStore.getState().hasHydrated).toBe(true);
 });
 
 test("restart flips completed back to false AND activates", () => {

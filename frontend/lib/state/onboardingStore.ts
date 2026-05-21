@@ -25,12 +25,20 @@ interface OnboardingState {
   active: boolean;
   /** 0-indexed step within the tour. */
   currentStep: OnboardingStepIndex;
+  /**
+   * True once zustand's persist middleware has finished reading from
+   * localStorage. Consumers gate the auto-fire on this so a returning
+   * user (whose persisted `completed: true` lands a tick after first
+   * render) never sees the welcome bubble flash.
+   */
+  hasHydrated: boolean;
   start: () => void;
   next: () => void;
   back: () => void;
   skip: () => void;
   complete: () => void;
   restart: () => void;
+  setHydrated: () => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -39,6 +47,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       completed: false,
       active: false,
       currentStep: 0,
+      hasHydrated: false,
 
       start() {
         set({ active: true, currentStep: 0 });
@@ -70,6 +79,10 @@ export const useOnboardingStore = create<OnboardingState>()(
       restart() {
         set({ active: true, completed: false, currentStep: 0 });
       },
+
+      setHydrated() {
+        set({ hasHydrated: true });
+      },
     }),
     {
       name: "lbt.onboarding.v1",
@@ -87,6 +100,12 @@ export const useOnboardingStore = create<OnboardingState>()(
       // `active` and `currentStep` are session-scoped UI state.
       partialize: (s) => ({ completed: s.completed }),
       version: 1,
+      // Fires once localStorage has been read and the persisted slice
+      // has been merged into the live state. OnboardingTour gates its
+      // auto-fire on `hasHydrated` so it never reads a stale default.
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated();
+      },
     },
   ),
 );

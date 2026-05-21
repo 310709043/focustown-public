@@ -77,6 +77,37 @@ test("shows offline label when active scope is disconnected", () => {
   );
 });
 
+test("shows offline label when active scope is null (not yet set on mount)", () => {
+  // Audit F3: ModeStatusBar must not assume "city" when activeScope is
+  // null. With the fallback removed, an idle/unhydrated state correctly
+  // reads as offline until the town page sets the scope.
+  useStationStore.setState({
+    activeScope: null,
+    connection: {},
+  });
+
+  render(<ModeStatusBar onFindBuddy={vi.fn()} />);
+
+  expect(screen.getByTestId("mode-status-bar-live")).toHaveTextContent(
+    /offline/i,
+  );
+});
+
+test("shows offline label when active scope is pair (not city)", () => {
+  // Audit F3: a leftover pair scope from a previous focus session must
+  // not show LIVE on the city status bar.
+  useStationStore.setState({
+    activeScope: { kind: "pair", id: "match-123" },
+    connection: { "pair:match-123": "connected" },
+  });
+
+  render(<ModeStatusBar onFindBuddy={vi.fn()} />);
+
+  expect(screen.getByTestId("mode-status-bar-live")).toHaveTextContent(
+    /offline/i,
+  );
+});
+
 test("renders the pilot-count translation key with the presence count", () => {
   usePresenceStore.setState({
     byId: { a: makeStreetUser("a"), b: makeStreetUser("b") },

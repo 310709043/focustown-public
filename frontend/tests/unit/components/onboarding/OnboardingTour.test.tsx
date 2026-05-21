@@ -27,6 +27,9 @@ beforeEach(() => {
     completed: false,
     active: false,
     currentStep: 0,
+    // Default to hydrated so existing tests aren't gated. The audit F4
+    // test below flips this to false explicitly.
+    hasHydrated: true,
   });
 });
 
@@ -36,7 +39,10 @@ afterEach(() => {
     completed: false,
     active: false,
     currentStep: 0,
+    hasHydrated: false,
   });
+  // Clean up any DOM elements injected by individual tests.
+  document.body.innerHTML = "";
 });
 
 test("does not render anything when active is false", () => {
@@ -89,6 +95,41 @@ test("ESC key skips an active tour", () => {
 
   expect(useOnboardingStore.getState().active).toBe(false);
   expect(useOnboardingStore.getState().completed).toBe(true);
+});
+
+test("does NOT auto-start until persist rehydration completes (audit F4)", () => {
+  // hasHydrated=false simulates the brief window where zustand hasn't
+  // finished reading localStorage. Boot timer must not fire — otherwise
+  // a returning user with `completed: true` in storage sees the welcome
+  // bubble flash before rehydration lands.
+  useOnboardingStore.setState({ hasHydrated: false, completed: false });
+
+  render(<OnboardingTour />);
+
+  act(() => {
+    vi.advanceTimersByTime(2000);
+  });
+
+  expect(useOnboardingStore.getState().active).toBe(false);
+  expect(screen.queryByTestId("onboarding-bubble")).not.toBeInTheDocument();
+});
+
+test("does NOT auto-start when a modal is open (audit F2)", () => {
+  // Audit F2: the tour overlay must not dim the screen behind an open
+  // modal. We inject a backdrop testid that matches the heuristic
+  // selector OnboardingTour uses to detect "modal is open".
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    '<div data-testid="some-modal-backdrop"></div>',
+  );
+
+  render(<OnboardingTour />);
+
+  act(() => {
+    vi.advanceTimersByTime(2000);
+  });
+
+  expect(useOnboardingStore.getState().active).toBe(false);
 });
 
 test("Next button on the welcome step advances to step 1", () => {

@@ -12,6 +12,7 @@ import { useRealtime } from "@/lib/ws/useRealtime";
 import { useRealtimeMatch } from "@/lib/ws/useRealtimeMatch";
 import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionCompleted";
 import { useMatchStore } from "@/lib/state/matchStore";
+import { useStationStore } from "@/lib/state/stationStore";
 
 import { SceneBackdrop } from "@/components/scene/SceneBackdrop";
 import { Pedestrians } from "@/components/scene/Pedestrians";
@@ -90,6 +91,18 @@ export default function TownPage() {
   useEffect(() => {
     if (!user) void hydrate();
   }, [user, hydrate]);
+
+  // /town IS City Mode. Set the active station scope at page level so
+  // ModeStatusBar (a sibling of MusicPlayer in the BottomHUD render
+  // order) reads the right value on first paint — no implicit
+  // `?? "city"` fallback required. Previously this was done inside
+  // MusicPlayer, which mounts *after* ModeStatusBar.
+  useEffect(() => {
+    useStationStore.getState().setActiveScope({
+      kind: "city",
+      id: "lowbatterytown",
+    });
+  }, []);
 
   useEffect(() => {
     const id = setInterval(advanceScene, SCENE_TICK_MS);
@@ -206,7 +219,11 @@ export default function TownPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchCurrent?.id]);
   useRealtimeSessionCompleted((_sessionId) => {
-    // TODO Wave 4: surface a "session complete" toast.
+    // Clear the just-finished match so the Together mode card returns
+    // from "Resume ▶ with {partner}" back to "Find ▶". Without this,
+    // matchStore.accepted lingers forever and the card routes the user
+    // to a focus room the backend already marked complete.
+    useMatchStore.getState().clear();
   });
 
   const currentScene = useSceneStore((s) => s.current);

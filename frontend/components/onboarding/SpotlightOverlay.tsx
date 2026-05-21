@@ -82,7 +82,10 @@ export function SpotlightOverlay({
         inset: 0,
         background: "rgba(1, 0, 10, 0.72)",
         pointerEvents: "none",
-        zIndex: 60,
+        // Sits BELOW modal backdrops (z-50 in Modal.tsx / ProfileModal).
+        // If a modal opens while the tour is mid-step, the modal layer
+        // takes over visually; the tour resumes once the modal closes.
+        zIndex: 45,
       }}
     >
       {rect ? (

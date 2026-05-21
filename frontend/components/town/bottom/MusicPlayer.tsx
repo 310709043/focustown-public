@@ -55,7 +55,6 @@ export function MusicPlayer() {
   const prev = useAudioStore((s) => s.prev);
 
   const stationCity = useStationStore((s) => s.city);
-  const setActiveScope = useStationStore((s) => s.setActiveScope);
   const hydrateCity = useStationStore((s) => s.hydrateCity);
   const stationConnection = useStationStore(selectActiveConnection);
   const setPersonalPlaylist = useStationStore((s) => s.setPersonalPlaylist);
@@ -77,13 +76,13 @@ export function MusicPlayer() {
 
   // Tune into the city station on mount. Frontend hydrateCity swallows
   // the 404 when the backend flag is off, so this is safe even before
-  // the worker has shipped.
+  // the worker has shipped. `activeScope` is set at the town-page level
+  // (page.tsx) so ModeStatusBar sees the correct scope on first paint.
   useEffect(() => {
     if (!stationCity) {
       void hydrateCity();
     }
-    setActiveScope({ kind: "city", id: stationCity?.scopeId ?? "lowbatterytown" });
-  }, [hydrateCity, setActiveScope, stationCity]);
+  }, [hydrateCity, stationCity]);
 
   // Seed the personal fallback playlist used by the disconnected view.
   // Loaded lazily — only fetch when the user has stepped out at least

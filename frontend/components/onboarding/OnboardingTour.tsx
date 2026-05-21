@@ -21,10 +21,12 @@ const STEPS: ReadonlyArray<{
   placement: "center" | "bottom";
 }> = [
   { id: "welcome", targetSelector: null, placement: "center" },
-  // City step highlights the timer + status bar duo — the *whole bottom
-  // console* is what makes you "in City Mode", so spotlighting the
-  // status bar reads correctly here.
-  { id: "city", targetSelector: '[data-testid="mode-status-bar"]', placement: "bottom" },
+  // City step spotlights the whole BottomHUD instead of just the
+  // ModeStatusBar so the ring still renders on mobile (where
+  // ModeStatusBar is `md:flex hidden`). The BottomHUD IS City Mode's
+  // controls — timer + match cards + music — so the copy still reads
+  // correctly when the spotlight covers the whole console.
+  { id: "city", targetSelector: '[data-testid="bottom-hud"]', placement: "bottom" },
   { id: "solo", targetSelector: '[data-testid="mode-card-solo"]', placement: "bottom" },
   {
     id: "together",
@@ -33,6 +35,12 @@ const STEPS: ReadonlyArray<{
   },
   { id: "done", targetSelector: null, placement: "center" },
 ];
+
+/** True if any modal backdrop is currently mounted. Used to defer the
+ *  tour's auto-fire so we don't dim the screen behind an active modal. */
+function isAnyModalOpen(): boolean {
+  return document.querySelector('[data-testid$="modal-backdrop"]') !== null;
+}
 
 /**
  * First-time onboarding orchestrator. Auto-starts the tour when
@@ -46,6 +54,7 @@ export function OnboardingTour() {
   const completed = useOnboardingStore((s) => s.completed);
   const active = useOnboardingStore((s) => s.active);
   const stepIndex = useOnboardingStore((s) => s.currentStep);
+  const hasHydrated = useOnboardingStore((s) => s.hasHydrated);
   const start = useOnboardingStore((s) => s.start);
   const next = useOnboardingStore((s) => s.next);
   const back = useOnboardingStore((s) => s.back);
@@ -53,15 +62,23 @@ export function OnboardingTour() {
 
   const t = useTranslations("onboarding.steps");
 
-  // Auto-fire on first arrival. We wait a tick so the BottomHUD has
-  // mounted and the spotlight has something to measure on step 2.
+  // Auto-fire on first arrival. Gated on:
+  //   1. zustand persist has finished reading localStorage (hasHydrated)
+  //      — otherwise a returning user with `completed: true` in storage
+  //      sees the welcome bubble flash before rehydration lands.
+  //   2. No modal is currently open — if one is, defer the start so the
+  //      tour doesn't dim the screen behind it.
+  // We wait 600 ms so the BottomHUD has time to mount and the spotlight
+  // has something to measure on step 2.
   useEffect(() => {
-    if (completed || active) return;
+    if (!hasHydrated || completed || active) return;
     const id = window.setTimeout(() => {
-      if (!useOnboardingStore.getState().completed) start();
+      if (useOnboardingStore.getState().completed) return;
+      if (isAnyModalOpen()) return;
+      start();
     }, 600);
     return () => window.clearTimeout(id);
-  }, [completed, active, start]);
+  }, [hasHydrated, completed, active, start]);
 
   // ESC key skips the tour.
   useEffect(() => {

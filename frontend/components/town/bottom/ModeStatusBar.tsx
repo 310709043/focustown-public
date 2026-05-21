@@ -32,8 +32,10 @@ export function ModeStatusBar({ onFindBuddy }: ModeStatusBarProps) {
 
   // City station connection: when the user has explicitly disconnected
   // we soften the indicator from a glowing LIVE pulse to a muted dot.
+  // `activeScope` is set at the town-page level (page.tsx) so this
+  // selector returns the real value on first paint — no fallback.
   const connection = useStationStore(selectActiveConnection);
-  const activeScopeKind = useStationStore((s) => s.activeScope?.kind ?? "city");
+  const activeScopeKind = useStationStore((s) => s.activeScope?.kind);
   const isCityLive = activeScopeKind === "city" && connection === "connected";
 
   return (

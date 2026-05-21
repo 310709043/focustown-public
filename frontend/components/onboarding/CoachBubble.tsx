@@ -67,7 +67,9 @@ export function CoachBubble({
       className="pixel-panel"
       style={{
         position: "fixed",
-        zIndex: 62,
+        // Just above the spotlight overlay (z-45) and below modal
+        // backdrops (z-50). Modals take precedence over the tour.
+        zIndex: 47,
         width: "min(440px, 92vw)",
         padding: "18px 20px",
         background: "rgba(12, 5, 35, 0.96)",
