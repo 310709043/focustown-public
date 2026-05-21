@@ -123,10 +123,11 @@ export function CarsLane() {
   return (
     <div
       className="absolute left-0 right-0 pointer-events-none z-[5]"
-      // Cars drive on the road band (Road: bottom 202..266). Wrapper
-      // bottom 220 + height 56 spans the road surface. Pedestrians /
-      // NamedWalkers occupy the sidewalk strip below (bottom 172).
-      style={{ bottom: 220, height: 56 }}
+      // Cars drive on the asphalt portion of the Road band
+      // (Road: bottom 168..288, asphalt = bottom 90 px @ 168..258).
+      // Wrapper bottom 175 + height 70 sits on the asphalt while
+      // Pedestrians / NamedWalkers occupy the sidewalk strip above.
+      style={{ bottom: 175, height: 70 }}
       aria-hidden
     >
       {users.map((u, idx) => (

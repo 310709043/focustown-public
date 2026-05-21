@@ -23,7 +23,10 @@
       "startAria": "開始計時",
       "pauseAria": "暫停計時",
       "skipAria": "跳過",
-      "sceneAria": "切換場景"
+      "sceneAria": "切換場景",
+      "applyPreferenceCta": "套用設定",
+      "applyPreferenceAria": "套用設定中的專注節奏",
+      "applyPreferenceTooltip": "套用設定中的 {minutes} 分鐘專注節奏"
     },
     "matchPanel": {
       "header": "尋找夥伴",

@@ -7,6 +7,14 @@ import type { WalletTransaction } from "@/lib/api/types.gen";
 
 type Filter = "all" | "income" | "outgoing" | "topup";
 
+// 2026-05-21: V1 hides recharge UX. Surfaced as a const so the filter
+// loop, the visible filter-tab list, and any future re-enable touch
+// the same toggle.
+const SHOW_TOPUP = false;
+const FILTER_TABS: ReadonlyArray<Filter> = SHOW_TOPUP
+  ? (["all", "income", "outgoing", "topup"] as const)
+  : (["all", "income", "outgoing"] as const);
+
 interface TransactionLogProps {
   rows: WalletTransaction[];
   loading: boolean;
@@ -58,6 +66,10 @@ export function TransactionLog({ rows, loading }: TransactionLogProps) {
   const filtered = useMemo(() => {
     return rows.filter((tx) => {
       if (tx.currency_code !== "T") return false;
+      // V1 hides recharge rows entirely from the ledger regardless of
+      // which filter is active — the ledger should never surface top-ups
+      // until payments ship.
+      if (!SHOW_TOPUP && isTopUpReason(tx.reason)) return false;
       if (filter === "income") return tx.delta_minor > 0;
       if (filter === "outgoing") return tx.delta_minor < 0;
       if (filter === "topup") return isTopUpReason(tx.reason);
@@ -89,7 +101,7 @@ export function TransactionLog({ rows, loading }: TransactionLogProps) {
           ● {t("title")}
         </span>
         <div style={{ display: "flex", gap: 4 }}>
-          {(["all", "income", "outgoing", "topup"] as const).map((f) => (
+          {FILTER_TABS.map((f) => (
             <button
               key={f}
               type="button"

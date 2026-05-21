@@ -19,9 +19,9 @@ export function StreetProps() {
   return (
     <div
       className="absolute left-0 right-0 pointer-events-none z-[3]"
-      // 2026-05-20: lifted +152 so lamps/trees/bench sit on the sidewalk
-      // above the slimmed BottomHUD instead of behind it.
-      style={{ bottom: 176, height: 90 }}
+      // 2026-05-21: lifted onto the new Road sidewalk strip
+      // (Road: bottom 168..288; sidewalk top 30 px @ 258..288).
+      style={{ bottom: 258, height: 90 }}
       aria-hidden
     >
       {LAMP_XS.map((x) => (

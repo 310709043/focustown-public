@@ -70,7 +70,10 @@ export function WalletView({ onClose }: WalletViewProps) {
 
       <BalanceCard transactions={rows} loading={loading} />
       <WalletActions />
-      <TopUpPackages />
+      {/* 2026-05-21: TOP-UP packages hidden — V1 has no payment integration.
+          Kept in the tree (false &&) so flipping the flag restores the
+          full UI without touching downstream components. */}
+      {false && <TopUpPackages />}
       <FreeEarnList />
       <TransactionLog rows={rows} loading={loading} />
     </div>

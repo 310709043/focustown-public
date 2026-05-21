@@ -70,9 +70,9 @@ export function NamedCars() {
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
-              // Road lane (same as <CarsLane>). Cars drive on the road
-              // band; pedestrians walk on the sidewalk strip below.
-              bottom: 220,
+              // Asphalt portion of the Road band (matches <CarsLane>).
+              // Road: bottom 168..288, asphalt = bottom 90 px @ 168..258.
+              bottom: 175,
               zIndex: 5,
               display: "flex",
               flexDirection: "column",

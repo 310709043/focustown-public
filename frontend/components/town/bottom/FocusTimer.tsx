@@ -1,15 +1,24 @@
 "use client";
 
+import { useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 import { PixelDigits } from "@/components/pixel/PixelDigits";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { TOMATO } from "@/lib/pixel/sprites/props";
 import { useTimer } from "@/lib/hooks/useTimer";
+import {
+  PREF_FOCUS_DURATION_MINUTES,
+  usePreferencesStore,
+} from "@/lib/state/preferencesStore";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useSceneStore } from "@/lib/state/sceneStore";
 
 import { TomatoStrip } from "./TomatoStrip";
+
+/** Lower bound — settings UI clamps to 5 min already but we re-clamp here
+ *  in case the stored value is stale or hand-edited. */
+const MIN_FOCUS_SECONDS = 5 * 60;
 
 const SCENE_EMOJI: Record<string, string> = {
   night: "🌙",
@@ -45,12 +54,60 @@ export function FocusTimer() {
     running,
     starting,
     tomatoCount,
+    session,
     start,
     pause,
     reset,
+    setMode,
   } = useTimerStore();
   const scene = useSceneStore((s) => s.current);
   const advanceScene = useSceneStore((s) => s.advance);
+
+  // Preference-driven focus rhythm — pull the user's stored focus
+  // duration so the timer reflects their settings instead of the
+  // hardcoded 25 min default. Subscriptions stay separate so unrelated
+  // preference patches don't churn the timer's render.
+  const prefsHydrated = usePreferencesStore((s) => s.hydrated);
+  const ensurePrefsHydrated = usePreferencesStore((s) => s.ensureHydrated);
+  const prefFocusMinutes = usePreferencesStore((s) =>
+    Number(s.byKey[PREF_FOCUS_DURATION_MINUTES] ?? 25),
+  );
+  const prefFocusSeconds = Math.max(
+    MIN_FOCUS_SECONDS,
+    Math.round(prefFocusMinutes * 60),
+  );
+
+  useEffect(() => {
+    void ensurePrefsHydrated();
+  }, [ensurePrefsHydrated]);
+
+  // Auto-apply the stored focus rhythm whenever the timer is idle in
+  // focus mode and the current duration doesn't match the preference.
+  // Avoids interrupting an in-flight session or a break.
+  useEffect(() => {
+    if (!prefsHydrated) return;
+    if (mode !== "focus") return;
+    if (running || session) return;
+    if (durationSeconds === prefFocusSeconds) return;
+    setMode("focus", prefFocusSeconds);
+  }, [
+    prefsHydrated,
+    prefFocusSeconds,
+    mode,
+    running,
+    session,
+    durationSeconds,
+    setMode,
+  ]);
+
+  const applyPreference = useCallback(() => {
+    setMode("focus", prefFocusSeconds);
+  }, [setMode, prefFocusSeconds]);
+
+  // Re-applying preferences while the timer is running would mid-cycle
+  // jump the countdown; gate the manual button on idle state.
+  const canApplyPreference =
+    prefsHydrated && !running && !starting && !session;
 
   const total = Math.max(1, durationSeconds);
   const pct = (1 - remaining / total) * 100;
@@ -82,12 +139,34 @@ export function FocusTimer() {
               : t("modeBreak")}
           </span>
         </div>
-        <span
-          className="font-silkscreen"
-          style={{ fontSize: 9, color: "var(--ink-mute)" }}
-        >
-          {t("progressLabel", { count: tomatoCount, total: 8 })}
-        </span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <button
+            type="button"
+            data-testid="focus-timer-apply-preference"
+            onClick={applyPreference}
+            disabled={!canApplyPreference}
+            aria-label={t("applyPreferenceAria")}
+            title={t("applyPreferenceTooltip", { minutes: prefFocusMinutes })}
+            className="font-silkscreen disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              padding: "2px 8px",
+              fontSize: 9,
+              letterSpacing: "0.2em",
+              color: "var(--accent-2)",
+              background: "rgba(20,10,55,0.55)",
+              border: "1px solid var(--panel-stroke)",
+              cursor: "pointer",
+            }}
+          >
+            {t("applyPreferenceCta")}
+          </button>
+          <span
+            className="font-silkscreen"
+            style={{ fontSize: 9, color: "var(--ink-mute)" }}
+          >
+            {t("progressLabel", { count: tomatoCount, total: 8 })}
+          </span>
+        </div>
       </div>
 
       <div

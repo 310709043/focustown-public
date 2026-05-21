@@ -72,9 +72,9 @@ export function NamedWalkers() {
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
-              // Sidewalk lane (same as <Pedestrians>). Cars drive on the
-              // road band above (220 px), people walk on this strip.
-              bottom: 172,
+              // Sidewalk strip of the Road band (matches <Pedestrians>).
+              // Road: bottom 168..288, sidewalk = top 30 px @ 258..288.
+              bottom: 258,
               zIndex: 6,
               pointerEvents: "none",
             }}

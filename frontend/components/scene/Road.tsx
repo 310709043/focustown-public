@@ -1,11 +1,17 @@
 "use client";
 
 /**
- * Neon pixel asphalt. Cars drive on top (CarsLane / NamedCars at bottom
- * 220px); pedestrians walk on the sidewalk strip just above the
- * BottomHUD (Pedestrians / NamedWalkers at bottom 172px). The wrapper
- * occupies a 64px-tall band from bottom 202 → 266 so the dashed center
- * line drifts under the cars.
+ * Neon pixel ground band. The road now anchors at the visible bottom of
+ * the scene (just above the BottomHUD) instead of floating mid-screen,
+ * so the city silhouette in `SceneBackdrop` reads as sitting *on* the
+ * road rather than wrapped around a hovering strip.
+ *
+ * Layout (from the band's top down):
+ *   ┌─ top curb (neon purple, 2 px)
+ *   │  sidewalk strip — 30 px      ← Pedestrians / NamedWalkers / StreetProps
+ *   ├─ curb divider (neon purple, 2 px)
+ *   │  asphalt — 90 px              ← CarsLane / NamedCars with dashed centerline
+ *   └─ bottom curb (neon purple, 2 px)
  *
  * Pure CSS — no JS, no rAF, no image assets. The single animation
  * (`roadDash`) is GPU-friendly (background-position-x only) and respects
@@ -15,13 +21,29 @@ export function Road() {
   return (
     <div
       className="absolute left-0 right-0 z-[5] pointer-events-none"
-      style={{ bottom: 202, height: 64 }}
+      style={{ bottom: 168, height: 120 }}
       aria-hidden
     >
-      {/* asphalt base + scanline texture */}
+      {/* sidewalk strip (top 30 px) — slightly lighter panel tone so it
+          reads as raised pavement against the asphalt below. */}
       <div
-        className="absolute inset-0"
+        className="absolute left-0 right-0"
         style={{
+          top: 0,
+          height: 30,
+          background:
+            "linear-gradient(180deg, #1a1240 0%, #150e36 100%), " +
+            "repeating-linear-gradient(90deg, rgba(167,139,250,0.06) 0 2px, transparent 2px 6px)",
+          backgroundBlendMode: "normal, overlay",
+        }}
+      />
+
+      {/* asphalt body (bottom 90 px) */}
+      <div
+        className="absolute left-0 right-0"
+        style={{
+          top: 30,
+          bottom: 0,
           background:
             "linear-gradient(180deg, #0a0420 0%, #0d0628 50%, #0a0420 100%), " +
             "repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 3px)",
@@ -43,6 +65,18 @@ export function Road() {
         }}
       />
 
+      {/* sidewalk/asphalt divider — neon purple */}
+      <div
+        className="absolute left-0 right-0"
+        style={{
+          top: 30,
+          height: 2,
+          background: "var(--a3)",
+          boxShadow:
+            "0 0 6px var(--a1), 0 0 12px rgba(167,139,250,0.35)",
+        }}
+      />
+
       {/* bottom curb — neon purple */}
       <div
         className="absolute left-0 right-0"
@@ -55,12 +89,12 @@ export function Road() {
         }}
       />
 
-      {/* dashed center line — slow leftward drift via background-position */}
+      {/* dashed center line — slow leftward drift via background-position.
+          Centered on the asphalt body (top 30 → 120 means middle ≈ 75). */}
       <div
         className="absolute left-0 right-0 animate-roadDash"
         style={{
-          top: "50%",
-          marginTop: -1,
+          top: 75,
           height: 2,
           backgroundImage:
             "repeating-linear-gradient(90deg, var(--a2) 0 24px, transparent 24px 48px)",

@@ -58,16 +58,23 @@ export function WalletActions() {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          // V1 hides the topUp tile; remaining tiles split the row evenly.
+          gridTemplateColumns: "repeat(2, 1fr)",
           gap: 10,
         }}
       >
-        <ActionTile
-          testId="wallet-action-topup"
-          icon="+"
-          label={t("actions.topUp")}
-          onClick={topUpStillStub}
-        />
+        {/* 2026-05-21: topUp tile hidden — V1 has no payment integration.
+            `topUpStillStub` + translation key kept so flipping the flag
+            restores the original 3-tile grid (also switch grid back to
+            `repeat(3, 1fr)`). */}
+        {false && (
+          <ActionTile
+            testId="wallet-action-topup"
+            icon="+"
+            label={t("actions.topUp")}
+            onClick={topUpStillStub}
+          />
+        )}
         <ActionTile
           testId="wallet-action-gift"
           icon="↗"

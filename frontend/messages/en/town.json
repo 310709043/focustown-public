@@ -23,7 +23,10 @@
       "startAria": "Start timer",
       "pauseAria": "Pause timer",
       "skipAria": "Skip",
-      "sceneAria": "Cycle scene"
+      "sceneAria": "Cycle scene",
+      "applyPreferenceCta": "Apply settings",
+      "applyPreferenceAria": "Apply focus rhythm from settings",
+      "applyPreferenceTooltip": "Apply the {minutes}-minute focus rhythm from your settings"
     },
     "matchPanel": {
       "header": "FIND BUDDY",

@@ -69,11 +69,11 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
       className="absolute animate-userPop"
       style={{
         left: `${x}%`,
-        // People walk on the sidewalk in front of the road band
-        // (Road: bottom 202..266; BottomHUD: 168). 172 sits just above
-        // the HUD so the figure is fully visible while staying off the
-        // road that the cars now occupy.
-        bottom: 172,
+        // People walk on the sidewalk strip of the Road band
+        // (Road: bottom 168..288, sidewalk = top 30 px @ 258..288).
+        // 258 anchors the figure's feet on the sidewalk so cars
+        // driving on the asphalt below stay visually separated.
+        bottom: 258,
         transition: "left 9s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >

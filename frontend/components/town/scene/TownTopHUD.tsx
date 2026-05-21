@@ -192,25 +192,33 @@ export function TownTopHUD({
           label={tNav("achv")}
           onClick={() => onOpenModal("achv")}
         />
-        <NavButton
-          testId="nav-my-room"
-          icon="🏠"
-          label={tNav("myRoom")}
-          title={tNav("myRoomTooltip")}
-          onClick={async () => {
-            const room = await roomApi.getMine();
-            router.push(
-              `/town/room/${room.id}` as Parameters<typeof router.push>[0],
-            );
-          }}
-        />
-        <NavButton
-          testId="nav-shop"
-          icon="🛒"
-          label={tNav("shop")}
-          disabled
-          title={tNav("shopComingSoonTooltip")}
-        />
+        {/* 2026-05-21: nav-my-room + nav-shop hidden from the top bar
+            per UX request. Code (NavButton, roomApi.getMine, ShopModal,
+            myRoom/shop translations) kept intact so flipping the
+            constant below restores both entries without further work. */}
+        {false && (
+          <>
+            <NavButton
+              testId="nav-my-room"
+              icon="🏠"
+              label={tNav("myRoom")}
+              title={tNav("myRoomTooltip")}
+              onClick={async () => {
+                const room = await roomApi.getMine();
+                router.push(
+                  `/town/room/${room.id}` as Parameters<typeof router.push>[0],
+                );
+              }}
+            />
+            <NavButton
+              testId="nav-shop"
+              icon="🛒"
+              label={tNav("shop")}
+              disabled
+              title={tNav("shopComingSoonTooltip")}
+            />
+          </>
+        )}
         <NavButton
           testId="nav-friends"
           icon={

@@ -52,8 +52,9 @@ export function NamedCats() {
           style={{
             position: "absolute",
             left: `${pos[i]}%`,
-            // 2026-05-20: lifted +152 to sit above the slimmed BottomHUD.
-            bottom: 207,
+            // 2026-05-21: aligned with new Road sidewalk strip
+            // (Road: bottom 168..288; sidewalk @ 258..288).
+            bottom: 258,
             zIndex: 6,
             display: "flex",
             flexDirection: "column",
