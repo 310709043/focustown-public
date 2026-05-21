@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator, Awaitable
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,8 +16,8 @@ from app.core.config import get_settings
 from app.core.deps import DbDep, SecretsProviderDep, _event_bus
 from app.core.exceptions import (
     ConflictError,
-    LowBatteryTownError,
     InternalError,
+    LowBatteryTownError,
     ValidationError,
 )
 from app.core.ids import UUID4Generator
@@ -36,6 +37,10 @@ from app.infrastructure.db.repositories import (
     SqlWalletRepo,
     SqlWalletTransactionRepo,
 )
+from app.infrastructure.db.seed.track_catalog import (
+    import_r2_track_catalog,
+    load_r2_manifest_entries,
+)
 from app.infrastructure.db.session import dispose_engine, get_session_factory
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.presence.bot_seeder import refresh_bot_presence
@@ -43,6 +48,12 @@ from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
 from app.infrastructure.storage.factory import make_storage
 
 log = get_logger(__name__)
+
+# Module-level constant so the lifespan hook below stays free of pathlib
+# calls (ruff ASYNC240 forbids them inside async functions). The
+# directory is read at startup by ``load_r2_manifest_entries`` — a sync
+# helper, intentionally — and then handed to the async DB sync.
+_R2_MANIFESTS_DIR = Path(__file__).resolve().parent.parent / "assets" / "r2-manifests"
 
 
 @asynccontextmanager
@@ -108,6 +119,28 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             )
     except Exception:  # don't block startup on bot seeding
         log.exception("bot_presence_seed_failed")
+
+    # Auto-seed the R2 track catalog into the ``tracks`` table on every
+    # non-prod boot. Idempotent (file_key-keyed UPSERT + prune), bounded
+    # (~100 rows), and self-healing — covers the AWS dev case where a
+    # newly-provisioned DB never ran the seed script and every
+    # ``/api/v1/tracks/{id}/play-token`` returned 404. Production
+    # catalog is operator-driven via ``scripts/import-r2-manifest.py``
+    # so we keep this hook out of prod.
+    if settings.app_env != "production":
+        try:
+            entries = load_r2_manifest_entries(_R2_MANIFESTS_DIR)
+            async with factory() as session:
+                result = await import_r2_track_catalog(session, ids, entries)
+                await session.commit()
+            log.info(
+                "r2_track_catalog_synced",
+                inserted=result["inserted"],
+                pruned=result["pruned"],
+                total=result["total"],
+            )
+        except Exception:
+            log.exception("r2_track_catalog_sync_failed")
 
     # Music streaming on AWS: the /api/v1/tracks/{id}/stream endpoint 302s
     # to a presigned S3 URL, and HTML5 <audio> follows redirects under CORS.

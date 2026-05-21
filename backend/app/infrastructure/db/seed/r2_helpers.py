@@ -1,8 +1,12 @@
 """Pure helpers shared between the operator-driven importer
-(`import-r2-manifest.py`) and the container-startup seeder
-(`seed-dev-data.py`).
+(`scripts/import-r2-manifest.py`), the dev-seed script
+(`scripts/seed-dev-data.py`), and the container-startup auto-seed
+hook (`app/main.py:lifespan`).
 
 No DB / IO / async — keep this module trivially testable.
+
+Lived in `scripts/_r2_helpers.py` historically; moved here so
+`app.main` can import without sys.path gymnastics.
 """
 from __future__ import annotations
 

@@ -1,4 +1,5 @@
-"""Unit tests for the pure helpers in `scripts/_r2_helpers.py`.
+"""Unit tests for the pure helpers in
+``app/infrastructure/db/seed/r2_helpers.py``.
 
 DB-touching paths (insert / reset) ride the existing track repo's
 integration coverage; here we lock down the filename → (title, mood)
@@ -13,15 +14,14 @@ from pathlib import Path
 
 import pytest
 
-# `scripts/` isn't a regular package; load `_r2_helpers` by path so the
-# pure helpers are reachable without installing the script as a module.
+from app.infrastructure.db.seed import r2_helpers as _mod
+
+# The operator-driven script still lives under `backend/scripts/` and isn't
+# a regular package — load it by path so the script-only helpers
+# (e.g. ``mp3_duration_ms``) remain covered.
 _SCRIPTS_DIR = Path(__file__).resolve().parents[2] / "scripts"
 if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
-import _r2_helpers as _mod  # noqa: E402
-
-# Keep the older importlib-based loader around so we can still cover
-# the script-level helpers that live alongside (e.g. mp3_duration_ms).
 _SCRIPT = _SCRIPTS_DIR / "import-r2-manifest.py"
 _spec = importlib.util.spec_from_file_location("import_r2_manifest", _SCRIPT)
 assert _spec and _spec.loader

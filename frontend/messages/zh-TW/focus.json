@@ -169,12 +169,6 @@
         "cafe": "☕ 咖啡館",
         "fire": "🔥 火爐"
       }
-    },
-    "quickActions": {
-      "dndOn": "勿擾 開",
-      "dndOff": "勿擾 關",
-      "lockPhone": "鎖住手機",
-      "backToTown": "回到小鎮"
     }
   },
   "buddy": {

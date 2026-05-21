@@ -4,16 +4,18 @@ import { baselineTownMocks, fixtures, json, mockApi } from "./helpers/mock-backe
 import { seedAuthTokens } from "./helpers/session";
 
 /**
- * Structural alignment for /focus/solo. Post-QA round-1 layout:
+ * Structural alignment for /focus/solo. Post-QA round-1 + 2026-05-21
+ * cleanup:
  *   • Wide notes left column.
  *   • Right rail: BigTimer → TasksPanel (with today's-goal strip in
- *     header) → SessionInsight (rotating tips) → QuickActions.
+ *     header) → SessionInsight (rotating tips).
  *   • FloatingMusicPlayer anchored bottom-right of the whole viewport
  *     (sibling of the body grid, not inside the notes column).
  *
- * Removed in round-1: FriendsNow / SoundMixer / NextEnvCard panels and
- * the BigTimer skip button (timer must only pause + restart). The
- * ambient cycle is locked to `day` via
+ * Removed: FriendsNow / SoundMixer / NextEnvCard panels and the
+ * BigTimer skip button (timer must only pause + restart) in round-1;
+ * the DND / Lock phone / Back-to-town QuickActions cluster on
+ * 2026-05-21. The ambient cycle is locked to `day` via
  * `localStorage.lowbatterytown.ambient.lock` so assertions don't flake
  * on the 90 s rAF cycle.
  */
@@ -45,18 +47,18 @@ test.describe("/focus/solo — reference parity", () => {
     await expect(page.getByTestId("notes-panel")).toBeVisible();
     await expect(page.getByTestId("solo-notes")).toBeVisible();
 
-    // Right rail — 4 panels after QA round-1 trim
+    // Right rail — 3 panels (QuickActions removed 2026-05-21)
     const rail = page.getByTestId("solo-right-rail");
     await expect(rail).toBeVisible();
     await expect(rail.getByTestId("big-timer")).toBeVisible();
     await expect(rail.getByTestId("tasks-panel")).toBeVisible();
     await expect(rail.getByTestId("session-insight")).toBeVisible();
-    await expect(rail.getByTestId("quick-actions")).toBeVisible();
 
     // Removed panels MUST NOT be present anywhere on the page.
     await expect(page.getByTestId("friends-now")).toHaveCount(0);
     await expect(page.getByTestId("sound-mixer")).toHaveCount(0);
     await expect(page.getByTestId("next-env-card")).toHaveCount(0);
+    await expect(page.getByTestId("quick-actions")).toHaveCount(0);
 
     // Music player lives outside the notes column now — must be
     // mounted (either expanded or collapsed chrome) as a sibling of
@@ -85,14 +87,6 @@ test.describe("/focus/solo — reference parity", () => {
     await expect(chips).toHaveCount(4);
   });
 
-  test("QuickActions has 3 buttons", async ({ page }) => {
-    await page.goto("/focus/solo");
-    await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    const buttons = page
-      .getByTestId("quick-actions")
-      .locator("button.pixel-btn");
-    await expect(buttons).toHaveCount(3);
-  });
 });
 
 // Avoid an unused-import warning when fixtures is reserved for future

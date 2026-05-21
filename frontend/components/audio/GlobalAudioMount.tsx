@@ -270,10 +270,17 @@ export function GlobalAudioMount() {
           elNow.volume = targetVolume(src);
           applyPlaybackIntent(elNow, src);
         }
-      }).catch(() => {
-        // URL fetch failed (e.g. play-token 401 / network). Onerror
-        // path on <audio> won't fire because we never set src.
-        // Defer to next apply() — store subscribers will retrigger.
+      }).catch((err) => {
+        // URL fetch failed (e.g. play-token 401 / 404 / network).
+        // Onerror path on <audio> won't fire because we never set src,
+        // so this is the only place the user-visible "no sound" gets
+        // turned into an observable signal. Defer to next apply() —
+        // store subscribers will retrigger.
+        console.warn("[audio] play-token failed", {
+          trackId: currentTrackId(src),
+          sourceKind: src.kind,
+          err,
+        });
       });
     };
 

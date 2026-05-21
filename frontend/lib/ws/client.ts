@@ -1,5 +1,5 @@
 import { config } from "../config";
-import { tokenStore } from "../api/client";
+import { refreshTokens, tokenStore } from "../api/client";
 
 export type PresenceStateValue = "on_street" | "in_room" | "offline";
 
@@ -110,9 +110,31 @@ export class RealtimeClient {
         /* ignore */
       }
     };
-    ws.onclose = () => {
+    ws.onclose = (event) => {
+      // Diagnostic for AWS dev — close code tells us which class of
+      // failure we're seeing: 1006 = transport reject / proxy didn't
+      // upgrade; 4401 = backend rejected the bearer subprotocol
+      // (token missing or invalid; see backend/app/api/v1/ws/router.py).
+      // Intentionally only logs the code + reason, never the token.
+      // ``event`` is optional because mocked WS shims in tests call
+      // ``ws.onclose()`` without arguments.
+      console.warn("[ws] close", {
+        code: event?.code,
+        reason: event?.reason,
+        wasClean: event?.wasClean,
+      });
       this.ws = null;
-      if (!this.intentionalClose) this.scheduleReconnect();
+      if (this.intentionalClose) return;
+      // 4401 = the backend rejected our JWT before ``accept()``. Without
+      // a refresh, the reconnect loop keeps re-sending the same stale
+      // token forever (apiFetch refreshes on HTTP 401, but WS has no
+      // equivalent path). Mirror that recovery here: swap the access
+      // token via the refresh endpoint, then reconnect immediately.
+      if (event?.code === 4401) {
+        void this.refreshAndReconnect();
+        return;
+      }
+      this.scheduleReconnect();
     };
     ws.onerror = () => ws.close();
     this.ws = ws;
@@ -138,6 +160,30 @@ export class RealtimeClient {
   private scheduleReconnect() {
     const delay = Math.min(30_000, 500 * 2 ** this.reconnectAttempts++);
     setTimeout(() => this.connect(), delay);
+  }
+
+  private async refreshAndReconnect(): Promise<void> {
+    const refresh = tokenStore.load()?.refresh_token;
+    if (!refresh) {
+      // No refresh token to swap with — fall back to the normal
+      // backoff. The user will recover the next time a HTTP call
+      // succeeds and rehydrates the tokenStore.
+      this.scheduleReconnect();
+      return;
+    }
+    try {
+      await refreshTokens(refresh);
+      // Fresh tokens saved; reset the backoff so we reconnect promptly
+      // (the next attempt is the one that should succeed).
+      this.reconnectAttempts = 0;
+      this.connect();
+    } catch {
+      // Refresh failed (refresh token itself is expired / revoked).
+      // tokenStore is cleared by refreshTokens' caller path on the
+      // HTTP side — for WS, just stop hammering: a subsequent sign-in
+      // flow will rebuild the store and the next connect() will succeed.
+      this.scheduleReconnect();
+    }
   }
 }
 

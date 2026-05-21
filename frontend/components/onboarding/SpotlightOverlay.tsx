@@ -84,7 +84,7 @@ export function SpotlightOverlay({
         // element's outer box-shadow below — so this layer is transparent
         // and the framed area stays at full brightness. Without a target
         // (welcome / done steps), fall back to a uniform dim.
-        background: rect ? "transparent" : "rgba(1, 0, 10, 0.72)",
+        background: rect ? "transparent" : "rgba(1, 0, 10, 0.82)",
         pointerEvents: "none",
         // Sits BELOW modal backdrops (z-50 in Modal.tsx / ProfileModal).
         // If a modal opens while the tour is mid-step, the modal layer
@@ -104,7 +104,28 @@ export function SpotlightOverlay({
               height: rect.height,
               borderRadius: 12,
               boxShadow:
-                "0 0 0 9999px rgba(1, 0, 10, 0.72), inset 0 0 32px rgba(233,167,110,0.18)",
+                "0 0 0 9999px rgba(1, 0, 10, 0.82), inset 0 0 64px rgba(233,167,110,0.45)",
+              pointerEvents: "none",
+              transition:
+                "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",
+            }}
+          />
+          {/* Active brighten layer — without this the target only "looks
+              brighter" relative to a dim backdrop and reads as
+              unchanged on busy scenes. Screen blend pushes the inside
+              of the frame visibly above its base brightness. */}
+          <div
+            data-testid="onboarding-spotlight-brighten"
+            style={{
+              position: "fixed",
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+              borderRadius: 12,
+              background:
+                "radial-gradient(closest-side, rgba(255,236,210,0.35), rgba(255,236,210,0.12) 60%, transparent 78%)",
+              mixBlendMode: "screen",
               pointerEvents: "none",
               transition:
                 "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",

@@ -65,21 +65,43 @@ export const useFriendsStore = create<FriendsStore>((set) => ({
   },
 }));
 
-/** Derived selector helpers — kept outside the store to avoid coupling. */
-export function selectAccepted(state: FriendsStore): FriendSummary[] {
-  return Object.values(state.byFriendshipId)
+/** Derived selector helpers — kept outside the store to avoid coupling.
+ *
+ * Each selector memoises against the last ``byFriendshipId`` reference
+ * it saw so equal contents return the same array reference. Without
+ * this, ``useFriendsStore(selectAccepted)`` returns a fresh array on
+ * every store tick and any consumer that uses the result as an effect
+ * dep risks Maximum update depth (React #185) — see FriendsView for
+ * the previous round of this bug.
+ */
+function memoOne<T>(
+  fn: (state: FriendsStore) => T,
+): (state: FriendsStore) => T {
+  let lastKey: FriendsStore["byFriendshipId"] | null = null;
+  let lastValue: T;
+  return (state) => {
+    if (state.byFriendshipId !== lastKey) {
+      lastKey = state.byFriendshipId;
+      lastValue = fn(state);
+    }
+    return lastValue;
+  };
+}
+
+export const selectAccepted = memoOne<FriendSummary[]>((state) =>
+  Object.values(state.byFriendshipId)
     .filter((f) => f.status === "accepted")
-    .sort((a, b) => a.display_name.localeCompare(b.display_name));
-}
+    .sort((a, b) => a.display_name.localeCompare(b.display_name)),
+);
 
-export function selectIncomingRequests(state: FriendsStore): FriendSummary[] {
-  return Object.values(state.byFriendshipId).filter(
+export const selectIncomingRequests = memoOne<FriendSummary[]>((state) =>
+  Object.values(state.byFriendshipId).filter(
     (f) => f.status === "requested" && !f.requested_by_me,
-  );
-}
+  ),
+);
 
-export function selectOutgoingRequests(state: FriendsStore): FriendSummary[] {
-  return Object.values(state.byFriendshipId).filter(
+export const selectOutgoingRequests = memoOne<FriendSummary[]>((state) =>
+  Object.values(state.byFriendshipId).filter(
     (f) => f.status === "requested" && f.requested_by_me,
-  );
-}
+  ),
+);

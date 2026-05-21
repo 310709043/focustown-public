@@ -4,7 +4,6 @@ import { BackdropLayer } from "@/components/focus/ambient/BackdropLayer";
 import { BigTimer } from "@/components/focus/BigTimer";
 import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
 import { FocusTopBar } from "@/components/focus/FocusTopBar";
-import { QuickActions } from "@/components/focus/QuickActions";
 import { SessionInsight } from "@/components/focus/SessionInsight";
 import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
 import { TasksPanel } from "@/components/focus/TasksPanel";
@@ -18,7 +17,7 @@ import { useAmbientStore } from "@/lib/state/ambientStore";
  *   LEFT (2fr, wide):  `SoloNotesPanel`.
  *   RIGHT (1fr, rail): `BigTimer` → `TasksPanel` (with today's-goal
  *                      strip merged into its header) → `SessionInsight`
- *                      (rotating tips) → `QuickActions`.
+ *                      (rotating tips).
  *   FLOATING:          `FloatingMusicPlayer` anchored bottom-right of
  *                      the whole viewport (sibling of the body grid).
  *
@@ -104,7 +103,8 @@ export function SoloFocusScene() {
         </div>
 
         {/* Right rail — BigTimer / TasksPanel (with goal strip) /
-            SessionInsight tips / QuickActions */}
+            SessionInsight tips. The DND / lock-phone / back-to-town
+            QuickActions cluster was removed 2026-05-21 per QA. */}
         <div
           data-testid="solo-right-rail"
           style={{
@@ -120,7 +120,6 @@ export function SoloFocusScene() {
           <BigTimer partnerId={null} />
           <TasksPanel />
           <SessionInsight />
-          <QuickActions />
         </div>
       </div>
 

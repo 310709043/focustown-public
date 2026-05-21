@@ -10,10 +10,12 @@ from starlette.status import HTTP_416_RANGE_NOT_SATISFIABLE
 from app.api.v1.tracks.schemas import PlayTokenResponse, TrackResponse
 from app.core.deps import CurrentUserId, DbDep, SettingsDep, StorageDep
 from app.core.exceptions import AuthError, NotFoundError
+from app.core.logging import get_logger
 from app.domain.repositories.track_repo import TrackRecord
 from app.domain.services.audio_token_service import AudioTokenService
 from app.infrastructure.db.repositories import SqlTrackRepo
 
+log = get_logger(__name__)
 router = APIRouter()
 
 
@@ -144,6 +146,14 @@ async def issue_play_token(
     """
     rec = await SqlTrackRepo(db).get(track_id)
     if rec is None:
+        # Surface "DB is missing this track id" so the AWS dev catalog
+        # gap (missing seed / wiped tracks table) is observable in
+        # CloudWatch instead of arriving as a silent FE 404.
+        log.warning(
+            "play_token_track_not_found",
+            track_id=track_id,
+            user_id=user_id,
+        )
         raise NotFoundError("track_not_found")
     tok = _audio_token_service(settings, request).issue(
         track_id=track_id, user_id=user_id, file_key=rec.file_key

@@ -238,11 +238,14 @@ test("resolveTrackSrc routes local:* track ids to /audio/*.mp3", () => {
   expect(src).toBe("/audio/lofi-1.mp3");
 });
 
-test("resolveTrackSrc routes backend track ids through the streamUrl helper", () => {
+test("resolveTrackSrc returns empty for backend track ids (sync caller must use the async variant)", () => {
+  // PR #106 migrated backend audio to the R2 + play-token flow, which
+  // is async (resolveTrackSrcAsync). The sync helper is local-only —
+  // backend tracks return "" so the caller knows to await the async
+  // path. The streamUrl helper is no longer in the audio store.
   const src = resolveTrackSrc(trackA);
 
-  // Whatever the apiBaseUrl is, the path must end with /api/v1/tracks/{id}/stream.
-  expect(src).toContain(`/api/v1/tracks/${trackA.id}/stream`);
+  expect(src).toBe("");
 });
 
 test("selectCurrentTrack returns the indexed track", () => {

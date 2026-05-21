@@ -10,7 +10,6 @@ Or locally with backend env vars exported:
 from __future__ import annotations
 
 import asyncio
-import json
 import sys
 from pathlib import Path
 
@@ -50,20 +49,12 @@ from app.infrastructure.db.models.achievement import AchievementORM  # noqa: E40
 from app.infrastructure.db.models.focus_session import FocusSessionORM  # noqa: E402
 from app.infrastructure.db.models.shop_item import ShopItemORM  # noqa: E402
 from app.infrastructure.db.models.shop_item_price import ShopItemPriceORM  # noqa: E402
-from app.infrastructure.db.models.track import TrackORM  # noqa: E402
 from app.infrastructure.db.models.user import UserORM  # noqa: E402
-from app.infrastructure.db.session import get_session_factory  # noqa: E402
-
-# Pure helpers shared with `scripts/import-r2-manifest.py` so the title /
-# mood derivation logic stays in one place.
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _r2_helpers import (  # noqa: E402
-    MOOD_MAP_DEFAULT,
-    SEED_SYSTEM_USER_EMAIL,
-    derive_mood,
-    derive_title,
-    title_override,
+from app.infrastructure.db.seed.track_catalog import (  # noqa: E402
+    import_r2_track_catalog,
+    load_r2_manifest_entries,
 )
+from app.infrastructure.db.session import get_session_factory  # noqa: E402
 
 ACHIEVEMENTS = [
     {"code": "streak_7", "icon": "🔥", "title": "連續 7 天", "description": "每天都有專注"},
@@ -175,7 +166,13 @@ async def main() -> None:
                 if meta is not None:
                     row.render_meta = meta
 
-        await _import_r2_track_catalog(db, ids)
+        manifests_dir = BACKEND_DIR / "assets" / "r2-manifests"
+        entries = load_r2_manifest_entries(manifests_dir)
+        result = await import_r2_track_catalog(db, ids, entries)
+        print(
+            f"  (r2 catalog) {result['total']} manifest entries; "
+            f"+{result['inserted']} inserted, -{result['pruned']} pruned"
+        )
         await _seed_bots(db, ids)
 
         await db.commit()
@@ -243,104 +240,6 @@ async def _seed_bots(db, ids) -> None:
     print(
         f"  (bot seed) ensured {len(BOTS)} bots "
         f"({seeded} newly created), re-seeded focus history"
-    )
-
-
-async def _import_r2_track_catalog(db, ids) -> None:
-    """Register every R2 object listed in `backend/assets/r2-manifests/*.json`
-    as a playable track row.
-
-    Replaces the legacy "upload local seed-tracks/*.mp3 to storage then
-    insert" flow. Audio bytes now live in R2 (uploaded out-of-band via
-    `scripts/upload-tracks-to-r2.py`) and only the metadata + R2 object
-    key need to land in the DB on each container startup.
-
-    Self-healing:
-      - Inserts entries whose `file_key` doesn't already exist.
-      - Removes seed-owned rows whose `file_key` is no longer in any
-        manifest (operator removed a track → DB shrinks to match).
-
-    Non-seed user uploads are never touched.
-    """
-    manifests_dir = BACKEND_DIR / "assets" / "r2-manifests"
-    if not manifests_dir.exists():
-        return
-    manifest_files = sorted(manifests_dir.glob("*.json"))
-    if not manifest_files:
-        print(f"  (r2 catalog) no manifests in {manifests_dir}; skipping")
-        return
-
-    entries: list[dict] = []
-    for mf in manifest_files:
-        entries.extend(json.loads(mf.read_text()))
-    if not entries:
-        print("  (r2 catalog) manifests parsed empty; skipping")
-        return
-
-    # System user owns the catalog — created here on first run, reused
-    # on every subsequent run.
-    system_user = (
-        await db.execute(_select(UserORM).where(UserORM.email == SEED_SYSTEM_USER_EMAIL))
-    ).scalar_one_or_none()
-    if system_user is None:
-        system_user = UserORM(
-            id=ids.new_id(),
-            email=SEED_SYSTEM_USER_EMAIL,
-            password_hash=hash_password("seed-system-no-login-3xpq8w"),
-            display_name="Focus Town Seed",
-            is_active=False,
-        )
-        db.add(system_user)
-        await db.flush()
-
-    desired_keys = {e["key"] for e in entries}
-    # Prune scope = every is_official row whose file_key is not in the
-    # current manifest set. Using is_official (not owner) catches stale
-    # rows seeded by an earlier system user — observed on 2026-05-21
-    # where a prior deploy left 5 ghost rows owned by a different UUID
-    # for the same email after a re-deploy, so owner-scoped pruning
-    # silently kept them attached to dead file_keys.
-    existing_rows = (
-        await db.execute(
-            _select(TrackORM).where(TrackORM.is_official.is_(True))
-        )
-    ).scalars().all()
-    existing_keys = {r.file_key for r in existing_rows}
-
-    pruned = 0
-    for row in existing_rows:
-        if row.file_key not in desired_keys:
-            await db.delete(row)
-            pruned += 1
-
-    # Insert new entries (idempotent by file_key unique constraint).
-    inserted = 0
-    for entry in entries:
-        if entry["key"] in existing_keys:
-            continue
-        filename = entry.get("filename") or entry["key"].rsplit("/", 1)[-1]
-        title = title_override(filename, MOOD_MAP_DEFAULT) or derive_title(filename)
-        mood = derive_mood(filename, MOOD_MAP_DEFAULT)
-        db.add(
-            TrackORM(
-                id=ids.new_id(),
-                title=title,
-                artist=None,
-                mood=mood,
-                duration_ms=None,  # frontend defaults to 180s on NULL
-                file_key=entry["key"],
-                content_type="audio/mpeg",
-                file_size_bytes=int(entry["size"]),
-                license="royalty-free-seed",
-                uploaded_by_user_id=system_user.id,
-                is_official=True,
-            )
-        )
-        inserted += 1
-
-    print(
-        f"  (r2 catalog) {len(entries)} manifest entries; "
-        f"+{inserted} inserted, -{pruned} pruned"
     )
 
 

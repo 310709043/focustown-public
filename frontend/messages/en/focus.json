@@ -169,12 +169,6 @@
         "cafe": "☕ cafe",
         "fire": "🔥 fire"
       }
-    },
-    "quickActions": {
-      "dndOn": "DND ON",
-      "dndOff": "DND OFF",
-      "lockPhone": "LOCK PHONE",
-      "backToTown": "BACK TO TOWN"
     }
   },
   "buddy": {

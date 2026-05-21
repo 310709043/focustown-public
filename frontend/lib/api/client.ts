@@ -30,7 +30,7 @@ export const tokenStore = {
   },
 };
 
-async function refreshTokens(refreshToken: string): Promise<Tokens> {
+export async function refreshTokens(refreshToken: string): Promise<Tokens> {
   const res = await fetch(`${config.apiBaseUrl}/api/v1/auth/refresh`, {
     method: "POST",
     headers: { "content-type": "application/json" },

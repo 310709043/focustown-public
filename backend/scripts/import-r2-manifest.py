@@ -39,20 +39,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-# Pure helpers live next to this script so the container-startup seeder
-# (seed-dev-data.py) can share them without import gymnastics.
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _r2_helpers import (
+from app.core.security import hash_password
+from app.infrastructure.db.models.track import TrackORM
+from app.infrastructure.db.models.user import UserORM
+from app.infrastructure.db.seed.r2_helpers import (
     MOOD_MAP_DEFAULT,
     SEED_SYSTEM_USER_EMAIL,
     derive_mood,
     derive_title,
     title_override,
 )
-
-from app.core.security import hash_password
-from app.infrastructure.db.models.track import TrackORM
-from app.infrastructure.db.models.user import UserORM
 
 
 def mp3_duration_ms(path: Path) -> int | None:
