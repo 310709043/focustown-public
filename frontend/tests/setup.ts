@@ -33,6 +33,20 @@ if (typeof Element !== "undefined" && !Element.prototype.scrollTo) {
   Element.prototype.scrollTo = (() => undefined) as typeof Element.prototype.scrollTo;
 }
 
+// jsdom doesn't implement ResizeObserver. SpotlightOverlay uses it to
+// re-measure the highlighted target as the layout changes. Provide a
+// no-op shim so component tests that mount the onboarding tour don't
+// throw on `new ResizeObserver`.
+if (typeof globalThis.ResizeObserver === "undefined") {
+  class ResizeObserverShim {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  }
+  (globalThis as { ResizeObserver: typeof ResizeObserver }).ResizeObserver =
+    ResizeObserverShim as unknown as typeof ResizeObserver;
+}
+
 // One MSW server for the whole test run. Per-test overrides go through
 // `server.use(...)`; we reset after each test so they don't leak.
 export const server = setupServer(...handlers);

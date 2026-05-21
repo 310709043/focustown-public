@@ -11,10 +11,8 @@ import { useUserItemsStore } from "@/lib/state/userItemsStore";
 
 const itemA: UserItem = {
   id: "ui-a",
-  user_id: "u-1",
   shop_item_id: "shop-a",
   acquired_via: "purchase",
-  wallet_transaction_id: null,
   acquired_at: "2026-01-01T00:00:00Z",
 };
 const itemB: UserItem = { ...itemA, id: "ui-b", shop_item_id: "shop-b" };

@@ -29,7 +29,7 @@ const baseRoom: Room = {
   id: "r-1",
   owner_user_id: "u-1",
   name: "Cozy",
-  theme: "cafe",
+  theme: "day",
   visibility: "public",
   max_visitors: 5,
   created_at: "2026-01-01T00:00:00Z",
