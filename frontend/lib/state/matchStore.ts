@@ -1,135 +1,360 @@
 "use client";
 
 import { create } from "zustand";
+import { ApiError } from "../api/client";
 import { matchesApi } from "../api/endpoints";
 import type { Match } from "../api/types.gen";
 
+/**
+ * Status state machine for the matching flow.
+ *
+ * ```
+ *   idle ──enterQueue()──► waiting ──WS match.proposed──► proposed
+ *                                       │                     │
+ *                                       └──cancelQueue()──┐    accept()
+ *                                                       idle    │
+ *                                                              ▼
+ *                                                        accepting → accepted
+ *                                                                        │
+ *                                                                        ▼
+ *                                                                       idle
+ *
+ *   proposed ──skip()──► waiting   (re-enters the queue; per design)
+ * ```
+ *
+ * The single status field is what drives the modal: ``open = status !== "idle"``.
+ * This decouples "a proposal exists" from "is the modal mounted" — the
+ * modal stays visible across waiting → proposed transitions so the
+ * ring/halo animation never blinks out.
+ */
+export type MatchStatus =
+  | "idle"
+  | "waiting"
+  | "proposed"
+  | "accepting"
+  | "accepted";
+
 interface MatchState {
+  status: MatchStatus;
   current: Match | null;
   /**
-   * The most recently accepted match — survives the modal closing so the
-   * focus room page can read partner metadata without a second HTTP call.
-   * Cleared when a new match is proposed/accepted or when the next focus
-   * session ends.
+   * Most recently accepted match. Survives a status reset so the focus
+   * room can read partner metadata after the modal closes without a
+   * second HTTP call.
    */
   accepted: Match | null;
-  proposing: boolean;
-  accepting: boolean;
-  skipping: boolean;
+  waitingSince: number | null;
+  botFallbackAt: number | null;
+  cancelling: boolean;
+
   propose: (candidateId: string) => Promise<void>;
-  requestAuto: () => Promise<Match | null>;
+  /** Enter the waiting pool. Server may pair immediately. */
+  enterQueue: () => Promise<void>;
+  /** Leave the waiting pool. */
+  cancelQueue: () => Promise<void>;
   accept: () => Promise<Match | null>;
+  /** Skip the current proposal — re-enters the queue. */
   skip: () => Promise<void>;
+  /** Apply a ``match.proposed`` WS frame. No-op when not waiting. */
+  applyProposed: (m: Match) => void;
+  /**
+   * Rehydrate the queue state from the backend after a page reload. The
+   * status field is sessionStorage-persisted, but we always re-confirm
+   * with the server (the queue could have moved on while the tab was
+   * away — bot fallback fired, or another tab cancelled).
+   */
+  rehydrate: () => Promise<void>;
   clear: () => void;
   /**
    * Test-only: inject a proposal directly into the store, bypassing the
-   * WS fan-out and the matches API. Used by E2E specs that need a
-   * deterministic open trigger for the MatchModal. Real consumers should
-   * never call this — use `requestAuto` / `propose`, or rely on the
-   * `useRealtimeMatch` hook to populate `current` from a `match.proposed`
-   * frame. Gated by `process.env.NODE_ENV !== "production"` at the
-   * window-bridge layer below; the action itself remains importable in
-   * dev/test bundles only.
+   * WS fan-out and the matches API. Gated by the window-bridge below to
+   * non-production builds.
    */
   testInjectProposal: (m: Match) => void;
 }
 
+const SESSION_KEY = "lowbatterytown.matchStore";
+
+type Persisted = {
+  status: Extract<MatchStatus, "waiting" | "proposed">;
+  waitingSince: number | null;
+  botFallbackAt: number | null;
+};
+
+function persist(s: Pick<MatchState, "status" | "waitingSince" | "botFallbackAt">): void {
+  if (typeof window === "undefined") return;
+  if (s.status !== "waiting" && s.status !== "proposed") {
+    window.sessionStorage.removeItem(SESSION_KEY);
+    return;
+  }
+  const payload: Persisted = {
+    status: s.status,
+    waitingSince: s.waitingSince,
+    botFallbackAt: s.botFallbackAt,
+  };
+  try {
+    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+  } catch {
+    /* private mode or quota — degrade silently */
+  }
+}
+
+function loadPersisted(): Persisted | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Persisted;
+    if (p.status !== "waiting" && p.status !== "proposed") return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+
+const initialPersisted = loadPersisted();
+
 export const useMatchStore = create<MatchState>((set, get) => ({
+  status: initialPersisted?.status ?? "idle",
   current: null,
   accepted: null,
-  proposing: false,
-  accepting: false,
-  skipping: false,
+  waitingSince: initialPersisted?.waitingSince ?? null,
+  botFallbackAt: initialPersisted?.botFallbackAt ?? null,
+  cancelling: false,
 
   async propose(candidateId) {
-    set({ proposing: true });
+    set({ status: "accepting" });
     try {
       const m = await matchesApi.propose(candidateId);
-      set({ current: m });
-    } finally {
-      set({ proposing: false });
+      set({ status: "proposed", current: m });
+      persist({ status: "proposed", waitingSince: null, botFallbackAt: null });
+    } catch (e) {
+      set({ status: "idle", current: null });
+      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+      throw e;
     }
   },
 
-  async requestAuto() {
-    set({ proposing: true });
+  async enterQueue() {
+    const s = get().status;
+    if (s === "waiting" || s === "proposed" || s === "accepting") return;
     try {
-      const m = await matchesApi.auto();
-      set({ current: m });
-      return m;
+      const res = await matchesApi.auto();
+      if (res.status === "matched") {
+        set({
+          status: "proposed",
+          current: res.match,
+          waitingSince: null,
+          botFallbackAt: null,
+        });
+        persist({
+          status: "proposed",
+          waitingSince: null,
+          botFallbackAt: null,
+        });
+        return;
+      }
+      set({
+        status: "waiting",
+        current: null,
+        waitingSince: res.enqueued_at_ms,
+        botFallbackAt: res.bot_fallback_at_ms,
+      });
+      persist({
+        status: "waiting",
+        waitingSince: res.enqueued_at_ms,
+        botFallbackAt: res.bot_fallback_at_ms,
+      });
     } catch {
-      set({ current: null });
-      return null;
+      set({
+        status: "idle",
+        current: null,
+        waitingSince: null,
+        botFallbackAt: null,
+      });
+      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+    }
+  },
+
+  async cancelQueue() {
+    if (get().cancelling) return;
+    set({ cancelling: true });
+    try {
+      await matchesApi.cancelQueue();
+    } catch {
+      /* idempotent — even if the call fails the user wants out */
     } finally {
-      set({ proposing: false });
+      set({
+        status: "idle",
+        current: null,
+        waitingSince: null,
+        botFallbackAt: null,
+        cancelling: false,
+      });
+      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
     }
   },
 
   async accept() {
-    if (get().accepting) return null;
+    const s = get().status;
+    if (s === "accepting") return null;
     const cur = get().current;
     if (!cur) return null;
-    set({ accepting: true });
+    set({ status: "accepting" });
     try {
-      // Bot matches return already-accepted; skip the second HTTP call.
+      // Bot fallback matches are already accepted server-side; skip the
+      // second HTTP call to avoid the no-op accept-already-accepted 409.
       if (cur.status === "accepted") {
-        set({ current: null, accepted: cur });
+        set({
+          status: "accepted",
+          current: null,
+          accepted: cur,
+          waitingSince: null,
+          botFallbackAt: null,
+        });
+        persist({ status: "idle", waitingSince: null, botFallbackAt: null });
         return cur;
       }
       const updated = await matchesApi.accept(cur.id);
-      set({ current: null, accepted: updated });
+      set({
+        status: "accepted",
+        current: null,
+        accepted: updated,
+        waitingSince: null,
+        botFallbackAt: null,
+      });
+      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
       return updated;
-    } finally {
-      set({ accepting: false });
+    } catch {
+      set({ status: "proposed" });
+      return null;
     }
   },
 
   async skip() {
-    if (get().skipping) return;
     const cur = get().current;
     if (!cur) return;
-    set({ skipping: true });
+    if (get().status !== "proposed") return;
+    set({ status: "waiting" });
     try {
       await matchesApi.skip(cur.id);
-      // Clicking "next" means "show me another", not "exit matching".
-      // Chain a fresh auto-match so the modal stays open with the next
-      // candidate. Only when the backend says there's no one else
-      // available do we clear `current` and let the parent page close
-      // the modal naturally.
-      try {
-        // ``auto()`` resolves with ``Match`` when a next candidate is
-        // available and ``undefined`` (or null) when the server has no
-        // one else to surface. Normalise both to ``null`` so consumers
-        // (and store-shape contracts like ``current: Match | null``)
-        // never see ``undefined`` leak in from the API layer.
-        const next = await matchesApi.auto();
-        set({ current: next ?? null });
-      } catch {
-        set({ current: null });
+    } catch {
+      /* the skip failure shouldn't trap the user in the modal — fall through
+         into the re-enqueue attempt regardless */
+    }
+    set({ current: null });
+    try {
+      const res = await matchesApi.auto();
+      if (res.status === "matched") {
+        set({
+          status: "proposed",
+          current: res.match,
+          waitingSince: null,
+          botFallbackAt: null,
+        });
+        persist({
+          status: "proposed",
+          waitingSince: null,
+          botFallbackAt: null,
+        });
+        return;
       }
-    } finally {
-      set({ skipping: false });
+      set({
+        status: "waiting",
+        current: null,
+        waitingSince: res.enqueued_at_ms,
+        botFallbackAt: res.bot_fallback_at_ms,
+      });
+      persist({
+        status: "waiting",
+        waitingSince: res.enqueued_at_ms,
+        botFallbackAt: res.bot_fallback_at_ms,
+      });
+    } catch {
+      set({
+        status: "idle",
+        current: null,
+        waitingSince: null,
+        botFallbackAt: null,
+      });
+      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+    }
+  },
+
+  applyProposed(m) {
+    // Only the first frame for a given proposal causes a state transition.
+    // The candidate side may receive two frames (one from the legacy
+    // MatchRealtimeLink subscriber + one from MatchingQueueService); the
+    // guard makes the second a no-op so the modal doesn't flash.
+    if (get().status !== "waiting") return;
+    set({
+      status: "proposed",
+      current: m,
+      waitingSince: null,
+      botFallbackAt: null,
+    });
+    persist({ status: "proposed", waitingSince: null, botFallbackAt: null });
+  },
+
+  async rehydrate() {
+    const persisted = loadPersisted();
+    if (!persisted || persisted.status !== "waiting") {
+      set({
+        status: "idle",
+        waitingSince: null,
+        botFallbackAt: null,
+      });
+      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+      return;
+    }
+    try {
+      const res = await matchesApi.myQueue();
+      set({
+        status: "waiting",
+        waitingSince: res.enqueued_at_ms,
+        botFallbackAt: res.bot_fallback_at_ms,
+      });
+      persist({
+        status: "waiting",
+        waitingSince: res.enqueued_at_ms,
+        botFallbackAt: res.bot_fallback_at_ms,
+      });
+    } catch (e) {
+      // 404 not_in_queue: backend has moved on (bot fallback fired while
+      // the tab was away, or the WS disconnect hook dropped us). Reset
+      // and let the user re-enqueue if they still want to match.
+      if (e instanceof ApiError && e.status === 404) {
+        set({
+          status: "idle",
+          current: null,
+          waitingSince: null,
+          botFallbackAt: null,
+        });
+        persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+      }
     }
   },
 
   clear() {
-    set({ current: null, accepted: null });
+    set({
+      status: "idle",
+      current: null,
+      accepted: null,
+      waitingSince: null,
+      botFallbackAt: null,
+    });
+    persist({ status: "idle", waitingSince: null, botFallbackAt: null });
   },
 
   testInjectProposal(m) {
-    set({ current: m });
+    set({ status: "proposed", current: m });
   },
 }));
 
 /**
  * Expose the store on `window.__ftMatchStore` so Playwright specs can
  * inject a proposal via `page.evaluate`. See
- * `frontend/e2e/match-modal.spec.ts`. Gated to non-production builds so
- * we don't ship a writable-state escape hatch to real users; the
- * production bundle simply omits this side effect.
- *
- * The shape matches what zustand exposes natively
- * (`getState` / `setState`) plus a typed `testInjectProposal` shortcut.
+ * `frontend/e2e/match-modal.spec.ts`. Gated to non-production builds.
  */
 if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
   (window as unknown as { __ftMatchStore?: unknown }).__ftMatchStore = {

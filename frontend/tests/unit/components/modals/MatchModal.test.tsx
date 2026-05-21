@@ -1,17 +1,19 @@
 /**
- * MatchModal character-sprite resolution.
+ * MatchModal status-driven render branches.
  *
  * Worth testing:
- * - Resolving the candidate sprite by ``candidate_character_key`` (the new
- *   field the backend now hydrates). The previous code looked up by
- *   ``candidate_id`` (a UUID), which always missed — the modal rendered ❓
- *   for every match. This test pins the fix.
- * - The null fallback path still renders so partial/legacy WS payloads
- *   don't crash the modal.
+ * - The "proposed" branch resolves the character sprite from
+ *   ``candidate_character_key`` (and not the candidate_id UUID, which is
+ *   the regression that motivated this test originally).
+ * - The "waiting" branch renders the pulsing placeholder + elapsed
+ *   counter + CANCEL button rather than the partner UI — proves the
+ *   three-branch render keys off ``status``.
+ * - When ``status === "idle"`` the modal does not render anything (it
+ *   relies on the store, not on a parent prop, so there's no "open=true,
+ *   status=idle" edge case to worry about).
  *
  * NOT worth testing:
- * - The full visual chrome (rotating halo, segmented bar) — covered by
- *   manual review and not stable across CSS tweaks.
+ * - The full visual chrome — covered by manual review.
  */
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { render } from "@testing-library/react";
@@ -25,15 +27,28 @@ vi.mock("@/i18n/routing", () => ({
 }));
 
 beforeEach(() => {
-  useMatchStore.setState({ current: null, proposing: false });
+  useMatchStore.setState({
+    status: "idle",
+    current: null,
+    accepted: null,
+    waitingSince: null,
+    botFallbackAt: null,
+    cancelling: false,
+  });
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-test("renders the character sprite resolved from candidate_character_key", () => {
+test("idle status renders nothing", () => {
+  const { container } = render(<MatchModal />);
+  expect(container.firstChild).toBeNull();
+});
+
+test("proposed branch resolves sprite from candidate_character_key", () => {
   useMatchStore.setState({
+    status: "proposed",
     current: makeMatch({
       id: "m-1",
       candidate_id: "uuid-not-a-key",
@@ -42,17 +57,15 @@ test("renders the character sprite resolved from candidate_character_key", () =>
     }),
   });
 
-  const { getByText } = render(<MatchModal open onClose={() => {}} />);
+  const { getByText } = render(<MatchModal />);
 
-  // Luna's emoji + display name come from CHARACTERS in
-  // frontend/lib/data/characters.ts. If MatchModal regresses to the old
-  // UUID lookup, both assertions break.
   expect(getByText("🐱")).toBeInTheDocument();
   expect(getByText("Luna")).toBeInTheDocument();
 });
 
-test("falls back to ❓ when candidate_character_key is null", () => {
+test("proposed branch falls back to ❓ when character_key is unknown", () => {
   useMatchStore.setState({
+    status: "proposed",
     current: makeMatch({
       id: "m-2",
       candidate_id: "another-uuid",
@@ -61,7 +74,21 @@ test("falls back to ❓ when candidate_character_key is null", () => {
     }),
   });
 
-  const { getByText } = render(<MatchModal open onClose={() => {}} />);
+  const { getByText } = render(<MatchModal />);
 
   expect(getByText("❓")).toBeInTheDocument();
+});
+
+test("waiting branch renders the waiting placeholder + cancel button", () => {
+  useMatchStore.setState({
+    status: "waiting",
+    waitingSince: Date.now(),
+    botFallbackAt: Date.now() + 28_000,
+  });
+
+  const { getByTestId } = render(<MatchModal />);
+
+  // pulsing "?" avatar replaces the partner sprite in the waiting branch
+  expect(getByTestId("match-waiting-avatar")).toBeInTheDocument();
+  expect(getByTestId("match-cancel")).toBeInTheDocument();
 });

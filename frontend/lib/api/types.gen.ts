@@ -111,6 +111,7 @@ export type StreetUser = {
   display_name: string;
   character_key: string | null;
   status: string;
+  is_bot?: boolean;
   vehicle: VehicleRenderMeta | null;
 };
 

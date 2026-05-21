@@ -5,7 +5,26 @@ export type PresenceStateValue = "on_street" | "in_room" | "offline";
 
 export type WsMessage =
   | { type: "chat"; room_id: string; from: string; text: string }
-  | { type: "match.proposed"; match_id: string; from: string; compatibility: number }
+  | {
+      type: "match.proposed";
+      match_id: string;
+      /** Legacy field from ``MatchRealtimeLink`` (requester id, but the
+       *  candidate sees them as the partner). The new waiting-pool
+       *  payload sends ``partner_id`` instead — frontends accept either. */
+      from?: string;
+      /** New waiting-pool payload — id of the user the recipient is
+       *  paired with. ``MatchRealtimeLink`` does not set this. */
+      partner_id?: string;
+      /** Character key of the partner, when known. */
+      partner_character_key?: string | null;
+      /** Whether the partner is a server-side bot. */
+      partner_is_bot?: boolean;
+      /** ``waiting_pool`` for human-human pairs, ``bot_fallback`` when
+       *  the periodic sweep escalated us to a bot. Frontends generally
+       *  don't need this; useful for telemetry. */
+      via?: "waiting_pool" | "bot_fallback";
+      compatibility: number;
+    }
   | { type: "match.accepted"; match_id: string }
   | { type: "session.completed"; session_id: string }
   | { type: "presence"; user_id: string; status: string }

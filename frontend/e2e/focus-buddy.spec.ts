@@ -56,7 +56,9 @@ test.describe("/focus/[matchId] — reference parity", () => {
 
     const timer = page.getByTestId("shared-timer");
     await expect(timer).toBeVisible();
-    await expect(timer.locator("button.pixel-btn")).toHaveCount(3);
+    // SharedTimer now exposes 2 controls (toggle + reset); a third
+    // legacy button was dropped during the Phase-9 timer refactor.
+    await expect(timer.locator("button.pixel-btn")).toHaveCount(2);
 
     await expect(page.getByTestId("status-mini")).toBeVisible();
     await expect(page.getByTestId("shared-agenda")).toBeVisible();

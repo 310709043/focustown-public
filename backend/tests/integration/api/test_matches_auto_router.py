@@ -1,11 +1,20 @@
-"""/matches/auto integration tests.
+"""/matches/auto integration tests — waiting-pool contract.
 
-Covers the real-first-then-bot fallback policy and the auto-accept that
-fires when the chosen candidate is a bot. The router contract:
+The endpoint now responds with one of:
+  - 201 + {status: "matched", via, match: {...}}   real partner was already
+                                                   waiting (or matched on
+                                                   immediate-pair).
+  - 202 + {status: "waiting", enqueued_at_ms,
+           bot_fallback_at_ms}                     requester placed in the
+                                                   pool; bot-fallback will
+                                                   fire from the worker sweep.
 
-- 201 + status=accepted when fallback to bot (server-side accept)
-- 201 + status=pending when a real human is matched (they must accept)
-- 409 ``no_match_candidate_available`` when neither pool has candidates
+Bot fallback is no longer immediate - the user is enqueued and a periodic
+sweep (worker process, every 3s) escalates to bot after a per-user random
+25-30s deadline. Integration tests don't run the worker, so the
+post-enqueue HTTP response stops at "waiting"; the sweep itself is
+covered by ``test_matching_queue_service.py`` (unit-level) and
+``test_redis_queue.py`` (Redis behaviour).
 """
 from __future__ import annotations
 
@@ -36,43 +45,46 @@ async def _add_bot(db_session, *, key: str, name: str) -> str:
 
 
 @pytest.mark.asyncio
-async def test_auto_match_falls_back_to_bot_and_auto_accepts(
+async def test_auto_match_enqueues_when_no_real_partner(
     client, auth_headers, db_session
 ):
+    """No real users waiting → requester is enqueued (202). Bots in the
+    catalog don't matter here — bot fallback is deferred to the sweep."""
     await _add_bot(db_session, key="luna", name="Luna")
-    await _add_bot(db_session, key="kai", name="Kai")
     await db_session.flush()
 
     response = await client.post("/api/v1/matches/auto", headers=auth_headers)
 
-    assert response.status_code == 201
+    assert response.status_code == 202
     body = response.json()
-    assert body["status"] == "accepted"
-    assert body["candidate_id"] in {"bot-luna", "bot-kai"}
-    assert body["candidate_character_key"] in {"luna", "kai"}
+    assert body["status"] == "waiting"
+    assert isinstance(body["enqueued_at_ms"], int)
+    assert isinstance(body["bot_fallback_at_ms"], int)
+    # The fallback deadline is 25-30s after the enqueue timestamp.
+    delta = body["bot_fallback_at_ms"] - body["enqueued_at_ms"]
+    assert 25_000 <= delta <= 30_000
 
 
 @pytest.mark.asyncio
-async def test_auto_match_returns_conflict_when_no_candidates(
+async def test_auto_match_double_call_is_idempotent(
     client, auth_headers
 ):
-    response = await client.post("/api/v1/matches/auto", headers=auth_headers)
+    first = await client.post("/api/v1/matches/auto", headers=auth_headers)
+    second = await client.post("/api/v1/matches/auto", headers=auth_headers)
 
-    assert response.status_code == 409
-    assert response.json()["error"]["message"] == "no_match_candidate_available"
+    assert first.status_code == 202
+    assert second.status_code == 202
+    # Same enqueue timestamp + same deadline = same waiter row
+    assert first.json()["enqueued_at_ms"] == second.json()["enqueued_at_ms"]
+    assert first.json()["bot_fallback_at_ms"] == second.json()["bot_fallback_at_ms"]
 
 
 @pytest.mark.asyncio
-async def test_auto_match_prefers_real_human_when_on_street(
+async def test_auto_match_pairs_immediately_with_existing_real_waiter(
     client, auth_headers, authed_user, db_session, flushed_redis
 ):
-    """Alice (authed_user) has Bob on the street + a bot pool. /matches/auto
-    must choose Bob (PENDING) over any bot, because the policy is
-    real-first-then-bot."""
-    await _add_bot(db_session, key="luna", name="Luna")
-    await db_session.flush()
-
-    # Create Bob via the public signup endpoint so he exists in DB.
+    """Bob is already waiting in the pool. Alice (authed_user) requests
+    matching → server pairs them immediately and returns 201 matched."""
     from app.core.config import get_settings
     bob_signup = await client.post(
         "/api/v1/auth/signup",
@@ -85,17 +97,67 @@ async def test_auto_match_prefers_real_human_when_on_street(
             "marketing_opt_in": False,
         },
     )
+    bob_token = bob_signup.json()["tokens"]["access_token"]
     bob_id = bob_signup.json()["user"]["id"]
 
-    # Manually put Bob on the street in Redis (he isn't WS-connected here).
-    from app.core.clock import SystemClock
-    from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
-    tracker = RedisPresenceTracker(flushed_redis, SystemClock())
-    await tracker.online(bob_id, state="on_street", status="focus")
+    # Bob enqueues first
+    bob_resp = await client.post(
+        "/api/v1/matches/auto",
+        headers={"Authorization": f"Bearer {bob_token}"},
+    )
+    assert bob_resp.status_code == 202
 
-    response = await client.post("/api/v1/matches/auto", headers=auth_headers)
+    # Alice enqueues — should pair with Bob immediately
+    alice_resp = await client.post("/api/v1/matches/auto", headers=auth_headers)
 
-    assert response.status_code == 201
-    body = response.json()
-    assert body["candidate_id"] == bob_id
-    assert body["status"] == "pending"  # Bob must accept
+    assert alice_resp.status_code == 201
+    body = alice_resp.json()
+    assert body["status"] == "matched"
+    assert body["via"] == "waiting_pool"
+    match = body["match"]
+    # Real-real pair stays PENDING — both sides must explicitly accept.
+    assert match["status"] == "pending"
+    # Either side could be requester depending on who was enqueued first;
+    # the important invariant is that both Alice and Bob appear.
+    assert {match["requester_id"], match["candidate_id"]} == {
+        authed_user["id"],
+        bob_id,
+    }
+
+
+@pytest.mark.asyncio
+async def test_cancel_queue_removes_waiter(
+    client, auth_headers, flushed_redis
+):
+    await client.post("/api/v1/matches/auto", headers=auth_headers)
+
+    cancel = await client.delete("/api/v1/matches/queue", headers=auth_headers)
+    status_after = await client.get(
+        "/api/v1/matches/queue/me", headers=auth_headers
+    )
+
+    assert cancel.status_code == 204
+    assert status_after.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_queue_me_returns_404_when_not_waiting(client, auth_headers):
+    response = await client.get("/api/v1/matches/queue/me", headers=auth_headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_queue_me_returns_waiting_state(client, auth_headers):
+    enqueue_resp = await client.post(
+        "/api/v1/matches/auto", headers=auth_headers
+    )
+    status_resp = await client.get(
+        "/api/v1/matches/queue/me", headers=auth_headers
+    )
+
+    assert status_resp.status_code == 200
+    assert status_resp.json()["status"] == "waiting"
+    assert (
+        status_resp.json()["enqueued_at_ms"]
+        == enqueue_resp.json()["enqueued_at_ms"]
+    )

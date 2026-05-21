@@ -383,6 +383,40 @@ export const notesApi = {
 };
 
 // ── matches ────────────────────────────────────────────
+/**
+ * Discriminated response shape for ``POST /matches/auto``.
+ *
+ * - ``matched``: paired immediately with another waiter (status 201).
+ *   The frontend transitions straight to the "proposed" modal state.
+ * - ``waiting``: enqueued in the matching pool (status 202). The
+ *   frontend shows a "searching for a partner" state until either
+ *   another real user pairs with us or the per-user fallback deadline
+ *   triggers a bot match (both arrive over WebSocket as ``match.proposed``).
+ *
+ * Mirrors backend `app/api/v1/matches/schemas.py:MatchAutoResponse`.
+ * Will be regenerated into `types.gen.ts` next time
+ * `scripts/gen-api-types.sh` runs against the live backend.
+ */
+export type MatchAutoMatchedResponse = {
+  status: "matched";
+  via: "waiting_pool" | "bot_fallback";
+  match: Match;
+};
+export type MatchAutoWaitingResponse = {
+  status: "waiting";
+  enqueued_at_ms: number;
+  bot_fallback_at_ms: number;
+};
+export type MatchAutoResponse =
+  | MatchAutoMatchedResponse
+  | MatchAutoWaitingResponse;
+
+export type MatchQueueStatusResponse = {
+  status: "waiting";
+  enqueued_at_ms: number;
+  bot_fallback_at_ms: number;
+};
+
 export const matchesApi = {
   propose(candidate_id: string) {
     return apiFetch<Match>("/api/v1/matches", {
@@ -390,12 +424,28 @@ export const matchesApi = {
       body: { candidate_id },
     });
   },
-  /** One-shot matchmaking. Server picks a candidate (real human first,
-   *  bot fallback) and, for bots, auto-accepts on the bot's behalf so
-   *  the returned match is already ``accepted``. The frontend just
-   *  navigates to the focus room. */
+  /** Request matchmaking via the waiting-pool flow.
+   *
+   * Returns ``MatchAutoMatchedResponse`` if a partner was already waiting
+   * (or no real users were online and a bot was auto-accepted), or
+   * ``MatchAutoWaitingResponse`` if the caller was placed in the pool.
+   * In the waiting case the actual pairing arrives over WebSocket. */
   auto() {
-    return apiFetch<Match>("/api/v1/matches/auto", { method: "POST" });
+    return apiFetch<MatchAutoResponse>("/api/v1/matches/auto", {
+      method: "POST",
+    });
+  },
+  /** Leave the waiting pool. Idempotent (204 even when not queued). */
+  cancelQueue() {
+    return apiFetch<void>("/api/v1/matches/queue", { method: "DELETE" });
+  },
+  /** Fetch the caller's current queue status. 404 ``not_in_queue`` when
+   *  the caller isn't waiting — callers should catch ``ApiError`` and
+   *  treat 404 as "not in queue". */
+  myQueue() {
+    return apiFetch<MatchQueueStatusResponse>("/api/v1/matches/queue/me", {
+      method: "GET",
+    });
   },
   accept(id: string) {
     return apiFetch<Match>(`/api/v1/matches/${id}/accept`, { method: "POST" });
@@ -437,8 +487,10 @@ export const shopApi = {
 
 // ── presence ───────────────────────────────────────────
 export const presenceApi = {
-  /** Snapshot of who is currently walking the street (cap to N visible). */
-  listStreet(cap = 12) {
+  /** Snapshot of who is currently walking the street (cap to N visible).
+   *  Backend orders real users first then bots, so a high cap guarantees
+   *  every logged-in human is rendered even on crowded streets. */
+  listStreet(cap = 200) {
     return apiFetch<StreetUser[]>(`/api/v1/presence/street?cap=${cap}`, {
       method: "GET",
     });

@@ -36,7 +36,7 @@ async def list_street(
     settings: SettingsDep,
     limiter: RateLimiterDep,
     client_ip: ClientIpDep,
-    cap: int = Query(12, ge=1, le=50),
+    cap: int = Query(200, ge=1, le=500),
 ) -> list[StreetUserResponse]:
     # Town view polls this every few seconds; 60/min is ~1 req/sec headroom
     # while still rejecting scraper-style traffic.
@@ -55,6 +55,7 @@ async def list_street(
             display_name=u.display_name,
             character_key=u.character_key,
             status=u.status,
+            is_bot=u.is_bot,
             vehicle=(
                 VehicleViewResponse(
                     icon=u.vehicle.icon,

@@ -14,4 +14,5 @@ class StreetUserResponse(BaseModel):
     display_name: str
     character_key: str | None
     status: str
+    is_bot: bool = False
     vehicle: VehicleViewResponse | None = None

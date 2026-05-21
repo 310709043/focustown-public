@@ -24,6 +24,7 @@ def _make_user(
     character_key: str = "kai",
     active: bool = True,
     equipped_vehicle_item_id: str | None = None,
+    is_bot: bool = False,
 ) -> User:
     return User(
         id=user_id,
@@ -36,6 +37,7 @@ def _make_user(
         equipped_avatar_item_id=None,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
+        is_bot=is_bot,
     )
 
 
@@ -180,6 +182,36 @@ async def test_list_street_empty_when_nobody_online():
 
     result = await svc.list_street(users, FakeShopRepo(), cap=10)
     assert result == []
+
+
+@pytest.mark.asyncio
+async def test_list_street_orders_real_users_before_bots_under_cap():
+    """The cap trim must never silently drop a logged-in human in favour
+    of a bot. The list is sorted with real users first; ``cap=N`` then
+    keeps the first N entries."""
+    tracker = FakePresenceTracker()
+    pub = RecordingPublisher()
+    svc = PresenceService(tracker, pub)
+    # 3 bots online before the real user joins → tracker order is bots-first.
+    users = FakeUserRepo.from_users(
+        [
+            _make_user("bot-a", is_bot=True),
+            _make_user("bot-b", is_bot=True),
+            _make_user("bot-c", is_bot=True),
+            _make_user("real-1"),
+        ]
+    )
+
+    for uid in ("bot-a", "bot-b", "bot-c", "real-1"):
+        await svc.connect(uid)
+
+    result = await svc.list_street(users, FakeShopRepo(), cap=2)
+
+    # Despite the 2-slot cap and bots arriving first, the real user must
+    # appear (sorted ahead of bots). The other slot goes to the oldest bot.
+    assert result[0].id == "real-1"
+    assert result[0].is_bot is False
+    assert result[1].is_bot is True
 
 
 @pytest.mark.asyncio

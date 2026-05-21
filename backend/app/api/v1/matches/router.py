@@ -1,22 +1,32 @@
 from __future__ import annotations
 
-import random
+from fastapi import APIRouter, Response
 
-from fastapi import APIRouter
-
-from app.api.v1.matches.schemas import MatchResponse, ProposeMatchRequest
+from app.api.v1.matches.schemas import (
+    MatchAutoMatchedResponse,
+    MatchAutoResponse,
+    MatchAutoWaitingResponse,
+    MatchQueueStatusResponse,
+    MatchResponse,
+    ProposeMatchRequest,
+)
 from app.core.deps import (
     ClockDep,
     CurrentUserId,
     DbDep,
     EventBusDep,
     IdGenDep,
-    PresenceTrackerDep,
+    MatchingQueueDep,
+    RealtimePublisherDep,
 )
-from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
+from app.core.exceptions import ForbiddenError, NotFoundError
 from app.domain.models import Match
 from app.domain.repositories.match_repo import IMatchReader
 from app.domain.repositories.user_repo import IUserReader
+from app.domain.services.matching_queue_service import (
+    MatchedResult,
+    MatchingQueueService,
+)
 from app.domain.services.matching_service import MatchingService
 from app.domain.services.strategies import SimpleOverlapStrategy
 from app.infrastructure.db.repositories import (
@@ -26,12 +36,6 @@ from app.infrastructure.db.repositories import (
 )
 
 router = APIRouter()
-
-# When picking auto-match candidates, de-dup against this many of the
-# requester's most recent matches (any status). Keeps the user from
-# seeing the same candidate twice in a short stretch, including after
-# they skip — Plan agent point: "user spamming Skip exhausts the pool".
-_RECENT_DEDUP_WINDOW = 14
 
 
 async def _dto(
@@ -71,7 +75,7 @@ async def _dto(
     )
 
 
-def _service(db, ids, events, clock) -> MatchingService:
+def _matching_service(db, ids, events, clock) -> MatchingService:
     return MatchingService(
         users=SqlUserRepo(db),
         matches=SqlMatchRepo(db),
@@ -79,6 +83,19 @@ def _service(db, ids, events, clock) -> MatchingService:
         strategy=SimpleOverlapStrategy(),
         events=events,
         ids=ids,
+        clock=clock,
+    )
+
+
+def _queue_service(
+    db, ids, events, clock, queue, publisher
+) -> MatchingQueueService:
+    return MatchingQueueService(
+        queue=queue,
+        matching=_matching_service(db, ids, events, clock),
+        matches_reader=SqlMatchRepo(db),
+        users=SqlUserRepo(db),
+        publisher=publisher,
         clock=clock,
     )
 
@@ -92,7 +109,7 @@ async def propose_match(
     events: EventBusDep,
     clock: ClockDep,
 ) -> MatchResponse:
-    svc = _service(db, ids, events, clock)
+    svc = _matching_service(db, ids, events, clock)
     match = await svc.propose(requester_id=user_id, candidate_id=payload.candidate_id)
     users: IUserReader = SqlUserRepo(db)
     return await _dto(match, users)
@@ -107,7 +124,7 @@ async def accept_match(
     events: EventBusDep,
     clock: ClockDep,
 ) -> MatchResponse:
-    svc = _service(db, ids, events, clock)
+    svc = _matching_service(db, ids, events, clock)
     match = await svc.accept(match_id=match_id, user_id=user_id)
     users: IUserReader = SqlUserRepo(db)
     return await _dto(match, users)
@@ -122,7 +139,7 @@ async def skip_match(
     events: EventBusDep,
     clock: ClockDep,
 ) -> MatchResponse:
-    svc = _service(db, ids, events, clock)
+    svc = _matching_service(db, ids, events, clock)
     match = await svc.skip(match_id=match_id, user_id=user_id)
     users: IUserReader = SqlUserRepo(db)
     return await _dto(match, users)
@@ -144,6 +161,36 @@ async def recent_matches(user_id: CurrentUserId, db: DbDep) -> list[MatchRespons
     for uid in user_ids:
         cache.setdefault(uid, None)
     return [await _dto(m, users, cache=cache) for m in matches]
+
+
+@router.delete("/queue", status_code=204)
+async def cancel_queue(
+    user_id: CurrentUserId,
+    queue: MatchingQueueDep,
+) -> Response:
+    """Leave the waiting pool. Idempotent — 204 even if the caller wasn't
+    waiting. Called by (a) the user pressing CANCEL in the modal and
+    (b) the WebSocket disconnect hook so abandoned sessions don't keep a
+    ghost waiter alive until the HASH TTL expires."""
+    await queue.cancel(user_id)
+    return Response(status_code=204)
+
+
+@router.get("/queue/me", response_model=MatchQueueStatusResponse)
+async def get_my_queue(
+    user_id: CurrentUserId,
+    queue: MatchingQueueDep,
+) -> MatchQueueStatusResponse:
+    """Rehydration endpoint used by the frontend on page reload to know
+    whether the user should drop back into the waiting modal. Returns 404
+    when the user is not currently in the queue."""
+    entry = await queue.is_waiting(user_id)
+    if entry is None:
+        raise NotFoundError("not_in_queue")
+    return MatchQueueStatusResponse(
+        enqueued_at_ms=entry.enqueued_at_ms,
+        bot_fallback_at_ms=entry.fallback_deadline_ms,
+    )
 
 
 @router.get("/{match_id}", response_model=MatchResponse)
@@ -169,64 +216,44 @@ async def get_match(
     return await _dto(match, users)
 
 
-@router.post("/auto", response_model=MatchResponse, status_code=201)
+@router.post("/auto", response_model=MatchAutoResponse)
 async def auto_match(
     user_id: CurrentUserId,
     db: DbDep,
     ids: IdGenDep,
     events: EventBusDep,
     clock: ClockDep,
-    tracker: PresenceTrackerDep,
-) -> MatchResponse:
-    """One-shot matching for the frontend MatchCTA button.
+    queue: MatchingQueueDep,
+    publisher: RealtimePublisherDep,
+    response: Response,
+) -> MatchAutoMatchedResponse | MatchAutoWaitingResponse:
+    """Request matching via the waiting-pool flow.
 
-    Picks a candidate using a real-first-then-bot policy:
+    1. **Immediate pair**: if another real user is already waiting (and
+       isn't in the requester's 14-match dedup window), pair them right
+       away. HTTP 201 with the created Match — frontend transitions
+       straight into "proposed" state.
+    2. **Enqueue**: otherwise place the requester in the waiting pool.
+       HTTP 202 with ``enqueued_at_ms`` + ``bot_fallback_at_ms`` so the
+       UI can render an elapsed-seconds counter and a deterministic
+       fallback ETA. A periodic worker sweep pairs incoming waiters and
+       bot-falls-back anyone past their deadline.
 
-    1. **Real human pool**: anyone currently ``on_street`` (excluding the
-       requester and anyone the requester matched recently). Returns a
-       PENDING match — the real candidate must accept via the existing
-       ``/matches/{id}/accept`` endpoint, which fires
-       ``match.proposed`` on their WebSocket.
-    2. **Bot fallback**: if no eligible real humans are online, pick a
-       bot the requester hasn't matched recently. Because the bot has
-       no client, the server immediately calls ``accept`` on the bot's
-       behalf so the requester can transition straight into the focus
-       room.
-
-    The bot auto-accept lives **only here** — keeping
-    ``MatchingService.propose``'s ``PENDING`` invariant untouched (OCP).
+    Idempotent: a second POST while waiting returns the same waiting
+    state (not 409) so duplicate browser tabs don't double-enqueue. The
+    underlying ``RedisMatchingQueue`` uses ``ZADD NX`` to enforce.
     """
-    users: IUserReader = SqlUserRepo(db)
-    matches_reader: IMatchReader = SqlMatchRepo(db)
-    svc = _service(db, ids, events, clock)
+    svc = _queue_service(db, ids, events, clock, queue, publisher)
+    result = await svc.request(requester_id=user_id)
 
-    recent = await matches_reader.list_recent_for_user(
-        user_id=user_id, limit=_RECENT_DEDUP_WINDOW
+    if isinstance(result, MatchedResult):
+        users: IUserReader = SqlUserRepo(db)
+        match_dto = await _dto(result.match, users)
+        response.status_code = 201
+        return MatchAutoMatchedResponse(via=result.via, match=match_dto)
+
+    response.status_code = 202
+    return MatchAutoWaitingResponse(
+        enqueued_at_ms=result.enqueued_at_ms,
+        bot_fallback_at_ms=result.bot_fallback_at_ms,
     )
-    recent_candidate_ids = {
-        m.candidate_id if m.requester_id == user_id else m.requester_id
-        for m in recent
-    }
-
-    # Step 1: real humans currently on the street
-    on_street = await tracker.list(state="on_street")
-    online_ids = [e.user_id for e in on_street if e.user_id != user_id]
-    online_users = await users.get_many_by_ids(online_ids)
-    real_pool = [
-        u for u in online_users
-        if not u.is_bot and u.id not in recent_candidate_ids and u.is_active
-    ]
-    if real_pool:
-        chosen = random.choice(real_pool)  # noqa: S311
-        match = await svc.propose(requester_id=user_id, candidate_id=chosen.id)
-        return await _dto(match, users, cache={chosen.id: chosen.character_key})
-
-    # Step 2: bot fallback
-    bots = await users.list_bots()
-    if not bots:
-        raise ConflictError("no_match_candidate_available")
-    bot_pool = [b for b in bots if b.id not in recent_candidate_ids] or bots
-    chosen = random.choice(bot_pool)  # noqa: S311
-    match = await svc.propose(requester_id=user_id, candidate_id=chosen.id)
-    accepted = await svc.accept(match_id=match.id, user_id=chosen.id)
-    return await _dto(accepted, users, cache={chosen.id: chosen.character_key})

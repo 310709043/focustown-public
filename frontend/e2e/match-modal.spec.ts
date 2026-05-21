@@ -99,10 +99,10 @@ test.describe("MatchModal — reference parity", () => {
   });
 
   test("Skip chains to next candidate — modal stays open with new match", async ({ page }) => {
-    // Round-2 QA fix: clicking "下一個" / Skip used to clear current +
-    // close the modal, exiting the matching flow. The user expects "show
-    // me another candidate". `matchStore.skip()` now chains skip →
-    // matchesApi.auto() so the modal stays open with proposal B.
+    // Waiting-pool model: Skip calls matchesApi.skip(id) then
+    // matchesApi.auto() which returns the discriminated response. When
+    // the server pairs immediately (a second waiter was available), the
+    // ``matched`` branch fills ``current`` and the modal re-renders.
     await mockApi(page, {
       ...baselineTownMocks(),
       "GET  /api/v1/me/room": (r) =>
@@ -116,15 +116,22 @@ test.describe("MatchModal — reference parity", () => {
       "POST /api/v1/matches/m-e2e-1/skip": (r) => json(r, 200, {}),
       "POST /api/v1/matches/auto": (r) =>
         json(r, 201, {
-          id: "m-e2e-2",
-          requester_id: "u-test-1",
-          candidate_id: "u-candidate-2",
-          requester_character_key: "luna",
-          candidate_character_key: "spark",
-          compatibility: 65,
-          reason: "Both prefer pomodoro stacks of 4.",
-          status: "pending",
-          created_at: "2026-05-15T20:01:00Z",
+          status: "matched",
+          via: "waiting_pool",
+          match: {
+            id: "m-e2e-2",
+            requester_id: "u-test-1",
+            candidate_id: "u-candidate-2",
+            requester_character_key: "luna",
+            candidate_character_key: "spark",
+            // 60 → exactly 6 lit segments via Math.round(60/10). Earlier
+            // values like 65 mapped to Math.round(6.5)=7 which races the
+            // brief count=6 mid-animation state and made the test flaky.
+            compatibility: 60,
+            reason: "Both prefer pomodoro stacks of 4.",
+            status: "pending",
+            created_at: "2026-05-15T20:01:00Z",
+          },
         }),
     });
 
@@ -159,14 +166,14 @@ test.describe("MatchModal — reference parity", () => {
     const modal = page.getByTestId("match-modal");
     await expect(modal).toBeVisible({ timeout: 5_000 });
 
-    // Read the candidate name shown for proposal A so we can assert it
-    // changes after skip. The candidate name is the second visible text
-    // line inside the modal; testids on the match candidate row don't
-    // exist yet so we hash via the compatibility readout instead.
-    const compatBefore = await modal
-      .locator('[data-testid="compat-bar"] [data-segment][data-lit]')
-      .count();
-    expect(compatBefore).toBeGreaterThan(0);
+    // Wait for proposal A's staggered animation to actually fill at
+    // least one segment before we click Skip. The fill kicks in via
+    // a setInterval(80ms) effect inside MatchModal; reading the count
+    // immediately after the modal mounts returns 0 because the first
+    // interval tick hasn't fired yet.
+    await expect(
+      modal.locator('[data-testid="compat-bar"] [data-segment][data-lit]'),
+    ).not.toHaveCount(0, { timeout: 5_000 });
 
     // Click Skip → store dispatches skip + auto, parent re-renders with
     // proposal B. Modal must stay open.
@@ -179,10 +186,11 @@ test.describe("MatchModal — reference parity", () => {
     await expect(modal).toBeVisible();
   });
 
-  test("Skip when no candidates left — modal closes gracefully", async ({ page }) => {
-    // Counterpart to the happy-path skip test: when matchesApi.auto()
-    // 409s (no_match_candidate_available), `current` ends up null and
-    // the MatchModal closes itself.
+  test("Skip then enter waiting — modal swaps to the waiting branch", async ({ page }) => {
+    // Counterpart to the happy-path skip test: when no real partner is
+    // queued, the backend places the requester into the waiting pool
+    // (HTTP 202). The modal must stay mounted and swap to the waiting
+    // branch (pulsing avatar + CANCEL button).
     await mockApi(page, {
       ...baselineTownMocks(),
       "GET  /api/v1/me/room": (r) =>
@@ -195,7 +203,11 @@ test.describe("MatchModal — reference parity", () => {
         }),
       "POST /api/v1/matches/m-e2e-1/skip": (r) => json(r, 200, {}),
       "POST /api/v1/matches/auto": (r) =>
-        json(r, 409, { code: "no_match_candidate_available" }),
+        json(r, 202, {
+          status: "waiting",
+          enqueued_at_ms: 1_716_293_000_000,
+          bot_fallback_at_ms: 1_716_293_028_000,
+        }),
     });
 
     await page.goto("/town");
@@ -230,6 +242,12 @@ test.describe("MatchModal — reference parity", () => {
     await expect(modal).toBeVisible({ timeout: 5_000 });
 
     await modal.getByTestId("match-skip").click();
-    await expect(modal).toBeHidden({ timeout: 5_000 });
+    // After the skip + auto chain settles, the modal swaps to the
+    // waiting branch — pulsing "?" avatar + CANCEL replace the
+    // candidate avatar + ACCEPT/NEXT pair.
+    await expect(modal.getByTestId("match-waiting-avatar")).toBeVisible({
+      timeout: 5_000,
+    });
+    await expect(modal.getByTestId("match-cancel")).toBeVisible();
   });
 });

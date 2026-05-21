@@ -64,24 +64,26 @@ import { ProfileModal } from "@/components/modals/ProfileModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
-const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 12);
+// 200 sprites is well within desktop-perf headroom (each Pedestrian is one
+// DOM subtree + one setInterval). The backend orders real users first then
+// bots, so a high cap guarantees no logged-in human is dropped on a busy day.
+const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 200);
 
 export default function TownPage() {
   const { user, hydrate } = useAuthStore();
   const advanceScene = useSceneStore((s) => s.advance);
   const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
-  const [matchOpen, setMatchOpen] = useState(false);
   const [openModal, setOpenModal] = useState<TownModalKind | null>(null);
-  const requestAutoMatch = useMatchStore((s) => s.requestAuto);
-  const matchProposing = useMatchStore((s) => s.proposing);
+  const enterQueue = useMatchStore((s) => s.enterQueue);
+  const rehydrateMatch = useMatchStore((s) => s.rehydrate);
+  const matchStatus = useMatchStore((s) => s.status);
 
-  // Reused by both the BottomHUD "Find Buddy" button and the FriendsModal
-  // CTA so the matching flow stays consistent (SRP — single behavior, two
-  // call sites).
+  // The BottomHUD "Find Buddy" button and the FriendsModal CTA both call
+  // enterQueue. The store guards against double-enqueue (waiting/proposed
+  // states early-return) so there's no need for a local debounce.
   const onFindBuddy = async () => {
-    if (matchProposing) return;
-    const m = await requestAutoMatch();
-    if (m) setMatchOpen(true);
+    if (matchStatus !== "idle") return;
+    await enterQueue();
   };
 
   const onOpenOwnProfile = () => {
@@ -91,6 +93,14 @@ export default function TownPage() {
   useEffect(() => {
     if (!user) void hydrate();
   }, [user, hydrate]);
+
+  // Rehydrate the matching queue state on mount — the sessionStorage
+  // persistence carries the status across reloads, but the backend is the
+  // source of truth (the queue could have moved on while the tab was away).
+  useEffect(() => {
+    if (!user) return;
+    void rehydrateMatch();
+  }, [user, rehydrateMatch]);
 
   // /town IS City Mode. Set the active station scope at page level so
   // ModeStatusBar (a sibling of MusicPlayer in the BottomHUD render
@@ -192,32 +202,19 @@ export default function TownPage() {
     }
   });
 
-  // Wave 1 / Lane A: subscribe to match + session events. The WS payload
-  // for match.proposed lacks `reason`/`candidate_id`, so the hook
-  // synthesizes a partial Match — MatchModal renders a fallback reason
-  // string and a neutral placeholder candidate when those fields are empty.
+  // Wave 1 / Lane A: subscribe to match + session events. ``applyProposed``
+  // is a no-op when status !== "waiting", so the candidate side receiving
+  // duplicate frames (one from MatchRealtimeLink + one from
+  // MatchingQueueService) only transitions once.
   useRealtimeMatch({
     onProposed: (match) => {
-      useMatchStore.setState({ current: match });
-      setMatchOpen(true);
+      useMatchStore.getState().applyProposed(match);
     },
     onAccepted: (_matchId) => {
       // TODO Wave 4: surface a toast / auto-navigate to the focus room.
     },
   });
 
-  // Open the modal whenever a proposal appears in the store, regardless
-  // of source (WS fan-out, manual `requestAuto`, or the test-only
-  // `testInjectProposal` bridge). This is the single reactive contract
-  // that decouples "a match exists" from "how it got there".
-  const matchCurrent = useMatchStore((s) => s.current);
-  useEffect(() => {
-    if (matchCurrent && !matchOpen) setMatchOpen(true);
-    // Intentionally only reacts to a new proposal landing; the close
-    // path is driven by the modal's onClose handler, not by `current`
-    // going null (which also happens during accept/skip).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchCurrent?.id]);
   useRealtimeSessionCompleted((_sessionId) => {
     // Clear the just-finished match so the Together mode card returns
     // from "Resume ▶ with {partner}" back to "Find ▶". Without this,
@@ -309,7 +306,7 @@ export default function TownPage() {
         <BottomHUD onFindBuddy={onFindBuddy} />
       </div>
 
-      <MatchModal open={matchOpen} onClose={() => setMatchOpen(false)} />
+      <MatchModal />
       <ShopModal
         open={openModal === "shop"}
         onClose={() => setOpenModal(null)}

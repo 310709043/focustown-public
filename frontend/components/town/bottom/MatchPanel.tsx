@@ -34,7 +34,12 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
   const t = useTranslations("town.bottom.modes");
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const proposing = useMatchStore((s) => s.proposing);
+  // ``busy`` covers any non-idle status — modal is already mounted (or
+  // pending), so the CTA must lock out re-entry. Replaces the legacy
+  // ``proposing`` boolean; the waiting-pool state machine collapses
+  // that into the discriminated ``status`` field.
+  const matchStatus = useMatchStore((s) => s.status);
+  const busy = matchStatus !== "idle";
   const accepted = useMatchStore((s) => s.accepted);
   const avatar = characterKeyToAvatar(user?.character_key);
 
@@ -107,7 +112,7 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         ctaAriaLabel={togetherAria}
         accentVar="var(--accent-2)"
         onCta={onTogether}
-        disabled={proposing && !hasAccepted}
+        disabled={busy && !hasAccepted}
         disabledCursor="wait"
         badge={
           hasAccepted && partnerCharacter

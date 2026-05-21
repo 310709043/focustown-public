@@ -29,12 +29,16 @@ from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
 from app.domain.services.focus_session_service import FocusSessionService
 from app.domain.services.leaderboard_service import LeaderboardService
+from app.domain.services.matching_queue_service import MatchingQueueService
+from app.domain.services.matching_service import MatchingService
 from app.domain.services.station_service import StationService
+from app.domain.services.strategies import SimpleOverlapStrategy
 from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
 from app.infrastructure.cache.station_cache import RedisStationCache
 from app.infrastructure.db.repositories import (
     SqlFocusSessionRepo,
     SqlLeaderboardSnapshotRepo,
+    SqlMatchRepo,
     SqlUserRepo,
 )
 from app.infrastructure.db.repositories.station_repo import SqlStationSnapshotRepo
@@ -44,6 +48,7 @@ from app.infrastructure.db.session import (
     get_session_factory,
 )
 from app.infrastructure.jobs.apscheduler_adapter import APSchedulerAdapter
+from app.infrastructure.matching.redis_queue import RedisMatchingQueue
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.presence.bot_seeder import refresh_bot_presence
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
@@ -210,6 +215,48 @@ async def snapshot_stations_to_db(factory) -> None:
         await db.commit()
 
 
+async def sweep_matching_queue_job(factory) -> None:
+    """Worker tick — pair waiting users and bot-fallback the overdue.
+
+    3s cadence keeps end-to-end "click match → see partner" under 5s in
+    the worst case (immediate-pair on enqueue covers the sub-second
+    common case; this is the safety net for simultaneous enqueues and
+    the only place that fires bot-fallback for users past their per-user
+    deadline). Each iteration touches Redis only — DB is hit when a pair
+    actually forms via ``MatchingService.propose``.
+
+    The worker uses its own ``EventBus``; ``MatchRealtimeLink`` lives in
+    the API process so ``MatchProposed`` events raised here have no
+    in-process subscribers. ``MatchingQueueService`` explicitly publishes
+    ``match.proposed`` to each side via the cross-process
+    ``IRealtimePublisher`` so connected clients still see the frame
+    regardless of which process formed the pair.
+    """
+    async with factory() as db:
+        redis = get_redis()
+        clock = SystemClock()
+        events = EventBus()
+        matching = MatchingService(
+            users=SqlUserRepo(db),
+            matches=SqlMatchRepo(db),
+            sessions=SqlFocusSessionRepo(db),
+            strategy=SimpleOverlapStrategy(),
+            events=events,
+            ids=UUID4Generator(),
+            clock=clock,
+        )
+        svc = MatchingQueueService(
+            queue=RedisMatchingQueue(redis),
+            matching=matching,
+            matches_reader=SqlMatchRepo(db),
+            users=SqlUserRepo(db),
+            publisher=RedisPubSubPublisher(redis),
+            clock=clock,
+        )
+        await svc.sweep()
+        await db.commit()
+
+
 async def refresh_bot_presence_job(factory) -> None:
     """Worker tick — keep bot Redis presence alive (90s TTL).
 
@@ -246,6 +293,14 @@ async def main() -> None:
             "refresh_bot_presence", partial(refresh_bot_presence_job, factory)
         ),
         seconds=60,
+    )
+    scheduler.schedule_interval(
+        job_id="sweep_matching_queue",
+        func=_log_job_errors(
+            "sweep_matching_queue",
+            partial(sweep_matching_queue_job, factory),
+        ),
+        seconds=3,
     )
     scheduler.schedule_cron(
         job_id="snapshot_leaderboard",

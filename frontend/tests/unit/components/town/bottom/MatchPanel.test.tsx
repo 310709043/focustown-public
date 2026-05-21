@@ -10,7 +10,7 @@
  *   /focus/{matchId} when matchStore.accepted is populated — this is
  *   the bug-prone path because we read partner metadata off the
  *   accepted match instead of the live `current` proposal.
- * - Together CTA is disabled while matchStore.proposing is true, except
+ * - Together CTA is disabled while matchStore.status is non-idle, except
  *   when an accepted match is already present (Resume should still work
  *   even during another proposal in flight).
  *
@@ -36,11 +36,12 @@ beforeEach(() => {
   pushMock.mockReset();
   useAuthStore.setState({ user: makeUser({ id: "u-1" }) });
   useMatchStore.setState({
+    status: "idle",
     current: null,
     accepted: null,
-    proposing: false,
-    accepting: false,
-    skipping: false,
+    waitingSince: null,
+    botFallbackAt: null,
+    cancelling: false,
   });
 });
 
@@ -85,8 +86,8 @@ test("TOGETHER card flips to Resume routing to /focus/{matchId} when a match is 
   expect(onFindBuddy).not.toHaveBeenCalled();
 });
 
-test("TOGETHER CTA is disabled while matchStore.proposing is true (no accepted match)", () => {
-  useMatchStore.setState({ proposing: true });
+test("TOGETHER CTA is disabled while matchStore.status is non-idle (no accepted match)", () => {
+  useMatchStore.setState({ status: "waiting" });
   const onFindBuddy = vi.fn();
   render(<MatchPanel onFindBuddy={onFindBuddy} />);
 
@@ -127,7 +128,7 @@ test("TOGETHER CTA stays clickable in Resume mode even while a new proposal is i
   // somewhere else. The Resume affordance should still let them re-enter
   // the existing room.
   useMatchStore.setState({
-    proposing: true,
+    status: "waiting",
     accepted: makeMatch({
       id: "m-accepted-2",
       status: "accepted",

@@ -12,7 +12,13 @@
     "reasonFallback": "New match invitation — tap “Focus together” to start a 25-minute Pomodoro.",
     "candidateAnonymous": "Anonymous #{id}",
     "candidatePending": "Pairing…",
-    "closeAria": "Close"
+    "closeAria": "Close",
+    "waitingTitle": "Searching for a partner…",
+    "waitingSubtitle": "Looking for someone else who wants to focus",
+    "waitingElapsed": "{seconds, plural, one {Waited # second} other {Waited # seconds}}",
+    "cancelCta": "Cancel",
+    "cancellingCta": "Cancelling…",
+    "queueExpiredToast": "Queue expired — try again"
   },
   "cta": {
     "label": "✦ Find a focus partner ✦",

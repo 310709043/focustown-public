@@ -23,12 +23,18 @@ class VehicleView:
 
 @dataclass(slots=True, frozen=True)
 class StreetUser:
-    """DTO returned to HTTP callers (street snapshot view)."""
+    """DTO returned to HTTP callers (street snapshot view).
+
+    ``is_bot`` lets the frontend distinguish DB-seeded NPCs from logged-in
+    humans when rendering nameplates / status bubbles. Set from
+    ``UserORM.is_bot`` during hydration in ``list_street``.
+    """
 
     id: str
     display_name: str
     character_key: str | None
     status: str
+    is_bot: bool
     vehicle: VehicleView | None
 
 
@@ -141,9 +147,14 @@ class PresenceService:
                     display_name=user.public_name(),
                     character_key=user.character_key,
                     status=status_by_id.get(user.id, "afk"),
+                    is_bot=user.is_bot,
                     vehicle=vehicle,
                 )
             )
+        # Real users always come first so the cap trim never silently drops
+        # a logged-in human in favour of a bot. Python's sort is stable, so
+        # within each group the order from the tracker is preserved.
+        out.sort(key=lambda s: s.is_bot)
         return out[:cap]
 
 

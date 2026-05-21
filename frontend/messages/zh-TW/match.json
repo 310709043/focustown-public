@@ -12,7 +12,13 @@
     "reasonFallback": "新的配對請求 — 點擊「一起專注」開始本場 25 分鐘 Pomodoro。",
     "candidateAnonymous": "匿名 #{id}",
     "candidatePending": "配對中…",
-    "closeAria": "關閉"
+    "closeAria": "關閉",
+    "waitingTitle": "等待夥伴…",
+    "waitingSubtitle": "正在尋找另一位想專注的人",
+    "waitingElapsed": "已等候 {seconds} 秒",
+    "cancelCta": "取消等待",
+    "cancellingCta": "取消中…",
+    "queueExpiredToast": "等待已結束，請再試一次"
   },
   "cta": {
     "label": "✦ 配對今晚的專注夥伴 ✦",

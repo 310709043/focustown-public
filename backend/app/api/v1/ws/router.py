@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
 from app.core.deps import (
     AuthProviderDep,
+    MatchingQueueDep,
     PresenceTrackerDep,
     RateLimiterDep,
     SettingsDep,
@@ -105,6 +106,7 @@ async def ws_connect(
     tracker: PresenceTrackerDep,
     settings: SettingsDep,
     limiter: RateLimiterDep,
+    match_queue: MatchingQueueDep,
     token: str | None = Query(
         None,
         max_length=2048,
@@ -277,4 +279,11 @@ async def ws_connect(
                 await presence.disconnect(user_id)
             except Exception:
                 log.exception("presence_disconnect_failed", user_id=user_id)
+            # Same multi-tab guard for the matching queue: only drop the
+            # waiter when their last socket goes away. Idempotent — no-ops
+            # cheaply if the user wasn't waiting.
+            try:
+                await match_queue.cancel(user_id)
+            except Exception:
+                log.exception("matching_queue_cancel_failed", user_id=user_id)
         await pub.stop()

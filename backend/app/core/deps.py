@@ -15,12 +15,14 @@ from app.core.exceptions import AuthError
 from app.core.ids import IIdGenerator, UUID4Generator
 from app.domain.notifications import IEmailSender
 from app.domain.rate_limit import IRateLimiter
+from app.domain.repositories.match_queue import IMatchingQueue
 from app.domain.repositories.presence import IPresenceTracker
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.infrastructure.auth.providers.base import AuthProvider
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.session import get_session_factory
+from app.infrastructure.matching.redis_queue import RedisMatchingQueue
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.messaging.ws_manager import WSManager
 from app.infrastructure.notifications.factory import make_email_sender
@@ -109,6 +111,15 @@ def get_presence_tracker(clock: ClockDep) -> IPresenceTracker:
 
 
 PresenceTrackerDep = Annotated[IPresenceTracker, Depends(get_presence_tracker)]
+
+
+def get_matching_queue() -> IMatchingQueue:
+    """Redis-backed waiting pool. Single key namespace shared between the
+    API process (for /matches/auto enqueue) and the worker (for sweep)."""
+    return RedisMatchingQueue(get_redis())
+
+
+MatchingQueueDep = Annotated[IMatchingQueue, Depends(get_matching_queue)]
 
 
 def get_realtime_publisher() -> IRealtimePublisher:

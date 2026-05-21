@@ -72,6 +72,35 @@ function focusBaselineMocks() {
   };
 }
 
+// Minimal `audio/mpeg` body. Chromium still treats a 10-byte frame as
+// undecodable and fires onError → the audio store swaps the src to
+// LOCAL_FALLBACK_TRACKS, which means a poll on ``audio.src`` rarely
+// sees the original stream URL. Instead the tests below track the
+// outbound HTTP request to ``/tracks/{id}/stream`` (which the audio
+// element fires before the decode failure) — that's the deterministic
+// signal that the radio bound its playlist correctly.
+const SILENT_MP3 = Buffer.from([
+  0xff, 0xfb, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+]);
+
+function mockTrackStream(_trackId: string) {
+  return (r: Route) =>
+    r.fulfill({
+      status: 200,
+      contentType: "audio/mpeg",
+      body: SILENT_MP3,
+    });
+}
+
+function trackStreamRequestCounter(page: import("@playwright/test").Page) {
+  const hits = new Set<string>();
+  page.on("request", (req) => {
+    const m = req.url().match(/\/api\/v1\/tracks\/([^/]+)\/stream/);
+    if (m) hits.add(m[1]);
+  });
+  return hits;
+}
+
 test.describe("Phase 10 — per-user radio + shared notepad", () => {
   test("solo focus: PersonalRadio uses playlist API + NotesPanel (not shared)", async ({
     page,
@@ -81,6 +110,7 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
       context: null,
       context_id: null,
     };
+    const streamHits = trackStreamRequestCounter(page);
 
     await mockApi(page, {
       ...focusBaselineMocks(),
@@ -94,6 +124,12 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         };
         return json(r, 200, playlistResponse("focus", "solo"));
       },
+      [`GET  /api/v1/tracks/${SEED_TRACK.id}/stream`]: mockTrackStream(
+        SEED_TRACK.id,
+      ),
+      [`GET  /api/v1/tracks/${SEED_TRACK_2.id}/stream`]: mockTrackStream(
+        SEED_TRACK_2.id,
+      ),
     });
     await seedAuthTokens(page);
     // Reset the persisted floating-player state so this test always
@@ -123,16 +159,12 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         .first(),
     ).toBeAttached({ timeout: 5_000 });
 
-    // The hidden <audio> binds to the stream URL of the first track.
+    // The hidden <audio> fires a GET against the first track's stream
+    // endpoint before Chromium can decode the silent stub and fall back
+    // to LOCAL_FALLBACK_TRACKS. Polling ``audio.src`` races that
+    // fallback; counting outbound requests doesn't.
     await expect
-      .poll(
-        () =>
-          page.locator("audio").first().evaluate(
-            (el: HTMLAudioElement, suffix: string) => el.src.endsWith(suffix),
-            `/api/v1/tracks/${SEED_TRACK.id}/stream`,
-          ),
-        { timeout: 5_000 },
-      )
+      .poll(() => streamHits.has(SEED_TRACK.id), { timeout: 5_000 })
       .toBe(true);
 
     // Autoplay blocked → the unlock pill is visible. Use testid so
@@ -160,6 +192,7 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
       context: null,
       context_id: null,
     };
+    const streamHits = trackStreamRequestCounter(page);
 
     type Note = {
       id: string;
@@ -219,6 +252,12 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         };
         return json(r, 200, playlistResponse("focus", MATCH_ID));
       },
+      [`GET  /api/v1/tracks/${SEED_TRACK.id}/stream`]: mockTrackStream(
+        SEED_TRACK.id,
+      ),
+      [`GET  /api/v1/tracks/${SEED_TRACK_2.id}/stream`]: mockTrackStream(
+        SEED_TRACK_2.id,
+      ),
     });
     await seedAuthTokens(page);
     await page.evaluate(() =>
@@ -250,16 +289,9 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         .first(),
     ).toBeAttached({ timeout: 5_000 });
 
-    // Audio src bound to the first track's stream URL.
+    // Audio bound to the first track's stream URL (see note above).
     await expect
-      .poll(
-        () =>
-          page.locator("audio").first().evaluate(
-            (el: HTMLAudioElement, suffix: string) => el.src.endsWith(suffix),
-            `/api/v1/tracks/${SEED_TRACK.id}/stream`,
-          ),
-        { timeout: 5_000 },
-      )
+      .poll(() => streamHits.has(SEED_TRACK.id), { timeout: 5_000 })
       .toBe(true);
   });
 
@@ -267,6 +299,7 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
     page,
   }) => {
     let lastContext: string | null = null;
+    const streamHits = trackStreamRequestCounter(page);
 
     await mockApi(page, {
       "GET  /api/v1/auth/me": (r) => json(r, 200, fixtures.user),
@@ -291,6 +324,12 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
         lastContext = new URL(r.request().url()).searchParams.get("context");
         return json(r, 200, playlistResponse("city", "city"));
       },
+      [`GET  /api/v1/tracks/${SEED_TRACK.id}/stream`]: mockTrackStream(
+        SEED_TRACK.id,
+      ),
+      [`GET  /api/v1/tracks/${SEED_TRACK_2.id}/stream`]: mockTrackStream(
+        SEED_TRACK_2.id,
+      ),
     });
     await seedAuthTokens(page);
 
@@ -307,16 +346,9 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
       .poll(() => lastContext, { timeout: 5_000 })
       .toBe("city");
 
-    // Audio src bound to the first city track.
+    // Audio bound to the first city track's stream URL (see note above).
     await expect
-      .poll(
-        () =>
-          page.locator("audio").first().evaluate(
-            (el: HTMLAudioElement, suffix: string) => el.src.endsWith(suffix),
-            `/api/v1/tracks/${SEED_TRACK.id}/stream`,
-          ),
-        { timeout: 5_000 },
-      )
+      .poll(() => streamHits.has(SEED_TRACK.id), { timeout: 5_000 })
       .toBe(true);
   });
 });
