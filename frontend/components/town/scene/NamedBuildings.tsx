@@ -10,12 +10,20 @@ import { useSceneStore, type SceneName } from "@/lib/state/sceneStore";
 
 import { BuildingTag } from "./BuildingTag";
 
-/** Sparse curated neon signs — only 3 of 9 buildings light up so the
- *  skyline still has "breathing room" at night. */
-const NEON_SIGNS: Record<string, { label: string; color: string }> = {
-  lofi: { label: "24H", color: "#ec4899" },
-  arcade: { label: "LIVE", color: "#22d3ee" },
-  ramen: { label: "OPEN", color: "#fbbf24" },
+/** Rooftop sign plaques. Each storefront declares a short label, a
+ *  corner anchor (top-left / top-right / top-center) and a day/night
+ *  visibility window. Day shows the calmer set (COFFEE / OPEN / BOOKS);
+ *  night swaps BOOKS out for the nightlife trio (24H / LIVE) so the
+ *  active set differs across scenes and the skyline reads as alive. */
+type SignCorner = "tl" | "tr" | "tc";
+type SignVisibility = "day" | "night" | "always";
+
+const SIGNS: Record<string, { label: string; corner: SignCorner; visibility: SignVisibility }> = {
+  cafe: { label: "COFFEE", corner: "tr", visibility: "always" },
+  lofi: { label: "24H", corner: "tl", visibility: "night" },
+  arcade: { label: "LIVE", corner: "tc", visibility: "night" },
+  ramen: { label: "OPEN", corner: "tr", visibility: "always" },
+  library: { label: "BOOKS", corner: "tl", visibility: "day" },
 };
 
 /** mulberry32 — small fast deterministic PRNG. Same input seed always
@@ -143,12 +151,22 @@ export function NamedBuildings({ showLabels = true }: NamedBuildingsProps = {}) 
               {isNight ? (
                 <BuildingWindowGlow buildingKey={b.key} color={b.glowColor} />
               ) : null}
-              {isNight && NEON_SIGNS[b.key] ? (
-                <BuildingNeonSign
-                  label={NEON_SIGNS[b.key].label}
-                  color={NEON_SIGNS[b.key].color}
-                />
-              ) : null}
+              {(() => {
+                const slot = SIGNS[b.key];
+                if (!slot) return null;
+                const visible =
+                  slot.visibility === "always" ||
+                  (slot.visibility === "night" && isNight) ||
+                  (slot.visibility === "day" && !isNight);
+                if (!visible) return null;
+                return (
+                  <BuildingSign
+                    label={slot.label}
+                    corner={slot.corner}
+                    isNight={isNight}
+                  />
+                );
+              })()}
             </div>
           </div>
         ))}
@@ -222,26 +240,38 @@ function BuildingWindowGlow({
   );
 }
 
-/** Neon sign overlay — small glowing pill perched on the building's
- *  upper-right corner. Uses the shared `plaqueFlicker` keyframe so all
- *  signs share the same subtle 6 s flicker beat. */
-function BuildingNeonSign({ label, color }: { label: string; color: string }) {
+/** Rooftop sign plaque — flat cream-on-indigo label, no glow, no
+ *  flicker. The frame brightens slightly at night to read against the
+ *  darker sky; day and night share the same simple silhouette. */
+function BuildingSign({
+  label,
+  corner,
+  isNight,
+}: {
+  label: string;
+  corner: SignCorner;
+  isNight: boolean;
+}) {
+  const cornerStyle: React.CSSProperties =
+    corner === "tl"
+      ? { top: 4, left: -6 }
+      : corner === "tr"
+        ? { top: 4, right: -6 }
+        : { top: 4, left: "50%", transform: "translateX(-50%)" };
+
   return (
     <span
       aria-hidden
-      className="font-silkscreen animate-plaqueFlicker"
+      className="font-silkscreen"
       style={{
         position: "absolute",
-        top: 4,
-        right: -6,
+        ...cornerStyle,
         padding: "1px 5px",
         fontSize: 9,
-        letterSpacing: "0.1em",
-        color,
-        background: "rgba(3,1,17,0.85)",
-        border: `1px solid ${color}`,
-        textShadow: `0 0 4px ${color}, 0 0 8px ${color}aa`,
-        boxShadow: `0 0 6px ${color}66, inset 0 0 4px ${color}33`,
+        letterSpacing: "0.12em",
+        color: "#f4ecd8",
+        background: "rgba(15,20,38,0.85)",
+        border: `1px solid rgba(244,236,216,${isNight ? 0.7 : 0.4})`,
         pointerEvents: "none",
         whiteSpace: "nowrap",
       }}

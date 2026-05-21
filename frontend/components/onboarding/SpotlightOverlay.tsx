@@ -80,7 +80,11 @@ export function SpotlightOverlay({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(1, 0, 10, 0.72)",
+        // When a target rect exists, the dim is painted by the cutout
+        // element's outer box-shadow below — so this layer is transparent
+        // and the framed area stays at full brightness. Without a target
+        // (welcome / done steps), fall back to a uniform dim.
+        background: rect ? "transparent" : "rgba(1, 0, 10, 0.72)",
         pointerEvents: "none",
         // Sits BELOW modal backdrops (z-50 in Modal.tsx / ProfileModal).
         // If a modal opens while the tour is mid-step, the modal layer
@@ -89,21 +93,41 @@ export function SpotlightOverlay({
       }}
     >
       {rect ? (
-        <div
-          data-testid="onboarding-spotlight-ring"
-          style={{
-            position: "fixed",
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height,
-            border: "2px dashed var(--accent)",
-            boxShadow:
-              "0 0 0 2px rgba(233,167,110,0.25), 0 0 24px rgba(233,167,110,0.45)",
-            pointerEvents: "none",
-            transition: "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",
-          }}
-        />
+        <>
+          <div
+            data-testid="onboarding-spotlight-cutout"
+            style={{
+              position: "fixed",
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+              borderRadius: 12,
+              boxShadow:
+                "0 0 0 9999px rgba(1, 0, 10, 0.72), inset 0 0 32px rgba(233,167,110,0.18)",
+              pointerEvents: "none",
+              transition:
+                "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",
+            }}
+          />
+          <div
+            data-testid="onboarding-spotlight-ring"
+            style={{
+              position: "fixed",
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+              border: "2px dashed var(--accent)",
+              borderRadius: 12,
+              boxShadow:
+                "0 0 0 2px rgba(233,167,110,0.25), 0 0 24px rgba(233,167,110,0.45)",
+              pointerEvents: "none",
+              transition:
+                "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",
+            }}
+          />
+        </>
       ) : null}
     </div>
   );
