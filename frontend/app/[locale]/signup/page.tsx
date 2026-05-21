@@ -4,14 +4,17 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/routing";
-import { useAuthStore } from "@/lib/state/authStore";
+import {
+  AUTH_ERROR_NETWORK_FAILURE,
+  AUTH_ERROR_UNKNOWN,
+  useAuthStore,
+} from "@/lib/state/authStore";
 import { signUpSchema, type SignUpInput } from "@/lib/validation/auth";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { AppFooter } from "@/components/AppFooter";
 import { LEGAL } from "@/lib/config/legal";
 import { LoginScene } from "@/components/login/LoginScene";
 import { CornerDeco } from "@/components/login/CornerDeco";
-import { SsoButtons } from "@/components/login/SsoButtons";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 type FormErrors = Partial<Record<keyof SignUpInput, string>>;
@@ -30,6 +33,11 @@ export default function SignUpPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const t = useTranslations("auth.signup");
   const tSplash = useTranslations("auth.splash");
+  const tErr = useTranslations("common.errors");
+  const errorText =
+    error === AUTH_ERROR_NETWORK_FAILURE || error === AUTH_ERROR_UNKNOWN
+      ? tErr(error)
+      : error;
 
   const update = <K extends keyof SignUpInput>(key: K, value: SignUpInput[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -92,10 +100,6 @@ export default function SignUpPage() {
           <BlinkDot color="var(--accent-2)" />
           <span>{tSplash("signUpTitle").toUpperCase()}</span>
         </div>
-
-        <SsoButtons disabled={loading} />
-
-        <Divider label={tSplash("or")} />
 
         <div>
           <Label>{t("displayNameLabel").toUpperCase()}</Label>
@@ -214,7 +218,7 @@ export default function SignUpPage() {
             className="text-coral"
             style={{ fontSize: "var(--font-size-label)", lineHeight: 1.5 }}
           >
-            {error}
+            {errorText}
           </div>
         ) : null}
 
@@ -248,25 +252,6 @@ export default function SignUpPage() {
       </form>
       <AppFooter />
     </LoginScene>
-  );
-}
-
-function Divider({ label }: { label: string }) {
-  return (
-    <div
-      className="font-silkscreen"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        color: "var(--ink-dim)",
-        fontSize: 9,
-      }}
-    >
-      <div style={{ flex: 1, height: 1, background: "var(--panel-stroke)" }} />
-      <span>{label}</span>
-      <div style={{ flex: 1, height: 1, background: "var(--panel-stroke)" }} />
-    </div>
   );
 }
 

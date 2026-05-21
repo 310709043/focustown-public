@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useToastStore, type Toast } from "@/lib/state/toastStore";
 
 const KIND_BORDER: Record<Toast["kind"], string> = {
@@ -11,6 +13,7 @@ const KIND_BORDER: Record<Toast["kind"], string> = {
 export function Toaster() {
   const toasts = useToastStore((s) => s.toasts);
   const dismiss = useToastStore((s) => s.dismiss);
+  const tA11y = useTranslations("common.a11y");
 
   if (toasts.length === 0) return null;
 
@@ -38,7 +41,7 @@ export function Toaster() {
           <button
             type="button"
             onClick={() => dismiss(t.id)}
-            aria-label="Dismiss"
+            aria-label={tA11y("dismissAria")}
             className="font-silkscreen"
             style={{
               fontSize: 10,

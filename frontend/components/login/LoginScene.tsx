@@ -45,6 +45,11 @@ interface LoginSceneProps {
    *  `/signup` where the form is tall enough that centering creates a
    *  visible gap below the form. */
   topAlign?: boolean;
+  /** Render the horizontal `AboutTownPanel` tip card below the form.
+   *  Off by default so dedicated auth surfaces (`/signin`, `/signup`)
+   *  stay focused on the form; the landing page opts in to keep the
+   *  marketing tips. */
+  showAboutPanel?: boolean;
 }
 
 /**
@@ -66,6 +71,7 @@ interface LoginSceneProps {
  *  10. Hero (logo + wordmark + tagline) — gated by `showHero`
  *  11. Form panel (children)
  *  12. AvatarFloatStrip — gated by `showAvatarStrip`
+ *  13. AboutTownPanel — gated by `showHero && showAboutPanel`
  */
 export function LoginScene({
   children,
@@ -74,6 +80,7 @@ export function LoginScene({
   citizenCount = 2847,
   direction = "neon",
   topAlign = false,
+  showAboutPanel = false,
 }: LoginSceneProps) {
   const t = useTranslations("auth.splash");
 
@@ -183,7 +190,7 @@ export function LoginScene({
           alignItems: "center",
           justifyContent: topAlign ? "flex-start" : "center",
           gap: 18,
-          padding: "70px 20px 110px",
+          padding: `70px 20px ${showAboutPanel ? 110 : 60}px`,
         }}
       >
         {showHero ? (
@@ -228,7 +235,7 @@ export function LoginScene({
 
         {children}
 
-        {showHero ? <AboutTownPanel /> : null}
+        {showHero && showAboutPanel ? <AboutTownPanel /> : null}
       </div>
     </main>
   );

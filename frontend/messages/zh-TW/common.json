@@ -59,5 +59,12 @@
   },
   "misc": {
     "or": "or"
+  },
+  "a11y": {
+    "dismissAria": "關閉"
+  },
+  "errors": {
+    "networkFailure": "無法連線到伺服器，請確認後端服務已啟動",
+    "unknown": "未知錯誤"
   }
 }

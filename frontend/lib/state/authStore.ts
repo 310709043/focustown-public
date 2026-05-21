@@ -26,18 +26,17 @@ interface AuthState {
   ) => void;
 }
 
-/**
- * Map a thrown error to a human-readable Chinese message. Backend
- * ApiError instances carry localised `message` already; only browser
- * network failures need the friendlier override, since `"Failed to
- * fetch"` is opaque to most users.
- */
+// Stable error codes the auth forms translate via `common.errors.*`. Backend
+// ApiError instances already carry server-localised `message` text, so we
+// pass that through unchanged; only client-side fallbacks (network failure,
+// non-Error throws) need a code.
+export const AUTH_ERROR_NETWORK_FAILURE = "networkFailure";
+export const AUTH_ERROR_UNKNOWN = "unknown";
+
 function describeAuthError(e: unknown): string {
-  if (e instanceof TypeError) {
-    return "無法連線到伺服器，請確認後端服務已啟動";
-  }
+  if (e instanceof TypeError) return AUTH_ERROR_NETWORK_FAILURE;
   if (e instanceof Error) return e.message;
-  return "未知錯誤";
+  return AUTH_ERROR_UNKNOWN;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({

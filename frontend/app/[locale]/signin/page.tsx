@@ -5,12 +5,15 @@ import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/routing";
 import { markAudioUnlocked } from "@/lib/audio/unlock";
-import { useAuthStore } from "@/lib/state/authStore";
+import {
+  AUTH_ERROR_NETWORK_FAILURE,
+  AUTH_ERROR_UNKNOWN,
+  useAuthStore,
+} from "@/lib/state/authStore";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { AppFooter } from "@/components/AppFooter";
 import { LoginScene } from "@/components/login/LoginScene";
 import { CornerDeco } from "@/components/login/CornerDeco";
-import { SsoButtons } from "@/components/login/SsoButtons";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
 
 export default function SignInPage() {
@@ -21,6 +24,11 @@ export default function SignInPage() {
   const [remember, setRemember] = useState(true);
   const t = useTranslations("auth.signin");
   const tSplash = useTranslations("auth.splash");
+  const tErr = useTranslations("common.errors");
+  const errorText =
+    error === AUTH_ERROR_NETWORK_FAILURE || error === AUTH_ERROR_UNKNOWN
+      ? tErr(error)
+      : error;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +45,7 @@ export default function SignInPage() {
   };
 
   return (
-    <LoginScene showHero showAvatarStrip>
+    <LoginScene showHero>
       <form
         data-testid="signin-form"
         onSubmit={onSubmit}
@@ -67,10 +75,6 @@ export default function SignInPage() {
           <BlinkDot color="var(--accent-3)" />
           <span>{tSplash("signInTitle").toUpperCase()}</span>
         </div>
-
-        <SsoButtons disabled={loading} />
-
-        <Divider label={tSplash("or")} />
 
         <div>
           <Label>{t("emailLabel").toUpperCase()}</Label>
@@ -148,7 +152,7 @@ export default function SignInPage() {
             }}
           >
             <span style={{ fontSize: 16, marginRight: 6 }}>✗</span>
-            {error}
+            {errorText}
           </div>
         ) : null}
 
@@ -189,25 +193,6 @@ export default function SignInPage() {
       </form>
       <AppFooter />
     </LoginScene>
-  );
-}
-
-function Divider({ label }: { label: string }) {
-  return (
-    <div
-      className="font-silkscreen"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        color: "var(--ink-dim)",
-        fontSize: 9,
-      }}
-    >
-      <div style={{ flex: 1, height: 1, background: "var(--panel-stroke)" }} />
-      <span>{label}</span>
-      <div style={{ flex: 1, height: 1, background: "var(--panel-stroke)" }} />
-    </div>
   );
 }
 

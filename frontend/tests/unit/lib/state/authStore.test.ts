@@ -79,16 +79,17 @@ test("signIn stores user + clears loading on success", async () => {
   expect(useAuthStore.getState().loading).toBe(false);
 });
 
-test("signIn surfaces a localised error and re-throws on failure", async () => {
+test("signIn surfaces the networkFailure error code and re-throws on failure", async () => {
   signIn.mockRejectedValue(new TypeError("Failed to fetch"));
 
   await expect(
     useAuthStore.getState().signIn("alice@example.com", "pw"),
   ).rejects.toBeInstanceOf(TypeError);
 
-  expect(useAuthStore.getState().error).toBe(
-    "無法連線到伺服器，請確認後端服務已啟動",
-  );
+  // Store emits a stable error code; the form translates it via
+  // `common.errors.networkFailure` so the visible string matches the
+  // user's locale.
+  expect(useAuthStore.getState().error).toBe("networkFailure");
   expect(useAuthStore.getState().loading).toBe(false);
 });
 

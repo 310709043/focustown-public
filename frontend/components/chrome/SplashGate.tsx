@@ -1,40 +1,55 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const SESSION_FLAG = "ft.splash.seen";
 const HIDE_DELAY_MS = 1100;
 const REMOVE_DELAY_MS = 1600;
 
-/** Boot splash — Low Battery Town logo + CHARGING UP THE TOWN… loading bar.
+// Module-scope flag: once the splash has played in this tab, subsequent
+// re-mounts (most importantly, locale switches that re-render the locale
+// layout) must not flash the overlay again. The sessionStorage flag covers
+// the case where the page is reloaded; this in-memory flag covers the case
+// where the user is in a browsing context where sessionStorage is unavailable.
+let SHOWN_THIS_TAB = false;
+
+/** Boot splash — Low Battery Town logo + charging line + loading bar.
  *  Shown once per tab via sessionStorage; fades after HIDE_DELAY_MS. */
 export function SplashGate() {
+  const t = useTranslations("auth.splash");
+
   // Always start visible on the server / first hydration tick — that way
-  // there is no SSR/CSR mismatch on the overlay shape. The effect below
-  // either hides immediately (sessionStorage flag set) or schedules the
-  // boot-ceremony fade-out. Empty deps array keeps the effect mount-only:
-  // it cannot get stuck on a stale `[visible]` closure.
+  // there is no SSR/CSR mismatch on the overlay shape. The layout effect
+  // below synchronously hides it before paint on subsequent client mounts
+  // (locale switch) when the ceremony has already played.
   const [visible, setVisible] = useState(true);
   const [hiding, setHiding] = useState(false);
 
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    const alreadySeen =
+      SHOWN_THIS_TAB || window.sessionStorage.getItem(SESSION_FLAG) !== null;
+    if (alreadySeen) {
+      SHOWN_THIS_TAB = true;
+      setVisible(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // Subsequent visits in this tab: skip the ceremony entirely.
-    if (window.sessionStorage.getItem(SESSION_FLAG)) {
-      setVisible(false);
-      return;
-    }
+    if (SHOWN_THIS_TAB) return;
 
     // First visit: 1.1s of splash, then 0.5s fade, then unmount.
     const hideTimer = window.setTimeout(() => setHiding(true), HIDE_DELAY_MS);
     const removeTimer = window.setTimeout(() => {
       setVisible(false);
+      SHOWN_THIS_TAB = true;
       try {
         window.sessionStorage.setItem(SESSION_FLAG, "1");
       } catch {
-        /* private/incognito: best-effort, splash will replay next nav */
+        /* private/incognito: best-effort, in-memory flag still gates re-mounts */
       }
     }, REMOVE_DELAY_MS);
 
@@ -80,7 +95,7 @@ export function SplashGate() {
         }}
       />
       <div className="font-pixel-en" style={{ color: "var(--muted)", letterSpacing: "0.2em", fontSize: 12 }}>
-        CHARGING UP THE TOWN…
+        {t("chargingMessage")}
       </div>
       <div
         style={{
