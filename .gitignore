@@ -66,3 +66,14 @@ reference/
 !backend/assets/seed-tracks/cold-windowpane.mp3
 !backend/assets/seed-tracks/midnight-at-the-overpass.mp3
 !backend/assets/seed-tracks/sunday-window.mp3
+
+# Exception: frontend audio fallback. These ship inside the Next.js
+# image (`public/audio/`) and back ``LOCAL_FALLBACK_TRACKS`` in
+# ``frontend/lib/state/audioStore.ts`` — when S3 streaming breaks
+# (cold start, presigned-URL expiry, regional outage) the audio
+# element swaps src to these files so the user hears something instead
+# of silence. ``frontend/Dockerfile`` enforces their presence at build
+# time, so omitting them silently breaks the deploy.
+!frontend/public/audio/lofi-1.mp3
+!frontend/public/audio/lofi-2.mp3
+!frontend/public/audio/lofi-3.mp3
