@@ -113,6 +113,15 @@ class Settings(BaseSettings):
     audio_proxy_secret: str = ""
     audio_token_ttl_seconds: int = 300
 
+    # Broadcast (MP4 billboard clips) proxy — same JWT pattern as audio.
+    # Production: Cloudflare Worker fronts a private R2 bucket; backend
+    # mints HS256 tokens, Worker verifies and streams bytes (Range-aware,
+    # CORS-locked, Referer-checked). Dev / local-FS: empty base URL falls
+    # back to backend /broadcast/{id}/stream so the clips still play.
+    broadcast_proxy_base_url: str = ""
+    broadcast_proxy_secret: str = ""
+    broadcast_token_ttl_seconds: int = 300
+
     # Auth-endpoint rate limits. Centralised here so an operator can tune
     # them per environment (e.g. relax in dev, tighten in prod) without
     # editing router code. Defaults preserve the original hardcoded values.
@@ -266,6 +275,22 @@ class Settings(BaseSettings):
             raise ValueError(
                 "AUDIO_PROXY_BASE_URL must be set in production "
                 "(public hostname of the Cloudflare audio Worker)"
+            )
+
+        # Broadcast proxy: same posture as audio. Mirror the Worker fronts
+        # the private R2 broadcast bucket; the backend issues HS256 tokens
+        # the Worker validates. If either env is missing the broadcast
+        # slot would silently degrade to "Programmes coming soon", so we
+        # fail fast at boot.
+        if not self.broadcast_proxy_secret:
+            raise ValueError(
+                "BROADCAST_PROXY_SECRET must be set in production "
+                "(shared HS256 key for the Cloudflare broadcast Worker)"
+            )
+        if not self.broadcast_proxy_base_url:
+            raise ValueError(
+                "BROADCAST_PROXY_BASE_URL must be set in production "
+                "(public hostname of the Cloudflare broadcast Worker)"
             )
 
         # Notifier: log is forbidden in prod (silent email loss).

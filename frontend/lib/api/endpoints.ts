@@ -639,6 +639,20 @@ export const tracksApi = {
   },
 };
 
+// ── broadcast (10 short MP4 clips in the billboard) ─────
+// Playback goes through a sibling Cloudflare Worker fronting a private
+// R2 bucket. Identical token contract to tracks: short-TTL HS256 JWT
+// minted per clip, redeemed by the Worker. Auth-required so anonymous
+// scrapers can't farm tokens.
+export const broadcastApi = {
+  getPlayToken(clipId: string) {
+    return apiFetch<PlayTokenResponse>(
+      `/api/v1/broadcast/${clipId}/play-token`,
+      { method: "POST" },
+    );
+  },
+};
+
 // ── personal radio (per-user random playlist) ─────────────
 // Independent per (user, context, day). Two users in the same room
 // see different orderings.

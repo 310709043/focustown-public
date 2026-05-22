@@ -1,0 +1,30 @@
+name = "lowbatterytown-broadcast"
+main = "src/index.ts"
+compatibility_date = "2026-05-15"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+# Custom domain — bound manually in Cloudflare dashboard
+# (Workers > lowbatterytown-broadcast > Settings > Domains & Routes >
+# Add Custom Domain → broadcast.focustown.app). Keeping the route
+# binding out of wrangler.toml lets `wrangler deploy` use an Account-only
+# API token (no Zone permissions required).
+
+[[r2_buckets]]
+binding = "BROADCAST_BUCKET"
+bucket_name = "focustown-broadcast"
+
+[vars]
+# CORS origins permitted to embed <video> from this Worker. Comma-separated.
+# Keep in sync with backend APP_CORS_ORIGINS / NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS.
+ALLOWED_ORIGINS = "https://lowbatterytown.com,https://www.lowbatterytown.com"
+# Comma-separated allowed Referer prefixes. The Worker rejects requests
+# whose Referer header doesn't start with one of these — that's the
+# hot-link block. Empty disables the check (dev / first-deploy).
+ALLOWED_REFERERS = "https://lowbatterytown.com/,https://www.lowbatterytown.com/"
+# Path prefix inside the R2 bucket where MP4 clips live. Mirrors the
+# clip_file_key() helper in the backend service.
+BROADCAST_KEY_PREFIX = "broadcasts/"
+
+# Secret set via: wrangler secret put BROADCAST_PROXY_SECRET
+# Must match backend's BROADCAST_PROXY_SECRET — HS256 shared key.

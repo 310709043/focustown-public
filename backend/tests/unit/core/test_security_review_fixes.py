@@ -134,6 +134,8 @@ _PROD_AWS_STUBS: dict[str, object] = {
     "secrets_backend": "aws",
     "audio_proxy_base_url": "https://audio.example.app",
     "audio_proxy_secret": "test-audio-secret-please-rotate-32chars",
+    "broadcast_proxy_base_url": "https://broadcast.example.app",
+    "broadcast_proxy_secret": "test-broadcast-secret-please-rotate-32chars",
 }
 
 

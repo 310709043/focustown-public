@@ -4,10 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { leaderboardApi } from "@/lib/api/endpoints";
 import {
-  BROADCAST_CLIPS,
-  broadcastClipUrl,
+  BROADCAST_CLIP_IDS,
   isBroadcastConfigured,
 } from "@/lib/data/broadcast-clips";
+import {
+  getBroadcastPlayUrl,
+  invalidateBroadcast,
+} from "@/lib/broadcast/playUrlCache";
 import { findCharacter } from "@/lib/data/characters";
 import type { LeaderboardEntry } from "@/lib/api/types.gen";
 
@@ -158,14 +161,45 @@ function TownBroadcastSlot() {
   const t = useTranslations("town.scene");
   const configured = isBroadcastConfigured();
   const [index, setIndex] = useState(0);
+  const [src, setSrc] = useState<string>("");
   const [failed, setFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Reload the <video> element whenever the active clip index changes —
+  // Fetch a fresh signed URL for the active clip. The playUrlCache
+  // deduplicates if multiple billboards mount simultaneously and
+  // re-issues automatically when the cached entry is within 30 s of
+  // expiry. We re-await on every index change so a long-running tab
+  // (rotating through 10 clips for 30 minutes) always plays with a
+  // valid token.
+  useEffect(() => {
+    if (!configured || failed) {
+      setSrc("");
+      return;
+    }
+    const clipId = BROADCAST_CLIP_IDS[index] ?? BROADCAST_CLIP_IDS[0];
+    let cancelled = false;
+    (async () => {
+      try {
+        const url = await getBroadcastPlayUrl(clipId);
+        if (!cancelled) setSrc(url);
+      } catch {
+        // Token issuance failed (auth missing, backend down, etc.) —
+        // drop into the static fallback. invalidate() so a later mount
+        // doesn't read a stale entry.
+        invalidateBroadcast(clipId);
+        if (!cancelled) setFailed(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [index, configured, failed]);
+
+  // Reload the <video> element whenever the active src changes —
   // setting src directly only takes effect after load() in some browsers.
   useEffect(() => {
     const el = videoRef.current;
-    if (!el) return;
+    if (!el || !src) return;
     el.load();
     // muted autoplay is allowed by all modern browsers without a user
     // gesture; we set both attributes declaratively below.
@@ -173,9 +207,9 @@ function TownBroadcastSlot() {
       // Autoplay blocked (rare on muted videos but defend anyway). The
       // poster / first frame remains visible; let the next clip try.
     });
-  }, [index]);
+  }, [src]);
 
-  if (!configured || failed) {
+  if (!configured || failed || !src) {
     return (
       <div
         className="mx-2 mb-2 flex items-center justify-center"
@@ -201,9 +235,6 @@ function TownBroadcastSlot() {
       </div>
     );
   }
-
-  const clip = BROADCAST_CLIPS[index] ?? BROADCAST_CLIPS[0];
-  const src = broadcastClipUrl(clip);
 
   return (
     <div
@@ -236,8 +267,18 @@ function TownBroadcastSlot() {
         onContextMenu={(e) => e.preventDefault()}
         // No `loop` — `onEnded` advances to the next clip so the
         // playlist actually rotates instead of pinning on clip 1.
-        onEnded={() => setIndex((i) => (i + 1) % BROADCAST_CLIPS.length)}
-        onError={() => setFailed(true)}
+        onEnded={() =>
+          setIndex((i) => (i + 1) % BROADCAST_CLIP_IDS.length)
+        }
+        onError={() => {
+          // Invalidate the cached signed URL so the next retry mints a
+          // fresh token. Useful if the failure was a 401 from the
+          // Worker (token TTL expired between fetch and play).
+          const clipId =
+            BROADCAST_CLIP_IDS[index] ?? BROADCAST_CLIP_IDS[0];
+          invalidateBroadcast(clipId);
+          setFailed(true);
+        }}
         className="block w-full h-full"
         style={{ objectFit: "cover" }}
       />

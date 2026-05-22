@@ -26,6 +26,11 @@ _AUDIO_PROXY_STUBS: dict[str, object] = {
     "audio_proxy_secret": "test-audio-secret-please-rotate-32chars",
 }
 
+_BROADCAST_PROXY_STUBS: dict[str, object] = {
+    "broadcast_proxy_base_url": "https://broadcast.lowbatterytown.app",
+    "broadcast_proxy_secret": "test-broadcast-secret-please-rotate-32chars",
+}
+
 
 def _prod_cognito_s3_settings(**overrides: object) -> Settings:
     """Production posture using the cognito+s3 stack.
@@ -45,6 +50,7 @@ def _prod_cognito_s3_settings(**overrides: object) -> Settings:
         "secrets_backend": "aws",
         "reset_url_base": "https://lowbatterytown.app/reset-password",
         **_AUDIO_PROXY_STUBS,
+        **_BROADCAST_PROXY_STUBS,
         **overrides,
     }
     return Settings(**base)  # type: ignore[call-arg]
@@ -68,6 +74,7 @@ def _prod_lite_settings(**overrides: object) -> Settings:
         "ses_from_email": "noreply@lowbatterytown.app",
         "reset_url_base": "https://lowbatterytown.app/reset-password",
         **_AUDIO_PROXY_STUBS,
+        **_BROADCAST_PROXY_STUBS,
         **overrides,
     }
     return Settings(**base)  # type: ignore[call-arg]
@@ -141,6 +148,19 @@ def test_production_missing_audio_proxy_secret_raises():
 def test_production_missing_audio_proxy_base_url_raises():
     with pytest.raises(ValidationError, match="AUDIO_PROXY_BASE_URL"):
         _prod_lite_settings(audio_proxy_base_url="")
+
+
+# === Broadcast proxy enforcement (universal in prod) =======================
+
+
+def test_production_missing_broadcast_proxy_secret_raises():
+    with pytest.raises(ValidationError, match="BROADCAST_PROXY_SECRET"):
+        _prod_lite_settings(broadcast_proxy_secret="")
+
+
+def test_production_missing_broadcast_proxy_base_url_raises():
+    with pytest.raises(ValidationError, match="BROADCAST_PROXY_BASE_URL"):
+        _prod_lite_settings(broadcast_proxy_base_url="")
 
 
 # === Non-prod environments are inert =======================================
