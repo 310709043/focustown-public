@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from app.core.clock import IClock
 from app.core.events import EventBus
-from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
+from app.core.exceptions import (
+    ConflictError,
+    ForbiddenError,
+    IdempotencyConflictError,
+    IdempotencyViolationError,
+    NotFoundError,
+)
 from app.core.ids import IIdGenerator
 from app.domain.events import SessionAbandoned, SessionCompleted, SessionStarted
 from app.domain.models import FocusSession, FocusSessionMode, FocusSessionStatus
@@ -43,6 +49,8 @@ class FocusSessionService:
         duration_seconds: int | None,
         task_label: str | None,
         partner_user_id: str | None,
+        idempotency_key: str | None = None,
+        body_hash: str | None = None,
     ) -> FocusSession:
         if partner_user_id:
             if partner_user_id == user_id:
@@ -57,16 +65,52 @@ class FocusSessionService:
             )
             if not ok:
                 raise ForbiddenError("partner_not_matched")
+
+        if idempotency_key is not None:
+            existing = await self._repo.get_by_user_and_idem(
+                user_id=user_id, idempotency_key=idempotency_key
+            )
+            if existing is not None:
+                session, stored_hash = existing
+                # Same key + same body → idempotent replay; return the row
+                # the first call created without re-publishing SessionStarted
+                # (subscribers like coin / achievement awards already ran).
+                if body_hash is not None and stored_hash == body_hash:
+                    return session
+                # Same key + different body → caller reused the key by
+                # mistake (or two different intents collided). Refuse rather
+                # than silently returning a row with mismatched parameters.
+                raise IdempotencyConflictError("idempotency_key_reused")
+
         now = self._clock.now()
-        session = await self._repo.create(
-            session_id=self._ids.new_id(),
-            user_id=user_id,
-            mode=mode,
-            duration_seconds=duration_seconds or default_duration(mode),
-            task_label=task_label,
-            partner_user_id=partner_user_id,
-            started_at=now,
-        )
+        try:
+            session = await self._repo.create(
+                session_id=self._ids.new_id(),
+                user_id=user_id,
+                mode=mode,
+                duration_seconds=duration_seconds or default_duration(mode),
+                task_label=task_label,
+                partner_user_id=partner_user_id,
+                started_at=now,
+                idempotency_key=idempotency_key,
+                idempotency_body_hash=body_hash,
+            )
+        except IdempotencyViolationError:
+            # Repo translated the partial-unique-index trip into a domain
+            # exception. A concurrent POST committed first; re-read the
+            # winning row and apply the same body-hash check we would have
+            # done above had the SELECT-for-update spotted it.
+            existing = await self._repo.get_by_user_and_idem(
+                user_id=user_id, idempotency_key=idempotency_key  # type: ignore[arg-type]
+            )
+            if existing is None:
+                # Vanishingly unlikely: the row disappeared between INSERT
+                # failure and SELECT. Surface as a generic conflict.
+                raise ConflictError("idempotency_race_unresolved") from None
+            session, stored_hash = existing
+            if body_hash is not None and stored_hash != body_hash:
+                raise IdempotencyConflictError("idempotency_key_reused") from None
+            return session
         await self._events.publish(
             SessionStarted(
                 session_id=session.id,

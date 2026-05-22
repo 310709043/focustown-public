@@ -27,9 +27,22 @@ class IFocusSessionRepo(Protocol):
         task_label: str | None,
         partner_user_id: str | None,
         started_at: datetime,
+        idempotency_key: str | None = None,
+        idempotency_body_hash: str | None = None,
     ) -> FocusSession: ...
 
     async def get(self, session_id: str) -> FocusSession | None: ...
+
+    async def get_by_user_and_idem(
+        self, *, user_id: str, idempotency_key: str
+    ) -> tuple[FocusSession, str | None] | None:
+        """Return the existing session row for ``(user_id, idempotency_key)``
+        along with its stored ``idempotency_body_hash``, or ``None`` if no
+        such row exists. The body hash is returned alongside the domain
+        model so the service can compare against the incoming request hash
+        without leaking a column onto ``FocusSession`` itself.
+        """
+        ...
 
     async def update_status(
         self,

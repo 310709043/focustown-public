@@ -47,6 +47,16 @@ const MAX_RETRIES = 2;
 const BASE_BACKOFF_MS = 500;
 const JITTER_MS = 50;
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const IDEMPOTENT_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+function newIdempotencyKey(): string {
+  // ``crypto.randomUUID`` is in every browser we support and in Node ≥19;
+  // the fallback only runs in vanishingly old SSR test contexts.
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `idem-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -118,6 +128,17 @@ export async function apiFetch<T>(
   const baseHeaders: Record<string, string> = { ...(headers as Record<string, string> ?? {}) };
   if (!isFormData && !baseHeaders["content-type"] && !baseHeaders["Content-Type"]) {
     baseHeaders["content-type"] = "application/json";
+  }
+  // Auto-attach an Idempotency-Key on every mutation that didn't already
+  // carry one. The same key MUST survive the 401-refresh retry below so
+  // the second attempt dedups against the first instead of double-applying;
+  // we set it on baseHeaders here (before the retry loop) so both attempts
+  // share it.
+  if (IDEMPOTENT_METHODS.has(method)) {
+    const existing = baseHeaders["Idempotency-Key"] ?? baseHeaders["idempotency-key"];
+    if (!existing) {
+      baseHeaders["Idempotency-Key"] = newIdempotencyKey();
+    }
   }
 
   const init: RequestInit = {

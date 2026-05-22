@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+import hashlib
+import json
+
+from fastapi import APIRouter, Header
 
 from app.api.v1.sessions.schemas import FocusSessionResponse, StartSessionRequest
 from app.core.deps import ClockDep, CurrentUserId, DbDep, EventBusDep, IdGenDep
@@ -10,6 +13,17 @@ from app.infrastructure.db.repositories import SqlFocusSessionRepo
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 
 router = APIRouter()
+
+
+def _body_hash(payload: StartSessionRequest) -> str:
+    # sha256(canonical JSON) so two requests with the same intent always
+    # hash to the same value regardless of field ordering or default
+    # population. ``mode="json"`` so enums serialise to their string value
+    # (matching what the client sent on the wire).
+    canonical = json.dumps(
+        payload.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def _dto(s: FocusSession) -> FocusSessionResponse:
@@ -46,6 +60,9 @@ async def start_session(
     clock: ClockDep,
     ids: IdGenDep,
     events: EventBusDep,
+    idempotency_key: str | None = Header(
+        default=None, alias="Idempotency-Key", max_length=128
+    ),
 ) -> FocusSessionResponse:
     svc = _service(db, clock, ids, events)
     session = await svc.start(
@@ -54,6 +71,8 @@ async def start_session(
         duration_seconds=payload.duration_seconds,
         task_label=payload.task_label,
         partner_user_id=payload.partner_user_id,
+        idempotency_key=idempotency_key,
+        body_hash=_body_hash(payload) if idempotency_key else None,
     )
     return _dto(session)
 

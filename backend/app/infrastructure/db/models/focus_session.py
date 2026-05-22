@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.db.base import Base, IdMixin, TimestampMixin
@@ -26,3 +26,8 @@ class FocusSessionORM(Base, IdMixin, TimestampMixin):
     task_label: Mapped[str | None] = mapped_column(String(256), nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Phase 04 — idempotency dedup for POST /sessions. NULL means the caller
+    # opted out of dedup; the partial unique index on (user_id, idempotency_key)
+    # only fires when both are set.
+    idempotency_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    idempotency_body_hash: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from app.core.clock import IClock
 from app.core.events import EventBus
@@ -12,6 +13,9 @@ from app.domain.repositories.focus_session_repo import IFocusSessionRepo
 from app.domain.repositories.match_repo import IMatchRepo
 from app.domain.repositories.user_repo import IUserReader
 from app.domain.services.strategies.compatibility import ICompatibilityStrategy
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class MatchingService:
@@ -31,6 +35,7 @@ class MatchingService:
         events: EventBus,
         ids: IIdGenerator,
         clock: IClock,
+        session: AsyncSession | None = None,
     ) -> None:
         self._users = users
         self._matches = matches
@@ -39,6 +44,11 @@ class MatchingService:
         self._events = events
         self._ids = ids
         self._clock = clock
+        # AsyncSession is injected so accept() can take a transaction-scoped
+        # advisory lock keyed on match_id. Optional so unit tests that exercise
+        # only propose/skip can mock the service without a DB; the production
+        # wiring in api/v1/matches/router.py:_matching_service always supplies it.
+        self._session = session
 
     async def propose(self, *, requester_id: str, candidate_id: str) -> Match:
         requester = await self._users.get_by_id(requester_id)
@@ -83,6 +93,18 @@ class MatchingService:
         return match
 
     async def accept(self, *, match_id: str, user_id: str) -> Match:
+        # Serialise concurrent accepts on the same match. Today's status
+        # update is idempotent on its own, but Phase 07 will attach room
+        # creation to this method — two parallel accepts (one per side, plus
+        # a double-click) would otherwise race to INSERT a match_rooms row.
+        # pg_advisory_xact_lock is released automatically on COMMIT/ROLLBACK.
+        if self._session is not None:
+            from app.infrastructure.db.locks import (
+                advisory_xact_lock,
+                hash_match_id,
+            )
+
+            await advisory_xact_lock(self._session, hash_match_id(match_id))
         match = await self._matches.get(match_id)
         if match is None:
             raise NotFoundError("match_not_found")

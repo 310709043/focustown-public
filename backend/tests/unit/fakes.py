@@ -922,6 +922,9 @@ class FakeFocusSessionRepo(IFocusSessionRepo):
     """
 
     rows: dict[str, FocusSession] = field(default_factory=dict)
+    # Mirror the real ORM's idempotency columns so unit tests can exercise
+    # the dedup path without standing up Postgres.
+    idem: dict[tuple[str, str], tuple[str, str | None]] = field(default_factory=dict)
 
     async def create(
         self,
@@ -933,7 +936,13 @@ class FakeFocusSessionRepo(IFocusSessionRepo):
         task_label: str | None,
         partner_user_id: str | None,
         started_at: datetime,
+        idempotency_key: str | None = None,
+        idempotency_body_hash: str | None = None,
     ) -> FocusSession:
+        from app.core.exceptions import IdempotencyViolationError
+
+        if idempotency_key is not None and (user_id, idempotency_key) in self.idem:
+            raise IdempotencyViolationError("focus_session_idem_conflict")
         s = FocusSession(
             id=session_id,
             user_id=user_id,
@@ -947,10 +956,21 @@ class FakeFocusSessionRepo(IFocusSessionRepo):
             ended_at=None,
         )
         self.rows[session_id] = s
+        if idempotency_key is not None:
+            self.idem[(user_id, idempotency_key)] = (session_id, idempotency_body_hash)
         return s
 
     async def get(self, session_id: str) -> FocusSession | None:
         return self.rows.get(session_id)
+
+    async def get_by_user_and_idem(
+        self, *, user_id: str, idempotency_key: str
+    ) -> tuple[FocusSession, str | None] | None:
+        hit = self.idem.get((user_id, idempotency_key))
+        if hit is None:
+            return None
+        session_id, body_hash = hit
+        return self.rows[session_id], body_hash
 
     async def update_status(
         self,

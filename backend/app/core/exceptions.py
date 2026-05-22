@@ -84,3 +84,16 @@ class IdempotencyViolationError(LowBatteryTownError):
 
     status_code = 409
     code = "idempotency_violation"
+
+
+class IdempotencyConflictError(LowBatteryTownError):
+    """Caller reused an ``Idempotency-Key`` with a different request body.
+
+    Distinct from ``ConflictError`` (which models domain-state conflicts)
+    so the frontend can tell a *retry collision* — same key, different
+    intent — apart from a legitimate constraint violation. The handler
+    that catches this should not retry the request automatically.
+    """
+
+    status_code = 409
+    code = "idempotency_conflict"

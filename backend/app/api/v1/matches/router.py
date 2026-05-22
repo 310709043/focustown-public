@@ -84,6 +84,7 @@ def _matching_service(db, ids, events, clock) -> MatchingService:
         events=events,
         ids=ids,
         clock=clock,
+        session=db,
     )
 
 

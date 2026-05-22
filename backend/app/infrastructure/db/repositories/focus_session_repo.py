@@ -3,9 +3,10 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from sqlalchemy import Integer, case, func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import IdempotencyViolationError, NotFoundError
 from app.domain.models import FocusSession, FocusSessionMode, FocusSessionStatus
 from app.domain.repositories.focus_session_repo import (
     IFocusSessionRepo,
@@ -43,6 +44,8 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
         task_label: str | None,
         partner_user_id: str | None,
         started_at: datetime,
+        idempotency_key: str | None = None,
+        idempotency_body_hash: str | None = None,
     ) -> FocusSession:
         row = FocusSessionORM(
             id=session_id,
@@ -54,14 +57,48 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
             status=FocusSessionStatus.ACTIVE.value,
             task_label=task_label,
             started_at=started_at,
+            idempotency_key=idempotency_key,
+            idempotency_body_hash=idempotency_body_hash,
         )
         self._s.add(row)
-        await self._s.flush()
+        try:
+            await self._s.flush()
+        except IntegrityError as exc:
+            # Partial unique index ux_focus_sessions_idem trips when a
+            # concurrent POST with the same (user_id, idempotency_key) just
+            # committed. Surface as a domain-level idempotency signal — the
+            # service decides whether to translate to a 200 (same body) or
+            # 409 (different body).
+            if idempotency_key is None:
+                raise
+            raise IdempotencyViolationError("focus_session_idem_conflict") from exc
         return _to_domain(row)
 
     async def get(self, session_id: str) -> FocusSession | None:
         row = await self._s.get(FocusSessionORM, session_id)
         return _to_domain(row) if row else None
+
+    async def get_by_user_and_idem(
+        self, *, user_id: str, idempotency_key: str
+    ) -> tuple[FocusSession, str | None] | None:
+        # ``with_for_update(skip_locked=True)`` is intentional: a concurrent
+        # writer that holds the row lock (mid-INSERT-then-flush from a
+        # parallel POST with the same key) is skipped here, which lets us
+        # fall through to the INSERT and rely on the partial unique index
+        # to serialise. Without SKIP LOCKED the second caller would block on
+        # the first and we'd lose the chance to fast-return.
+        stmt = (
+            select(FocusSessionORM)
+            .where(
+                FocusSessionORM.user_id == user_id,
+                FocusSessionORM.idempotency_key == idempotency_key,
+            )
+            .with_for_update(skip_locked=True)
+        )
+        row = (await self._s.execute(stmt)).scalar_one_or_none()
+        if row is None:
+            return None
+        return _to_domain(row), row.idempotency_body_hash
 
     async def update_status(
         self,
