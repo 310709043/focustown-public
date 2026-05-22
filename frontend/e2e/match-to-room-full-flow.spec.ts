@@ -218,23 +218,16 @@ test.describe("Phase 10 — full match-to-room real-stack E2E", () => {
       await togetherA.click();
       await togetherB.click();
 
-      // 3) Both modals flip from waiting → proposed within the
-      //    matching-sweep window (3s) + WS fan-out (<1s).
-      const acceptA = a.page.getByTestId("match-accept");
-      const acceptB = b.page.getByTestId("match-accept");
-      await Promise.all([
-        expect(acceptA).toBeVisible({ timeout: 10_000 }),
-        expect(acceptB).toBeVisible({ timeout: 10_000 }),
-      ]);
-
-      // 4) Both accept — each one navigates to /focus/{matchId} via
-      //    the `router.push` inside MatchModal's onClick.
-      await Promise.all([acceptA.click(), acceptB.click()]);
-
+      // 3) Both clients receive match.proposed and auto-accept (per the
+      //    2026-05-22 product redesign — no manual Accept / Skip step
+      //    anymore). The town page's accepted-match effect routes into
+      //    /focus/{matchId} as soon as the store flips to accepted.
+      //    Matching-sweep window (3s) + WS fan-out (<1s) + accept HTTP
+      //    + nav ≈ a few seconds in the worst case.
       const focusUrlRegex = /\/focus\/[a-f0-9-]+/i;
       await Promise.all([
-        expect(a.page).toHaveURL(focusUrlRegex, { timeout: 15_000 }),
-        expect(b.page).toHaveURL(focusUrlRegex, { timeout: 15_000 }),
+        expect(a.page).toHaveURL(focusUrlRegex, { timeout: 20_000 }),
+        expect(b.page).toHaveURL(focusUrlRegex, { timeout: 20_000 }),
       ]);
 
       // Both should land on the SAME match id — confirms the pair

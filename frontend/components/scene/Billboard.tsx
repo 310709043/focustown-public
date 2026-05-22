@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { leaderboardApi } from "@/lib/api/endpoints";
+import {
+  BROADCAST_CLIPS,
+  broadcastClipUrl,
+  isBroadcastConfigured,
+} from "@/lib/data/broadcast-clips";
 import { findCharacter } from "@/lib/data/characters";
 import type { LeaderboardEntry } from "@/lib/api/types.gen";
 
@@ -121,28 +126,15 @@ export function Billboard() {
           )}
         </div>
 
-        {/* AD SLOT placeholder */}
-        <div
-          className="mx-2 mb-2 flex items-center justify-center"
-          style={{
-            height: 64,
-            border: "1.5px dashed rgba(167,139,250,0.5)",
-            background:
-              "repeating-linear-gradient(45deg, rgba(167,139,250,0.05), rgba(167,139,250,0.05) 8px, transparent 8px, transparent 16px)",
-            borderRadius: 4,
-          }}
-        >
-          <div className="text-center" style={{ lineHeight: 1.4 }}>
-            <div
-              className="font-pixel"
-              style={{ fontSize: 9, color: "var(--a2)", letterSpacing: 2 }}
-            >
-              AD SLOT
-            </div>
-            <div style={{ fontSize: 10, color: "var(--muted)" }}>300 × 64 — your ad here</div>
-          </div>
-        </div>
+        {/* Town Broadcast — rotating MP4 carousel sourced from
+            Cloudflare R2 (egress-free, low monthly cost even at 1k
+            concurrent viewers). Falls back to a static placeholder when
+            R2 is unconfigured or the clip fails to load. */}
+        <TownBroadcastSlot />
       </div>
+
+      {/* (Billboard chrome continues below — TownBroadcastSlot is the
+          ad-slot replacement that lives inside the panel above.) */}
 
       {/* support beams (decorative pixel "scaffold") */}
       <div className="flex justify-between px-6 pointer-events-none">
@@ -157,6 +149,111 @@ export function Billboard() {
             }}
           />
         ))}
+      </div>
+    </div>
+  );
+}
+
+function TownBroadcastSlot() {
+  const t = useTranslations("town.scene");
+  const configured = isBroadcastConfigured();
+  const [index, setIndex] = useState(0);
+  const [failed, setFailed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Reload the <video> element whenever the active clip index changes —
+  // setting src directly only takes effect after load() in some browsers.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.load();
+    // muted autoplay is allowed by all modern browsers without a user
+    // gesture; we set both attributes declaratively below.
+    void el.play().catch(() => {
+      // Autoplay blocked (rare on muted videos but defend anyway). The
+      // poster / first frame remains visible; let the next clip try.
+    });
+  }, [index]);
+
+  if (!configured || failed) {
+    return (
+      <div
+        className="mx-2 mb-2 flex items-center justify-center"
+        style={{
+          height: 64,
+          border: "1.5px dashed rgba(167,139,250,0.5)",
+          background:
+            "repeating-linear-gradient(45deg, rgba(167,139,250,0.05), rgba(167,139,250,0.05) 8px, transparent 8px, transparent 16px)",
+          borderRadius: 4,
+        }}
+      >
+        <div className="text-center" style={{ lineHeight: 1.4 }}>
+          <div
+            className="font-pixel"
+            style={{ fontSize: 9, color: "var(--a2)", letterSpacing: 2 }}
+          >
+            {t("broadcastTitle")}
+          </div>
+          <div style={{ fontSize: 10, color: "var(--muted)" }}>
+            {t("broadcastFallback")}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const clip = BROADCAST_CLIPS[index] ?? BROADCAST_CLIPS[0];
+  const src = broadcastClipUrl(clip);
+
+  return (
+    <div
+      className="mx-2 mb-2 relative overflow-hidden"
+      style={{
+        height: 64,
+        borderRadius: 4,
+        border: "1.5px solid rgba(167,139,250,0.5)",
+        background: "rgba(3,1,17,0.92)",
+      }}
+      data-testid="town-broadcast"
+    >
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        autoPlay
+        playsInline
+        preload="metadata"
+        // Tier-1 anti-casual-download: no `controls` (no browser UI at
+        // all), `controlsList="nodownload"` hides the download item if
+        // a UA ever auto-injects controls, `disablePictureInPicture`
+        // blocks PiP-then-record on Safari, `disableRemotePlayback`
+        // blocks AirPlay/Cast off-ramps, and onContextMenu suppresses
+        // right-click "Save video as". A determined user with DevTools
+        // can still grab the bytes — that needs Tier-2 signed URLs.
+        controlsList="nodownload noremoteplayback"
+        disablePictureInPicture
+        disableRemotePlayback
+        onContextMenu={(e) => e.preventDefault()}
+        // No `loop` — `onEnded` advances to the next clip so the
+        // playlist actually rotates instead of pinning on clip 1.
+        onEnded={() => setIndex((i) => (i + 1) % BROADCAST_CLIPS.length)}
+        onError={() => setFailed(true)}
+        className="block w-full h-full"
+        style={{ objectFit: "cover" }}
+      />
+      {/* Subtle bottom label so users know this is broadcast, not chrome. */}
+      <div
+        className="font-pixel absolute bottom-0 left-0 right-0 text-center"
+        style={{
+          fontSize: 8,
+          letterSpacing: 1.5,
+          padding: "1px 0",
+          color: "var(--a2)",
+          background: "linear-gradient(to top, rgba(3,1,17,0.85), transparent)",
+          textShadow: "0 0 6px var(--a1)",
+        }}
+      >
+        {t("broadcastTitle")}
       </div>
     </div>
   );

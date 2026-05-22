@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.clock import IClock, SystemClock
 from app.core.config import Settings, get_settings
 from app.core.events import EventBus
-from app.core.exceptions import AuthError
+from app.core.exceptions import AuthError, ForbiddenError
 from app.core.ids import IIdGenerator, UUID4Generator
 from app.domain.notifications import IEmailSender
 from app.domain.rate_limit import IRateLimiter
@@ -242,6 +242,26 @@ async def get_current_user_id(
 
 
 CurrentUserId = Annotated[str, Depends(get_current_user_id)]
+
+
+async def require_admin_user_id(
+    user_id: CurrentUserId,
+    settings: SettingsDep,
+) -> str:
+    """Gate an endpoint behind the env-configured admin allowlist.
+
+    Returns the caller's user id when they're in the allowlist; otherwise
+    raises ``AuthError("forbidden")`` which maps to 403 via the global
+    handler. The allowlist source is intentionally an env var (not a DB
+    column) so promoting an operator is a deploy-config change and there
+    is no in-product "admin admin" surface to compromise.
+    """
+    if user_id not in settings.admin_user_id_set:
+        raise ForbiddenError("forbidden")
+    return user_id
+
+
+AdminUserId = Annotated[str, Depends(require_admin_user_id)]
 
 
 async def get_current_user_id_optional(

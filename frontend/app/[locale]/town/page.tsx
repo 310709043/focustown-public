@@ -15,6 +15,7 @@ import { useRealtimeMatch } from "@/lib/ws/useRealtimeMatch";
 import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionCompleted";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { useStationStore } from "@/lib/state/stationStore";
+import { useRouter } from "@/i18n/routing";
 
 import { SceneBackdrop } from "@/components/scene/SceneBackdrop";
 import { Pedestrians } from "@/components/scene/Pedestrians";
@@ -74,12 +75,14 @@ const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 200);
 
 export default function TownPage() {
   const { user, hydrate } = useAuthStore();
+  const router = useRouter();
   const advanceScene = useSceneStore((s) => s.advance);
   const pendingRehydrate = usePresenceStore((s) => s.pendingRehydrate);
   const [openModal, setOpenModal] = useState<TownModalKind | null>(null);
   const enterQueue = useMatchStore((s) => s.enterQueue);
   const rehydrateMatch = useMatchStore((s) => s.rehydrate);
   const matchStatus = useMatchStore((s) => s.status);
+  const acceptedMatch = useMatchStore((s) => s.accepted);
 
   // The BottomHUD "Find Buddy" button and the FriendsModal CTA both call
   // enterQueue. The store guards against double-enqueue (waiting/proposed
@@ -208,15 +211,31 @@ export default function TownPage() {
   // Wave 1 / Lane A: subscribe to match + session events. ``applyProposed``
   // is a no-op when status !== "waiting", so the candidate side receiving
   // duplicate frames (one from MatchRealtimeLink + one from
-  // MatchingQueueService) only transitions once.
+  // MatchingQueueService) only transitions once. The auto-accept happens
+  // inside applyProposed → the store's ``accepted`` slot lights up and
+  // the effect below routes into the focus room. There's no proposal
+  // step in the UI anymore (per product decision — reveal the partner
+  // in the room).
   useRealtimeMatch({
     onProposed: (match) => {
-      useMatchStore.getState().applyProposed(match);
+      void useMatchStore.getState().applyProposed(match);
     },
     onAccepted: (_matchId) => {
-      // TODO Wave 4: surface a toast / auto-navigate to the focus room.
+      // Acceptance navigation is handled by the acceptedMatch effect
+      // below — that single channel covers both candidate (via
+      // applyProposed) and requester (via this WS frame after the
+      // backend flips the row to accepted).
     },
   });
+
+  // Auto-navigate into the focus room as soon as the store flips to
+  // an accepted match. Sole entry point so candidate (auto-accept) and
+  // requester (server-side accept WS frame) converge on the same nav.
+  useEffect(() => {
+    if (acceptedMatch?.id) {
+      router.push(`/focus/${acceptedMatch.id}`);
+    }
+  }, [acceptedMatch, router]);
 
   useRealtimeSessionCompleted((_sessionId) => {
     // Clear the just-finished match so the Together mode card returns

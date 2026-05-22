@@ -245,6 +245,8 @@
     "youSuffix": "you",
     "billboardEmptyLine1": "No completed sessions yet",
     "billboardEmptyLine2": "Be the first to focus ✦",
+    "broadcastTitle": "TOWN BROADCAST",
+    "broadcastFallback": "Programmes coming soon",
     "npc": {
       "walkers": {
         "yuki": { "name": "Yuki", "status": "STUDY HALL" },

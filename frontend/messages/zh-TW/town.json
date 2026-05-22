@@ -245,6 +245,8 @@
     "youSuffix": "您",
     "billboardEmptyLine1": "還沒有完成記錄",
     "billboardEmptyLine2": "第一個專注的就是您 ✦",
+    "broadcastTitle": "鎮民廣播 · TOWN BROADCAST",
+    "broadcastFallback": "節目即將上線",
     "npc": {
       "walkers": {
         "yuki": { "name": "Yuki", "status": "STUDY HALL" },

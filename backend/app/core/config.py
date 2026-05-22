@@ -64,6 +64,14 @@ class Settings(BaseSettings):
     ses_from_email: str = ""
     ses_endpoint_url: str = ""
 
+    # Feedback admin pipeline. ``admin_feedback_email`` is the recipient
+    # of the real-time SES notification fired on every /feedback submit;
+    # leave empty to disable the email side. ``admin_user_ids`` is the
+    # comma-separated allowlist that gates the CSV export endpoint —
+    # only those users can fetch the full feedback ledger.
+    admin_feedback_email: str = ""
+    admin_user_ids: str = ""
+
     # Secrets dispatch. "env" reads from process env vars (current behaviour);
     # "aws" pulls from AWS Secrets Manager with an in-memory TTL cache so we
     # don't hit the API on every request.
@@ -160,6 +168,16 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.app_cors_origins.split(",") if o.strip()]
+
+    @property
+    def admin_user_id_set(self) -> set[str]:
+        """Parsed allowlist of user ids that may access admin endpoints.
+
+        Source: comma-separated ``ADMIN_USER_IDS`` env var. Empty (default)
+        means *no* user is admin — the export endpoint will 403 until an
+        operator opts in. Trimmed + de-duped.
+        """
+        return {raw.strip() for raw in self.admin_user_ids.split(",") if raw.strip()}
 
     @property
     def trusted_proxy_networks(self) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:

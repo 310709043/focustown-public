@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
 import { useMatchStore } from "@/lib/state/matchStore";
@@ -99,7 +100,15 @@ function Stars() {
   );
 }
 
+/**
+ * Delay before navigating back to /town once the room enters ``ended``.
+ * Long enough for the "ended" overlay to register but short enough that
+ * a partner-left flow doesn't leave the user staring at a dead room.
+ */
+const ROOM_ENDED_NAV_DELAY_MS = 3_000;
+
 export default function FocusRoomPage() {
+  const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { user, hydrate } = useAuthStore();
   const acceptedMatch = useMatchStore((s) => s.accepted);
@@ -223,6 +232,18 @@ export default function FocusRoomPage() {
       realtime.send({ type: "unsubscribe", channel });
     };
   }, [paired, roomId]);
+
+  // When the room flips to ``ended`` (partner left, session completed
+  // and the worker tore it down, …) auto-route back to /town after a
+  // brief delay so the user sees the ended overlay without needing to
+  // click. Earlier flows required a manual back button.
+  useEffect(() => {
+    if (roomStatus !== "ended") return;
+    const tid = setTimeout(() => {
+      router.replace("/town");
+    }, ROOM_ENDED_NAV_DELAY_MS);
+    return () => clearTimeout(tid);
+  }, [roomStatus, router]);
 
   // Guard against accidental tab close / hard reload while a session is in
   // flight. Only fires for browser-level navigation; client-side router.push

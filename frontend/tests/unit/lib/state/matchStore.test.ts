@@ -3,11 +3,12 @@
  *
  * Worth testing:
  * - enterQueue with waiting response transitions to "waiting"
- * - enterQueue with matched response transitions straight to "proposed"
- * - applyProposed flips waiting → proposed, but is a no-op outside waiting
+ * - enterQueue with matched response (bot fallback) short-circuits
+ *   straight to "accepted" — no modal step
+ * - applyProposed auto-accepts pending matches (WS path); the previous
+ *   manual proposed → user-clicks-accept flow is gone
+ * - applyProposed is idempotent (duplicate WS frames don't double-accept)
  * - cancelQueue clears back to "idle"
- * - skip re-enters the queue (calls auto() after skip())
- * - accept short-circuits when the match was already accepted (bot fallback)
  *
  * NOT worth testing:
  * - sessionStorage rehydrate path — hits the DOM session store + network;
@@ -69,8 +70,8 @@ test("enterQueue with waiting response transitions to waiting", async () => {
   expect(s.current).toBeNull();
 });
 
-test("enterQueue with matched response transitions to proposed", async () => {
-  const m = makeMatch({ id: "imm-1", candidate_character_key: "luna" });
+test("enterQueue with bot-fallback match short-circuits to accepted", async () => {
+  const m = makeMatch({ id: "bot-1", candidate_character_key: "luna" });
   auto.mockResolvedValue({
     status: "matched",
     via: "waiting_pool",
@@ -80,30 +81,49 @@ test("enterQueue with matched response transitions to proposed", async () => {
   await useMatchStore.getState().enterQueue();
 
   const s = useMatchStore.getState();
-  expect(s.status).toBe("proposed");
-  expect(s.current?.id).toBe("imm-1");
-  expect(s.waitingSince).toBeNull();
+  expect(s.status).toBe("accepted");
+  expect(s.accepted?.id).toBe("bot-1");
+  expect(s.current).toBeNull();
 });
 
-test("applyProposed flips waiting → proposed", () => {
+test("applyProposed auto-accepts a pending WS proposal", async () => {
   useMatchStore.setState({ status: "waiting", waitingSince: 1 });
-  const m = makeMatch({ id: "ws-1" });
+  const m = makeMatch({ id: "ws-1", status: "pending" });
+  accept.mockResolvedValue(makeMatch({ id: "ws-1", status: "accepted" }));
 
-  useMatchStore.getState().applyProposed(m);
+  await useMatchStore.getState().applyProposed(m);
 
   const s = useMatchStore.getState();
-  expect(s.status).toBe("proposed");
-  expect(s.current?.id).toBe("ws-1");
+  expect(s.status).toBe("accepted");
+  expect(s.accepted?.id).toBe("ws-1");
+  expect(accept).toHaveBeenCalledOnce();
 });
 
-test("applyProposed is a no-op when status is not waiting", () => {
-  useMatchStore.setState({ status: "proposed", current: makeMatch({ id: "first" }) });
+test("applyProposed is a no-op when status is not waiting", async () => {
+  useMatchStore.setState({
+    status: "accepting",
+    current: makeMatch({ id: "first" }),
+  });
   const m = makeMatch({ id: "second" });
 
-  useMatchStore.getState().applyProposed(m);
+  await useMatchStore.getState().applyProposed(m);
 
-  // The first proposal is preserved — duplicate WS frame doesn't overwrite.
+  // The in-flight accept is preserved — duplicate WS frame doesn't overwrite.
   expect(useMatchStore.getState().current?.id).toBe("first");
+  expect(accept).not.toHaveBeenCalled();
+});
+
+test("applyProposed short-circuits when match already arrived accepted", async () => {
+  useMatchStore.setState({ status: "waiting", waitingSince: 1 });
+  const m = makeMatch({ id: "bot-2", status: "accepted" });
+
+  await useMatchStore.getState().applyProposed(m);
+
+  const s = useMatchStore.getState();
+  expect(s.status).toBe("accepted");
+  expect(s.accepted?.id).toBe("bot-2");
+  // Server-side already accepted — no second HTTP call.
+  expect(accept).not.toHaveBeenCalled();
 });
 
 test("cancelQueue clears back to idle", async () => {
@@ -116,49 +136,4 @@ test("cancelQueue clears back to idle", async () => {
   expect(s.status).toBe("idle");
   expect(s.waitingSince).toBeNull();
   expect(cancelQueue).toHaveBeenCalledOnce();
-});
-
-test("skip re-enters the queue via auto()", async () => {
-  useMatchStore.setState({
-    status: "proposed",
-    current: makeMatch({ id: "m-skip" }),
-  });
-  skip.mockResolvedValue(undefined);
-  auto.mockResolvedValue({
-    status: "waiting",
-    enqueued_at_ms: 99,
-    bot_fallback_at_ms: 27_099,
-  });
-
-  await useMatchStore.getState().skip();
-
-  expect(skip).toHaveBeenCalledOnce();
-  expect(auto).toHaveBeenCalledOnce();
-  expect(useMatchStore.getState().status).toBe("waiting");
-});
-
-test("accept short-circuits when the match already arrived as accepted", async () => {
-  useMatchStore.setState({
-    status: "proposed",
-    current: makeMatch({ id: "bot-1", status: "accepted" }),
-  });
-
-  const result = await useMatchStore.getState().accept();
-
-  expect(result?.id).toBe("bot-1");
-  expect(useMatchStore.getState().status).toBe("accepted");
-  expect(accept).not.toHaveBeenCalled();
-});
-
-test("accept calls API for pending matches and transitions to accepted", async () => {
-  useMatchStore.setState({
-    status: "proposed",
-    current: makeMatch({ id: "m-7", status: "pending" }),
-  });
-  accept.mockResolvedValue(makeMatch({ id: "m-7", status: "accepted" }));
-
-  const updated = await useMatchStore.getState().accept();
-
-  expect(updated?.status).toBe("accepted");
-  expect(useMatchStore.getState().status).toBe("accepted");
 });

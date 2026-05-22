@@ -4,13 +4,17 @@ import { useRealtime } from "./useRealtime";
 import type { Match } from "@/lib/api/types.gen";
 
 type Handlers = {
-  /** Another user proposed a match with you. Synthesizes a partial Match
-   *  from the WS payload — ``reason`` is not carried in the frame and is
-   *  rendered with a fallback in the modal. The new waiting-pool payload
-   *  carries ``partner_id`` + ``partner_character_key``; the legacy
-   *  ``MatchRealtimeLink`` payload only carries ``from``. We accept both
-   *  shapes so a candidate receiving frames from either source gets a
-   *  consistent Match object. */
+  /** Pairing landed for this user. Synthesizes a partial Match from the
+   *  WS payload — ``reason`` is not carried in the frame. The new
+   *  waiting-pool payload carries ``partner_id`` + ``partner_character_key``;
+   *  the legacy ``MatchRealtimeLink`` payload only carries ``from``.
+   *  We accept both shapes so a candidate receiving frames from either
+   *  source gets a consistent Match object.
+   *
+   *  Note: the user no longer chooses Accept / Skip — the consumer
+   *  side should auto-accept (see matchStore.applyProposed) and route
+   *  into the focus room. The name "Proposed" survives at the WS
+   *  layer for backwards compatibility with the backend frame name. */
   onProposed?: (match: Match) => void;
   /** A match you proposed has been accepted by the other side. */
   onAccepted?: (matchId: string) => void;

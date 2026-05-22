@@ -55,12 +55,18 @@ const apiOriginWs = apiOriginHttp.replace(/^http/, "ws");
 //
 // Comma-separated NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS lets ops add hosts
 // without code changes; when unset, fall back to the API origin so dev
-// keeps working out of the box.
-const mediaOrigins = (process.env.NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS ?? apiOriginHttp)
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean)
-  .join(" ");
+// keeps working out of the box. The Town Broadcast slot streams MP4
+// clips from a public Cloudflare R2 host (NEXT_PUBLIC_R2_BROADCAST_HOST);
+// allow that origin too when configured so the <video> in Billboard.tsx
+// is not blocked by CSP.
+const r2BroadcastHost = (process.env.NEXT_PUBLIC_R2_BROADCAST_HOST ?? "").trim();
+const mediaOrigins = [
+  ...(process.env.NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS ?? apiOriginHttp)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+  ...(r2BroadcastHost ? [r2BroadcastHost] : []),
+].join(" ");
 
 function buildCsp(nonce: string): string {
   // Prod uses `'self' 'unsafe-inline'` (NOT `'self' 'nonce-...' 'unsafe-inline'`

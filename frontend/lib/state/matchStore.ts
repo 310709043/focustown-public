@@ -9,28 +9,20 @@ import type { Match } from "../api/types.gen";
  * Status state machine for the matching flow.
  *
  * ```
- *   idle ──enterQueue()──► waiting ──WS match.proposed──► proposed
- *                                       │                     │
- *                                       └──cancelQueue()──┐    accept()
- *                                                       idle    │
- *                                                              ▼
- *                                                        accepting → accepted
- *                                                                        │
- *                                                                        ▼
- *                                                                       idle
- *
- *   proposed ──skip()──► waiting   (re-enters the queue; per design)
+ *   idle ──enterQueue()──► waiting ──WS match.proposed──► accepting → accepted
+ *                              │           (auto-accept)
+ *                              └──cancelQueue()──► idle
  * ```
  *
- * The single status field is what drives the modal: ``open = status !== "idle"``.
- * This decouples "a proposal exists" from "is the modal mounted" — the
- * modal stays visible across waiting → proposed transitions so the
- * ring/halo animation never blinks out.
+ * Per product decision: the user no longer chooses Accept / Skip on a
+ * proposal — landing in the focus room is the reveal. The modal stays
+ * mounted across waiting → accepting transitions so the rotating halo
+ * never blinks out; ``open = status !== "idle" && status !== "accepted"``
+ * (the page nav handler clears state right after).
  */
 export type MatchStatus =
   | "idle"
   | "waiting"
-  | "proposed"
   | "accepting"
   | "accepted";
 
@@ -53,10 +45,10 @@ interface MatchState {
   /** Leave the waiting pool. */
   cancelQueue: () => Promise<void>;
   accept: () => Promise<Match | null>;
-  /** Skip the current proposal — re-enters the queue. */
-  skip: () => Promise<void>;
-  /** Apply a ``match.proposed`` WS frame. No-op when not waiting. */
-  applyProposed: (m: Match) => void;
+  /** Apply a ``match.proposed`` WS frame by transitioning straight into
+   *  the accept call. The room reveal is the surprise — there is no
+   *  user-facing proposal step anymore. */
+  applyProposed: (m: Match) => Promise<Match | null>;
   /**
    * Rehydrate the queue state from the backend after a page reload. The
    * status field is sessionStorage-persisted, but we always re-confirm
@@ -76,14 +68,14 @@ interface MatchState {
 const SESSION_KEY = "lowbatterytown.matchStore";
 
 type Persisted = {
-  status: Extract<MatchStatus, "waiting" | "proposed">;
+  status: Extract<MatchStatus, "waiting">;
   waitingSince: number | null;
   botFallbackAt: number | null;
 };
 
 function persist(s: Pick<MatchState, "status" | "waitingSince" | "botFallbackAt">): void {
   if (typeof window === "undefined") return;
-  if (s.status !== "waiting" && s.status !== "proposed") {
+  if (s.status !== "waiting") {
     window.sessionStorage.removeItem(SESSION_KEY);
     return;
   }
@@ -105,7 +97,7 @@ function loadPersisted(): Persisted | null {
     const raw = window.sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const p = JSON.parse(raw) as Persisted;
-    if (p.status !== "waiting" && p.status !== "proposed") return null;
+    if (p.status !== "waiting") return null;
     return p;
   } catch {
     return null;
@@ -126,8 +118,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     set({ status: "accepting" });
     try {
       const m = await matchesApi.propose(candidateId);
-      set({ status: "proposed", current: m });
-      persist({ status: "proposed", waitingSince: null, botFallbackAt: null });
+      set({ status: "accepting", current: m });
+      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
     } catch (e) {
       set({ status: "idle", current: null });
       persist({ status: "idle", waitingSince: null, botFallbackAt: null });
@@ -137,21 +129,21 @@ export const useMatchStore = create<MatchState>((set, get) => ({
 
   async enterQueue() {
     const s = get().status;
-    if (s === "waiting" || s === "proposed" || s === "accepting") return;
+    if (s === "waiting" || s === "accepting") return;
     try {
       const res = await matchesApi.auto();
       if (res.status === "matched") {
+        // Immediate bot fallback: skip the modal step entirely. The
+        // backend has already accepted the match server-side (bot
+        // fallback path), so just stash it and let the page nav fire.
         set({
-          status: "proposed",
-          current: res.match,
+          status: "accepted",
+          current: null,
+          accepted: res.match,
           waitingSince: null,
           botFallbackAt: null,
         });
-        persist({
-          status: "proposed",
-          waitingSince: null,
-          botFallbackAt: null,
-        });
+        persist({ status: "idle", waitingSince: null, botFallbackAt: null });
         return;
       }
       set({
@@ -201,6 +193,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const cur = get().current;
     if (!cur) return null;
     set({ status: "accepting" });
+    persist({ status: "idle", waitingSince: null, botFallbackAt: null });
     try {
       // Bot fallback matches are already accepted server-side; skip the
       // second HTTP call to avoid the no-op accept-already-accepted 409.
@@ -212,7 +205,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
           waitingSince: null,
           botFallbackAt: null,
         });
-        persist({ status: "idle", waitingSince: null, botFallbackAt: null });
         return cur;
       }
       const updated = await matchesApi.accept(cur.id);
@@ -223,77 +215,39 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         waitingSince: null,
         botFallbackAt: null,
       });
-      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
       return updated;
     } catch {
-      set({ status: "proposed" });
-      return null;
-    }
-  },
-
-  async skip() {
-    const cur = get().current;
-    if (!cur) return;
-    if (get().status !== "proposed") return;
-    set({ status: "waiting" });
-    try {
-      await matchesApi.skip(cur.id);
-    } catch {
-      /* the skip failure shouldn't trap the user in the modal — fall through
-         into the re-enqueue attempt regardless */
-    }
-    set({ current: null });
-    try {
-      const res = await matchesApi.auto();
-      if (res.status === "matched") {
-        set({
-          status: "proposed",
-          current: res.match,
-          waitingSince: null,
-          botFallbackAt: null,
-        });
-        persist({
-          status: "proposed",
-          waitingSince: null,
-          botFallbackAt: null,
-        });
-        return;
-      }
-      set({
-        status: "waiting",
-        current: null,
-        waitingSince: res.enqueued_at_ms,
-        botFallbackAt: res.bot_fallback_at_ms,
-      });
-      persist({
-        status: "waiting",
-        waitingSince: res.enqueued_at_ms,
-        botFallbackAt: res.bot_fallback_at_ms,
-      });
-    } catch {
+      // Accept failed — drop back to idle so the user can re-queue. The
+      // old design rewound to "proposed" so the user could retry; with
+      // auto-accept there is no manual retry surface, so idle is the
+      // honest state.
       set({
         status: "idle",
         current: null,
         waitingSince: null,
         botFallbackAt: null,
       });
-      persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+      return null;
     }
   },
 
-  applyProposed(m) {
-    // Only the first frame for a given proposal causes a state transition.
-    // The candidate side may receive two frames (one from the legacy
-    // MatchRealtimeLink subscriber + one from MatchingQueueService); the
-    // guard makes the second a no-op so the modal doesn't flash.
-    if (get().status !== "waiting") return;
+  async applyProposed(m) {
+    // Only the first frame for a given proposal triggers acceptance.
+    // The candidate side may receive duplicate frames (legacy
+    // MatchRealtimeLink + MatchingQueueService); guard so the second
+    // frame becomes a no-op instead of double-accepting.
+    if (get().status !== "waiting") return null;
+    // Stage the proposal as ``current`` while we delegate to accept().
+    // We deliberately leave ``status`` as "waiting" here — accept()
+    // flips it to "accepting" itself, and its leading guard would
+    // early-return if it saw "accepting" already on the way in.
     set({
-      status: "proposed",
       current: m,
       waitingSince: null,
       botFallbackAt: null,
     });
-    persist({ status: "proposed", waitingSince: null, botFallbackAt: null });
+    persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+    return await get().accept();
   },
 
   async rehydrate() {
@@ -347,7 +301,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   },
 
   testInjectProposal(m) {
-    set({ status: "proposed", current: m });
+    // Mirrors the production WS path: set status to ``accepting`` with
+    // the proposal in flight. Production code would await the real
+    // accept call; tests can flip to "accepted" themselves once they've
+    // verified intermediate UI.
+    set({ status: "accepting", current: m });
   },
 }));
 

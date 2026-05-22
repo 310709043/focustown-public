@@ -1,24 +1,32 @@
 {
   "modal": {
-    "title": "✦ Tonight's focus partner ✦",
-    "matchPercent": "{percent}% MATCH",
-    "acceptCta": "✦ Focus together",
-    "acceptLoadingCta": "Accepting…",
-    "nextCta": "See another →",
-    "nextLoadingCta": "Loading…",
-    "roleLabel": "Role",
-    "onlineStatus": "Online {hours}h",
-    "reasonsHeader": "Why we think you two might match",
-    "reasonFallback": "New match invitation — tap “Focus together” to start a 25-minute Pomodoro.",
-    "candidateAnonymous": "Anonymous #{id}",
-    "candidatePending": "Pairing…",
-    "closeAria": "Close",
+    "title": "✦ Find a focus partner ✦",
     "waitingTitle": "Searching for a partner…",
     "waitingSubtitle": "Looking for someone else who wants to focus",
     "waitingElapsed": "{seconds, plural, one {Waited # second} other {Waited # seconds}}",
     "cancelCta": "Cancel",
     "cancellingCta": "Cancelling…",
-    "queueExpiredToast": "Queue expired — try again"
+    "acceptLoadingCta": "Joining…",
+    "queueExpiredToast": "Queue expired — try again",
+    "closeAria": "Close"
+  },
+  "greeting": {
+    "morning": {
+      "title": "✦ Morning focus partner ✦",
+      "subtitle": "Find a townsfolk to start the day with"
+    },
+    "afternoon": {
+      "title": "✦ Afternoon focus partner ✦",
+      "subtitle": "Find a townsfolk for the afternoon sprint"
+    },
+    "evening": {
+      "title": "✦ Evening focus partner ✦",
+      "subtitle": "Find a townsfolk to wind down the day with"
+    },
+    "night": {
+      "title": "✦ Late-night focus partner ✦",
+      "subtitle": "Find a townsfolk for a quiet, late-night focus"
+    }
   },
   "cta": {
     "label": "✦ Find a focus partner ✦",
