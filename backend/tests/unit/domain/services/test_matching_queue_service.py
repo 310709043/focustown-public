@@ -17,6 +17,10 @@ import pytest
 from app.core.events import EventBus
 from app.domain.models import User
 from app.domain.repositories.match_queue import IMatchingQueue, WaitEntry
+from app.domain.repositories.match_waiting_pool_repo import (
+    IMatchWaitingPoolRepo,
+    WaitingPoolRecord,
+)
 from app.domain.services.matching_queue_service import (
     DEFAULT_BOT_FALLBACK_MAX_MS,
     DEFAULT_BOT_FALLBACK_MIN_MS,
@@ -86,6 +90,73 @@ class FakeMatchingQueue(IMatchingQueue):
         ]
 
 
+@dataclass
+class FakeWaitingPoolRepo(IMatchWaitingPoolRepo):
+    """In-memory stand-in for the PG source-of-truth repo.
+
+    Mirrors the SQL adapter's status transitions without touching a
+    database. The unit suite asserts the service writes PG-then-Redis
+    via this fake's recorded state; the SQL semantics (on-conflict,
+    atomic UPDATE) are covered by the integration suite.
+    """
+
+    rows: dict[str, WaitingPoolRecord] = field(default_factory=dict)
+
+    async def upsert_waiting(
+        self,
+        user_id: str,
+        *,
+        enqueued_at_ms: int,
+        fallback_deadline_ms: int,
+    ) -> None:
+        self.rows[user_id] = WaitingPoolRecord(
+            user_id=user_id,
+            status="waiting",
+            enqueued_at_ms=enqueued_at_ms,
+            fallback_deadline_ms=fallback_deadline_ms,
+            match_id=None,
+        )
+
+    def _set(
+        self,
+        user_id: str,
+        *,
+        status: str,
+        match_id: str | None = None,
+    ) -> None:
+        existing = self.rows.get(user_id)
+        if existing is None:
+            return
+        self.rows[user_id] = WaitingPoolRecord(
+            user_id=existing.user_id,
+            status=status,  # type: ignore[arg-type]
+            enqueued_at_ms=existing.enqueued_at_ms,
+            fallback_deadline_ms=existing.fallback_deadline_ms,
+            match_id=match_id if match_id is not None else existing.match_id,
+        )
+
+    async def mark_paired(self, user_id: str, *, match_id: str) -> None:
+        self._set(user_id, status="paired", match_id=match_id)
+
+    async def mark_pair_paired(
+        self, user_a: str, user_b: str, *, match_id: str
+    ) -> None:
+        self._set(user_a, status="paired", match_id=match_id)
+        self._set(user_b, status="paired", match_id=match_id)
+
+    async def mark_cancelled(self, user_id: str) -> None:
+        self._set(user_id, status="cancelled")
+
+    async def mark_bot_fallback(self, user_id: str) -> None:
+        self._set(user_id, status="bot_fallback")
+
+    async def list_waiting(self) -> list[WaitingPoolRecord]:
+        return [r for r in self.rows.values() if r.status == "waiting"]
+
+    async def get(self, user_id: str) -> WaitingPoolRecord | None:
+        return self.rows.get(user_id)
+
+
 def _user(uid: str, *, is_bot: bool = False) -> User:
     return User(
         id=uid,
@@ -107,6 +178,7 @@ def _build_service(
     users: list[User],
     clock: FakeClock | None = None,
     queue: FakeMatchingQueue | None = None,
+    pool: FakeWaitingPoolRepo | None = None,
     rng: random.Random | None = None,
 ) -> tuple[
     MatchingQueueService,
@@ -115,9 +187,11 @@ def _build_service(
     FakeMatchRepo,
     FakeUserRepo,
     FakeClock,
+    FakeWaitingPoolRepo,
 ]:
     clock = clock or FakeClock(datetime(2026, 5, 21, 12, 0, 0, tzinfo=UTC))
     queue = queue or FakeMatchingQueue()
+    pool = pool or FakeWaitingPoolRepo()
     publisher = RecordingPublisher()
     user_repo = FakeUserRepo.from_users(users)
     match_repo = FakeMatchRepo()
@@ -133,6 +207,7 @@ def _build_service(
     )
     svc = MatchingQueueService(
         queue=queue,
+        pool=pool,
         matching=matching,
         matches_reader=match_repo,
         users=user_repo,
@@ -140,7 +215,7 @@ def _build_service(
         clock=clock,
         rng=rng or random.Random(0),  # noqa: S311
     )
-    return svc, queue, publisher, match_repo, user_repo, clock
+    return svc, queue, publisher, match_repo, user_repo, clock, pool
 
 
 # ── logic ──────────────────────────────────────────────────────────────
@@ -148,7 +223,7 @@ def _build_service(
 
 @pytest.mark.asyncio
 async def test_request_with_empty_pool_returns_waiting() -> None:
-    svc, queue, publisher, _matches, _users, _clock = _build_service(
+    svc, queue, publisher, _matches, _users, _clock, _pool = _build_service(
         users=[_user("alice")]
     )
 
@@ -168,7 +243,7 @@ async def test_request_with_empty_pool_returns_waiting() -> None:
 
 @pytest.mark.asyncio
 async def test_request_with_existing_waiter_pairs_immediately() -> None:
-    svc, queue, publisher, match_repo, _users, _clock = _build_service(
+    svc, queue, publisher, match_repo, _users, _clock, _pool = _build_service(
         users=[_user("alice"), _user("bob")]
     )
     # alice is already waiting
@@ -191,7 +266,7 @@ async def test_request_with_existing_waiter_pairs_immediately() -> None:
 
 @pytest.mark.asyncio
 async def test_sweep_pairs_two_waiters() -> None:
-    svc, queue, publisher, _matches, _users, clock = _build_service(
+    svc, queue, publisher, _matches, _users, clock, _pool = _build_service(
         users=[_user("alice"), _user("bob")]
     )
     # Both enqueue in sequence — bob arrives ~1s after alice via FakeClock
@@ -215,7 +290,7 @@ async def test_sweep_pairs_two_waiters() -> None:
 
 @pytest.mark.asyncio
 async def test_sweep_falls_back_to_bot_after_deadline() -> None:
-    svc, queue, publisher, match_repo, _users, clock = _build_service(
+    svc, queue, publisher, match_repo, _users, clock, _pool = _build_service(
         users=[_user("alice"), _user("bot-1", is_bot=True)]
     )
     # Enqueue alice with a deadline already in the past
@@ -248,7 +323,7 @@ async def test_request_skips_dedup_partner_and_enqueues() -> None:
     match window, the requester should be enqueued (not paired) — sweep
     will try the same combination again only if no fresher waiter
     arrives, and the bot-fallback timer still fires."""
-    svc, queue, publisher, match_repo, _users, _clock = _build_service(
+    svc, queue, publisher, match_repo, _users, _clock, _pool = _build_service(
         users=[_user("alice"), _user("bob")]
     )
     # Pre-seed match history: bob is alice's recent partner
@@ -277,7 +352,7 @@ async def test_request_skips_dedup_partner_and_enqueues() -> None:
 async def test_pair_chooses_oldest_waiter_first() -> None:
     """FIFO: when multiple waiters are eligible, the requester pairs with
     the one who joined first."""
-    svc, queue, publisher, match_repo, _users, clock = _build_service(
+    svc, queue, publisher, match_repo, _users, clock, _pool = _build_service(
         users=[_user("alice"), _user("bob"), _user("carol")]
     )
     await queue.enqueue(
@@ -303,7 +378,7 @@ async def test_pair_chooses_oldest_waiter_first() -> None:
 async def test_fallback_at_exactly_deadline_fires() -> None:
     """Boundary: deadline_ms <= now_ms is the fallback predicate, so
     equality should also trigger the bot fallback."""
-    svc, queue, publisher, match_repo, _users, clock = _build_service(
+    svc, queue, publisher, match_repo, _users, clock, _pool = _build_service(
         users=[_user("alice"), _user("bot-1", is_bot=True)]
     )
     now_ms = int(clock.now().timestamp() * 1000)
@@ -327,7 +402,7 @@ async def test_double_request_returns_existing_waiting_state() -> None:
     """Idempotency: a second ``request`` while already waiting must not
     create a new entry or change the deadline — both UI tabs see the
     same elapsed counter."""
-    svc, queue, _publisher, _matches, _users, _clock = _build_service(
+    svc, queue, _publisher, _matches, _users, _clock, _pool = _build_service(
         users=[_user("alice")]
     )
 
@@ -346,7 +421,7 @@ async def test_bot_fallback_with_no_bots_clears_queue() -> None:
     """When no bots exist, an overdue waiter should still be removed
     from the queue so they don't loop forever — the user will re-enqueue
     if they still want to match."""
-    svc, queue, _publisher, match_repo, _users, clock = _build_service(
+    svc, queue, _publisher, match_repo, _users, clock, _pool = _build_service(
         users=[_user("alice")]
     )
     now_ms = int(clock.now().timestamp() * 1000)
@@ -367,7 +442,7 @@ async def test_bot_fallback_with_no_bots_clears_queue() -> None:
 
 @pytest.mark.asyncio
 async def test_cancel_removes_user_from_queue() -> None:
-    svc, queue, _publisher, _matches, _users, _clock = _build_service(
+    svc, queue, _publisher, _matches, _users, _clock, _pool = _build_service(
         users=[_user("alice")]
     )
     await svc.request(requester_id="alice")
@@ -380,7 +455,7 @@ async def test_cancel_removes_user_from_queue() -> None:
 
 @pytest.mark.asyncio
 async def test_status_returns_none_when_not_waiting() -> None:
-    svc, _queue, _publisher, _matches, _users, _clock = _build_service(
+    svc, _queue, _publisher, _matches, _users, _clock, _pool = _build_service(
         users=[_user("alice")]
     )
 
@@ -393,7 +468,7 @@ async def test_status_returns_none_when_not_waiting() -> None:
 async def test_pair_creates_pending_match_in_repo() -> None:
     """Object-state: after pairing, the match repo has exactly one row
     with status=pending (the queue does not auto-accept real-real pairs)."""
-    svc, _queue, _publisher, match_repo, _users, _clock = _build_service(
+    svc, _queue, _publisher, match_repo, _users, _clock, _pool = _build_service(
         users=[_user("alice"), _user("bob")]
     )
     await svc.request(requester_id="alice")

@@ -9,6 +9,7 @@ from app.core.logging import get_logger
 from app.domain.models import Match
 from app.domain.repositories.match_queue import IMatchingQueue, WaitEntry
 from app.domain.repositories.match_repo import IMatchReader
+from app.domain.repositories.match_waiting_pool_repo import IMatchWaitingPoolRepo
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.user_repo import IUserReader
 from app.domain.services.matching_service import MatchingService
@@ -72,6 +73,7 @@ class MatchingQueueService:
         self,
         *,
         queue: IMatchingQueue,
+        pool: IMatchWaitingPoolRepo,
         matching: MatchingService,
         matches_reader: IMatchReader,
         users: IUserReader,
@@ -82,6 +84,7 @@ class MatchingQueueService:
         bot_fallback_max_ms: int = DEFAULT_BOT_FALLBACK_MAX_MS,
     ) -> None:
         self._queue = queue
+        self._pool = pool
         self._matching = matching
         self._matches_reader = matches_reader
         self._users = users
@@ -132,6 +135,15 @@ class MatchingQueueService:
 
         now_ms = self._now_ms()
         deadline = self._pick_fallback_deadline(now_ms)
+        # PG is the source of truth — write here BEFORE Redis so a
+        # Redis failure leaves the row recoverable by the reconciler.
+        # The reverse order would let a Redis-only ghost waiter slip
+        # through, visible to the sweep but unauditable from PG.
+        await self._pool.upsert_waiting(
+            requester_id,
+            enqueued_at_ms=now_ms,
+            fallback_deadline_ms=deadline,
+        )
         added = await self._queue.enqueue(
             requester_id,
             enqueued_at_ms=now_ms,
@@ -150,6 +162,10 @@ class MatchingQueueService:
         )
 
     async def cancel(self, *, user_id: str) -> None:
+        # PG-then-Redis: a Redis failure leaves the PG row marked
+        # ``cancelled`` so the reconciler will prune the stale Redis
+        # member on the next tick.
+        await self._pool.mark_cancelled(user_id)
         await self._queue.cancel(user_id)
 
     async def status(self, *, user_id: str) -> WaitEntry | None:
@@ -207,6 +223,11 @@ class MatchingQueueService:
                 "matching_queue_propose_failed", requester_id=a, candidate_id=b
             )
             return None
+        # Single UPDATE flips BOTH sides to ``paired`` so the reconciler
+        # never sees a half-state where one side is paired and the other
+        # is still ``waiting`` — that would race the reconciler into
+        # re-enqueueing the still-waiting side and undoing the pair.
+        await self._pool.mark_pair_paired(a, b, match_id=match.id)
         await self._notify_pair(a, b, match, via="waiting_pool")
         return match
 
@@ -237,6 +258,13 @@ class MatchingQueueService:
                 candidate_id=waiter_id,
             )
             return None
+        # The waiter has a PG row in ``waiting``. The requester does not
+        # yet — they never enqueued. mark_paired is a no-op when no row
+        # exists, so passing both ids is safe and keeps the contract
+        # uniform with the sweep path above.
+        await self._pool.mark_pair_paired(
+            requester_id, waiter_id, match_id=match.id
+        )
         await self._notify_pair(
             requester_id, waiter_id, match, via="waiting_pool"
         )
@@ -278,6 +306,9 @@ class MatchingQueueService:
         recent = await self._recent_partners(user_id)
         bots = await self._users.list_bots()
         if not bots:
+            # No bots configured — give up the slot. Treat as cancelled
+            # so the reconciler doesn't try to re-enqueue.
+            await self._pool.mark_cancelled(user_id)
             await self._queue.cancel(user_id)
             return
         eligible = [b for b in bots if b.id not in recent] or bots
@@ -291,6 +322,11 @@ class MatchingQueueService:
         accepted = await self._matching.accept(
             match_id=match.id, user_id=chosen.id
         )
+        # Terminal state — the reconciler MUST NOT re-enqueue a row in
+        # ``bot_fallback`` even if Redis is later flushed, otherwise a
+        # flaky Redis restart re-queues users who already got matched
+        # with a bot.
+        await self._pool.mark_bot_fallback(user_id)
         payload = {
             "type": "match.proposed",
             "match_id": accepted.id,

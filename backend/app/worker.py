@@ -29,6 +29,10 @@ from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
 from app.domain.services.focus_session_service import FocusSessionService
 from app.domain.services.leaderboard_service import LeaderboardService
+from app.domain.services.matching_queue_reconciler import (
+    reconcile_redis_from_pg,
+    warm_redis_on_boot,
+)
 from app.domain.services.matching_queue_service import MatchingQueueService
 from app.domain.services.matching_service import MatchingService
 from app.domain.services.station_service import StationService
@@ -39,6 +43,7 @@ from app.infrastructure.db.repositories import (
     SqlFocusSessionRepo,
     SqlLeaderboardSnapshotRepo,
     SqlMatchRepo,
+    SqlMatchWaitingPoolRepo,
     SqlUserRepo,
 )
 from app.infrastructure.db.repositories.station_repo import SqlStationSnapshotRepo
@@ -247,6 +252,7 @@ async def sweep_matching_queue_job(factory) -> None:
         )
         svc = MatchingQueueService(
             queue=RedisMatchingQueue(redis),
+            pool=SqlMatchWaitingPoolRepo(db),
             matching=matching,
             matches_reader=SqlMatchRepo(db),
             users=SqlUserRepo(db),
@@ -254,6 +260,28 @@ async def sweep_matching_queue_job(factory) -> None:
             clock=clock,
         )
         await svc.sweep()
+        await db.commit()
+
+
+async def reconcile_matching_queue_job(factory) -> None:
+    """Worker tick — diff PG ``waiting`` rows against Redis and repair drift.
+
+    30s cadence: long enough that a PG scan + Redis re-add for a backlog
+    of 100 users cleanly finishes inside the leader-lock TTL (27s, set
+    by ``APSchedulerAdapter`` at 0.9x the interval) without doubling up
+    across replicas. Shorter than that and a backlog could exceed the
+    TTL and double-fire.
+
+    PG is source of truth: a ``waiting`` row with no Redis member is
+    re-warmed; a Redis member with no live ``waiting`` row is pruned.
+    Increments ``match_queue_redis_drift_total{direction=...}`` so
+    asymmetric drift surfaces as an operator signal.
+    """
+    async with factory() as db:
+        redis = get_redis()
+        pool = SqlMatchWaitingPoolRepo(db)
+        queue = RedisMatchingQueue(redis)
+        await reconcile_redis_from_pg(queue=queue, pool=pool)
         await db.commit()
 
 
@@ -278,6 +306,18 @@ async def main() -> None:
     await init_redis(settings.redis_url, settings.redis_auth_token)
     factory = get_session_factory(settings.database_url)
     bus = EventBus()
+
+    # Boot warm-up: replay every ``waiting`` PG row into Redis BEFORE the
+    # scheduler ticks. Without this, the sweep would run for up to 30s on
+    # an empty Redis (a Redis-only restart scenario) and pair nobody while
+    # PG still records the in-flight waiters.
+    async with factory() as db:
+        await warm_redis_on_boot(
+            queue=RedisMatchingQueue(get_redis()),
+            pool=SqlMatchWaitingPoolRepo(db),
+        )
+        await db.commit()
+
     # Pass the shared Redis client so APScheduler ticks gate on a global
     # SET-NX leader lock — multiple worker replicas → one body run per tick.
     scheduler = APSchedulerAdapter(redis=get_redis())
@@ -303,6 +343,14 @@ async def main() -> None:
             partial(sweep_matching_queue_job, factory),
         ),
         seconds=3,
+    )
+    scheduler.schedule_interval(
+        job_id="reconcile_matching_queue",
+        func=_log_job_errors(
+            "reconcile_matching_queue",
+            partial(reconcile_matching_queue_job, factory),
+        ),
+        seconds=30,
     )
     scheduler.schedule_cron(
         job_id="snapshot_leaderboard",

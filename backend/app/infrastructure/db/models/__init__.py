@@ -8,6 +8,7 @@ from app.infrastructure.db.models.match_realtime import (
     MatchAgendaItemORM,
     MatchMessageORM,
 )
+from app.infrastructure.db.models.match_waiting_pool import MatchWaitingPoolORM
 from app.infrastructure.db.models.note import NoteORM
 from app.infrastructure.db.models.password_reset_token import PasswordResetTokenORM
 from app.infrastructure.db.models.redemption_code import (
@@ -38,6 +39,7 @@ __all__ = [
     "MatchAgendaItemORM",
     "MatchMessageORM",
     "MatchORM",
+    "MatchWaitingPoolORM",
     "NoteORM",
     "PasswordResetTokenORM",
     "RedemptionCodeORM",

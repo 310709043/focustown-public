@@ -16,11 +16,15 @@ from app.core.ids import IIdGenerator, UUID4Generator
 from app.domain.notifications import IEmailSender
 from app.domain.rate_limit import IRateLimiter
 from app.domain.repositories.match_queue import IMatchingQueue
+from app.domain.repositories.match_waiting_pool_repo import IMatchWaitingPoolRepo
 from app.domain.repositories.presence import IPresenceTracker
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.infrastructure.auth.providers.base import AuthProvider
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
 from app.infrastructure.cache.redis_client import get_redis
+from app.infrastructure.db.repositories.match_waiting_pool_repo import (
+    SqlMatchWaitingPoolRepo,
+)
 from app.infrastructure.db.session import get_session_factory
 from app.infrastructure.matching.redis_queue import RedisMatchingQueue
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
@@ -120,6 +124,21 @@ def get_matching_queue() -> IMatchingQueue:
 
 
 MatchingQueueDep = Annotated[IMatchingQueue, Depends(get_matching_queue)]
+
+
+def get_waiting_pool_repo(db: DbDep) -> IMatchWaitingPoolRepo:
+    """Postgres source-of-truth for the matching waiting pool.
+
+    Exposed as a DI alias for Phase 07 (match→room) where routers will
+    need to read paired-row state directly; Phase 06's consumer is the
+    queue service wired inside ``matches/router.py:_queue_service``.
+    """
+    return SqlMatchWaitingPoolRepo(db)
+
+
+WaitingPoolRepoDep = Annotated[
+    IMatchWaitingPoolRepo, Depends(get_waiting_pool_repo)
+]
 
 
 def get_realtime_publisher() -> IRealtimePublisher:

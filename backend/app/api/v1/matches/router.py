@@ -32,6 +32,7 @@ from app.domain.services.strategies import SimpleOverlapStrategy
 from app.infrastructure.db.repositories import (
     SqlFocusSessionRepo,
     SqlMatchRepo,
+    SqlMatchWaitingPoolRepo,
     SqlUserRepo,
 )
 
@@ -93,6 +94,7 @@ def _queue_service(
 ) -> MatchingQueueService:
     return MatchingQueueService(
         queue=queue,
+        pool=SqlMatchWaitingPoolRepo(db),
         matching=_matching_service(db, ids, events, clock),
         matches_reader=SqlMatchRepo(db),
         users=SqlUserRepo(db),
@@ -167,13 +169,25 @@ async def recent_matches(user_id: CurrentUserId, db: DbDep) -> list[MatchRespons
 @router.delete("/queue", status_code=204)
 async def cancel_queue(
     user_id: CurrentUserId,
+    db: DbDep,
+    ids: IdGenDep,
+    events: EventBusDep,
+    clock: ClockDep,
     queue: MatchingQueueDep,
+    publisher: RealtimePublisherDep,
 ) -> Response:
     """Leave the waiting pool. Idempotent — 204 even if the caller wasn't
     waiting. Called by (a) the user pressing CANCEL in the modal and
     (b) the WebSocket disconnect hook so abandoned sessions don't keep a
-    ghost waiter alive until the HASH TTL expires."""
-    await queue.cancel(user_id)
+    ghost waiter alive until the HASH TTL expires.
+
+    Routes through ``MatchingQueueService.cancel`` so both the PG row
+    (source of truth) and the Redis ZSET member are removed together —
+    a Redis-only cancel would leave a ``waiting`` PG row that the
+    reconciliation tick would re-enqueue.
+    """
+    svc = _queue_service(db, ids, events, clock, queue, publisher)
+    await svc.cancel(user_id=user_id)
     return Response(status_code=204)
 
 

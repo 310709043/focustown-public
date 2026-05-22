@@ -16,6 +16,9 @@ from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.services.presence_service import STREET_CHANNEL, PresenceService
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
+from app.infrastructure.db.repositories.match_waiting_pool_repo import (
+    SqlMatchWaitingPoolRepo,
+)
 from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
 from app.infrastructure.db.repositories.room_visit_repo import SqlRoomVisitRepo
 from app.infrastructure.db.session import get_session_factory
@@ -282,6 +285,23 @@ async def ws_connect(
             # Same multi-tab guard for the matching queue: only drop the
             # waiter when their last socket goes away. Idempotent — no-ops
             # cheaply if the user wasn't waiting.
+            #
+            # Dual-delete: mark the PG row ``cancelled`` BEFORE Redis so a
+            # Redis failure leaves the PG state correct and the reconciler
+            # prunes the stale Redis member on the next tick. The reverse
+            # order would let the reconciler re-enqueue the user from the
+            # still-``waiting`` PG row.
+            try:
+                factory = get_session_factory(settings.database_url)
+                async with factory() as session:
+                    await SqlMatchWaitingPoolRepo(session).mark_cancelled(
+                        user_id
+                    )
+                    await session.commit()
+            except Exception:
+                log.exception(
+                    "matching_queue_pg_cancel_failed", user_id=user_id
+                )
             try:
                 await match_queue.cancel(user_id)
             except Exception:

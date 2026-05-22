@@ -64,9 +64,20 @@ scheduler_lock_skipped_total = Counter(
 pubsub_duplicate_dropped_total = Counter(
     "pubsub_duplicate_dropped_total", labelnames=("channel",)
 )
+# Direction-labelled counter for the matching queue reconciler.
+# ``direction="pg_to_redis"`` increments when a ``waiting`` PG row was
+# missing from Redis and got re-warmed; ``direction="redis_to_pg"``
+# increments when a Redis ZSET member had no live ``waiting`` PG row and
+# got pruned from Redis. Asymmetric drift in either direction is the
+# operator signal that Redis is failing or that a dual-write path is
+# bypassing PG.
+match_queue_redis_drift_total = Counter(
+    "match_queue_redis_drift_total", labelnames=("direction",)
+)
 
 
 def reset_all_for_tests() -> None:
     scheduler_lock_acquired_total.reset()
     scheduler_lock_skipped_total.reset()
     pubsub_duplicate_dropped_total.reset()
+    match_queue_redis_drift_total.reset()

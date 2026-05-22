@@ -22,6 +22,9 @@ from app.infrastructure.db.repositories.match_realtime_repo import (
     SqlMatchMessageRepo,
 )
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
+from app.infrastructure.db.repositories.match_waiting_pool_repo import (
+    SqlMatchWaitingPoolRepo,
+)
 from app.infrastructure.db.repositories.note_repo import SqlNoteRepo
 from app.infrastructure.db.repositories.password_reset_token_repo import (
     SqlPasswordResetTokenRepo,
@@ -57,6 +60,7 @@ __all__ = [
     "SqlMatchAgendaRepo",
     "SqlMatchMessageRepo",
     "SqlMatchRepo",
+    "SqlMatchWaitingPoolRepo",
     "SqlNoteRepo",
     "SqlPasswordResetTokenRepo",
     "SqlRedemptionCodeRepo",
