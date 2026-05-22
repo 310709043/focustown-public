@@ -28,7 +28,9 @@ test.describe("/town navigation", () => {
     // V2 of the shop / room flows ship. The buttons + handlers + i18n
     // are kept in code so flipping the gate restores them.
     await expect(page.getByTestId("nav-friends")).toBeVisible();
-    await expect(page.getByTestId("nav-logout")).toBeVisible();
+    // Sign-out moved into the Profile modal (2026-05-21 UX request); the
+    // top-bar nav-logout chip is gone. See profile.spec for the new entry
+    // point via ``profile-sign-out``.
   });
 
   test("/town shows reference scene chrome: weather badge, sky window, NPCs, buildings", async ({ page }) => {
@@ -80,12 +82,15 @@ test.describe("/town navigation", () => {
     await expect(shopBtn).toHaveAttribute("title", /coming soon/i);
   });
 
-  test("登出 clears tokens and returns to landing", async ({ page }) => {
+  test("登出 clears tokens and returns to signin", async ({ page }) => {
     await page.goto("/town");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    await page.getByTestId("nav-logout").click();
-    // Landing URL with localePrefix="always" is /zh-TW or /en, not bare "/".
-    await expect(page).toHaveURL(/\/(zh-TW|en)\/?$/);
+    // Sign-out now lives inside the Profile modal — open it via the
+    // centre status pill and click profile-sign-out.
+    await page.getByTestId("user-status-pill").click();
+    await expect(page.getByTestId("profile-modal")).toBeVisible();
+    await page.getByTestId("profile-sign-out").click();
+    await expect(page).toHaveURL(/\/(zh-TW|en)\/signin\/?$/);
     const tokens = await page.evaluate(() =>
       window.localStorage.getItem("lowbatterytown.tokens"),
     );

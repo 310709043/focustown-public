@@ -16,7 +16,11 @@ import {
   type StationCursor,
   type StationTrackMeta,
 } from "@/lib/state/stationStore";
-import { clearAudioUnlocked, isAudioUnlocked } from "@/lib/audio/unlock";
+import {
+  clearAudioUnlocked,
+  isAudioUnlocked,
+  markAudioUnlocked,
+} from "@/lib/audio/unlock";
 import { getPlayUrl, invalidate as invalidatePlayUrl } from "@/lib/audio/playUrlCache";
 
 /**
@@ -177,6 +181,35 @@ export function GlobalAudioMount() {
     if (isAudioUnlocked()) {
       useAudioStore.setState({ audioUnlocked: true });
     }
+  }, []);
+
+  // One-shot: the first user gesture on /town doubles as the audio
+  // unlock. Browsers reject `.play()` outside a gesture, and the
+  // sessionStorage flag alone doesn't actually permit playback — we
+  // need a real `play()` call inside a real click/keypress/touch
+  // handler. Capture-phase + once-then-remove avoids interfering with
+  // downstream click handlers.
+  useEffect(() => {
+    if (isAudioUnlocked()) return;
+    const tryUnlock = () => {
+      const el = audioRef.current;
+      if (el && el.src) {
+        void el.play().catch(() => {});
+      }
+      markAudioUnlocked();
+      useAudioStore.setState({ audioUnlocked: true });
+      document.removeEventListener("pointerdown", tryUnlock, true);
+      document.removeEventListener("keydown", tryUnlock, true);
+      document.removeEventListener("touchstart", tryUnlock, true);
+    };
+    document.addEventListener("pointerdown", tryUnlock, true);
+    document.addEventListener("keydown", tryUnlock, true);
+    document.addEventListener("touchstart", tryUnlock, true);
+    return () => {
+      document.removeEventListener("pointerdown", tryUnlock, true);
+      document.removeEventListener("keydown", tryUnlock, true);
+      document.removeEventListener("touchstart", tryUnlock, true);
+    };
   }, []);
 
   // Re-evaluate the source whenever either store changes. Both stores

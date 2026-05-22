@@ -41,7 +41,7 @@ export function KpiRow({
       />
       <KpiCard
         accent="rank"
-        value={t("valueWithRank", { value: weeklyRank })}
+        value={weeklyRank > 0 ? t("valueWithRank", { value: weeklyRank }) : "—"}
         label={t("weeklyRank")}
       />
     </div>

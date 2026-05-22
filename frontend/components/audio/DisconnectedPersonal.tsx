@@ -31,11 +31,7 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
   const t = useTranslations("town.bottom.stationPlayer");
   const personalPlaylist = useStationStore((s) => s.personalPlaylist);
   const personalIndex = useStationStore((s) => s.personalIndex);
-  const mutedWhileDisconnected = useStationStore(
-    (s) => s.mutedWhileDisconnected,
-  );
   const reconnect = useStationStore((s) => s.reconnect);
-  const setMuted = useStationStore((s) => s.setMuted);
   const nextPersonal = useStationStore((s) => s.nextPersonal);
   const prevPersonal = useStationStore((s) => s.prevPersonal);
 
@@ -62,10 +58,10 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
       data-scope-kind={scopeKind}
       className="pixel-panel"
       style={{
-        padding: 12,
+        padding: 10,
         display: "flex",
         flexDirection: "column",
-        gap: 8,
+        gap: 6,
         filter: "saturate(0.55) brightness(0.95)",
         opacity: 0.94,
       }}
@@ -89,7 +85,7 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
         >
           {t("disconnectedLabel")}
         </span>
-        <EQViz playing={isPlaying && !mutedWhileDisconnected} />
+        <EQViz playing={isPlaying} />
       </div>
 
       {/* Personal track */}
@@ -124,7 +120,9 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
         </div>
       </div>
 
-      {/* Transport: prev / play / next */}
+      {/* Controls row: prev / play / next · volume · reconnect.
+          Mute is implicit (drag volume to 0) so we can keep the panel
+          within the 168 px BottomHUD band even on smaller viewports. */}
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <button
           type="button"
@@ -171,10 +169,6 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
         >
           ▶▶
         </button>
-      </div>
-
-      {/* Volume + Mute (mute exclusive to disconnected state) */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <input
           type="range"
           min={0}
@@ -183,50 +177,32 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
           onChange={(e) => setVolume(Number(e.target.value) / 100)}
           aria-label={t("volumeAria")}
           data-testid="station-volume"
-          disabled={mutedWhileDisconnected}
-          style={{ flex: 1, height: 4, accentColor: "var(--accent-3)" }}
+          style={{
+            flex: 1,
+            minWidth: 48,
+            height: 4,
+            accentColor: "var(--accent-3)",
+          }}
         />
         <button
           type="button"
-          data-testid="station-mute"
-          aria-label={mutedWhileDisconnected ? t("unmuteAria") : t("muteAria")}
-          aria-pressed={mutedWhileDisconnected}
-          onClick={() => setMuted(!mutedWhileDisconnected)}
-          className="pixel-btn"
+          data-testid="station-reconnect"
+          aria-label={reconnectLabel}
+          onClick={reconnect}
+          className="pixel-btn primary"
           style={{
-            padding: "4px 6px",
             fontSize: 10,
-            color: mutedWhileDisconnected
-              ? "var(--accent-4)"
-              : "var(--ink-mute)",
-            borderColor: mutedWhileDisconnected
-              ? "var(--accent-4)"
-              : "var(--panel-stroke)",
+            padding: "4px 8px",
+            letterSpacing: "0.15em",
+            borderColor: "var(--accent-3)",
+            color: "var(--accent-3)",
+            background: "rgba(34,211,238,0.06)",
+            whiteSpace: "nowrap",
           }}
         >
-          {mutedWhileDisconnected ? "🔇" : "🔊"}
+          ⟲ {reconnectLabel}
         </button>
       </div>
-
-      {/* Persistent rejoin affordance */}
-      <button
-        type="button"
-        data-testid="station-reconnect"
-        aria-label={reconnectLabel}
-        onClick={reconnect}
-        className="pixel-btn primary"
-        style={{
-          fontSize: 10,
-          padding: "5px 10px",
-          letterSpacing: "0.18em",
-          alignSelf: "stretch",
-          borderColor: "var(--accent-3)",
-          color: "var(--accent-3)",
-          background: "rgba(34,211,238,0.06)",
-        }}
-      >
-        ⟲ {reconnectLabel}
-      </button>
     </div>
   );
 }

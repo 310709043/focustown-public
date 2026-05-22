@@ -58,7 +58,6 @@ const Dogs = dynamic(
 import { MatchModal } from "@/components/modals/MatchModal";
 import { ShopModal } from "@/components/modals/ShopModal";
 import { AchievementsModal } from "@/components/modals/AchievementsModal";
-import { FeedbackModal } from "@/components/modals/FeedbackModal";
 import { FriendsModal } from "@/components/modals/FriendsModal";
 import { ProfileModal } from "@/components/modals/ProfileModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
@@ -320,14 +319,9 @@ export default function TownPage() {
         onClose={() => setOpenModal(null)}
         onFindBuddy={onFindBuddy}
       />
-      <FeedbackModal
-        open={openModal === "feedback"}
-        onClose={() => setOpenModal(null)}
-      />
       <ProfileModal
         open={openModal === "profile"}
         onClose={() => setOpenModal(null)}
-        onRouteToModal={(k) => setOpenModal(k)}
       />
 
       {/* First-time onboarding tour — auto-opens once per browser to

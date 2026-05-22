@@ -85,12 +85,27 @@ export interface PublicUserProfile {
   today_focus_minutes: number;
 }
 
+export interface UserStats {
+  total_tomatoes: number;
+  all_time_focus_hours: number;
+  week_total_hours: number;
+  streak_days: number;
+  weekly_rank: number;
+  heatmap: number[][];
+  level: number;
+  xp: number;
+  xp_next_level: number;
+}
+
 export const userApi = {
   updateMe(input: { display_name?: string; character_key?: string; role_label?: string }) {
     return apiFetch<User>("/api/v1/users/me", { method: "PATCH", body: input });
   },
   getPublicProfile(userId: string) {
     return apiFetch<PublicUserProfile>(`/api/v1/users/${userId}/public`);
+  },
+  myStats() {
+    return apiFetch<UserStats>("/api/v1/users/me/stats");
   },
 };
 

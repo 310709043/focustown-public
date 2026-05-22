@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { FeedbackView } from "@/components/profile/feedback/FeedbackView";
 import { FriendsView } from "@/components/profile/friends/FriendsView";
 import { NotesView } from "@/components/profile/notes/NotesView";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
@@ -12,7 +13,6 @@ import { SupportView } from "@/components/profile/support/SupportView";
 import { WalletView } from "@/components/profile/wallet/WalletView";
 import { useUserStats } from "@/lib/hooks/useUserStats";
 import { useAuthStore } from "@/lib/state/authStore";
-import type { TownModalKind } from "@/components/town/scene/TownTopHUD";
 
 export type ProfileView =
   | "stats"
@@ -26,21 +26,9 @@ export type ProfileView =
 interface ProfileModalProps {
   open: boolean;
   onClose: () => void;
-  /** When a sidebar item maps to an existing town modal, the modal
-   *  closes itself and asks the host to open the routed modal instead.
-   *  Items with no real destination yet render an in-place stub. */
-  onRouteToModal?: (kind: TownModalKind) => void;
 }
 
-/** Profile rail items that already have a dedicated town modal — clicking
- *  them closes this modal and opens the routed one. `friends` now stays
- *  inside the profile modal (renders FriendsView); `notes` and `wallet`
- *  also stay in-modal. */
-const ROUTED_VIEWS: Partial<Record<ProfileView, TownModalKind>> = {
-  feedback: "feedback",
-};
-
-export function ProfileModal({ open, onClose, onRouteToModal }: ProfileModalProps) {
+export function ProfileModal({ open, onClose }: ProfileModalProps) {
   const [activeView, setActiveView] = useState<ProfileView>("stats");
   const user = useAuthStore((s) => s.user);
   const stats = useUserStats(user);
@@ -59,12 +47,6 @@ export function ProfileModal({ open, onClose, onRouteToModal }: ProfileModalProp
   }, [open]);
 
   const handleSelectView = (view: ProfileView) => {
-    const routed = ROUTED_VIEWS[view];
-    if (routed && onRouteToModal) {
-      onClose();
-      onRouteToModal(routed);
-      return;
-    }
     setActiveView(view);
   };
 
@@ -109,10 +91,7 @@ export function ProfileModal({ open, onClose, onRouteToModal }: ProfileModalProp
           activeView={activeView}
           onClose={onClose}
           onBackToStats={() => setActiveView("stats")}
-          onOpenFeedback={() => {
-            onClose();
-            onRouteToModal?.("feedback");
-          }}
+          onSelectView={handleSelectView}
         />
       </div>
     </div>
@@ -123,14 +102,14 @@ interface RightPaneProps {
   activeView: ProfileView;
   onClose: () => void;
   onBackToStats: () => void;
-  onOpenFeedback: () => void;
+  onSelectView: (view: ProfileView) => void;
 }
 
 function RightPane({
   activeView,
   onClose,
   onBackToStats,
-  onOpenFeedback,
+  onSelectView,
 }: RightPaneProps) {
   if (activeView === "stats") {
     return <StatsView onClose={onClose} />;
@@ -149,8 +128,14 @@ function RightPane({
   }
   if (activeView === "support") {
     return (
-      <SupportView onClose={onClose} onOpenFeedback={onOpenFeedback} />
+      <SupportView
+        onClose={onClose}
+        onOpenFeedback={() => onSelectView("feedback")}
+      />
     );
+  }
+  if (activeView === "feedback") {
+    return <FeedbackView onClose={onClose} />;
   }
   return <StubView onClose={onClose} onBackToStats={onBackToStats} />;
 }

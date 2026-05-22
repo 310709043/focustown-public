@@ -60,10 +60,12 @@ export function ProfileSidebar({
         background: "rgba(7,4,26,0.95)",
         borderRight: "1px dashed var(--panel-stroke-strong)",
         minWidth: 0,
+        minHeight: 0,
       }}
     >
       <div
         style={{
+          flexShrink: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -134,6 +136,9 @@ export function ProfileSidebar({
       <nav
         aria-label="profile sections"
         style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
           display: "flex",
           flexDirection: "column",
           gap: 2,
@@ -146,13 +151,6 @@ export function ProfileSidebar({
           label={tNav("stats")}
           active={activeView === "stats"}
           onClick={() => onSelectView("stats")}
-        />
-        <ProfileNavItem
-          testId="profile-nav-wallet"
-          icon={<span style={{ color: "var(--accent-3)" }}>✦</span>}
-          label={tNav("wallet")}
-          active={activeView === "wallet"}
-          onClick={() => onSelectView("wallet")}
         />
         <ProfileNavItem
           testId="profile-nav-notes"
@@ -169,6 +167,13 @@ export function ProfileSidebar({
           onClick={() => onSelectView("friends")}
         />
         <ProfileNavItem
+          testId="profile-nav-wallet"
+          icon={<span style={{ color: "var(--accent-3)" }}>✦</span>}
+          label={tNav("wallet")}
+          active={activeView === "wallet"}
+          onClick={() => onSelectView("wallet")}
+        />
+        <ProfileNavItem
           testId="profile-nav-settings"
           icon={<span>⚙</span>}
           label={tNav("settings")}
@@ -176,18 +181,18 @@ export function ProfileSidebar({
           onClick={() => onSelectView("settings")}
         />
         <ProfileNavItem
-          testId="profile-nav-feedback"
-          icon={<span>✍</span>}
-          label={tNav("feedback")}
-          active={activeView === "feedback"}
-          onClick={() => onSelectView("feedback")}
-        />
-        <ProfileNavItem
           testId="profile-nav-support"
           icon={<span>?</span>}
           label={tNav("support")}
           active={activeView === "support"}
           onClick={() => onSelectView("support")}
+        />
+        <ProfileNavItem
+          testId="profile-nav-feedback"
+          icon={<span>✍</span>}
+          label={tNav("feedback")}
+          active={activeView === "feedback"}
+          onClick={() => onSelectView("feedback")}
         />
         <ProfileNavItem
           testId="profile-nav-tutorial"
@@ -204,7 +209,7 @@ export function ProfileSidebar({
         className="pixel-btn"
         onClick={handleSignOut}
         style={{
-          marginTop: "auto",
+          flexShrink: 0,
           width: "100%",
           padding: "10px 12px",
           fontSize: 11,

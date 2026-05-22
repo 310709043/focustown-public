@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
-from sqlalchemy import func, select, update
+from sqlalchemy import Integer, case, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
 from app.domain.models import FocusSession, FocusSessionMode, FocusSessionStatus
-from app.domain.repositories.focus_session_repo import IFocusSessionRepo
+from app.domain.repositories.focus_session_repo import (
+    IFocusSessionRepo,
+    UserFocusTotals,
+)
 from app.infrastructure.db.models.focus_session import FocusSessionORM
 
 
@@ -137,3 +140,156 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
             .limit(limit)
         )
         return [(uid, int(c)) for uid, c in (await self._s.execute(stmt)).all()]
+
+    async def user_totals(
+        self, *, user_id: str, week_start: datetime
+    ) -> UserFocusTotals:
+        # Single round-trip: lifetime count, lifetime elapsed-seconds, and
+        # week-to-date elapsed-seconds rolled up via conditional aggregates.
+        completed = FocusSessionStatus.COMPLETED.value
+        focus_mode = FocusSessionMode.FOCUS.value
+        stmt = select(
+            func.count().label("lifetime_count"),
+            func.coalesce(func.sum(FocusSessionORM.elapsed_seconds), 0).label(
+                "lifetime_seconds"
+            ),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (FocusSessionORM.started_at >= week_start, FocusSessionORM.elapsed_seconds),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("week_seconds"),
+        ).where(
+            FocusSessionORM.user_id == user_id,
+            FocusSessionORM.status == completed,
+            FocusSessionORM.mode == focus_mode,
+        )
+        row = (await self._s.execute(stmt)).one()
+        return UserFocusTotals(
+            completed_focus_count=int(row.lifetime_count or 0),
+            completed_focus_seconds=int(row.lifetime_seconds or 0),
+            week_focus_seconds=int(row.week_seconds or 0),
+        )
+
+    async def completed_focus_days_since(
+        self, *, user_id: str, since: datetime
+    ) -> list[datetime]:
+        # Use func.date() to bucket by UTC calendar day; the service layer
+        # interprets results in whatever timezone the user is in (defaults
+        # to UTC for now). Cast to a python datetime list of midnight UTC
+        # values for downstream calendar math.
+        day_col = func.date(FocusSessionORM.started_at).label("day")
+        stmt = (
+            select(day_col)
+            .where(
+                FocusSessionORM.user_id == user_id,
+                FocusSessionORM.status == FocusSessionStatus.COMPLETED.value,
+                FocusSessionORM.mode == FocusSessionMode.FOCUS.value,
+                FocusSessionORM.started_at >= since,
+            )
+            .group_by(day_col)
+            .order_by(day_col.desc())
+        )
+        rows = (await self._s.execute(stmt)).all()
+        out: list[datetime] = []
+        for (day,) in rows:
+            if day is None:
+                continue
+            # SQLite returns str; Postgres returns date — normalize to
+            # midnight UTC datetime so the caller can do timezone-aware
+            # day-diff arithmetic.
+            if isinstance(day, str):
+                parsed = datetime.fromisoformat(day)
+            elif isinstance(day, datetime):
+                parsed = day
+            else:
+                # python date — promote to datetime at midnight
+                parsed = datetime(day.year, day.month, day.day)
+            out.append(parsed.replace(tzinfo=UTC))
+        return out
+
+    async def weekly_rank(
+        self, *, user_id: str, week_start: datetime
+    ) -> int:
+        # Rank by descending count, ties share the same rank (dense rank
+        # would let everyone climb 1 spot at a tie; we prefer competition
+        # ranking — 1, 2, 2, 4). Users with zero completions this week
+        # don't appear in the GROUP BY result; service translates that to
+        # rank 0 (frontend renders "—").
+        sub = (
+            select(
+                FocusSessionORM.user_id.label("user_id"),
+                func.count().label("c"),
+            )
+            .where(
+                FocusSessionORM.status == FocusSessionStatus.COMPLETED.value,
+                FocusSessionORM.mode == FocusSessionMode.FOCUS.value,
+                FocusSessionORM.started_at >= week_start,
+            )
+            .group_by(FocusSessionORM.user_id)
+            .subquery()
+        )
+        my_count_stmt = select(sub.c.c).where(sub.c.user_id == user_id)
+        my_count = (await self._s.execute(my_count_stmt)).scalar_one_or_none()
+        if my_count is None or my_count == 0:
+            return 0
+        ahead_stmt = select(func.count()).select_from(sub).where(sub.c.c > my_count)
+        ahead = int((await self._s.execute(ahead_stmt)).scalar_one())
+        return ahead + 1
+
+    async def weekly_heatmap(
+        self, *, user_id: str, week_start: datetime
+    ) -> list[list[int]]:
+        # Group by (Monday-based DOW, hour). Postgres' extract(dow ...)
+        # returns 0..6 with Sunday=0, so we shift by -1 mod 7 to make
+        # Monday=0. SQLite (tests) needs strftime fallback.
+        dialect = self._s.bind.dialect.name if self._s.bind is not None else ""
+        if dialect == "postgresql":
+            dow = ((func.extract("dow", FocusSessionORM.started_at) + 6) % 7).label(
+                "dow"
+            )
+            hour = func.extract("hour", FocusSessionORM.started_at).label("hour")
+        else:
+            # SQLite + others: strftime returns 0-Sunday too. Cast to int.
+            dow = (
+                (
+                    func.cast(
+                        func.strftime("%w", FocusSessionORM.started_at),
+                        Integer,
+                    )
+                    + 6
+                )
+                % 7
+            ).label("dow")
+            hour = func.cast(
+                func.strftime("%H", FocusSessionORM.started_at),
+                Integer,
+            ).label("hour")
+        stmt = (
+            select(dow, hour, func.count().label("c"))
+            .where(
+                FocusSessionORM.user_id == user_id,
+                FocusSessionORM.status == FocusSessionStatus.COMPLETED.value,
+                FocusSessionORM.mode == FocusSessionMode.FOCUS.value,
+                FocusSessionORM.started_at >= week_start,
+            )
+            .group_by(dow, hour)
+        )
+        grid: list[list[int]] = [[0 for _ in range(24)] for _ in range(7)]
+        rows = (await self._s.execute(stmt)).all()
+        if not rows:
+            return grid
+        # Normalize raw counts to a 0..4 intensity scale based on the
+        # week's busiest cell so the visual never looks empty when the
+        # user *does* have data, but stays all-zero when they don't.
+        counts = [(int(d), int(h), int(c)) for d, h, c in rows]
+        peak = max(c for _, _, c in counts)
+        for d, h, c in counts:
+            if not (0 <= d <= 6 and 0 <= h <= 23):
+                continue
+            intensity = min(4, round(c / peak * 4)) if peak > 0 else 0
+            grid[d][h] = max(grid[d][h], intensity)
+        return grid

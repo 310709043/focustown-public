@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { FocusHeatmap } from "@/components/profile/FocusHeatmap";
 import { KpiRow } from "@/components/profile/KpiRow";
 import { RecentAchievements } from "@/components/profile/RecentAchievements";
-import { TagDistribution } from "@/components/profile/TagDistribution";
 import { useUserStats } from "@/lib/hooks/useUserStats";
 import { useAuthStore } from "@/lib/state/authStore";
 
@@ -110,7 +109,6 @@ export function StatsView({ onClose }: StatsViewProps) {
       />
       <FocusHeatmap weekly={stats.heatmap} weekTotalHours={stats.weekTotalHours} />
       <RecentAchievements items={stats.recentAchievements} />
-      <TagDistribution rows={stats.tagDistribution} />
     </div>
   );
 }

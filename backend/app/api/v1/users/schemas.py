@@ -19,6 +19,25 @@ class UserResponse(BaseModel):
     role_label: str | None = None
 
 
+class UserStatsResponse(BaseModel):
+    """Dashboard stats for the signed-in user.
+
+    Aggregated entirely from `focus_sessions` rows with
+    ``status='completed' AND mode='focus'``. Brand-new accounts get an
+    all-zero response (frontend renders ``—`` for ``weekly_rank == 0``).
+    """
+
+    total_tomatoes: int
+    all_time_focus_hours: float
+    week_total_hours: float
+    streak_days: int
+    weekly_rank: int
+    heatmap: list[list[int]]
+    level: int
+    xp: int
+    xp_next_level: int
+
+
 class PublicUserProfile(BaseModel):
     """View of a user that is safe to expose to any authenticated viewer.
 

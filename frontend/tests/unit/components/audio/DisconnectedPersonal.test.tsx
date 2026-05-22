@@ -6,9 +6,13 @@
  * - Renders the disconnected label + reconnect CTA (per scope kind)
  * - Personal playlist track + position render correctly
  * - prev / next dispatch stationStore.prevPersonal / nextPersonal
- * - mute toggle flips stationStore.mutedWhileDisconnected
  * - reconnect button calls stationStore.reconnect()
  * - transport disabled when playlist is empty (no orphan state)
+ *
+ * 2026-05-22: standalone mute button removed (volume==0 is the
+ * user-visible mute) so the panel fits inside the 168 px BottomHUD
+ * band. The underlying ``mutedWhileDisconnected`` store flag is
+ * untouched — still consumed by GlobalAudioMount for backward compat.
  */
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, test } from "vitest";
@@ -79,24 +83,6 @@ test("prev button rewinds personalIndex via store (with wrap)", () => {
 
   // index 0 - 1 wraps to 1 (length=2).
   expect(useStationStore.getState().personalIndex).toBe(1);
-});
-
-test("mute toggle flips mutedWhileDisconnected on then off", () => {
-  render(<DisconnectedPersonal scopeKind="city" />);
-
-  fireEvent.click(screen.getByTestId("station-mute"));
-  expect(useStationStore.getState().mutedWhileDisconnected).toBe(true);
-
-  fireEvent.click(screen.getByTestId("station-mute"));
-  expect(useStationStore.getState().mutedWhileDisconnected).toBe(false);
-});
-
-test("volume slider is disabled while muted (the slider has no useful effect)", () => {
-  useStationStore.setState({ mutedWhileDisconnected: true });
-
-  render(<DisconnectedPersonal scopeKind="city" />);
-
-  expect(screen.getByTestId("station-volume")).toBeDisabled();
 });
 
 test("reconnect button flips connection state back to connected", () => {

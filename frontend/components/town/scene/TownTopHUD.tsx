@@ -6,9 +6,8 @@ import { MiniClock } from "@/components/chrome/MiniClock";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { Logo } from "@/components/scene/Logo";
 import { CoinBadge } from "@/components/town/CoinBadge";
-import { Link, useRouter } from "@/i18n/routing";
+import { useRouter } from "@/i18n/routing";
 import { roomApi } from "@/lib/api/endpoints";
-import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import { useSceneStore, type SceneName } from "@/lib/state/sceneStore";
 import { TROPHY } from "@/lib/pixel/sprites/props";
@@ -18,12 +17,7 @@ import { NavButton } from "./NavButton";
 import { UserStatusPill } from "./UserStatusPill";
 
 /** Modal targets the TopHUD can open. */
-export type TownModalKind =
-  | "achv"
-  | "shop"
-  | "frds"
-  | "profile"
-  | "feedback";
+export type TownModalKind = "achv" | "shop" | "frds" | "profile";
 
 const TIME_EMOJI: Record<SceneName, string> = {
   night: "🌙",
@@ -94,7 +88,6 @@ export function TownTopHUD({
    *  callers stay source-compatible. */
   onOpenOwnProfile?: () => void;
 }) {
-  const signOut = useAuthStore((s) => s.signOut);
   const router = useRouter();
   const scene = useSceneStore((s) => s.current);
   // Presence store may not be hydrated yet on initial paint (SSR + first WS
@@ -235,24 +228,6 @@ export function TownTopHUD({
         <MiniClock />
 
         <CoinBadge />
-
-        <Link
-          data-testid="nav-logout"
-          href="/"
-          className="font-silkscreen"
-          onClick={() => signOut()}
-          style={{
-            background: "rgba(7,4,26,0.75)",
-            border: "1px solid var(--panel-stroke)",
-            padding: "6px 10px",
-            fontSize: 9,
-            color: "var(--ink-mute)",
-            letterSpacing: "0.15em",
-            textDecoration: "none",
-          }}
-        >
-          {tNav("signout")}
-        </Link>
       </div>
     </div>
   );
