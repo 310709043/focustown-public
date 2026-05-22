@@ -51,6 +51,8 @@ class FocusSessionService:
         partner_user_id: str | None,
         idempotency_key: str | None = None,
         body_hash: str | None = None,
+        match_id: str | None = None,
+        room_id: str | None = None,
     ) -> FocusSession:
         if partner_user_id:
             if partner_user_id == user_id:
@@ -94,6 +96,8 @@ class FocusSessionService:
                 started_at=now,
                 idempotency_key=idempotency_key,
                 idempotency_body_hash=body_hash,
+                match_id=match_id,
+                room_id=room_id,
             )
         except IdempotencyViolationError:
             # Repo translated the partial-unique-index trip into a domain

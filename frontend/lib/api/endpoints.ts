@@ -765,6 +765,54 @@ export const roomPlaybackApi = {
   },
 };
 
+// ── match-rooms (Phase 7) ──────────────────────────────
+// Shared focus rooms scoped to one accepted match. The path key is
+// the match id (the value the frontend already has after accept); the
+// server resolves the canonical room behind it. Non-participants get
+// 404 (NOT 403) — the API surface intentionally hides room existence.
+export type MatchRoomStatusDTO = "open" | "both_joined" | "active" | "ended";
+export type RoomParticipantRoleDTO = "requester" | "candidate";
+
+export interface MatchRoomParticipant {
+  user_id: string;
+  role: RoomParticipantRoleDTO;
+  joined_at: string | null;
+  left_at: string | null;
+  focus_session_id: string | null;
+}
+
+export interface MatchRoomSnapshot {
+  id: string;
+  match_id: string;
+  status: MatchRoomStatusDTO;
+  opened_at: string;
+  activated_at: string | null;
+  ended_at: string | null;
+  ended_reason: string | null;
+  participants: MatchRoomParticipant[];
+}
+
+export const matchRoomApi = {
+  getSnapshot(matchId: string) {
+    return apiFetch<MatchRoomSnapshot>(
+      `/api/v1/rooms/match/${encodeURIComponent(matchId)}`,
+      { method: "GET" },
+    );
+  },
+  join(matchId: string) {
+    return apiFetch<MatchRoomSnapshot>(
+      `/api/v1/rooms/match/${encodeURIComponent(matchId)}/join`,
+      { method: "POST" },
+    );
+  },
+  leave(matchId: string) {
+    return apiFetch<MatchRoomSnapshot>(
+      `/api/v1/rooms/match/${encodeURIComponent(matchId)}/leave`,
+      { method: "POST" },
+    );
+  },
+};
+
 // ── room visitor sessions (Phase 8) ────────────────────
 // ``visit`` starts a session in a room; ``leave`` ends it. Both endpoints
 // route through ``/rooms/{room_id}/...`` because the room_id is the

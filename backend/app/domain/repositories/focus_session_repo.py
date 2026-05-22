@@ -29,6 +29,8 @@ class IFocusSessionRepo(Protocol):
         started_at: datetime,
         idempotency_key: str | None = None,
         idempotency_body_hash: str | None = None,
+        match_id: str | None = None,
+        room_id: str | None = None,
     ) -> FocusSession: ...
 
     async def get(self, session_id: str) -> FocusSession | None: ...

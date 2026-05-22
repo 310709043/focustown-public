@@ -22,6 +22,7 @@ from app.infrastructure.db.repositories.match_realtime_repo import (
     SqlMatchMessageRepo,
 )
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
+from app.infrastructure.db.repositories.match_room_repo import SqlMatchRoomRepo
 from app.infrastructure.db.repositories.match_waiting_pool_repo import (
     SqlMatchWaitingPoolRepo,
 )
@@ -33,6 +34,9 @@ from app.infrastructure.db.repositories.redemption_code_repo import (
     SqlRedemptionCodeRepo,
 )
 from app.infrastructure.db.repositories.room_item_repo import SqlRoomItemRepo
+from app.infrastructure.db.repositories.room_participant_repo import (
+    SqlRoomParticipantRepo,
+)
 from app.infrastructure.db.repositories.room_playback_repo import SqlRoomPlaybackRepo
 from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
 from app.infrastructure.db.repositories.room_track_repo import SqlRoomTrackRepo
@@ -60,11 +64,13 @@ __all__ = [
     "SqlMatchAgendaRepo",
     "SqlMatchMessageRepo",
     "SqlMatchRepo",
+    "SqlMatchRoomRepo",
     "SqlMatchWaitingPoolRepo",
     "SqlNoteRepo",
     "SqlPasswordResetTokenRepo",
     "SqlRedemptionCodeRepo",
     "SqlRoomItemRepo",
+    "SqlRoomParticipantRepo",
     "SqlRoomPlaybackRepo",
     "SqlRoomRepo",
     "SqlRoomTrackRepo",

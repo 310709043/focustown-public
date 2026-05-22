@@ -44,6 +44,15 @@
     "completed": "這次專注已完成，辛苦您了！",
     "abandonedConfirm": "確定要結束目前的專注嗎？您可以隨時再開始一次。"
   },
+  "room": {
+    "waitingTitle": "等待夥伴加入中…",
+    "waitingSubtitle": "稍等一下，夥伴抵達後就會出現在這裡。",
+    "loading": "載入專注室中…",
+    "notFoundTitle": "找不到這個專注室",
+    "notFoundSubtitle": "可能已經結束，或您不是這個專注室的成員。",
+    "endedTitle": "這個專注室已結束",
+    "endedSubtitle": "回到城市開始下一次專注吧。"
+  },
   "pairingHeader": {
     "you": "您"
   },

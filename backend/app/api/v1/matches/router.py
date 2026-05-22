@@ -24,6 +24,7 @@ from app.core.exceptions import ForbiddenError, NotFoundError
 from app.domain.models import Match
 from app.domain.repositories.match_repo import IMatchReader
 from app.domain.repositories.user_repo import IUserReader
+from app.domain.services.match_room_service import MatchRoomService
 from app.domain.services.matching_queue_service import (
     MatchedResult,
     MatchingQueueService,
@@ -33,7 +34,9 @@ from app.domain.services.strategies import SimpleOverlapStrategy
 from app.infrastructure.db.repositories import (
     SqlFocusSessionRepo,
     SqlMatchRepo,
+    SqlMatchRoomRepo,
     SqlMatchWaitingPoolRepo,
+    SqlRoomParticipantRepo,
     SqlUserRepo,
 )
 
@@ -77,6 +80,16 @@ async def _dto(
     )
 
 
+def _match_room_service(db, ids, events, clock) -> MatchRoomService:
+    return MatchRoomService(
+        rooms=SqlMatchRoomRepo(db),
+        participants=SqlRoomParticipantRepo(db),
+        events=events,
+        ids=ids,
+        clock=clock,
+    )
+
+
 def _matching_service(db, ids, events, clock) -> MatchingService:
     return MatchingService(
         users=SqlUserRepo(db),
@@ -87,6 +100,7 @@ def _matching_service(db, ids, events, clock) -> MatchingService:
         ids=ids,
         clock=clock,
         session=db,
+        room_svc=_match_room_service(db, ids, events, clock),
     )
 
 

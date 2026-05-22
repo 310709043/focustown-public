@@ -9,6 +9,12 @@ so callers can keep writing ``from app.domain.events import X``.
 from __future__ import annotations
 
 from app.domain.events.match import MatchAccepted, MatchProposed
+from app.domain.events.room import (
+    RoomEnded,
+    RoomOpened,
+    RoomParticipantJoined,
+    RoomReady,
+)
 from app.domain.events.session import (
     SessionAbandoned,
     SessionCompleted,
@@ -18,6 +24,10 @@ from app.domain.events.session import (
 __all__ = [
     "MatchAccepted",
     "MatchProposed",
+    "RoomEnded",
+    "RoomOpened",
+    "RoomParticipantJoined",
+    "RoomReady",
     "SessionAbandoned",
     "SessionCompleted",
     "SessionStarted",

@@ -47,6 +47,8 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
         started_at: datetime,
         idempotency_key: str | None = None,
         idempotency_body_hash: str | None = None,
+        match_id: str | None = None,
+        room_id: str | None = None,
     ) -> FocusSession:
         row = FocusSessionORM(
             id=session_id,
@@ -60,6 +62,8 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
             started_at=started_at,
             idempotency_key=idempotency_key,
             idempotency_body_hash=idempotency_body_hash,
+            match_id=match_id,
+            room_id=room_id,
         )
         self._s.add(row)
         try:

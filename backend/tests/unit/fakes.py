@@ -966,11 +966,19 @@ class FakeFocusSessionRepo(IFocusSessionRepo):
         started_at: datetime,
         idempotency_key: str | None = None,
         idempotency_body_hash: str | None = None,
+        match_id: str | None = None,
+        room_id: str | None = None,
     ) -> FocusSession:
         from app.core.exceptions import IdempotencyViolationError
 
         if idempotency_key is not None and (user_id, idempotency_key) in self.idem:
             raise IdempotencyViolationError("focus_session_idem_conflict")
+        # match_id / room_id are stored only at the SQL adapter level —
+        # the FocusSession domain model has no need to carry them around
+        # for the unit-test paths, so the fake accepts the kwargs but
+        # silently drops them. Phase 08 will reconsider if a test needs
+        # to assert on them.
+        del match_id, room_id
         s = FocusSession(
             id=session_id,
             user_id=user_id,

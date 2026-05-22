@@ -14,10 +14,20 @@ must stay in lock-step or LSP fails.
 from app.domain.repositories.achievement_repo import IAchievementRepo
 from app.domain.repositories.focus_session_repo import IFocusSessionRepo
 from app.domain.repositories.match_repo import IMatchRepo
+from app.domain.repositories.match_room_repo import (
+    IMatchRoomRepo,
+    MatchRoomRecord,
+    MatchRoomStatus,
+)
 from app.domain.repositories.note_repo import INoteRepo, NoteRecord
 from app.domain.repositories.password_reset_token_repo import (
     IPasswordResetTokenRepo,
     ResetTokenRecord,
+)
+from app.domain.repositories.room_participant_repo import (
+    IRoomParticipantRepo,
+    ParticipantRole,
+    RoomParticipantRecord,
 )
 from app.domain.repositories.shop_repo import IShopRepo, ShopItemRecord
 from app.domain.repositories.user_repo import (
@@ -31,14 +41,20 @@ __all__ = [
     "IAchievementRepo",
     "IFocusSessionRepo",
     "IMatchRepo",
+    "IMatchRoomRepo",
     "INoteRepo",
     "IPasswordResetTokenRepo",
+    "IRoomParticipantRepo",
     "IShopRepo",
     "IUserReader",
     "IUserRepo",
     "IUserWriter",
+    "MatchRoomRecord",
+    "MatchRoomStatus",
     "NoteRecord",
+    "ParticipantRole",
     "ResetTokenRecord",
+    "RoomParticipantRecord",
     "ShopItemRecord",
     "UserCredentials",
 ]

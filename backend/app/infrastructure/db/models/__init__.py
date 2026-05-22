@@ -8,6 +8,7 @@ from app.infrastructure.db.models.match_realtime import (
     MatchAgendaItemORM,
     MatchMessageORM,
 )
+from app.infrastructure.db.models.match_room import MatchRoomORM
 from app.infrastructure.db.models.match_waiting_pool import MatchWaitingPoolORM
 from app.infrastructure.db.models.note import NoteORM
 from app.infrastructure.db.models.password_reset_token import PasswordResetTokenORM
@@ -17,6 +18,7 @@ from app.infrastructure.db.models.redemption_code import (
 )
 from app.infrastructure.db.models.room import RoomORM
 from app.infrastructure.db.models.room_item import RoomItemORM
+from app.infrastructure.db.models.room_participant import RoomParticipantORM
 from app.infrastructure.db.models.room_playback import RoomPlaybackORM
 from app.infrastructure.db.models.room_track import RoomTrackORM
 from app.infrastructure.db.models.room_visit import RoomVisitORM
@@ -39,6 +41,7 @@ __all__ = [
     "MatchAgendaItemORM",
     "MatchMessageORM",
     "MatchORM",
+    "MatchRoomORM",
     "MatchWaitingPoolORM",
     "NoteORM",
     "PasswordResetTokenORM",
@@ -46,6 +49,7 @@ __all__ = [
     "RedemptionCodeUseORM",
     "RoomItemORM",
     "RoomORM",
+    "RoomParticipantORM",
     "RoomPlaybackORM",
     "RoomTrackORM",
     "RoomVisitORM",

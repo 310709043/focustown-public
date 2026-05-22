@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { useAuthStore } from "@/lib/state/authStore";
+import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { matchesApi } from "@/lib/api/endpoints";
@@ -103,10 +104,47 @@ export default function FocusRoomPage() {
   // `t` from focus.session was only used by the old paired-branch UI; the new
   // BuddyFocusScene owns its own i18n namespace.
   useTranslations("focus.session");
+  const roomT = useTranslations("focus.room");
+
+  // Phase 7 — server-driven shared room state. ``hydrate`` GETs the
+  // snapshot; the second effect below auto-calls ``join`` on first
+  // mount so the user's ``joined_at`` flips to a timestamp (drives the
+  // "both_joined" transition once the partner also joins).
+  const roomStatus = useFocusRoomStore((s) => s.status);
+  const roomLoadStatus = useFocusRoomStore((s) => s.loadStatus);
+  const roomErrorCode = useFocusRoomStore((s) => s.errorCode);
+  const roomParticipants = useFocusRoomStore((s) => s.participants);
+  const hydrateRoom = useFocusRoomStore((s) => s.hydrate);
+  const joinRoom = useFocusRoomStore((s) => s.join);
+  const resetRoom = useFocusRoomStore((s) => s.reset);
 
   useEffect(() => {
     if (!user) void hydrate();
   }, [user, hydrate]);
+
+  // Hydrate + auto-join. The join is fire-and-forget: if the user is
+  // not a participant the snapshot fetch already returned 404 and the
+  // not-found banner renders below, so a second 404 from join() is
+  // harmless. Reset on unmount so a hot-route-swap doesn't carry stale
+  // state into the next room.
+  useEffect(() => {
+    if (!paired || !user) return;
+    let cancelled = false;
+    (async () => {
+      await hydrateRoom(id);
+      if (cancelled) return;
+      // Only attempt join when the server says we belong (hydrate
+      // surfaces ``not_found`` for non-members or missing rooms).
+      const state = useFocusRoomStore.getState();
+      if (state.loadStatus === "ready" && state.errorCode === null) {
+        await joinRoom(id);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      resetRoom();
+    };
+  }, [paired, user, id, hydrateRoom, joinRoom, resetRoom]);
 
   // Guard against accidental tab close / hard reload while a session is in
   // flight. Only fires for browser-level navigation; client-side router.push
@@ -158,6 +196,39 @@ export default function FocusRoomPage() {
     return <SoloFocusScene />;
   }
 
+  // Phase 7 gating: render lifecycle states ahead of the buddy scene.
+  // ``idle`` is the brief pre-hydrate window; treat it as loading.
+  if (roomLoadStatus === "loading" || roomLoadStatus === "idle") {
+    return <RoomStatusOverlay title={roomT("loading")} />;
+  }
+  if (roomLoadStatus === "error" && roomErrorCode === "not_found") {
+    return (
+      <RoomStatusOverlay
+        title={roomT("notFoundTitle")}
+        subtitle={roomT("notFoundSubtitle")}
+      />
+    );
+  }
+  if (roomStatus === "ended") {
+    return (
+      <RoomStatusOverlay
+        title={roomT("endedTitle")}
+        subtitle={roomT("endedSubtitle")}
+      />
+    );
+  }
+  if (
+    roomStatus === "open" &&
+    !roomParticipants.every((p) => p.joined_at !== null)
+  ) {
+    return (
+      <RoomStatusOverlay
+        title={roomT("waitingTitle")}
+        subtitle={roomT("waitingSubtitle")}
+      />
+    );
+  }
+
   // Paired branch: Page 5's BuddyFocusScene replaces the pre-port JSX.
   // Partner display name resolves from `findCharacter(partnerKey).name`
   // when we have the key; otherwise BuddyFocusScene's "Aria" fallback
@@ -169,5 +240,38 @@ export default function FocusRoomPage() {
       partnerKey={partnerKey}
       partnerName={partnerCharacter?.name ?? "Aria"}
     />
+  );
+}
+
+function RoomStatusOverlay({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-center px-6"
+      style={{
+        background:
+          "radial-gradient(ellipse at top, rgba(76,29,149,0.85), rgba(15,23,42,0.95))",
+      }}
+      data-testid="focus-room-overlay"
+    >
+      <Stars />
+      <PixelMoon />
+      <div className="relative z-[2] max-w-md">
+        <p className="text-amber-200/90 text-2xl font-semibold tracking-wide">
+          {title}
+        </p>
+        {subtitle ? (
+          <p className="text-white/70 mt-3 text-sm leading-relaxed">
+            {subtitle}
+          </p>
+        ) : null}
+      </div>
+      <CitySilhouette />
+    </div>
   );
 }

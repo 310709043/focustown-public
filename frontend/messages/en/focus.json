@@ -44,6 +44,15 @@
     "completed": "Nice work. This session is complete.",
     "abandonedConfirm": "End the current session now? You can always start a new one when you are ready."
   },
+  "room": {
+    "waitingTitle": "Waiting for your partner…",
+    "waitingSubtitle": "Hold tight — they'll appear here as soon as they arrive.",
+    "loading": "Loading room…",
+    "notFoundTitle": "This room is no longer available",
+    "notFoundSubtitle": "It may have ended or you may not be a member.",
+    "endedTitle": "This room has ended",
+    "endedSubtitle": "Head back to town to start a new focus session."
+  },
   "pairingHeader": {
     "you": "You"
   },

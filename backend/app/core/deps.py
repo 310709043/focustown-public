@@ -16,14 +16,21 @@ from app.core.ids import IIdGenerator, UUID4Generator
 from app.domain.notifications import IEmailSender
 from app.domain.rate_limit import IRateLimiter
 from app.domain.repositories.match_queue import IMatchingQueue
+from app.domain.repositories.match_room_repo import IMatchRoomRepo
 from app.domain.repositories.match_waiting_pool_repo import IMatchWaitingPoolRepo
 from app.domain.repositories.presence import IPresenceTracker
 from app.domain.repositories.realtime import IRealtimePublisher
+from app.domain.repositories.room_participant_repo import IRoomParticipantRepo
+from app.domain.services.match_room_service import MatchRoomService
 from app.infrastructure.auth.providers.base import AuthProvider
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
 from app.infrastructure.cache.redis_client import get_redis
+from app.infrastructure.db.repositories.match_room_repo import SqlMatchRoomRepo
 from app.infrastructure.db.repositories.match_waiting_pool_repo import (
     SqlMatchWaitingPoolRepo,
+)
+from app.infrastructure.db.repositories.room_participant_repo import (
+    SqlRoomParticipantRepo,
 )
 from app.infrastructure.db.session import get_session_factory
 from app.infrastructure.matching.redis_queue import RedisMatchingQueue
@@ -139,6 +146,48 @@ def get_waiting_pool_repo(db: DbDep) -> IMatchWaitingPoolRepo:
 WaitingPoolRepoDep = Annotated[
     IMatchWaitingPoolRepo, Depends(get_waiting_pool_repo)
 ]
+
+
+def get_match_room_repo(db: DbDep) -> IMatchRoomRepo:
+    """Postgres adapter for ``IMatchRoomRepo``."""
+    return SqlMatchRoomRepo(db)
+
+
+MatchRoomRepoDep = Annotated[IMatchRoomRepo, Depends(get_match_room_repo)]
+
+
+def get_room_participant_repo(db: DbDep) -> IRoomParticipantRepo:
+    """Postgres adapter for ``IRoomParticipantRepo``."""
+    return SqlRoomParticipantRepo(db)
+
+
+RoomParticipantRepoDep = Annotated[
+    IRoomParticipantRepo, Depends(get_room_participant_repo)
+]
+
+
+def get_match_room_service(
+    rooms: MatchRoomRepoDep,
+    participants: RoomParticipantRepoDep,
+    events: EventBusDep,
+    ids: IdGenDep,
+    clock: ClockDep,
+) -> MatchRoomService:
+    """Construct the per-request ``MatchRoomService``.
+
+    Domain service composed of two narrow repo Protocols plus the
+    shared in-process clock / id / event-bus primitives.
+    """
+    return MatchRoomService(
+        rooms=rooms,
+        participants=participants,
+        events=events,
+        ids=ids,
+        clock=clock,
+    )
+
+
+MatchRoomServiceDep = Annotated[MatchRoomService, Depends(get_match_room_service)]
 
 
 def get_realtime_publisher() -> IRealtimePublisher:

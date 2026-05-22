@@ -17,6 +17,8 @@ from app.domain.services.strategies.compatibility import ICompatibilityStrategy
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from app.domain.services.match_room_service import MatchRoomService
+
 
 class MatchingService:
     """Coordinates compatibility scoring and match lifecycle.
@@ -36,6 +38,7 @@ class MatchingService:
         ids: IIdGenerator,
         clock: IClock,
         session: AsyncSession | None = None,
+        room_svc: MatchRoomService | None = None,
     ) -> None:
         self._users = users
         self._matches = matches
@@ -49,6 +52,11 @@ class MatchingService:
         # only propose/skip can mock the service without a DB; the production
         # wiring in api/v1/matches/router.py:_matching_service always supplies it.
         self._session = session
+        # Phase 07 — when set, accept() also materialises the shared
+        # match-room inside the same advisory-lock window. Optional so
+        # unit tests that don't exercise the room path (most existing
+        # accept() tests) don't have to wire a fake room service.
+        self._room_svc = room_svc
 
     async def propose(self, *, requester_id: str, candidate_id: str) -> Match:
         requester = await self._users.get_by_id(requester_id)
@@ -115,6 +123,12 @@ class MatchingService:
         updated = await self._matches.update_status(
             match_id=match_id, status=MatchStatus.ACCEPTED
         )
+        # Phase 07: materialise the shared match-room INSIDE the advisory
+        # lock so two parallel accepts converge on a single room + pair
+        # (belt + suspenders with the ON CONFLICT DO NOTHING in the
+        # repo). Idempotent — replay safely returns the existing room.
+        if self._room_svc is not None:
+            await self._room_svc.ensure_room_for_match(updated)
         await self._events.publish(
             MatchAccepted(
                 match_id=updated.id,

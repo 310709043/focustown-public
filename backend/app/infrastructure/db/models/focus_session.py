@@ -31,3 +31,16 @@ class FocusSessionORM(Base, IdMixin, TimestampMixin):
     # only fires when both are set.
     idempotency_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     idempotency_body_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Phase 07 — tie sessions started inside a shared match-room back to
+    # the match + room. Both are NULL for solo sessions and the legacy
+    # ``partner_user_id``-only path. ON DELETE SET NULL so a match purge
+    # doesn't wipe the user's historical streak data.
+    match_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("matches.id", ondelete="SET NULL"), nullable=True
+    )
+    room_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("match_rooms.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
