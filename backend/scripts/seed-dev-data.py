@@ -306,29 +306,53 @@ async def main() -> None:
 
 
 async def _seed_bots(db, ids) -> None:
-    """Seed 5 NPC users + per-bot 7-day focus history.
+    """Sync the bot population to the current BOTS roster.
 
-    User rows are idempotent (ON CONFLICT DO NOTHING on the unique
-    ``email`` column). FocusSession rows are **re-seeded every run** so
-    the sliding 7-day window the matching strategy uses always contains
-    data — without this, the rows would decay out of the window after one
-    week and overlap collapses to 0.
+    Three steps run every container boot:
 
-    Note: when the BOTS list shrinks, the previously-seeded rows for the
-    removed keys (e.g. rex / nyx) remain in the DB because seeding is
-    idempotent. To purge them in dev::
-
-        DELETE FROM users
-        WHERE email IN (
-          'bot-rex@bots.lowbatterytown.local',
-          'bot-nyx@bots.lowbatterytown.local'
-        );
+      1. **Prune ghosts.** Any ``is_bot=true`` user whose email matches
+         the bot pattern but whose key is no longer in ``BOTS`` is
+         DELETEd (FKs cascade — every ``users.id`` FK in the schema is
+         CASCADE or SET NULL). Without this, every roster shrink (PR
+         #141's 7→5 trim removed rex/nyx; earlier rosters had more)
+         left orphan bot rows in the DB; the ``refresh_bot_presence``
+         worker then kept them "online" forever, inflating the ONLINE
+         count and confusing dev-environment QA.
+      2. **Insert missing.** New roster keys are added via
+         ``ON CONFLICT DO NOTHING`` on the unique ``email`` column.
+      3. **Re-seed focus history.** FocusSession rows are wiped + rebuilt
+         every run so the sliding 7-day window the matching strategy
+         uses always contains data — without this, the rows would
+         decay out of the window after one week and overlap collapses
+         to 0.
     """
     # Dev-seed PRNG, not crypto — fixed seed gives reproducible bot data.
     rng = random.Random("lowbatterytown-bots-stable")  # noqa: S311
     now = datetime.now(UTC)
 
-    # Look up any bots that already exist so we can reuse their ids
+    # 1. Prune ghosts. Match by ``LIKE 'bot-%@bots.lowbatterytown.local'``
+    # rather than relying solely on ``is_bot=true`` so we never touch a
+    # real-user account that accidentally has the flag set.
+    expected_emails = {BOT_EMAIL_FMT.format(key=spec["key"]) for spec in BOTS}
+    ghost_emails = (
+        await db.execute(
+            select(UserORM.email).where(
+                UserORM.is_bot.is_(True),
+                UserORM.email.like("bot-%@bots.lowbatterytown.local"),
+                UserORM.email.notin_(expected_emails),
+            )
+        )
+    ).scalars().all()
+    if ghost_emails:
+        await db.execute(
+            _delete(UserORM).where(UserORM.email.in_(ghost_emails))
+        )
+        print(
+            f"✓ Pruned {len(ghost_emails)} ghost bot(s): "
+            f"{sorted(ghost_emails)}"
+        )
+
+    # 2. Look up any bots that already exist so we can reuse their ids
     # (instead of generating new ones that would silently fail to insert
     # via ON CONFLICT and leave us without the existing id).
     emails = [BOT_EMAIL_FMT.format(key=spec["key"]) for spec in BOTS]
