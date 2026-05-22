@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { presenceApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useHudReveal } from "@/lib/hooks/useHudReveal";
+import { useImmersiveFocus } from "@/lib/hooks/useImmersiveFocus";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import { SCENE_TICK_MS, useSceneStore } from "@/lib/state/sceneStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
@@ -61,6 +63,8 @@ import { AchievementsModal } from "@/components/modals/AchievementsModal";
 import { FriendsModal } from "@/components/modals/FriendsModal";
 import { ProfileModal } from "@/components/modals/ProfileModal";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
+import { EdgeRevealSentinel } from "@/components/town/focus/EdgeRevealSentinel";
+import { ImmersiveCountdown } from "@/components/town/focus/ImmersiveCountdown";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 // 200 sprites is well within desktop-perf headroom (each Pedestrian is one
@@ -225,13 +229,55 @@ export default function TownPage() {
   const currentScene = useSceneStore((s) => s.current);
   const sceneIsWet = currentScene === "rain" || currentScene === "storm";
 
+  // City-Mode immersive: edge-reveal state is owned here so the top
+  // sentinel + TownTopHUD share one flag, and the bottom sentinel +
+  // BottomHUD share another. The 24 px sentinels sit at the absolute
+  // viewport edges; the user hovers them to summon the collapsed HUD
+  // back briefly without exiting focus mode.
+  const immersive = useImmersiveFocus();
+  const { topRevealed, bottomRevealed, topHandlers, bottomHandlers } =
+    useHudReveal();
+
   return (
     <FrameTicker>
     <main className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Top HUD — reference's 3-cluster layout: logo+wordmark+weather chip
           on the left, UserStatusPill in the center, ACHV/SHOP/FRDS + clock
           + T-coin + sign-out on the right. Overlays the scene (absolute). */}
-      <TownTopHUD onOpenModal={setOpenModal} onOpenOwnProfile={onOpenOwnProfile} />
+      <TownTopHUD
+        onOpenModal={setOpenModal}
+        onOpenOwnProfile={onOpenOwnProfile}
+        edgeRevealed={topRevealed}
+        onEdgeEnter={topHandlers.onPointerEnter}
+        onEdgeLeave={topHandlers.onPointerLeave}
+      />
+
+      {/* City-Mode immersive countdown — pinned top-centre between the
+          LOGO/WEATHER chip (left) and MiniClock (right). Always mounted;
+          its own visibility is driven by the timer-running flag, so the
+          fade is a pure CSS transition. */}
+      <ImmersiveCountdown />
+
+      {/* Edge sentinels — only mount while immersive so the page
+          stays interaction-clean in normal city-mode. The sentinels'
+          rendering + positioning is owned by EdgeRevealSentinel; this
+          page owns only the mount decision and the handlers. */}
+      {immersive ? (
+        <>
+          <EdgeRevealSentinel
+            edge="top"
+            testId="hud-top-sentinel"
+            onPointerEnter={topHandlers.onPointerEnter}
+            onPointerLeave={topHandlers.onPointerLeave}
+          />
+          <EdgeRevealSentinel
+            edge="bottom"
+            testId="hud-bottom-sentinel"
+            onPointerEnter={bottomHandlers.onPointerEnter}
+            onPointerLeave={bottomHandlers.onPointerLeave}
+          />
+        </>
+      ) : null}
 
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
            z-order: scene backdrop (city composite + cloud sprites + optional
@@ -302,7 +348,12 @@ export default function TownPage() {
             scattered TimerPanel + MatchCTA + BigFocusCTA + PersonalRadio
             block (audio playback follow-up will re-mount city radio
             once `useCityRadio()` is extracted). */}
-        <BottomHUD onFindBuddy={onFindBuddy} />
+        <BottomHUD
+          onFindBuddy={onFindBuddy}
+          edgeRevealed={bottomRevealed}
+          onEdgeEnter={bottomHandlers.onPointerEnter}
+          onEdgeLeave={bottomHandlers.onPointerLeave}
+        />
       </div>
 
       <MatchModal />

@@ -45,6 +45,14 @@
       "soloCta": "Solo Focus",
       "soloSub": "enter focus room"
     },
+    "immersive": {
+      "modeLabel": "CITY MODE · FOCUS",
+      "modeLabelBreak": "CITY MODE · BREAK",
+      "pomodoroSuffix": "#{num}",
+      "pauseCta": "[ pause ]",
+      "pauseAria": "Pause your focus session",
+      "revealHint": "Move your cursor to the edge to bring the controls back."
+    },
     "modeBar": {
       "cityLabel": "CITY MODE",
       "live": "LIVE",

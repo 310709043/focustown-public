@@ -45,6 +45,14 @@
       "soloCta": "獨自專注",
       "soloSub": "進入專注室"
     },
+    "immersive": {
+      "modeLabel": "城市模式 · 專注中",
+      "modeLabelBreak": "城市模式 · 休息中",
+      "pomodoroSuffix": "#{num}",
+      "pauseCta": "[ 暫停 ]",
+      "pauseAria": "暫停您目前的專注時段",
+      "revealHint": "將游標移到上下邊緣即可喚回控制列。"
+    },
     "modeBar": {
       "cityLabel": "城市模式",
       "live": "LIVE",

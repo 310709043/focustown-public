@@ -13,6 +13,14 @@ interface ModeStatusBarProps {
   /** Opens MatchModal — lifted from the town page so the bar shares
    *  the same handler as the Together mode card below. */
   onFindBuddy: () => void;
+  /** City-Mode immersive: when the parent BottomHUD collapses, this
+   *  status bar collapses with it. Lifted as a prop (not derived via
+   *  `useImmersiveFocus` here) so the edge-reveal flag stays the
+   *  single source of truth at the BottomHUD level. */
+  collapsed?: boolean;
+  /** Skips the slide+fade transition when the user has opted out of
+   *  motion via `prefers-reduced-motion: reduce`. */
+  reduceMotion?: boolean;
 }
 
 /**
@@ -22,7 +30,11 @@ interface ModeStatusBarProps {
  * shortcut chips to switch out to Solo / Together so the user always
  * sees there are other modes available.
  */
-export function ModeStatusBar({ onFindBuddy }: ModeStatusBarProps) {
+export function ModeStatusBar({
+  onFindBuddy,
+  collapsed = false,
+  reduceMotion = false,
+}: ModeStatusBarProps) {
   const t = useTranslations("town.bottom.modeBar");
   const router = useRouter();
 
@@ -59,6 +71,12 @@ export function ModeStatusBar({ onFindBuddy }: ModeStatusBarProps) {
         borderTop: "1px solid var(--panel-stroke)",
         borderBottom: "1px dashed var(--panel-stroke)",
         zIndex: 12,
+        transition: reduceMotion
+          ? "none"
+          : "opacity 280ms ease-out, transform 320ms cubic-bezier(0.22,1,0.36,1)",
+        opacity: collapsed ? 0 : 1,
+        transform: collapsed ? "translateY(12px)" : "translateY(0)",
+        pointerEvents: collapsed ? "none" : "auto",
       }}
       className="md:flex hidden"
     >

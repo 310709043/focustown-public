@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useImmersiveFocus } from "@/lib/hooks/useImmersiveFocus";
+import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
@@ -34,6 +36,15 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
   const t = useTranslations("town.bottom.modes");
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  // City-Mode immersive: the two cards split-collapse — SOLO slides
+  // left-and-down, TOGETHER slides right-and-down. Uses raw inline
+  // styles (not Tailwind utilities) so the offsets compose with the
+  // BottomHUD's own translateY without class-order surprises.
+  const immersive = useImmersiveFocus();
+  const reduceMotion = usePrefersReducedMotion();
+  const cardTransition = reduceMotion
+    ? "none"
+    : "opacity 360ms ease-out, transform 420ms cubic-bezier(0.22,1,0.36,1)";
   // ``busy`` covers any non-idle status — modal is already mounted (or
   // pending), so the CTA must lock out re-entry. Replaces the legacy
   // ``proposing`` boolean; the waiting-pool state machine collapses
@@ -72,6 +83,18 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         minWidth: 0,
       }}
     >
+      <div
+        style={{
+          transition: cardTransition,
+          transitionDelay: reduceMotion ? "0ms" : immersive ? "50ms" : "0ms",
+          transform: immersive
+            ? "translate(-40px, 120%)"
+            : "translate(0, 0)",
+          opacity: immersive ? 0 : 1,
+          pointerEvents: immersive ? "none" : "auto",
+          minWidth: 0,
+        }}
+      >
       <ModeCard
         testId="mode-card-solo"
         icon="🍅"
@@ -102,7 +125,20 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           </div>
         }
       />
+      </div>
 
+      <div
+        style={{
+          transition: cardTransition,
+          transitionDelay: reduceMotion ? "0ms" : immersive ? "100ms" : "0ms",
+          transform: immersive
+            ? "translate(40px, 120%)"
+            : "translate(0, 0)",
+          opacity: immersive ? 0 : 1,
+          pointerEvents: immersive ? "none" : "auto",
+          minWidth: 0,
+        }}
+      >
       <ModeCard
         testId="mode-card-together"
         icon="✦"
@@ -168,6 +204,7 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           </div>
         }
       />
+      </div>
     </div>
   );
 }
