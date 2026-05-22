@@ -42,10 +42,13 @@ class SimpleOverlapStrategy(ICompatibilityStrategy):
     ) -> CompatibilityScore:
         overlap = _overlap_ratio(requester_focus_starts, candidate_focus_starts)
         affinity = _affinity(requester.role_label, candidate.role_label)
-        base = int(round(overlap * 80)) + affinity + 5
+        base = round(overlap * 80) + affinity + 5
         score = max(40, min(99, base))
+        # Fullwidth commas are intentional — this is the zh-TW user-facing
+        # reason string; ASCII commas read as half-width and break the
+        # visual cadence next to CJK glyphs.
         reason = (
-            f"你們的專注時段重疊度 {int(overlap * 100)}%，"
-            f"加上角色組合的隱性默契，今晚很可能合拍。"
+            f"你們的專注時段重疊度 {int(overlap * 100)}%，"  # noqa: RUF001
+            f"加上角色組合的隱性默契，今晚很可能合拍。"  # noqa: RUF001
         )
         return CompatibilityScore(score=score, reason=reason)

@@ -22,7 +22,6 @@ from app.infrastructure.auth.providers import cognito as cognito_mod
 from app.infrastructure.auth.providers.cognito import CognitoProvider
 from tests.unit.fakes import FakeUserRepo, make_user
 
-
 REGION = "ap-northeast-1"
 POOL_ID = "ap-northeast-1_TestPool"
 CLIENT_ID = "client-abc"

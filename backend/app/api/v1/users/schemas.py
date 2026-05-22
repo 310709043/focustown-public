@@ -45,7 +45,7 @@ class PublicUserProfile(BaseModel):
     is_bot — the rule of thumb is "would this field belong on a public
     leaderboard?" If no, it stays out of this schema.
 
-    `today_focus_minutes` is derived from completed-pomodoro count × 25
+    `today_focus_minutes` is derived from completed-pomodoro count * 25
     so the value lines up with what the leaderboard widget shows.
     """
 

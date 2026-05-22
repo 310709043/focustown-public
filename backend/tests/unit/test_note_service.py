@@ -8,16 +8,16 @@ same).
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import pytest
 
 from app.core.exceptions import ForbiddenError, NotFoundError
 from app.core.ids import IIdGenerator
+from app.core.sentinels import UNSET, UnsetType
 from app.domain.models import Match, MatchStatus
 from app.domain.repositories.note_repo import INoteRepo, NoteRecord
 from app.domain.services.note_service import NoteService
-from app.core.sentinels import UNSET, UnsetType
 from tests.unit.fakes import FakeMatchRepo
 
 

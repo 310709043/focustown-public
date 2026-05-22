@@ -7,8 +7,9 @@ overlay of stored values on top of defaults, unknown-key rejection.
 from __future__ import annotations
 
 import itertools
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 

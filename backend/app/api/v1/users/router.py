@@ -122,7 +122,7 @@ async def get_public_user_profile(
     needs; never includes email, password_hash, marketing flags, or
     the `is_bot` debug flag.
 
-    Today's focus minutes is derived from completed-pomodoro count × 25
+    Today's focus minutes is derived from completed-pomodoro count * 25
     so the value lines up with what the leaderboard widget shows.
     """
     user_repo = SqlUserRepo(db)

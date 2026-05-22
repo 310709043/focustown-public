@@ -50,7 +50,7 @@ class PlaceRoomItemRequest(BaseModel):
     """Body for ``POST /me/room/items``.
 
     ``x`` and ``y`` are integer percentages of the room interior bounding
-    box (0–100). The service runs the same range check again as the
+    box (0-100). The service runs the same range check again as the
     second line of defense before the DB CHECK fires.
     """
 

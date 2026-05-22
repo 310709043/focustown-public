@@ -36,7 +36,11 @@ sys.path.insert(0, str(BACKEND_DIR))
 # Kept for any bot / achievement / shop seed code that still references
 # `ROOT`. Resolves to the repo root in host layout and the backend dir
 # in container layout — both have `assets/` underneath.
-ROOT = BACKEND_DIR.parent if (BACKEND_DIR / "assets").exists() and BACKEND_DIR.name == "backend" else BACKEND_DIR
+ROOT = (
+    BACKEND_DIR.parent
+    if (BACKEND_DIR / "assets").exists() and BACKEND_DIR.name == "backend"
+    else BACKEND_DIR
+)
 
 import random  # noqa: E402
 import secrets  # noqa: E402
@@ -71,28 +75,127 @@ ACHIEVEMENTS = [
 # Phase 2 economy: prices are denominated in T (Town Coin), expressed as
 # centiT (cT) = the integer "minor" unit. 100 cT = 1 T. 1 T is earned per
 # 30 minutes of focused work, so 50 cT (0.5 T) is one 15-minute Pomodoro.
+# Fullwidth commas in `description` strings are intentional CJK typography
+# (zh-TW seed copy), so RUF001 is suppressed at the dict-literal level
+# rather than per-line for readability.
 SHOP_ITEMS = [
     # cars — render_meta drives the equipped-vehicle colors in CarsLane (Phase 3).
     # body / roof palettes deliberately distinct from the 30-character roster so
     # an equipped car stands out from the default character-derived colors.
-    {"category": "car", "icon": "🚗", "name": "霓虹跑車", "description": "紫色霓虹燈特效，限定色款", "price_cT": 80, "price_cents": 4900, "featured": True,
-     "render_meta": {"icon": "🚗", "body_color": "#a855f7", "roof_color": "#6b21a8"}},
-    {"category": "car", "icon": "🚕", "name": "復古計程車", "description": "懷舊黃色像素風格", "price_cT": 50, "price_cents": 3900, "featured": False,
-     "render_meta": {"icon": "🚕", "body_color": "#fbbf24", "roof_color": "#b45309"}},
-    {"category": "car", "icon": "🏎️", "name": "F1 賽車", "description": "超速紅色，帶尾翼特效", "price_cT": 120, "price_cents": 5900, "featured": False,
-     "render_meta": {"icon": "🏎️", "body_color": "#dc2626", "roof_color": "#7f1d1d"}},
-    {"category": "car", "icon": "🚌", "name": "星空巴士", "description": "載著整個小鎮的夢", "price_cT": 80, "price_cents": 4900, "featured": False,
-     "render_meta": {"icon": "🚌", "body_color": "#1e3a8a", "roof_color": "#0c1d4f"}},
+    {
+        "category": "car",
+        "icon": "🚗",
+        "name": "霓虹跑車",
+        "description": "紫色霓虹燈特效，限定色款",  # noqa: RUF001
+        "price_cT": 80,
+        "price_cents": 4900,
+        "featured": True,
+        "render_meta": {"icon": "🚗", "body_color": "#a855f7", "roof_color": "#6b21a8"},
+    },
+    {
+        "category": "car",
+        "icon": "🚕",
+        "name": "復古計程車",
+        "description": "懷舊黃色像素風格",
+        "price_cT": 50,
+        "price_cents": 3900,
+        "featured": False,
+        "render_meta": {"icon": "🚕", "body_color": "#fbbf24", "roof_color": "#b45309"},
+    },
+    {
+        "category": "car",
+        "icon": "🏎️",
+        "name": "F1 賽車",
+        "description": "超速紅色，帶尾翼特效",  # noqa: RUF001
+        "price_cT": 120,
+        "price_cents": 5900,
+        "featured": False,
+        "render_meta": {"icon": "🏎️", "body_color": "#dc2626", "roof_color": "#7f1d1d"},
+    },
+    {
+        "category": "car",
+        "icon": "🚌",
+        "name": "星空巴士",
+        "description": "載著整個小鎮的夢",
+        "price_cT": 80,
+        "price_cents": 4900,
+        "featured": False,
+        "render_meta": {"icon": "🚌", "body_color": "#1e3a8a", "roof_color": "#0c1d4f"},
+    },
     # scenes
-    {"category": "scene", "icon": "🌃", "name": "台灣夜市", "description": "霓虹燈、臭豆腐攤、人潮", "price_cT": 200, "price_cents": 7900, "featured": True},
-    {"category": "scene", "icon": "🌸", "name": "京都春季", "description": "櫻花飄落、石板路", "price_cT": 200, "price_cents": 7900, "featured": False},
-    {"category": "scene", "icon": "🌊", "name": "海邊日落", "description": "浪聲、橘紅天空", "price_cT": 150, "price_cents": 6900, "featured": False},
-    {"category": "scene", "icon": "☁️", "name": "雲端城市", "description": "在雲上面的魔法小鎮", "price_cT": 300, "price_cents": 8900, "featured": False},
+    {
+        "category": "scene",
+        "icon": "🌃",
+        "name": "台灣夜市",
+        "description": "霓虹燈、臭豆腐攤、人潮",
+        "price_cT": 200,
+        "price_cents": 7900,
+        "featured": True,
+    },
+    {
+        "category": "scene",
+        "icon": "🌸",
+        "name": "京都春季",
+        "description": "櫻花飄落、石板路",
+        "price_cT": 200,
+        "price_cents": 7900,
+        "featured": False,
+    },
+    {
+        "category": "scene",
+        "icon": "🌊",
+        "name": "海邊日落",
+        "description": "浪聲、橘紅天空",
+        "price_cT": 150,
+        "price_cents": 6900,
+        "featured": False,
+    },
+    {
+        "category": "scene",
+        "icon": "☁️",
+        "name": "雲端城市",
+        "description": "在雲上面的魔法小鎮",
+        "price_cT": 300,
+        "price_cents": 8900,
+        "featured": False,
+    },
     # effects
-    {"category": "effect", "icon": "✨", "name": "配對光環", "description": "配對成功時的星光特效", "price_cT": 40, "price_cents": 3900, "featured": False},
-    {"category": "effect", "icon": "🏆", "name": "大賞徽章框", "description": "大賞區專屬金框顯示", "price_cT": 30, "price_cents": 2900, "featured": False},
-    {"category": "effect", "icon": "🎁", "name": "禮物盒", "description": "送給你的配對對象", "price_cT": 250, "price_cents": 9900, "featured": True},
-    {"category": "effect", "icon": "💫", "name": "完成爆炸", "description": "番茄完成時的煙火特效", "price_cT": 80, "price_cents": 4900, "featured": False},
+    {
+        "category": "effect",
+        "icon": "✨",
+        "name": "配對光環",
+        "description": "配對成功時的星光特效",
+        "price_cT": 40,
+        "price_cents": 3900,
+        "featured": False,
+    },
+    {
+        "category": "effect",
+        "icon": "🏆",
+        "name": "大賞徽章框",
+        "description": "大賞區專屬金框顯示",
+        "price_cT": 30,
+        "price_cents": 2900,
+        "featured": False,
+    },
+    {
+        "category": "effect",
+        "icon": "🎁",
+        "name": "禮物盒",
+        "description": "送給你的配對對象",
+        "price_cT": 250,
+        "price_cents": 9900,
+        "featured": True,
+    },
+    {
+        "category": "effect",
+        "icon": "💫",
+        "name": "完成爆炸",
+        "description": "番茄完成時的煙火特效",
+        "price_cT": 80,
+        "price_cents": 4900,
+        "featured": False,
+    },
 ]
 
 # Bot population. Each bot picks a character from the frontend roster
@@ -221,7 +324,8 @@ async def _seed_bots(db, ids) -> None:
           'bot-nyx@bots.lowbatterytown.local'
         );
     """
-    rng = random.Random("lowbatterytown-bots-stable")
+    # Dev-seed PRNG, not crypto — fixed seed gives reproducible bot data.
+    rng = random.Random("lowbatterytown-bots-stable")  # noqa: S311
     now = datetime.now(UTC)
 
     # Look up any bots that already exist so we can reuse their ids

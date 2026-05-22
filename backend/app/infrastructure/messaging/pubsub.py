@@ -91,14 +91,17 @@ class RedisPubSubPublisher(IRealtimePublisher):
             self._task.cancel()
             try:
                 await self._task
-            except (asyncio.CancelledError, Exception):
-                pass
+            except (asyncio.CancelledError, Exception) as exc:
+                # Shutdown must not raise — these are best-effort cleanups
+                # after task.cancel(). Debug-log so the failure is still
+                # observable in CloudWatch when we need to diagnose it.
+                log.debug("pubsub_listener_task_cleanup_error", error=str(exc))
             self._task = None
         if self._pubsub is not None:
             try:
                 await self._pubsub.unsubscribe()
-            except Exception:
-                pass
+            except Exception as exc:
+                log.debug("pubsub_unsubscribe_cleanup_error", error=str(exc))
             self._pubsub = None
 
     def _is_duplicate(self, channel: str, msg_id: str | None) -> bool:

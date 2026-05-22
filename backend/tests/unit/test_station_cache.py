@@ -20,10 +20,10 @@ every user in the same scope:
 
 from __future__ import annotations
 
-from typing import AsyncIterator
+import json
+from collections.abc import AsyncIterator
 from unittest.mock import AsyncMock, MagicMock
 
-import json
 import pytest
 
 from app.domain.models.station import StationCursor

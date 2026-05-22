@@ -48,7 +48,7 @@ async def patch_my_preferences(
     db: DbDep,
     ids: IdGenDep,
     clock: ClockDep,
-    patch: dict[str, Any] = Body(default_factory=dict),
+    patch: dict[str, Any] = Body(default_factory=dict),  # noqa: B008 — FastAPI dependency-injection pattern
 ) -> PreferenceBundle:
     svc = _service(db, ids, clock)
     bundle = await svc.patch_bundle(user_id=user_id, patch=patch)

@@ -20,7 +20,6 @@ from tests.unit.fakes import (
     RecordingPublisher,
 )
 
-
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
 

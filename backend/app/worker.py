@@ -508,9 +508,10 @@ async def main() -> None:
     log.info("worker_ready")
 
     try:
-        # Park forever; APScheduler runs in the same loop.
-        while True:
-            await asyncio.sleep(3600)
+        # Park forever; APScheduler runs in the same loop. ``Event.wait()``
+        # blocks indefinitely without spin-sleeping — cancellation /
+        # SIGINT still propagates and the finally cleans up.
+        await asyncio.Event().wait()
     except (KeyboardInterrupt, asyncio.CancelledError):
         log.info("worker_stopping")
     finally:

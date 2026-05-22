@@ -10,7 +10,7 @@ class RoomItemORM(Base, IdMixin, TimestampMixin):
     """One decoration placement.
 
     ``x`` and ``y`` are integer percentages of the room interior bounding
-    box (0–100). The CHECK constraints are the second line of defense; the
+    box (0-100). The CHECK constraints are the second line of defense; the
     service validates the same range before the DB sees it.
     """
 

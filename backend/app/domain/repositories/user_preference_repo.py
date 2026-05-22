@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, Protocol
 
 
@@ -20,7 +21,7 @@ class IUserPreferenceRepo(Protocol):
         *,
         user_id: str,
         entries: dict[str, Any],
-        id_factory: "callable[[], str]",
+        id_factory: Callable[[], str],
     ) -> None:
         """Upsert each (user, key) → value. Caller validates shapes.
         ``id_factory`` mints ids for new rows."""

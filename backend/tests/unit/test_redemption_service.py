@@ -7,7 +7,7 @@ exhaustion, expiry window, inactive code, blank/unknown code.
 from __future__ import annotations
 
 import itertools
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest
