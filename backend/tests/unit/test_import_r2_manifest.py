@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 
 from app.infrastructure.db.seed import r2_helpers as _mod
+from app.infrastructure.db.seed.track_catalog import deterministic_track_id
 
 # The operator-driven script still lives under `backend/scripts/` and isn't
 # a regular package — load it by path so the script-only helpers
@@ -95,3 +96,28 @@ def test_mp3_duration_returns_none_for_garbage_file(tmp_path):
     fake.write_bytes(b"not actually an MP3")
     # mutagen will fail to parse — best-effort returns None
     assert _script_mod.mp3_duration_ms(fake) is None
+
+
+def test_deterministic_track_id_is_pure():
+    # Same file_key → identical UUID across calls. This is the property
+    # that keeps the StationCursor (Redis) and the tracks table (Postgres)
+    # in sync across DB resets — a random UUID4 here is the root cause
+    # of the play-token 404 storm.
+    assert deterministic_track_id("tracks/foo.mp3") == deterministic_track_id(
+        "tracks/foo.mp3"
+    )
+
+
+def test_deterministic_track_id_distinguishes_distinct_keys():
+    assert deterministic_track_id("tracks/foo.mp3") != deterministic_track_id(
+        "tracks/bar.mp3"
+    )
+
+
+def test_deterministic_track_id_is_a_valid_uuid_string():
+    import uuid as _uuid
+
+    out = deterministic_track_id("tracks/anything.mp3")
+    # Must round-trip through ``uuid.UUID`` so SQLAlchemy / Postgres
+    # accept it as a VARCHAR(36) primary key.
+    assert str(_uuid.UUID(out)) == out

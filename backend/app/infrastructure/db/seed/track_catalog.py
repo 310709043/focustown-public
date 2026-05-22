@@ -15,6 +15,7 @@ Self-healing:
 from __future__ import annotations
 
 import json
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,19 @@ from app.infrastructure.db.seed.r2_helpers import (
     derive_title,
     title_override,
 )
+
+# Fixed namespace for hashing the R2 ``file_key`` into a stable track UUID.
+# Why deterministic: the StationCursor in Redis stores playlist track IDs;
+# if these IDs were random UUID4s, any Postgres reseed (DB wiped while
+# Redis volume survived) would leave the cursor pointing at ghost IDs and
+# every ``/api/v1/tracks/{id}/play-token`` 404s. uuid5 of (NS, file_key)
+# makes the same .mp3 always map to the same ``tracks.id`` across boots,
+# deploys, and dev machines.
+_TRACK_NAMESPACE = uuid.UUID("5e6b3c1f-7a4f-5b8e-9d2c-1a0b4c5d6e7f")
+
+
+def deterministic_track_id(file_key: str) -> str:
+    return str(uuid.uuid5(_TRACK_NAMESPACE, file_key))
 
 
 def load_r2_manifest_entries(manifests_dir: Path) -> list[dict]:
@@ -107,7 +121,7 @@ async def import_r2_track_catalog(
         mood = derive_mood(filename, MOOD_MAP_DEFAULT)
         db.add(
             TrackORM(
-                id=ids.new_id(),
+                id=deterministic_track_id(entry["key"]),
                 title=title,
                 artist=None,
                 mood=mood,

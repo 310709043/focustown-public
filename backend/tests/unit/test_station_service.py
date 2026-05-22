@@ -347,3 +347,102 @@ async def test_cleanup_pair_removes_redis_key() -> None:
     await svc.cleanup_pair(match_id="match-1")
 
     assert await cache.get(kind="pair", scope_id="match-1") is None
+
+
+@pytest.mark.asyncio
+async def test_get_current_reseeds_when_cached_cursor_is_stale() -> None:
+    """Self-heal path: cursor in Redis holds ghost IDs from a previous
+    DB lifetime (Postgres was wiped + reseeded with deterministic IDs
+    while Redis kept the old random-UUID cursor). The next
+    ``get_current`` must re-seed instead of handing clients a cursor
+    whose IDs all 404 on ``/play-token``.
+    """
+    repo = FakeTrackRepo()
+    await _seed_tracks(repo, count=3, duration_ms=180_000)
+    svc, cache, publisher, _ = _make_service(tracks=repo)
+
+    ghost = StationCursor(
+        kind="city",
+        scope_id="lowbatterytown",
+        playlist_ids=["ghost-a", "ghost-b", "ghost-c"],
+        cursor_index=0,
+        started_at_ms=0,
+        seed=0,
+        version=9,
+    )
+    await cache.set(ghost)
+    publisher.published.clear()
+
+    restored = await svc.get_current(kind="city", scope_id="lowbatterytown")
+
+    # The returned cursor uses live catalog IDs, not the ghost IDs.
+    assert all(tid not in {"ghost-a", "ghost-b", "ghost-c"} for tid in restored.playlist_ids)
+    assert set(restored.playlist_ids) == {"t-00", "t-01", "t-02"}
+    # Re-seed publishes a fresh ``station.cursor`` event so connected
+    # clients update immediately rather than waiting for the next song.
+    assert len(publisher.published) == 1
+
+
+@pytest.mark.asyncio
+async def test_get_current_reseeds_when_snapshot_is_stale() -> None:
+    """Same self-heal path as the cache, but via the Postgres snapshot.
+
+    Mirrors a crash-recovery where Redis was cold AND the persisted
+    snapshot was stamped against a pre-reseed catalog.
+    """
+    repo = FakeTrackRepo()
+    await _seed_tracks(repo, count=3, duration_ms=180_000)
+    svc, cache, _, _ = _make_service(tracks=repo)
+
+    stale_snapshot = StationCursor(
+        kind="city",
+        scope_id="lowbatterytown",
+        playlist_ids=["ghost-a", "ghost-b", "ghost-c"],
+        cursor_index=1,
+        started_at_ms=1_234_000,
+        seed=42,
+        version=7,
+    )
+    await svc.snapshots_writer.upsert_snapshot(stale_snapshot)
+    # Cache stays cold so the snapshot branch fires.
+    assert await cache.get(kind="city", scope_id="lowbatterytown") is None
+
+    restored = await svc.get_current(kind="city", scope_id="lowbatterytown")
+
+    assert set(restored.playlist_ids) == {"t-00", "t-01", "t-02"}
+    # And the freshly-seeded cursor is now in cache (warming the hot path).
+    cached = await cache.get(kind="city", scope_id="lowbatterytown")
+    assert cached is not None
+    assert set(cached.playlist_ids) == {"t-00", "t-01", "t-02"}
+
+
+@pytest.mark.asyncio
+async def test_get_current_does_not_reseed_on_minor_catalog_drift() -> None:
+    """One missing track is below the staleness threshold — the cursor
+    keeps its anchor and ``advance_if_due``'s missing-track tolerance
+    handles the gap. Re-seeding on every tiny drift would teleport
+    listeners back to track[0] unnecessarily.
+    """
+    repo = FakeTrackRepo()
+    await _seed_tracks(repo, count=4, duration_ms=180_000)
+    svc, cache, publisher, _ = _make_service(tracks=repo)
+
+    # Cursor holds 4 IDs; 3 of them still exist → 75% alive, above the
+    # 50% threshold.
+    near_fresh = StationCursor(
+        kind="city",
+        scope_id="lowbatterytown",
+        playlist_ids=["t-00", "t-01", "t-02", "ghost-removed"],
+        cursor_index=0,
+        started_at_ms=1_000_000,
+        seed=123,
+        version=5,
+    )
+    await cache.set(near_fresh)
+    publisher.published.clear()
+
+    restored = await svc.get_current(kind="city", scope_id="lowbatterytown")
+
+    # Original cursor preserved — no reseed, no new event published.
+    assert restored == near_fresh
+    assert publisher.published == []

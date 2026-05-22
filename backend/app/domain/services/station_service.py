@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from app.core.clock import IClock
 from app.core.exceptions import BusinessError
+from app.core.logging import get_logger
 from app.domain.models.station import StationCursor, StationKind
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.station_repo import (
@@ -16,6 +17,15 @@ from app.domain.repositories.track_repo import ITrackRepo
 from app.infrastructure.cache.station_cache import RedisStationCache
 
 DEFAULT_TRACK_DURATION_MS = 180_000  # 3 min — fallback when track has no duration
+
+# A cursor is considered stale (and re-seeded) when fewer than this
+# fraction of its playlist IDs still exist in ``tracks``. Half is a
+# deliberately loose threshold — a tiny drift (one removed track) lets
+# the playhead heal naturally via ``advance_if_due``'s missing-track
+# tolerance, but a full DB reseed lights up < 50% and forces re-seed.
+_CURSOR_STALE_THRESHOLD = 0.5
+
+log = get_logger(__name__)
 
 
 @dataclass(slots=True)
@@ -74,17 +84,57 @@ class StationService:
     async def get_current(
         self, *, kind: StationKind, scope_id: str
     ) -> StationCursor:
-        """Redis → DB snapshot → fresh seed. Always returns a cursor."""
+        """Redis → DB snapshot → fresh seed. Always returns a cursor.
+
+        Self-heals stale cursors: if the cached or snapshotted cursor's
+        ``playlist_ids`` no longer match the official catalog (e.g. the
+        DB was reseeded while Redis survived), re-seed so listeners
+        don't keep 404-ing on ghost track IDs.
+        """
         cached = await self.cache.get(kind=kind, scope_id=scope_id)
         if cached is not None:
+            if await self._is_cursor_stale(cached):
+                log.warning(
+                    "station_cursor_stale_reseed",
+                    kind=kind,
+                    scope_id=scope_id,
+                    source="cache",
+                )
+                return await self.seed(kind=kind, scope_id=scope_id)
             return cached
         snapshot = await self.snapshots_reader.get_snapshot(
             kind=kind, scope_id=scope_id
         )
         if snapshot is not None:
+            if await self._is_cursor_stale(snapshot):
+                log.warning(
+                    "station_cursor_stale_reseed",
+                    kind=kind,
+                    scope_id=scope_id,
+                    source="snapshot",
+                )
+                return await self.seed(kind=kind, scope_id=scope_id)
             await self.cache.set(snapshot)
             return snapshot
         return await self.seed(kind=kind, scope_id=scope_id)
+
+    async def _is_cursor_stale(self, cursor: StationCursor) -> bool:
+        """Return True when the cursor's playlist no longer aligns with
+        the live ``tracks`` catalog enough to be playable.
+
+        Stale = fewer than ``_CURSOR_STALE_THRESHOLD`` of the cursor's
+        IDs are still present in ``tracks.list_official()``. A wholly
+        empty catalog short-circuits to False so the empty-DB error
+        path inside ``seed`` is still the one to fire.
+        """
+        if not cursor.playlist_ids:
+            return True
+        catalog = await self.tracks.list_official()
+        if not catalog:
+            return False
+        official_ids = {t.id for t in catalog}
+        alive = sum(1 for tid in cursor.playlist_ids if tid in official_ids)
+        return (alive / len(cursor.playlist_ids)) < _CURSOR_STALE_THRESHOLD
 
     async def seed(
         self, *, kind: StationKind, scope_id: str
