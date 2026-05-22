@@ -9,7 +9,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
-from sqlalchemy.exc import DataError, IntegrityError
+from sqlalchemy.exc import DataError, IntegrityError, OperationalError
+from sqlalchemy.orm.exc import StaleDataError
 
 from app.core.clock import SystemClock
 from app.core.config import get_settings
@@ -18,6 +19,7 @@ from app.core.exceptions import (
     ConflictError,
     InternalError,
     LowBatteryTownError,
+    ServiceUnavailableError,
     ValidationError,
 )
 from app.core.ids import UUID4Generator
@@ -236,6 +238,37 @@ def create_app() -> FastAPI:
         # leak schema details, so we log them and respond with a stable code.
         log.warning(
             "sql_integrity_error",
+            path=request.url.path,
+            method=request.method,
+            exc_type=type(exc).__name__,
+        )
+        return _envelope(ConflictError("conflict"))
+
+    @app.exception_handler(OperationalError)
+    async def _operational_error_handler(
+        request: Request, exc: OperationalError
+    ) -> JSONResponse:
+        # Connection lost, pool exhaustion, deadlock victim, statement timeout —
+        # transient. Map to 503 with Retry-After so clients back off rather
+        # than treating it as a permanent failure.
+        log.exception(
+            "db_operational_error",
+            path=request.url.path,
+            method=request.method,
+            exc_type=type(exc).__name__,
+        )
+        response = _envelope(ServiceUnavailableError("service_unavailable"))
+        response.headers["Retry-After"] = "5"
+        return response
+
+    @app.exception_handler(StaleDataError)
+    async def _stale_data_error_handler(
+        request: Request, exc: StaleDataError
+    ) -> JSONResponse:
+        # ORM detected the row was modified or deleted between read and
+        # write (optimistic-locking miss). Surface as 409, not 500.
+        log.warning(
+            "db_stale_data_error",
             path=request.url.path,
             method=request.method,
             exc_type=type(exc).__name__,

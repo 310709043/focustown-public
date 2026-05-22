@@ -29,6 +29,16 @@ class Settings(BaseSettings):
     app_trusted_proxies: str = ""
 
     database_url: str
+    # SQLAlchemy connection-pool sizing. Defaults are tuned for a single
+    # backend container against Lightsail Postgres (max_connections ~100):
+    # 10 base + 20 overflow leaves headroom for the worker, migrations, and
+    # ad-hoc admin sessions. pool_recycle below PG / NAT idle timeout to
+    # avoid serving stale sockets; pool_timeout fails fast under saturation
+    # so the OperationalError → 503 handler can kick in.
+    db_pool_size: int = 10
+    db_max_overflow: int = 20
+    db_pool_recycle: int = 1800
+    db_pool_timeout: int = 10
     redis_url: str = "redis://redis:6379/0"
     # ElastiCache AUTH token. When set, overrides any password embedded in
     # redis_url; rediss:// scheme in redis_url is the TLS trigger.

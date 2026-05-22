@@ -38,6 +38,18 @@ class RateLimitedError(LowBatteryTownError):
     code = "rate_limited"
 
 
+class ServiceUnavailableError(LowBatteryTownError):
+    """Transient outage of a downstream dependency (DB pool exhausted,
+    connection lost, external API unreachable).
+
+    Mapped to HTTP 503 with a ``Retry-After`` header by ``app/main.py``;
+    services may also raise it deliberately when an external dep is down.
+    """
+
+    status_code = 503
+    code = "service_unavailable"
+
+
 class InsufficientFundsError(LowBatteryTownError):
     status_code = 402
     code = "insufficient_funds"
