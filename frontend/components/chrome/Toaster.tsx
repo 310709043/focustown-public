@@ -31,8 +31,8 @@ export function Toaster() {
           style={{
             borderColor: KIND_BORDER[t.kind],
             maxWidth: "20rem",
-            padding: "8px 12px",
-            fontSize: 11,
+            padding: "9px 14px",
+            fontSize: 13,
             color: "var(--ink)",
             lineHeight: 1.5,
           }}
@@ -44,7 +44,7 @@ export function Toaster() {
             aria-label={tA11y("dismissAria")}
             className="font-silkscreen"
             style={{
-              fontSize: 10,
+              fontSize: 12,
               color: "var(--ink-mute)",
               background: "transparent",
               border: "none",

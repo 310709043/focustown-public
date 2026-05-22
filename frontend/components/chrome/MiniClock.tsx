@@ -63,7 +63,7 @@ export function MiniClock() {
         <div
           className="font-silkscreen"
           style={{
-            fontSize: 16,
+            fontSize: 19,
             color: "var(--ink)",
             letterSpacing: "0.05em",
           }}
@@ -74,7 +74,7 @@ export function MiniClock() {
         <div
           className="font-silkscreen"
           style={{
-            fontSize: 8,
+            fontSize: 10,
             color: "var(--ink-mute)",
             letterSpacing: "0.18em",
           }}

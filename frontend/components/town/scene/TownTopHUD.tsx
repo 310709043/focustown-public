@@ -156,7 +156,7 @@ export function TownTopHUD({
           data-testid="top-hud-version"
           className="font-silkscreen"
           style={{
-            fontSize: 9,
+            fontSize: 11,
             color: "var(--ink-dim)",
             letterSpacing: "0.2em",
             ...collapsedStyle("-12px"),
@@ -179,16 +179,16 @@ export function TownTopHUD({
           data-scene={scene}
           className="pixel-panel font-silkscreen"
           style={{
-            padding: "5px 10px",
+            padding: "6px 12px",
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            fontSize: 10,
+            gap: 10,
+            fontSize: 12,
             letterSpacing: "0.15em",
             whiteSpace: "nowrap",
           }}
         >
-          <span style={{ fontSize: 13 }}>{TIME_EMOJI[scene]}</span>
+          <span style={{ fontSize: 15 }}>{TIME_EMOJI[scene]}</span>
           <span>{tScene(`${scene}.name`)}</span>
           <span style={{ color: "var(--ink-dim)" }}>·</span>
           <span>
@@ -201,8 +201,8 @@ export function TownTopHUD({
           data-testid="top-hud-online"
           className="pixel-panel font-silkscreen"
           style={{
-            padding: "5px 10px",
-            fontSize: 10,
+            padding: "6px 12px",
+            fontSize: 12,
             letterSpacing: "0.2em",
             color: "#6ee7b7",
             whiteSpace: "nowrap",

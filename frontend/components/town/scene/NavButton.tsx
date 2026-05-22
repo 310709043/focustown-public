@@ -34,7 +34,7 @@ export function NavButton({
     <>
       {icon ? (
         typeof icon === "string" ? (
-          <span style={{ fontSize: 11 }}>{icon}</span>
+          <span style={{ fontSize: 13 }}>{icon}</span>
         ) : (
           icon
         )
@@ -46,11 +46,11 @@ export function NavButton({
   const baseStyle = {
     background: "rgba(7,4,26,0.75)",
     border: "1px solid var(--panel-stroke)",
-    padding: "6px 10px",
+    padding: "7px 12px",
     display: "inline-flex",
     alignItems: "center",
-    gap: 6,
-    fontSize: 9,
+    gap: 7,
+    fontSize: 11,
     color: "var(--ink-mute)",
     letterSpacing: "0.15em",
     cursor: disabled ? "not-allowed" : "pointer",

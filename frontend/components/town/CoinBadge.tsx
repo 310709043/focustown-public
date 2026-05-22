@@ -27,18 +27,18 @@ export function CoinBadge() {
         letterSpacing: 0.6,
         textShadow: "0 0 6px rgba(252,211,77,0.55)",
         boxShadow: "inset 0 0 12px rgba(252,211,77,0.05)",
-        fontSize: 12,
-        padding: "5px 10px",
+        fontSize: 14,
+        padding: "6px 12px",
         borderRadius: 6,
         display: "inline-flex",
         alignItems: "center",
-        gap: 4,
+        gap: 5,
         lineHeight: 1,
       }}
     >
-      <span style={{ fontSize: 13 }}>💰</span>
+      <span style={{ fontSize: 15 }}>💰</span>
       <span>{formatted}</span>
-      <span style={{ fontSize: 10, opacity: 0.7 }}>{t("unit")}</span>
+      <span style={{ fontSize: 12, opacity: 0.7 }}>{t("unit")}</span>
     </span>
   );
 }

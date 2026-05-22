@@ -97,7 +97,7 @@ export function UserStatusPill({
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span
             style={{
-              fontSize: 13,
+              fontSize: 14,
               color: "var(--ink)",
               letterSpacing: "0.08em",
             }}
@@ -106,10 +106,10 @@ export function UserStatusPill({
           </span>
           <span
             style={{
-              fontSize: 9,
+              fontSize: 10,
               color: "var(--accent)",
               letterSpacing: "0.15em",
-              padding: "0 4px",
+              padding: "1px 5px",
               border: "1px solid var(--accent)",
             }}
           >
@@ -121,7 +121,7 @@ export function UserStatusPill({
             display: "flex",
             alignItems: "center",
             gap: 6,
-            fontSize: 9,
+            fontSize: 10,
           }}
         >
           <span
@@ -162,7 +162,7 @@ export function UserStatusPill({
             style={i >= filled ? { opacity: 0.3 } : undefined}
           />
         ))}
-        <span style={{ fontSize: 9, color: "var(--ink-dim)", marginLeft: 4 }}>
+        <span style={{ fontSize: 10, color: "var(--ink-dim)", marginLeft: 4 }}>
           {filled}/{total}
         </span>
       </div>

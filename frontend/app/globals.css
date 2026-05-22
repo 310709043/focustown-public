@@ -33,14 +33,17 @@
   --r: 6px;
   --r2: 10px;
 
-  /* V2 type scale (decorative — kept for the pixel-marquee surfaces) */
-  --t-xs:  10px;
-  --t-sm:  13px;
-  --t-md:  16px;
-  --t-lg:  20px;
-  --t-xl:  28px;
-  --t-2xl: 40px;
-  --t-3xl: 72px;
+  /* V2 type scale (decorative — kept for the pixel-marquee surfaces).
+     Bumped ~20% across the board 2026-05-22 (user feedback: text too
+     small at HUD viewing distance). Pixel-font characters break at
+     non-integer multiples so all values stay whole pixels. */
+  --t-xs:  12px;
+  --t-sm:  15px;
+  --t-md:  19px;
+  --t-lg:  24px;
+  --t-xl:  34px;
+  --t-2xl: 48px;
+  --t-3xl: 86px;
 
   /* Direction tokens — Era B has a single calm direction, no neon. The
      dusk/rain :root[data-direction=...] rules below are kept as empty
@@ -61,15 +64,20 @@
      for everything that must remain legible (body, CTAs, form copy,
      legal articles, metric digits). Keep body ≥ 16px so iOS Safari does
      not zoom inputs on focus. */
-  --font-size-caption:       12px;
-  --font-size-note:          13px;
-  --font-size-label:         14px;
-  --font-size-body:          16px;
-  --font-size-body-lg:       18px;
-  --font-size-card-title:    20px;
-  --font-size-section-title: 24px;
-  --font-size-page-title:    32px;
-  --font-size-hero:          48px;
+  /* Readability ladder — bumped ~15-20% on 2026-05-22 (user feedback:
+     text too small for CJK + EN co-existence). Body kept ≥ 16 so iOS
+     Safari does not zoom inputs on focus; bumped to 18 for ~12.5%
+     extra comfort. Higher tiers scale more aggressively because they
+     are headline / page-title surfaces. */
+  --font-size-caption:       14px;
+  --font-size-note:          15px;
+  --font-size-label:         16px;
+  --font-size-body:          18px;
+  --font-size-body-lg:       20px;
+  --font-size-card-title:    24px;
+  --font-size-section-title: 28px;
+  --font-size-page-title:    36px;
+  --font-size-hero:          56px;
 
   --line-height-tight:   1.2;
   --line-height-title:   1.35;
@@ -883,13 +891,14 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  /* Right padding reserves a 108px lane for the fixed LocaleSwitcher
+  /* Right padding reserves a lane for the fixed LocaleSwitcher
      (`top-3 right-3` in [locale]/layout.tsx) so the right cluster
      (NavButtons + MiniClock + CoinBadge) cannot creep underneath it.
-     Was 18px — the locale toggle would render BEHIND the wallet badge,
-     leaving users with no visible way to switch language. */
+     Bumped modestly on 2026-05-22 alongside the +20% typography pass
+     to account for the slightly wider locale toggle (font 10→11,
+     pip 9→11). */
   padding: 10px 18px 10px 18px;
-  padding-inline-end: clamp(108px, 112px, 132px);
+  padding-inline-end: clamp(116px, 122px, 142px);
   max-width: var(--app-content-max-width, none);
   margin-inline: auto;
 }
@@ -995,7 +1004,7 @@ body {
   align-items: center;
   gap: 4px;
   padding: 5px 10px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
   color: var(--ink-mute);
   text-transform: uppercase;
@@ -1024,8 +1033,8 @@ body {
 }
 .locale-switcher__pip {
   display: inline-block;
-  width: 6px;
-  font-size: 9px;
+  width: 7px;
+  font-size: 11px;
   color: var(--a1);
   opacity: 0.85;
 }
