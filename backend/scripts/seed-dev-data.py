@@ -330,15 +330,19 @@ async def _seed_bots(db, ids) -> None:
     rng = random.Random("lowbatterytown-bots-stable")  # noqa: S311
     now = datetime.now(UTC)
 
-    # 1. Prune ghosts. Match by ``LIKE 'bot-%@bots.lowbatterytown.local'``
-    # rather than relying solely on ``is_bot=true`` so we never touch a
-    # real-user account that accidentally has the flag set.
+    # 1. Prune ghosts. Trust the ``is_bot=true`` flag as the source of
+    # truth — earlier roster generations used different email patterns
+    # (we observed leftovers without the ``bot-`` prefix on the dev DB
+    # after the 2026-05-22 deploy: the prior LIKE filter only caught 2
+    # of 9 ghosts and the worker kept the rest "online"). Real-user
+    # accounts never have ``is_bot=true`` set; if any do, that itself
+    # is a data corruption signal worth surfacing — the matching seed
+    # is authoritative about which bots should exist.
     expected_emails = {BOT_EMAIL_FMT.format(key=spec["key"]) for spec in BOTS}
     ghost_emails = (
         await db.execute(
             select(UserORM.email).where(
                 UserORM.is_bot.is_(True),
-                UserORM.email.like("bot-%@bots.lowbatterytown.local"),
                 UserORM.email.notin_(expected_emails),
             )
         )
