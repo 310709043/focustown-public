@@ -36,14 +36,14 @@ from alembic import op
 
 revision: str = "0024"
 # Merge point for the two parallel 0023 branches:
-# - "0023"  is ``match_waiting_pool`` (Phase 06)
-# - "0023a" is ``focus_session_idempotency_key`` (Phase 04, renumbered
-#   from a duplicate "0023" so alembic can chain forward — both
-#   migrations landed on develop with the same revision id and
-#   alembic only loaded one of them; this is the consolidation step).
+# - "0023_match_pool" is ``match_waiting_pool`` (Phase 06; renumbered by
+#   Phase 02's pagination PR to disambiguate the duplicate "0023" id
+#   Phase 04 + Phase 06 originally collided on).
+# - "0023a" is ``focus_session_idempotency_key`` (Phase 04; renumbered
+#   by Phase 07 for the same reason).
 # 0024 doubles as the merge node *and* the match_rooms creation so we
 # don't pay for an empty merge-only revision file.
-down_revision: str | Sequence[str] | None = ("0023", "0023a")
+down_revision: str | Sequence[str] | None = ("0023_match_pool", "0023a")
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
