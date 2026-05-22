@@ -1,0 +1,209 @@
+name: e2e (phase 10 — full stack)
+
+# Phase 10 verification suite: runs the two-user Playwright spec and the
+# k6 100-VU load test against a full docker-compose stack. Chaos drills
+# are gated to `workflow_dispatch` only (they involve killing containers
+# and don't belong on every PR).
+#
+# Triggers:
+#   - On PRs touching backend/frontend/compose
+#   - Nightly schedule (matches the spec's "nightly" recommendation)
+#   - Manual `workflow_dispatch` (with optional `run_chaos` toggle)
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docker-compose.yml"
+      - "tests/**"
+      - ".github/workflows/e2e.yml"
+  schedule:
+    # 03:00 UTC nightly. Outside business hours of all relevant timezones,
+    # so the slow-but-thorough run doesn't fight a developer's iteration.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      run_chaos:
+        description: "Run chaos drills (kills containers)"
+        type: boolean
+        default: false
+
+# Skip CI if the PR title or commit message contains [skip-e2e] — matches
+# the rest of the repo's convention.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright_full_stack:
+    name: Playwright — match-to-room full flow
+    runs-on: ubuntu-latest
+    # ~5min budget per PR; nightly run gives more headroom.
+    timeout-minutes: 20
+    if: "!contains(github.event.head_commit.message, '[skip-e2e]')"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot docker compose stack
+        env:
+          # The compose file reads .env; CI doesn't ship one by default.
+          APP_SECRET_KEY: "ci-fixture-not-a-real-secret-32-bytes-min"
+          DATABASE_URL: "postgresql+asyncpg://lowbatterytown:lowbatterytown@postgres:5432/lowbatterytown"
+          REDIS_URL: "redis://redis:6379/0"
+        run: |
+          cp .env.example .env || true
+          echo "APP_SECRET_KEY=$APP_SECRET_KEY" >> .env
+          echo "DATABASE_URL=$DATABASE_URL" >> .env
+          echo "REDIS_URL=$REDIS_URL" >> .env
+          docker compose up --build -d
+          # Wait for backend /ready (deep — DB + Redis round-trip).
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/ready >/dev/null 2>&1; then
+              echo "backend ready"; break
+            fi
+            sleep 2
+          done
+
+      - name: Apply migrations + seed
+        run: |
+          docker compose exec -T backend alembic upgrade head
+          docker compose exec -T backend python /app/scripts/seed-dev-data.py || true
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install Playwright + browsers
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile || pnpm install
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Run two-user spec
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_REAL_STACK: "1"
+          PLAYWRIGHT_BASE_URL: "http://localhost:3000"
+          PLAYWRIGHT_API_BASE_URL: "http://localhost:8000"
+        run: |
+          pnpm playwright test e2e/match-to-room-full-flow.spec.ts \
+            --reporter=line,html
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-phase10
+          path: frontend/playwright-report
+          retention-days: 7
+
+      - name: Dump compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+
+      - name: Tear down compose
+        if: always()
+        run: docker compose down -v
+
+  k6_load:
+    name: k6 — 100 VU matching queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Nightly + manual only. Keeps PR latency low; the k6 run takes ~2min
+    # and saturating CI runners on every PR isn't worth the signal.
+    if: "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Boot stack
+        env:
+          APP_SECRET_KEY: "ci-fixture-not-a-real-secret-32-bytes-min"
+          DATABASE_URL: "postgresql+asyncpg://lowbatterytown:lowbatterytown@postgres:5432/lowbatterytown"
+          REDIS_URL: "redis://redis:6379/0"
+        run: |
+          cp .env.example .env || true
+          echo "APP_SECRET_KEY=$APP_SECRET_KEY" >> .env
+          echo "DATABASE_URL=$DATABASE_URL" >> .env
+          echo "REDIS_URL=$REDIS_URL" >> .env
+          docker compose up --build -d backend worker postgres redis
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:8000/ready >/dev/null 2>&1 && break
+            sleep 2
+          done
+          docker compose exec -T backend alembic upgrade head
+          docker compose exec -T backend python /app/scripts/seed-load-users.py --count 100
+
+      - name: Run k6 (smaller cap on CI runners — 50 VUs)
+        env:
+          LOAD_VUS: "50"
+          LOAD_DURATION: "45s"
+          API_BASE: "http://localhost:8000"
+        run: |
+          k6 run --summary-export=k6-summary.json tests/load/match_queue.js
+
+      - name: Upload k6 summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-summary-phase10
+          path: k6-summary.json
+          retention-days: 30
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
+
+  chaos:
+    name: Chaos drills (manual only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: "github.event_name == 'workflow_dispatch' && inputs.run_chaos"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot stack
+        env:
+          APP_SECRET_KEY: "ci-fixture-not-a-real-secret-32-bytes-min"
+          DATABASE_URL: "postgresql+asyncpg://lowbatterytown:lowbatterytown@postgres:5432/lowbatterytown"
+          REDIS_URL: "redis://redis:6379/0"
+        run: |
+          cp .env.example .env || true
+          echo "APP_SECRET_KEY=$APP_SECRET_KEY" >> .env
+          echo "DATABASE_URL=$DATABASE_URL" >> .env
+          echo "REDIS_URL=$REDIS_URL" >> .env
+          docker compose up --build -d
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:8000/ready >/dev/null 2>&1 && break
+            sleep 2
+          done
+          docker compose exec -T backend alembic upgrade head
+          docker compose exec -T backend python /app/scripts/seed-load-users.py --count 5
+
+      - name: Redis crash drill
+        run: bash tests/chaos/redis_crash.sh
+
+      - name: API replica crash drill
+        run: bash tests/chaos/api_crash.sh
+
+      - name: Worker crash drill
+        run: bash tests/chaos/worker_crash.sh
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
