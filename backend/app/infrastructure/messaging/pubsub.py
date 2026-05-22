@@ -73,6 +73,19 @@ class RedisPubSubPublisher(IRealtimePublisher):
         await self._pubsub.subscribe(*new)
         self._subscribed.update(new)
 
+    async def remove_channels(self, channels: list[str]) -> None:
+        # Mirror of ``add_channels`` for explicit unsubscribes (Phase 08
+        # adds the ``room:{id}`` subscribe op on focus mount and the
+        # matching unsubscribe on unmount). Idempotent — a channel the
+        # caller never subscribed to is a no-op.
+        if not channels or self._pubsub is None:
+            return
+        present = [c for c in channels if c in self._subscribed]
+        if not present:
+            return
+        await self._pubsub.unsubscribe(*present)
+        self._subscribed.difference_update(present)
+
     async def stop(self) -> None:
         if self._task is not None:
             self._task.cancel()

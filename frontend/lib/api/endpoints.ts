@@ -790,6 +790,13 @@ export interface MatchRoomSnapshot {
   ended_at: string | null;
   ended_reason: string | null;
   participants: MatchRoomParticipant[];
+  // Phase 8 — populated only while the room is ``active`` so a reload
+  // mid-session can restore the countdown via the snapshot endpoint
+  // (without these the UI shows "0:00" until the first timer_tick).
+  timer_started_at: string | null;
+  timer_duration_seconds: number | null;
+  timer_remaining_seconds: number | null;
+  timer_expected_end_at: string | null;
 }
 
 export const matchRoomApi = {
@@ -809,6 +816,16 @@ export const matchRoomApi = {
     return apiFetch<MatchRoomSnapshot>(
       `/api/v1/rooms/match/${encodeURIComponent(matchId)}/leave`,
       { method: "POST" },
+    );
+  },
+  startSession(matchId: string, durationSeconds: number) {
+    return apiFetch<MatchRoomSnapshot>(
+      `/api/v1/rooms/match/${encodeURIComponent(matchId)}/start`,
+      {
+        method: "POST",
+        body: JSON.stringify({ duration_seconds: durationSeconds }),
+        headers: { "Content-Type": "application/json" },
+      },
     );
   },
 };

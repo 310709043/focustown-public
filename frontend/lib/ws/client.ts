@@ -79,6 +79,38 @@ export type WsMessage =
       track_id: string;
       started_at_ms: number;
     }
+  // Phase 8 (db+matching): match-room realtime lifecycle. Subscribed
+  // via the explicit ``{op:"subscribe",channel:"room:{id}"}`` op so
+  // the server validates participant membership before fanning out.
+  | {
+      type: "room.opened";
+      room_id: string;
+      match_id: string;
+      requester_id: string;
+      candidate_id: string;
+    }
+  | { type: "room.partner_joined"; room_id: string; user_id: string }
+  | { type: "room.partner_left"; room_id: string; user_id: string }
+  | { type: "room.ready"; room_id: string }
+  | {
+      type: "room.session_started";
+      room_id: string;
+      started_at: number;
+      duration_seconds: number;
+    }
+  | {
+      type: "room.timer_tick";
+      room_id: string;
+      elapsed_seconds: number;
+      remaining_seconds: number;
+    }
+  | { type: "room.session_completed"; room_id: string }
+  | { type: "room.ended"; room_id: string; reason: string }
+  | {
+      type: "error";
+      code: string;
+      channel?: string;
+    }
   | { type: string; [k: string]: unknown };
 
 type Listener = (msg: WsMessage) => void;

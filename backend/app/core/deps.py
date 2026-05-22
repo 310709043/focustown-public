@@ -22,9 +22,11 @@ from app.domain.repositories.presence import IPresenceTracker
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.room_participant_repo import IRoomParticipantRepo
 from app.domain.services.match_room_service import MatchRoomService
+from app.domain.services.room_timer_service import RoomTimerService
 from app.infrastructure.auth.providers.base import AuthProvider
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
 from app.infrastructure.cache.redis_client import get_redis
+from app.infrastructure.cache.room_timer_store import RedisRoomTimerStore
 from app.infrastructure.db.repositories.match_room_repo import SqlMatchRoomRepo
 from app.infrastructure.db.repositories.match_waiting_pool_repo import (
     SqlMatchWaitingPoolRepo,
@@ -166,17 +168,40 @@ RoomParticipantRepoDep = Annotated[
 ]
 
 
+def get_room_timer_service(clock: ClockDep) -> RoomTimerService:
+    """Process-singleton-style timer service.
+
+    Holds no per-request state — the Redis client reference is fetched
+    lazily so the same factory works at request time and at worker boot.
+    ``MatchRoomService`` consumes this via composition; the snapshot
+    endpoint reads ``peek`` to bridge the post-reload tick gap.
+    """
+    redis = get_redis()
+    return RoomTimerService(
+        store=RedisRoomTimerStore(redis),
+        publisher=RedisPubSubPublisher(redis),
+        clock=clock,
+    )
+
+
+RoomTimerServiceDep = Annotated[
+    RoomTimerService, Depends(get_room_timer_service)
+]
+
+
 def get_match_room_service(
     rooms: MatchRoomRepoDep,
     participants: RoomParticipantRepoDep,
     events: EventBusDep,
     ids: IdGenDep,
     clock: ClockDep,
+    timer: RoomTimerServiceDep,
 ) -> MatchRoomService:
     """Construct the per-request ``MatchRoomService``.
 
     Domain service composed of two narrow repo Protocols plus the
-    shared in-process clock / id / event-bus primitives.
+    shared in-process clock / id / event-bus primitives, and (Phase 08)
+    the shared focus timer so ``start_session`` can arm it.
     """
     return MatchRoomService(
         rooms=rooms,
@@ -184,6 +209,7 @@ def get_match_room_service(
         events=events,
         ids=ids,
         clock=clock,
+        timer=timer,
     )
 
 

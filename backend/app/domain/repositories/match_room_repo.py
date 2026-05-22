@@ -76,3 +76,20 @@ class IMatchRoomRepo(Protocol):
         atomically without re-reading the row.
         """
         ...
+
+    async def list_by_status(
+        self, status: MatchRoomStatus
+    ) -> list[MatchRoomRecord]:
+        """Used by Phase 08 worker jobs (timer-tick reads ``active``;
+        timeout-sweep reads ``open``). One indexed scan per tick — at
+        production room counts the ``active`` set is bounded by
+        concurrent matches, which stays in the low hundreds."""
+        ...
+
+    async def list_open_older_than(
+        self, cutoff: datetime
+    ) -> list[MatchRoomRecord]:
+        """Phase 08 timeout sweep — rooms still ``open`` past their
+        join window (default 5 min from opening) get ended with
+        ``reason='timeout'``."""
+        ...

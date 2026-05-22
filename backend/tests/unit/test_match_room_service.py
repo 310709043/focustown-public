@@ -399,6 +399,140 @@ async def test_get_snapshot_returns_full_state_for_participant(
 # ── end ────────────────────────────────────────────────────────────
 
 
+# ── start_session (Phase 08) ───────────────────────────────────────
+
+
+class _FakeTimer:
+    """Minimal RoomTimerService double — records calls and synthesises
+    a deterministic ``peek`` result so the snapshot can be asserted on."""
+
+    def __init__(self) -> None:
+        self.started: list[dict] = []
+        self.peek_state = None
+
+    async def session_started(
+        self, *, room_id: str, started_at, duration_seconds: int
+    ) -> None:
+        self.started.append(
+            {
+                "room_id": room_id,
+                "started_at": started_at,
+                "duration_seconds": duration_seconds,
+            }
+        )
+        # Populate a peek so the snapshot built by start_session sees the
+        # timer fields.
+        from app.domain.services.room_timer_service import TimerState
+
+        self.peek_state = TimerState(
+            started_at=started_at,
+            duration_seconds=duration_seconds,
+            elapsed_seconds=0,
+            remaining_seconds=duration_seconds,
+        )
+
+    async def peek(self, room_id: str):
+        return self.peek_state
+
+
+def _make_service_with_timer(
+    *, ids, events, clock
+) -> tuple[MatchRoomService, FakeMatchRoomRepo, FakeRoomParticipantRepo, _FakeTimer]:
+    rooms_repo = FakeMatchRoomRepo()
+    participants_repo = FakeRoomParticipantRepo()
+    timer = _FakeTimer()
+    svc = MatchRoomService(
+        rooms=rooms_repo,
+        participants=participants_repo,
+        events=events,
+        ids=ids,
+        clock=clock,
+        timer=timer,  # type: ignore[arg-type]
+    )
+    return svc, rooms_repo, participants_repo, timer
+
+
+@pytest.mark.asyncio
+async def test_start_session_requires_both_joined_status(
+    ids, events, clock
+):
+    """Starting before both participants joined is a hard 409 — the
+    timer must not arm prematurely or one side would tick into a room
+    the partner never entered."""
+    from app.core.exceptions import ConflictError
+
+    svc, _, _, _ = _make_service_with_timer(ids=ids, events=events, clock=clock)
+    match = _make_match()
+    await svc.ensure_room_for_match(match)
+    await svc.join(match_id=match.id, user_id="u-alice")  # only one joined
+
+    with pytest.raises(ConflictError):
+        await svc.start_session(
+            match_id=match.id, user_id="u-alice", duration_seconds=600
+        )
+
+
+@pytest.mark.asyncio
+async def test_start_session_arms_timer_and_returns_timer_fields(
+    ids, events, clock
+):
+    svc, _, _, timer = _make_service_with_timer(
+        ids=ids, events=events, clock=clock
+    )
+    match = _make_match()
+    await svc.ensure_room_for_match(match)
+    await svc.join(match_id=match.id, user_id="u-alice")
+    await svc.join(match_id=match.id, user_id="u-bob")
+
+    snapshot = await svc.start_session(
+        match_id=match.id, user_id="u-alice", duration_seconds=600
+    )
+    assert snapshot.room.status == "active"
+    assert snapshot.timer_duration_seconds == 600
+    assert snapshot.timer_remaining_seconds == 600
+    # The timer was armed exactly once with the right room id + duration.
+    assert len(timer.started) == 1
+    assert timer.started[0]["room_id"] == snapshot.room.id
+
+
+@pytest.mark.asyncio
+async def test_start_session_is_idempotent_on_active_room(ids, events, clock):
+    """A racing double-click on ``Start`` must NOT re-arm the timer
+    (which would reset the partner's countdown)."""
+    svc, _, _, timer = _make_service_with_timer(
+        ids=ids, events=events, clock=clock
+    )
+    match = _make_match()
+    await svc.ensure_room_for_match(match)
+    await svc.join(match_id=match.id, user_id="u-alice")
+    await svc.join(match_id=match.id, user_id="u-bob")
+
+    await svc.start_session(
+        match_id=match.id, user_id="u-alice", duration_seconds=600
+    )
+    await svc.start_session(
+        match_id=match.id, user_id="u-bob", duration_seconds=600
+    )
+
+    assert len(timer.started) == 1
+
+
+@pytest.mark.asyncio
+async def test_start_session_rejects_non_participant_with_404(
+    ids, events, clock
+):
+    svc, _, _, _ = _make_service_with_timer(ids=ids, events=events, clock=clock)
+    match = _make_match()
+    await svc.ensure_room_for_match(match)
+    await svc.join(match_id=match.id, user_id="u-alice")
+    await svc.join(match_id=match.id, user_id="u-bob")
+
+    with pytest.raises(NotFoundError):
+        await svc.start_session(
+            match_id=match.id, user_id="u-stranger", duration_seconds=600
+        )
+
+
 @pytest.mark.asyncio
 async def test_end_is_idempotent(ids, events, clock):
     svc, _, _ = _make_service(ids=ids, events=events, clock=clock)

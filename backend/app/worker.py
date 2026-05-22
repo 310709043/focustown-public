@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
+from datetime import timedelta
 from functools import partial
 
 import structlog
@@ -29,15 +30,19 @@ from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
 from app.domain.services.focus_session_service import FocusSessionService
 from app.domain.services.leaderboard_service import LeaderboardService
+from app.domain.services.match_room_service import MatchRoomService
 from app.domain.services.matching_queue_reconciler import (
     reconcile_redis_from_pg,
     warm_redis_on_boot,
 )
 from app.domain.services.matching_queue_service import MatchingQueueService
 from app.domain.services.matching_service import MatchingService
+from app.domain.services.room_realtime_link import RoomRealtimeLink
+from app.domain.services.room_timer_service import RoomTimerService
 from app.domain.services.station_service import StationService
 from app.domain.services.strategies import SimpleOverlapStrategy
 from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
+from app.infrastructure.cache.room_timer_store import RedisRoomTimerStore
 from app.infrastructure.cache.station_cache import RedisStationCache
 from app.infrastructure.db.repositories import (
     SqlFocusSessionRepo,
@@ -45,6 +50,10 @@ from app.infrastructure.db.repositories import (
     SqlMatchRepo,
     SqlMatchWaitingPoolRepo,
     SqlUserRepo,
+)
+from app.infrastructure.db.repositories.match_room_repo import SqlMatchRoomRepo
+from app.infrastructure.db.repositories.room_participant_repo import (
+    SqlRoomParticipantRepo,
 )
 from app.infrastructure.db.repositories.station_repo import SqlStationSnapshotRepo
 from app.infrastructure.db.repositories.track_repo import SqlTrackRepo
@@ -299,6 +308,99 @@ async def refresh_bot_presence_job(factory) -> None:
         )
 
 
+def _build_room_timer() -> RoomTimerService:
+    """Worker-side timer wiring. Same Redis singleton as the publish path
+    so the hash written here is visible to the API process for snapshot
+    reads."""
+    redis = get_redis()
+    return RoomTimerService(
+        store=RedisRoomTimerStore(redis),
+        publisher=RedisPubSubPublisher(redis),
+        clock=SystemClock(),
+    )
+
+
+def _build_match_room_service(db, bus: EventBus) -> MatchRoomService:
+    """Tick + sweep both call ``MatchRoomService.end`` — wire it with the
+    worker's per-job EventBus AND register a ``RoomRealtimeLink`` on
+    that bus so the ``RoomEnded`` event fans out as a ``room.ended`` WS
+    frame via Redis pub/sub regardless of which process called ``end``.
+    """
+    RoomRealtimeLink(publisher=RedisPubSubPublisher(get_redis())).register(bus)
+    return MatchRoomService(
+        rooms=SqlMatchRoomRepo(db),
+        participants=SqlRoomParticipantRepo(db),
+        events=bus,
+        ids=UUID4Generator(),
+        clock=SystemClock(),
+        timer=_build_room_timer(),
+    )
+
+
+async def room_timer_tick_job(factory) -> None:
+    """Worker tick — emit ``room.timer_tick`` for every active room.
+
+    Per the multi-process tick safety note in the Phase 08 plan, the
+    body must stay LEAN: one batch SQL read of active rooms + N Redis
+    HGETs + N PUBLISHes. The auto-complete branch only writes when a
+    timer actually finishes, so the common 1s pass is read-only.
+    """
+    timer = _build_room_timer()
+    async with factory() as db:
+        rooms = SqlMatchRoomRepo(db)
+        active = await rooms.list_by_status("active")
+        if not active:
+            return
+        completed: list[str] = []
+        for room in active:
+            still_live = await timer.tick(room.id)
+            if not still_live:
+                completed.append(room.id)
+        # Wind down completed rooms one at a time — the publish-side
+        # heavy lifting is done; this is rare (one room per duration).
+        for room_id in completed:
+            try:
+                await timer.session_completed(room_id)
+            except Exception:
+                log.exception(
+                    "room_timer_session_completed_failed", room_id=room_id
+                )
+        if completed:
+            bus = EventBus()
+            svc = _build_match_room_service(db, bus)
+            for room_id in completed:
+                try:
+                    await svc.end(room_id=room_id, reason="completed")
+                except Exception:
+                    log.exception(
+                        "room_timer_end_failed", room_id=room_id
+                    )
+            await db.commit()
+
+
+async def room_open_timeout_sweep_job(factory) -> None:
+    """Worker tick — end any room that stayed ``open`` past the 5-min join
+    window so the other side gets a ``room.ended{reason:timeout}`` frame
+    instead of an indefinite "Waiting for partner" spinner.
+    """
+    async with factory() as db:
+        rooms = SqlMatchRoomRepo(db)
+        cutoff = SystemClock().now() - timedelta(minutes=5)
+        stale = await rooms.list_open_older_than(cutoff)
+        if not stale:
+            return
+        bus = EventBus()
+        svc = _build_match_room_service(db, bus)
+        for room in stale:
+            try:
+                await svc.end(room_id=room.id, reason="timeout")
+            except Exception:
+                log.exception(
+                    "room_open_timeout_end_failed", room_id=room.id
+                )
+        await db.commit()
+
+
 async def main() -> None:
     settings = get_settings()
     configure_logging(debug=settings.app_debug)
@@ -383,6 +485,24 @@ async def main() -> None:
             "snapshot_stations_to_db", partial(snapshot_stations_to_db, factory)
         ),
         seconds=settings.station_snapshot_interval_seconds,
+    )
+    # Phase 08 — server-driven shared focus timer + open-room timeout
+    # sweep. Both wrapped in Phase 05's leader-lock so only one worker
+    # replica fires per tick.
+    scheduler.schedule_interval(
+        job_id="room_timer_tick",
+        func=_log_job_errors(
+            "room_timer_tick", partial(room_timer_tick_job, factory)
+        ),
+        seconds=1,
+    )
+    scheduler.schedule_interval(
+        job_id="room_open_timeout_sweep",
+        func=_log_job_errors(
+            "room_open_timeout_sweep",
+            partial(room_open_timeout_sweep_job, factory),
+        ),
+        seconds=30,
     )
     await scheduler.start()
     log.info("worker_ready")

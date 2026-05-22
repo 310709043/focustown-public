@@ -10,6 +10,10 @@ import { useMatchStore } from "@/lib/state/matchStore";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { matchesApi } from "@/lib/api/endpoints";
 import { findCharacter } from "@/lib/data/characters";
+import { realtime } from "@/lib/ws/client";
+import { useRealtime } from "@/lib/ws/useRealtime";
+import { RoomStatusBanner } from "@/components/focus/RoomStatusBanner";
+import { RoomTimer } from "@/components/focus/RoomTimer";
 import { SoloFocusScene } from "@/components/focus/SoloFocusScene";
 import { BuddyFocusScene } from "@/components/focus-buddy/BuddyFocusScene";
 
@@ -114,9 +118,22 @@ export default function FocusRoomPage() {
   const roomLoadStatus = useFocusRoomStore((s) => s.loadStatus);
   const roomErrorCode = useFocusRoomStore((s) => s.errorCode);
   const roomParticipants = useFocusRoomStore((s) => s.participants);
+  const roomId = useFocusRoomStore((s) => s.roomId);
   const hydrateRoom = useFocusRoomStore((s) => s.hydrate);
   const joinRoom = useFocusRoomStore((s) => s.join);
   const resetRoom = useFocusRoomStore((s) => s.reset);
+  const onRoomOpened = useFocusRoomStore((s) => s.onRoomOpened);
+  const onRoomPartnerJoined = useFocusRoomStore((s) => s.onRoomPartnerJoined);
+  const onRoomPartnerLeft = useFocusRoomStore((s) => s.onRoomPartnerLeft);
+  const onRoomReady = useFocusRoomStore((s) => s.onRoomReady);
+  const onRoomSessionStarted = useFocusRoomStore(
+    (s) => s.onRoomSessionStarted,
+  );
+  const onRoomTimerTick = useFocusRoomStore((s) => s.onRoomTimerTick);
+  const onRoomSessionCompleted = useFocusRoomStore(
+    (s) => s.onRoomSessionCompleted,
+  );
+  const onRoomEnded = useFocusRoomStore((s) => s.onRoomEnded);
 
   useEffect(() => {
     if (!user) void hydrate();
@@ -145,6 +162,67 @@ export default function FocusRoomPage() {
       resetRoom();
     };
   }, [paired, user, id, hydrateRoom, joinRoom, resetRoom]);
+
+  // Phase 8 — dispatch room.* WS frames into the store. The
+  // ``useRealtime`` hook subscribes to the WS singleton; the store
+  // discriminates on ``room_id`` so foreign frames (stale from the
+  // previous /focus/[id] page until the unsubscribe lands) are
+  // ignored.
+  useRealtime((msg) => {
+    // The WsMessage union ends in an open ``{type: string}`` arm so
+    // narrowing on ``msg.type`` widens the per-branch type to that arm
+    // and loses the structural fields. Cast through ``unknown`` at the
+    // dispatch boundary — each handler shape matches the backend frame
+    // contract (see app/domain/services/room_realtime_link.py).
+    switch (msg.type) {
+      case "room.opened":
+        onRoomOpened(msg as unknown as Parameters<typeof onRoomOpened>[0]);
+        break;
+      case "room.partner_joined":
+        onRoomPartnerJoined(
+          msg as unknown as Parameters<typeof onRoomPartnerJoined>[0],
+        );
+        break;
+      case "room.partner_left":
+        onRoomPartnerLeft(
+          msg as unknown as Parameters<typeof onRoomPartnerLeft>[0],
+        );
+        break;
+      case "room.ready":
+        onRoomReady(msg as unknown as Parameters<typeof onRoomReady>[0]);
+        break;
+      case "room.session_started":
+        onRoomSessionStarted(
+          msg as unknown as Parameters<typeof onRoomSessionStarted>[0],
+        );
+        break;
+      case "room.timer_tick":
+        onRoomTimerTick(
+          msg as unknown as Parameters<typeof onRoomTimerTick>[0],
+        );
+        break;
+      case "room.session_completed":
+        onRoomSessionCompleted(
+          msg as unknown as Parameters<typeof onRoomSessionCompleted>[0],
+        );
+        break;
+      case "room.ended":
+        onRoomEnded(msg as unknown as Parameters<typeof onRoomEnded>[0]);
+        break;
+    }
+  });
+
+  // Send the explicit ``subscribe`` op once we know the canonical
+  // room id (from the snapshot hydrate). The unsubscribe lands on
+  // unmount so multiplexed frames from a previous room stop arriving.
+  useEffect(() => {
+    if (!paired || !roomId) return;
+    const channel = `room:${roomId}`;
+    realtime.send({ type: "subscribe", channel });
+    return () => {
+      realtime.send({ type: "unsubscribe", channel });
+    };
+  }, [paired, roomId]);
 
   // Guard against accidental tab close / hard reload while a session is in
   // flight. Only fires for browser-level navigation; client-side router.push
@@ -235,11 +313,39 @@ export default function FocusRoomPage() {
   // keeps the room readable.
   const partnerCharacter = findCharacter(partnerKey);
   return (
-    <BuddyFocusScene
-      matchId={id}
-      partnerKey={partnerKey}
-      partnerName={partnerCharacter?.name ?? "Aria"}
-    />
+    <>
+      <BuddyFocusScene
+        matchId={id}
+        partnerKey={partnerKey}
+        partnerName={partnerCharacter?.name ?? "Aria"}
+      />
+      {/* Phase 8 — server-driven status + timer overlay. Sits above
+          the BuddyFocusScene so the user sees the lifecycle from the
+          single WS-fed store regardless of which sub-component owned
+          the local UI before. */}
+      <div
+        style={{
+          position: "fixed",
+          top: 64,
+          right: 12,
+          zIndex: 200,
+          width: 220,
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+          pointerEvents: "none",
+        }}
+      >
+        <div style={{ pointerEvents: "auto" }}>
+          <RoomStatusBanner />
+        </div>
+        {roomStatus === "active" ? (
+          <div style={{ pointerEvents: "auto" }}>
+            <RoomTimer />
+          </div>
+        ) : null}
+      </div>
+    </>
   );
 }
 

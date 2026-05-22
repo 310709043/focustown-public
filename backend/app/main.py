@@ -31,6 +31,7 @@ from app.domain.services.coin_award_service import (
 )
 from app.domain.services.match_realtime_link import MatchRealtimeLink
 from app.domain.services.presence_service import PresenceService
+from app.domain.services.room_realtime_link import RoomRealtimeLink
 from app.domain.services.session_presence_subscriber import SessionPresenceLink
 from app.domain.services.wallet_service import WalletService
 from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
@@ -105,6 +106,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # never sees the proposal and the receiving MatchModal never opens
     # (regression flagged in QA round 1).
     MatchRealtimeLink(
+        publisher=RedisPubSubPublisher(get_redis()),
+    ).register(_event_bus)
+
+    # Phase 08 — bridge RoomOpened / RoomParticipantJoined / RoomReady /
+    # RoomEnded events into the ``room:{id}`` channel so both clients
+    # see partner join, ready, and end transitions in realtime instead
+    # of having to poll the snapshot endpoint.
+    RoomRealtimeLink(
         publisher=RedisPubSubPublisher(get_redis()),
     ).register(_event_bus)
 

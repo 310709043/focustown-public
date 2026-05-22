@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from app.api.v1.rooms.match_schemas import (
     MatchRoomResponse,
     RoomParticipantResponse,
+    StartMatchRoomRequest,
 )
 from app.core.deps import CurrentUserId, MatchRoomServiceDep
 from app.domain.services.match_room_service import RoomSnapshot
@@ -36,6 +37,10 @@ def _to_response(snapshot: RoomSnapshot) -> MatchRoomResponse:
             )
             for p in snapshot.participants
         ],
+        timer_started_at=snapshot.timer_started_at,
+        timer_duration_seconds=snapshot.timer_duration_seconds,
+        timer_remaining_seconds=snapshot.timer_remaining_seconds,
+        timer_expected_end_at=snapshot.timer_expected_end_at,
     )
 
 
@@ -91,4 +96,29 @@ async def leave_match_room(
     calls are a no-op once the row is ``ended``.
     """
     snapshot = await svc.leave(match_id=match_id, user_id=user_id)
+    return _to_response(snapshot)
+
+
+@router.post("/{match_id}/start", response_model=MatchRoomResponse)
+async def start_match_room_session(
+    match_id: str,
+    payload: StartMatchRoomRequest,
+    user_id: CurrentUserId,
+    svc: MatchRoomServiceDep,
+) -> MatchRoomResponse:
+    """Phase 08 — arm the shared focus timer.
+
+    Pre-condition: the room is in ``both_joined``. Calling on an
+    already-``active`` room is idempotent (returns the current
+    snapshot); any other status is a 409 ``room_not_ready``.
+
+    Once accepted, the server publishes ``room.session_started`` to
+    both clients and the worker begins emitting ``room.timer_tick``
+    every ~1s until the duration elapses.
+    """
+    snapshot = await svc.start_session(
+        match_id=match_id,
+        user_id=user_id,
+        duration_seconds=payload.duration_seconds,
+    )
     return _to_response(snapshot)

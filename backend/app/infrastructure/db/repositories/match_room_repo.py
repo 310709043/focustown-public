@@ -95,3 +95,19 @@ class SqlMatchRoomRepo(IMatchRoomRepo):
         if row is None:
             raise NotFoundError("match_room_not_found")
         return _to_domain(row)
+
+    async def list_by_status(
+        self, status: MatchRoomStatus
+    ) -> list[MatchRoomRecord]:
+        stmt = select(MatchRoomORM).where(MatchRoomORM.status == status)
+        rows = (await self._s.execute(stmt)).scalars().all()
+        return [_to_domain(r) for r in rows]
+
+    async def list_open_older_than(
+        self, cutoff: datetime
+    ) -> list[MatchRoomRecord]:
+        stmt = select(MatchRoomORM).where(
+            MatchRoomORM.status == "open", MatchRoomORM.opened_at < cutoff
+        )
+        rows = (await self._s.execute(stmt)).scalars().all()
+        return [_to_domain(r) for r in rows]

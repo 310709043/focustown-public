@@ -19,6 +19,9 @@ from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 from app.infrastructure.db.repositories.match_waiting_pool_repo import (
     SqlMatchWaitingPoolRepo,
 )
+from app.infrastructure.db.repositories.room_participant_repo import (
+    SqlRoomParticipantRepo,
+)
 from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
 from app.infrastructure.db.repositories.room_visit_repo import SqlRoomVisitRepo
 from app.infrastructure.db.session import get_session_factory
@@ -58,6 +61,28 @@ async def _is_room_subscriber(
             return True
         visit = await SqlRoomVisitRepo(session).get_by_user(user_id)
         return visit is not None and visit.room_id == room_id
+
+
+async def _is_match_room_participant(
+    *, database_url: str, user_id: str, room_id: str
+) -> bool:
+    """Phase 08 — gate for ``room:{room_id}`` subscribe.
+
+    True iff the caller has a row in ``room_participants`` for the room.
+    Distinct from ``_is_room_subscriber`` (owner-rooms) and
+    ``_is_match_member`` (the match itself — the room is downstream of
+    the match, with its own participant table).
+
+    Uses a fresh session per call so the long-lived WS connection
+    doesn't hold a transaction open. Cost: one indexed SELECT per
+    subscribe op (the composite primary key is the lookup key).
+    """
+    factory = get_session_factory(database_url)
+    async with factory() as session:
+        participant = await SqlRoomParticipantRepo(session).get(
+            room_id=room_id, user_id=user_id
+        )
+        return participant is not None
 
 
 async def _is_match_member(
@@ -243,6 +268,53 @@ async def ws_connect(
             elif kind == "presence":
                 status = (data.get("status") or "focus").strip() or "focus"
                 await presence.set_status(user_id, status)
+            elif kind == "subscribe":
+                # Phase 08 — explicit channel subscribe for match-rooms.
+                # The frontend sends this on /focus/[id] mount once the
+                # focusRoomStore has hydrated. The connection MUST stay
+                # open on a denied subscribe so an attacker can't probe
+                # room existence by counting socket closes; we instead
+                # send a typed error frame and continue.
+                channel = data.get("channel")
+                if not channel or not isinstance(channel, str):
+                    continue
+                if channel.startswith("room:"):
+                    room_id = channel[len("room:"):]
+                    if not room_id:
+                        continue
+                    allowed = await _is_match_room_participant(
+                        database_url=settings.database_url,
+                        user_id=user_id,
+                        room_id=room_id,
+                    )
+                    if not allowed:
+                        log.warning(
+                            "ws_room_subscribe_denied",
+                            user_id=user_id,
+                            room_id=room_id,
+                        )
+                        await ws_mgr.deliver(
+                            user_id,
+                            {
+                                "type": "error",
+                                "code": "forbidden",
+                                "channel": channel,
+                            },
+                        )
+                        continue
+                    await pub.add_channels([channel])
+                else:
+                    log.debug(
+                        "ws_subscribe_unknown_channel", channel=channel
+                    )
+            elif kind == "unsubscribe":
+                channel = data.get("channel")
+                if not channel or not isinstance(channel, str):
+                    continue
+                if channel.startswith("room:"):
+                    # Idempotent — pubsub.remove_channels no-ops on a
+                    # channel the caller never subscribed to.
+                    await pub.remove_channels([channel])
             elif kind == "join_pair_station":
                 # Pair-station subscribe. Separate from `join` because
                 # match membership lives in ``matches``, not ``rooms``,

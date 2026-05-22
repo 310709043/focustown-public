@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from app.core.clock import IClock
 from app.core.events import EventBus
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError
 from app.core.ids import IIdGenerator
 from app.domain.events import (
     RoomEnded,
@@ -21,6 +22,7 @@ from app.domain.repositories.room_participant_repo import (
     IRoomParticipantRepo,
     RoomParticipantRecord,
 )
+from app.domain.services.room_timer_service import RoomTimerService
 
 
 @dataclass(slots=True, frozen=True)
@@ -31,10 +33,30 @@ class RoomSnapshot:
     can render the whole state machine off one round-trip — needed for
     the "Waiting for partner" gating on reload (the in-memory store
     is empty so the focus page asks the server who is in the room).
+
+    Phase 08 added the three ``timer_*`` fields; they're populated only
+    while a session is active (else ``None``) so a mid-session reload
+    can bridge the gap between mount and the first ``room.timer_tick``.
     """
 
     room: MatchRoomRecord
     participants: list[RoomParticipantRecord]
+    timer_started_at: datetime | None = None
+    timer_duration_seconds: int | None = None
+    timer_remaining_seconds: int | None = None
+
+    @property
+    def timer_expected_end_at(self) -> datetime | None:
+        """Convenience derivation — kept off the wire to avoid an extra
+        column that the frontend can compute from ``started_at`` +
+        ``duration``."""
+        if self.timer_started_at is None or self.timer_duration_seconds is None:
+            return None
+        from datetime import timedelta
+
+        return self.timer_started_at + timedelta(
+            seconds=self.timer_duration_seconds
+        )
 
 
 class MatchRoomService:
@@ -62,12 +84,17 @@ class MatchRoomService:
         events: EventBus,
         ids: IIdGenerator,
         clock: IClock,
+        timer: RoomTimerService | None = None,
     ) -> None:
         self._rooms = rooms
         self._participants = participants
         self._events = events
         self._ids = ids
         self._clock = clock
+        # Optional so the existing unit-test wiring (no Redis) continues
+        # to work. Production deps.py always passes a real timer; routes
+        # that touch the timer raise if it's missing.
+        self._timer = timer
 
     # ── creation ────────────────────────────────────────────────────
 
@@ -144,7 +171,7 @@ class MatchRoomService:
                 activated_at=now,
             )
             await self._events.publish(RoomReady(room_id=room.id))
-        return RoomSnapshot(room=room, participants=_ordered(participants))
+        return await self._build_snapshot(room, participants)
 
     async def leave(self, *, match_id: str, user_id: str) -> RoomSnapshot:
         room = await self._rooms.get_by_match_id(match_id)
@@ -177,7 +204,7 @@ class MatchRoomService:
             await self._events.publish(
                 RoomEnded(room_id=room.id, reason="both_left")
             )
-        return RoomSnapshot(room=room, participants=_ordered(participants))
+        return await self._build_snapshot(room, participants)
 
     # ── reads + terminal ───────────────────────────────────────────
 
@@ -195,7 +222,74 @@ class MatchRoomService:
         if participant is None:
             raise NotFoundError("match_room_not_found")
         participants = await self._participants.list_by_room(room.id)
-        return RoomSnapshot(room=room, participants=_ordered(participants))
+        return await self._build_snapshot(room, participants)
+
+    async def start_session(
+        self,
+        *,
+        match_id: str,
+        user_id: str,
+        duration_seconds: int,
+    ) -> RoomSnapshot:
+        """Transition the room from ``both_joined`` to ``active`` and arm
+        the shared countdown.
+
+        Phase 07 created the room; Phase 08 starts the timer. Restricted
+        to participants — a non-participant gets 404. The status guard
+        is a hard 409 so a stale client double-clicking ``Start`` doesn't
+        re-arm the timer (which would reset the partner's countdown).
+        """
+        if self._timer is None:  # pragma: no cover — defensive wiring
+            raise RuntimeError("room_timer_service_not_configured")
+        room = await self._rooms.get_by_match_id(match_id)
+        if room is None:
+            raise NotFoundError("match_room_not_found")
+        participant = await self._participants.get(
+            room_id=room.id, user_id=user_id
+        )
+        if participant is None:
+            raise NotFoundError("match_room_not_found")
+        if room.status == "active":
+            # Idempotent re-entry — return the current snapshot so a
+            # racing client sees the in-flight timer instead of an error.
+            participants = await self._participants.list_by_room(room.id)
+            return await self._build_snapshot(room, participants)
+        if room.status != "both_joined":
+            raise ConflictError("room_not_ready")
+
+        now = self._clock.now()
+        room = await self._rooms.set_status(
+            room_id=room.id, status="active", activated_at=now
+        )
+        await self._timer.session_started(
+            room_id=room.id,
+            started_at=now,
+            duration_seconds=duration_seconds,
+        )
+        participants = await self._participants.list_by_room(room.id)
+        return await self._build_snapshot(room, participants)
+
+    async def _build_snapshot(
+        self,
+        room: MatchRoomRecord,
+        participants: list[RoomParticipantRecord],
+    ) -> RoomSnapshot:
+        timer_started_at: datetime | None = None
+        timer_duration_seconds: int | None = None
+        timer_remaining_seconds: int | None = None
+        if self._timer is not None and room.status == "active":
+            state = await self._timer.peek(room.id)
+            if state is not None:
+                timer_started_at = state.started_at
+                timer_duration_seconds = state.duration_seconds
+                timer_remaining_seconds = state.remaining_seconds
+        return RoomSnapshot(
+            room=room,
+            participants=_ordered(participants),
+            timer_started_at=timer_started_at,
+            timer_duration_seconds=timer_duration_seconds,
+            timer_remaining_seconds=timer_remaining_seconds,
+        )
 
     async def end(self, *, room_id: str, reason: str) -> None:
         """Terminal transition. Idempotent — a second call is a no-op
