@@ -152,3 +152,56 @@ async def test_last_disconnect_pops_user_from_registry() -> None:
     # User key removed entirely — so memory doesn't leak per-user
     # singletons after long-running connections close.
     assert "alice" not in mgr._conns
+
+
+# ── msg_id dedup — multi-process safety ────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_deliver_drops_repeated_msg_id_for_same_user() -> None:
+    """A user with sockets on two API processes during a flaky reconnect
+    can receive the same Redis pub/sub frame twice. The LRU window in
+    WSManager catches the repeat so the client sees it exactly once."""
+    mgr = WSManager()
+    ws = FakeWebSocket()
+    await mgr.connect("alice", ws)
+
+    payload = {"msg_id": "abc123", "type": "match.proposed"}
+    first = await mgr.deliver("alice", payload)
+    second = await mgr.deliver("alice", payload)
+
+    assert first == 1
+    assert second == 0
+    assert ws.sent == [payload]
+
+
+@pytest.mark.asyncio
+async def test_deliver_without_msg_id_is_not_deduped() -> None:
+    """Payloads minted before Phase 05 (or domain events that opt out of
+    msg_id) must still deliver every time — otherwise the LRU would
+    silently drop legitimate retries."""
+    mgr = WSManager()
+    ws = FakeWebSocket()
+    await mgr.connect("alice", ws)
+
+    payload = {"type": "ping"}  # no msg_id
+    first = await mgr.deliver("alice", payload)
+    second = await mgr.deliver("alice", payload)
+
+    assert first == 1
+    assert second == 1
+    assert ws.sent == [payload, payload]
+
+
+@pytest.mark.asyncio
+async def test_disconnect_clears_dedup_window_for_user() -> None:
+    """Once the user has no sockets, the LRU window is dropped so
+    long-disconnected users don't keep their msg_ids resident forever."""
+    mgr = WSManager()
+    ws = FakeWebSocket()
+    await mgr.connect("alice", ws)
+
+    await mgr.deliver("alice", {"msg_id": "m-1", "type": "ping"})
+    assert "alice" in mgr._seen
+    mgr.disconnect("alice", ws)
+    assert "alice" not in mgr._seen

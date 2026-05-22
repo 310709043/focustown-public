@@ -55,7 +55,27 @@ async def test_publish_forwards_json_encoded_payload() -> None:
     redis.publish.assert_awaited_once()
     args = redis.publish.await_args.args
     assert args[0] == "user:alice"
-    assert json.loads(args[1]) == {"type": "match.proposed", "id": "m-1"}
+    body = json.loads(args[1])
+    # publish mints a msg_id for every frame so the subscribe-side LRU
+    # can dedup cross-process duplicates. Caller fields pass through
+    # untouched.
+    assert body["type"] == "match.proposed"
+    assert body["id"] == "m-1"
+    assert "msg_id" in body
+
+
+@pytest.mark.asyncio
+async def test_publish_preserves_caller_supplied_msg_id() -> None:
+    """If a caller sets a stable msg_id (idempotent retry), publish must
+    not overwrite it — otherwise downstream dedup can't link the retry
+    to the original."""
+    redis, _ = _fake_redis_with_pubsub()
+    pub = RedisPubSubPublisher(redis)
+
+    await pub.publish("user:alice", {"msg_id": "stable-1", "type": "x"})
+
+    body = json.loads(redis.publish.await_args.args[1])
+    assert body["msg_id"] == "stable-1"
 
 
 # ── logic + object-state — add_channels dedup ──────────────────────────────

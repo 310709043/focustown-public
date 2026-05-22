@@ -278,7 +278,9 @@ async def main() -> None:
     await init_redis(settings.redis_url, settings.redis_auth_token)
     factory = get_session_factory(settings.database_url)
     bus = EventBus()
-    scheduler = APSchedulerAdapter()
+    # Pass the shared Redis client so APScheduler ticks gate on a global
+    # SET-NX leader lock — multiple worker replicas → one body run per tick.
+    scheduler = APSchedulerAdapter(redis=get_redis())
 
     scheduler.schedule_interval(
         job_id="sweep_abandoned",
