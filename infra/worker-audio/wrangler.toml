@@ -17,11 +17,11 @@ bucket_name = "lowbatterytown-audio"
 [vars]
 # CORS origins permitted to embed <audio> from this worker. Comma-separated.
 # Keep in sync with backend APP_CORS_ORIGINS / NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS.
-ALLOWED_ORIGINS = "https://lowbatterytown.com,https://www.lowbatterytown.com"
+ALLOWED_ORIGINS = "https://lowbatterytown.com,https://www.lowbatterytown.com,https://dev.lowbatterytown.com"
 # Comma-separated allowed Referer prefixes. The Worker rejects requests
 # whose Referer header doesn't start with one of these — that's the
 # hot-link block. Empty disables the check (dev / first-deploy).
-ALLOWED_REFERERS = "https://lowbatterytown.com/,https://www.lowbatterytown.com/"
+ALLOWED_REFERERS = "https://lowbatterytown.com/,https://www.lowbatterytown.com/,https://dev.lowbatterytown.com/"
 # Path prefix inside the R2 bucket where MP3s live. Matches the
 # upload-tracks-to-r2.py script.
 TRACK_KEY_PREFIX = "tracks/"

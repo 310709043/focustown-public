@@ -32,7 +32,8 @@ for var in ACCOUNT_ID AWS_REGION ECR_REGISTRY PG_ENDPOINT \
            AWS_APP_ACCESS_KEY_ID AWS_APP_SECRET_ACCESS_KEY \
            TERMS_CURRENT_VERSION \
            R2_ENDPOINT_URL R2_ACCESS_KEY R2_SECRET_KEY \
-           AUDIO_PROXY_BASE_URL AUDIO_PROXY_SECRET; do
+           AUDIO_PROXY_BASE_URL AUDIO_PROXY_SECRET \
+           BROADCAST_PROXY_BASE_URL BROADCAST_PROXY_SECRET; do
     if [[ -z "${!var:-}" ]]; then
         echo "✗ $var is empty in $STATE_FILE — re-run bootstrap to repopulate" >&2
         exit 1
@@ -66,19 +67,22 @@ docker buildx build --platform linux/amd64 --target runtime \
 echo "    pushed: ${ECR_REGISTRY}/lowbatterytown-backend:${IMAGE_TAG}"
 
 # --- 3. Build + push frontend (dev variant) -------------------------------
-# CSP `media-src` must include every host the backend can 302-redirect
-# audio bytes to. Audio now flows through the Cloudflare Worker proxy at
-# audio.lowbatterytown.com (see `infra/worker-audio/`), so that host has
-# to be allow-listed. If the AUDIO_PROXY_BASE_URL hostname ever changes
-# (different env / re-brand), update MEDIA_ORIGINS in lockstep or every
-# `<audio src>` will silently CSP-block.
-MEDIA_ORIGINS="https://${DEV_HOST},https://audio.lowbatterytown.com"
+# CSP `media-src` must include every host the browser fetches <audio>/<video>
+# bytes from. Two media channels today:
+#   - audio: Cloudflare Worker at AUDIO_PROXY_BASE_URL (see infra/worker-audio/)
+#   - broadcast: Cloudflare Worker at BROADCAST_PROXY_BASE_URL (see
+#     infra/worker-broadcast/) — billboard MP4 clips
+# Both hostnames have to be allow-listed; if either changes (different env /
+# re-brand), update MEDIA_ORIGINS in lockstep or the browser will silently
+# CSP-block the relevant element.
+MEDIA_ORIGINS="https://${DEV_HOST},${AUDIO_PROXY_BASE_URL},${BROADCAST_PROXY_BASE_URL}"
 
 echo "==> [3/5] Building frontend image (env=dev, target=runner)..."
 docker buildx build --platform linux/amd64 --target runner \
     --build-arg "NEXT_PUBLIC_API_BASE_URL=https://${DEV_HOST}" \
     --build-arg "NEXT_PUBLIC_WS_BASE_URL=wss://${DEV_HOST}" \
     --build-arg "NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=${MEDIA_ORIGINS}" \
+    --build-arg "NEXT_PUBLIC_BROADCAST_PROXY_BASE_URL=${BROADCAST_PROXY_BASE_URL}" \
     --tag "${ECR_REGISTRY}/lowbatterytown-frontend:${FRONTEND_TAG}" \
     --tag "${ECR_REGISTRY}/lowbatterytown-frontend:latest-dev" \
     --push \
@@ -110,6 +114,8 @@ export ECR_REGISTRY IMAGE_TAG FRONTEND_TAG AWS_REGION \
     S3_BUCKET="lowbatterytown-audio" \
     R2_ENDPOINT_URL R2_ACCESS_KEY R2_SECRET_KEY \
     AUDIO_PROXY_BASE_URL AUDIO_PROXY_SECRET \
+    BROADCAST_PROXY_BASE_URL BROADCAST_PROXY_SECRET \
+    ADMIN_FEEDBACK_EMAIL ADMIN_USER_IDS \
     TERMS_CURRENT_VERSION
 
 envsubst < "$REPO_ROOT/infra/lightsail/dev/containers.json.tpl"     > "$RUN_DIR/containers.json"
