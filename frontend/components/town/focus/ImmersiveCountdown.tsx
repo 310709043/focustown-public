@@ -54,7 +54,10 @@ export function ImmersiveCountdown() {
         transition: reduceMotion
           ? "none"
           : "opacity 450ms cubic-bezier(0.22,1,0.36,1), transform 450ms cubic-bezier(0.22,1,0.36,1)",
-        transitionDelay: reduceMotion ? "0ms" : visible ? "350ms" : "0ms",
+        // Wait for the ground stack to finish extending (1100 ms slow ease)
+        // before the countdown takes the stage. Exit fires immediately so
+        // pause / end snaps the world back without lag.
+        transitionDelay: reduceMotion ? "0ms" : visible ? "1100ms" : "0ms",
         pointerEvents: visible ? "auto" : "none",
         display: "flex",
         flexDirection: "column",
@@ -131,7 +134,9 @@ export function ImmersiveCountdown() {
           transition: reduceMotion
             ? "none"
             : "opacity 250ms ease-out, color 150ms ease-out",
-          transitionDelay: reduceMotion ? "0ms" : visible ? "600ms" : "0ms",
+          // Pause CTA appears just after the countdown lands (1100 ms ground
+          // extension + 450 ms countdown fade ≈ 1550 ms — settle and offer).
+          transitionDelay: reduceMotion ? "0ms" : visible ? "1550ms" : "0ms",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = "var(--accent-2)";

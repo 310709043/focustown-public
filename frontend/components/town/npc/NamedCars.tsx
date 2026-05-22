@@ -67,12 +67,14 @@ export function NamedCars() {
           <div
             key={n.key}
             data-testid="named-car"
+            className="ground-anchor"
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
               // Asphalt portion of the Road band (matches <CarsLane>).
               // Road: bottom 168..288, asphalt = bottom 90 px @ 168..258.
-              bottom: 175,
+              // City-Mode immersive: shifts with the ground stack.
+              bottom: "calc(175px - var(--ground-shift, 0px))",
               zIndex: 5,
               display: "flex",
               flexDirection: "column",

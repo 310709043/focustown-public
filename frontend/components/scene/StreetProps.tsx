@@ -18,10 +18,11 @@ const BENCH_XS = [18, 48, 78];
 export function StreetProps() {
   return (
     <div
-      className="absolute left-0 right-0 pointer-events-none z-[3]"
+      className="absolute left-0 right-0 pointer-events-none z-[3] ground-anchor"
       // 2026-05-21: lifted onto the new Road sidewalk strip
       // (Road: bottom 168..288; sidewalk top 30 px @ 258..288).
-      style={{ bottom: 258, height: 90 }}
+      // City-Mode immersive: travels with the ground stack via --ground-shift.
+      style={{ bottom: "calc(258px - var(--ground-shift, 0px))", height: 90 }}
       aria-hidden
     >
       {LAMP_XS.map((x) => (

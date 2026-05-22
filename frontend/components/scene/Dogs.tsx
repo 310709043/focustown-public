@@ -35,7 +35,7 @@ function Dog({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
   useEffect(() => {
     const id = setInterval(
       () => setX(pickPos()),
-      (10 + Math.random() * 6) * 1000,
+      (16 + Math.random() * 8) * 1000,
     );
     return () => clearInterval(id);
   }, []);
@@ -45,13 +45,15 @@ function Dog({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 
   return (
     <div
-      className="absolute animate-userPop"
+      className="absolute animate-userPop ground-anchor"
       style={{
         left: `${x}%`,
         // 2026-05-21: aligned with new Road sidewalk strip
         // (Road: bottom 168..288; sidewalk @ 258..288).
-        bottom: 258,
-        transition: "left 11s cubic-bezier(0.4, 0, 0.2, 1)",
+        // City-Mode immersive: shifts with the ground stack via --ground-shift.
+        bottom: "calc(258px - var(--ground-shift, 0px))",
+        transition:
+          "left 20s cubic-bezier(0.4, 0, 0.2, 1), bottom 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
       }}
     >
       {/* status bubble */}
@@ -109,7 +111,7 @@ function Dog({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
           frames={DOG_WALK.frames}
           palette={DOG_WALK.palette}
           fps={3}
-          scale={3}
+          scale={2}
         />
       </div>
     </div>

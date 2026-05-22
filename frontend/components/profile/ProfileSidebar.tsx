@@ -10,6 +10,7 @@ import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useOnboardingStore } from "@/lib/state/onboardingStore";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
+import { shortCode } from "@/lib/data/citizen-id";
 import type { ProfileView } from "@/components/modals/ProfileModal";
 
 interface ProfileSidebarProps {
@@ -120,6 +121,22 @@ export function ProfileSidebar({
           {" · "}
           {tSidebar("levelLabel", { level })}
         </div>
+
+        {user?.id ? (
+          <div
+            data-testid="profile-sidebar-citizen-id"
+            className="font-silkscreen"
+            style={{
+              fontSize: 10,
+              color: "var(--accent)",
+              letterSpacing: "0.3em",
+              textAlign: "center",
+              textShadow: "var(--neon-glow)",
+            }}
+          >
+            NO. {shortCode(user.id)}
+          </div>
+        ) : null}
 
         <XpBar
           xp={xp}

@@ -54,7 +54,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
   useEffect(() => {
     const id = setInterval(
       () => setX(pickPos()),
-      (8 + Math.random() * 6) * 1000,
+      (14 + Math.random() * 8) * 1000,
     );
     return () => clearInterval(id);
   }, []);
@@ -66,15 +66,17 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
 
   return (
     <div
-      className="absolute animate-userPop"
+      className="absolute animate-userPop ground-anchor"
       style={{
         left: `${x}%`,
         // People walk on the sidewalk strip of the Road band
         // (Road: bottom 168..288, sidewalk = top 30 px @ 258..288).
         // 258 anchors the figure's feet on the sidewalk so cars
         // driving on the asphalt below stay visually separated.
-        bottom: 258,
-        transition: "left 9s cubic-bezier(0.4, 0, 0.2, 1)",
+        // City-Mode immersive: shifts with the ground stack via --ground-shift.
+        bottom: "calc(258px - var(--ground-shift, 0px))",
+        transition:
+          "left 18s cubic-bezier(0.4, 0, 0.2, 1), bottom 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
       }}
     >
       {/* status bubble — keyed by status code so it re-mounts and pops on change */}

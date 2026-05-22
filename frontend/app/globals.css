@@ -693,6 +693,39 @@ body {
 .animate-pixelTicker { animation: pixelTicker 6s linear infinite; }
 
 /* ──────────────────────────────────────────────────────────────────
+   City-Mode immersive — ground-stack "slow extension" choreography.
+
+   When the user starts a focus session, the whole ground stack (road +
+   sidewalk + buildings + walkers + dogs + cars + cats) glides down so
+   the road sits flush with the viewport bottom. The world doesn't snap
+   — it *extends* itself out, then the countdown takes over.
+
+   `--ground-shift` is the single source of truth (set inline on the
+   scene wrapper in town/page.tsx). It must be declared via @property
+   so transitioning a CSS variable that participates in calc() actually
+   animates the resulting <length> rather than snapping at 50%.
+   ────────────────────────────────────────────────────────────────── */
+@property --ground-shift {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+.scene-stage {
+  /* Slow, intentional. Matches the "build the scene before the timer
+     starts" pacing — the ground extends to the floor, *then* the
+     centred countdown fades in. */
+  transition: --ground-shift 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ground-anchor {
+  transition: bottom 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: bottom;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-stage,
+  .ground-anchor { transition-duration: 1ms; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
    SceneBackdrop (v2 放鬆) — see SceneBackdrop.tsx + DriftCloud.tsx.
    ────────────────────────────────────────────────────────────────── */
 .scene-backdrop-city {
@@ -706,6 +739,21 @@ body {
   image-rendering: crisp-edges;
   user-select: none;
   -webkit-user-drag: none;
+  /* Fade the lowest 168 px of the city PNG into the page background so the
+     building band at the PNG's bottom edge never reads as "ground" — works
+     regardless of BottomHUD collapse state (immersive focus mode). */
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 calc(100% - 168px),
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 calc(100% - 168px),
+    rgba(0, 0, 0, 0.05) 100%
+  );
 }
 .scene-backdrop-sky {
   position: absolute;

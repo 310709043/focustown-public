@@ -282,8 +282,23 @@ export default function TownPage() {
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
            z-order: scene backdrop (city composite + cloud sprites + optional
            moon-stars sky overlay) → planes → named skyline → ground crowd →
-           rain overlay → sky window → HUD. */}
-      <div className="flex-1 relative overflow-hidden">
+           rain overlay → sky window → HUD.
+
+           `--ground-shift` is the choreography hook for City-Mode immersive.
+           When the timer is running, the whole ground stack (road, sidewalk,
+           buildings, walkers, dogs, cars, cats) reads this variable inside
+           a `calc()` and glides down 168 px so the road sits flush with the
+           viewport bottom. Buildings still grow from the sidewalk — they
+           travel with the ground — so the world stays physically grounded
+           regardless of viewport size. */}
+      <div
+        className="flex-1 relative overflow-hidden scene-stage"
+        style={
+          {
+            "--ground-shift": immersive ? "168px" : "0px",
+          } as React.CSSProperties
+        }
+      >
         {/* v2 放鬆 backdrop — one 322807 city composite + 1–2 drifting 801184
             cloud sprites per scene; three night scenes also layer a 281031
             moon-stars sky overlay. Replaces the previous Sky + StarsLayer +

@@ -7,6 +7,7 @@ import { PixelWord } from "@/components/pixel/PixelWord";
 import { XpBar } from "@/components/profile/XpBar";
 import { Link } from "@/i18n/routing";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
+import { shortCode } from "@/lib/data/citizen-id";
 import type { PublicUserProfile } from "@/lib/api/endpoints";
 
 interface CitizenIdCardProps {
@@ -260,9 +261,10 @@ export function CitizenIdCard({
             className="font-silkscreen"
             style={{
               marginLeft: 8,
-              fontSize: 9,
-              color: "var(--ink-dim)",
-              letterSpacing: "0.2em",
+              fontSize: 11,
+              color: "var(--accent)",
+              letterSpacing: "0.25em",
+              textShadow: "var(--neon-glow)",
             }}
           >
             ID-{idCode}
@@ -392,13 +394,6 @@ function buildBarcode(seed: string): number[] {
     bars.push([1, 2, 1, 3][v] ?? 1);
   }
   return bars;
-}
-
-/** Compact 6-char id derived from the user id for the "NO." display. */
-function shortCode(id: string): string {
-  if (!id) return "------";
-  const clean = id.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-  return (clean.slice(0, 4) + clean.slice(-2)).padEnd(6, "0");
 }
 
 function formatJoined(iso: string): string {

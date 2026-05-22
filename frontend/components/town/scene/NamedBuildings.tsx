@@ -95,8 +95,14 @@ export function NamedBuildings({ showLabels = true }: NamedBuildingsProps = {}) 
   return (
     <div
       data-testid="named-buildings"
-      className="absolute left-0 right-0 pointer-events-none"
-      style={{ bottom: 288, height: 420, zIndex: 3 }}
+      className="absolute left-0 right-0 pointer-events-none ground-anchor"
+      // City-Mode immersive: skyline travels with the ground via --ground-shift
+      // so the buildings always look rooted in the sidewalk below them.
+      style={{
+        bottom: "calc(288px - var(--ground-shift, 0px))",
+        height: 420,
+        zIndex: 3,
+      }}
     >
       <div
         className="absolute left-0 right-0 bottom-0 flex items-end justify-between"

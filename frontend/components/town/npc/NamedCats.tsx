@@ -49,12 +49,14 @@ export function NamedCats() {
         <div
           key={n.key}
           data-testid="named-cat"
+          className="ground-anchor"
           style={{
             position: "absolute",
             left: `${pos[i]}%`,
             // 2026-05-21: aligned with new Road sidewalk strip
             // (Road: bottom 168..288; sidewalk @ 258..288).
-            bottom: 258,
+            // City-Mode immersive: shifts with the ground stack.
+            bottom: "calc(258px - var(--ground-shift, 0px))",
             zIndex: 6,
             display: "flex",
             flexDirection: "column",

@@ -122,12 +122,16 @@ export function CarsLane() {
 
   return (
     <div
-      className="absolute left-0 right-0 pointer-events-none z-[5]"
+      className="absolute left-0 right-0 pointer-events-none z-[5] ground-anchor"
       // Cars drive on the asphalt portion of the Road band
       // (Road: bottom 168..288, asphalt = bottom 90 px @ 168..258).
       // Wrapper bottom 175 + height 70 sits on the asphalt while
       // Pedestrians / NamedWalkers occupy the sidewalk strip above.
-      style={{ bottom: 175, height: 70 }}
+      // City-Mode immersive: shifts with the ground stack via --ground-shift.
+      style={{
+        bottom: "calc(175px - var(--ground-shift, 0px))",
+        height: 70,
+      }}
       aria-hidden
     >
       {users.map((u, idx) => (

@@ -30,13 +30,13 @@ type WalkerNPC = {
 };
 
 const NPCS: readonly WalkerNPC[] = [
-  { key: "yuki", variantIdx: 0, speed: 0.05, startX: 5,  dir: 1 },
-  { key: "aria", variantIdx: 1, speed: 0.04, startX: 22, dir: 1 },
-  { key: "kai",  variantIdx: 2, speed: 0.06, startX: 38, dir: 1 },
-  { key: "doc",  variantIdx: 0, speed: 0.04, startX: 52, dir: -1 },
-  { key: "bear", variantIdx: 1, speed: 0.05, startX: 66, dir: 1 },
-  { key: "milo", variantIdx: 2, speed: 0.05, startX: 80, dir: -1 },
-  { key: "nova", variantIdx: 0, speed: 0.05, startX: 93, dir: 1 },
+  { key: "yuki", variantIdx: 0, speed: 0.025, startX: 5,  dir: 1 },
+  { key: "aria", variantIdx: 1, speed: 0.02,  startX: 22, dir: 1 },
+  { key: "kai",  variantIdx: 2, speed: 0.03,  startX: 38, dir: 1 },
+  { key: "doc",  variantIdx: 0, speed: 0.02,  startX: 52, dir: -1 },
+  { key: "bear", variantIdx: 1, speed: 0.025, startX: 66, dir: 1 },
+  { key: "milo", variantIdx: 2, speed: 0.025, startX: 80, dir: -1 },
+  { key: "nova", variantIdx: 0, speed: 0.025, startX: 93, dir: 1 },
 ];
 
 export function NamedWalkers() {
@@ -69,12 +69,14 @@ export function NamedWalkers() {
           <div
             key={n.key}
             data-testid="named-walker"
+            className="ground-anchor"
             style={{
               position: "absolute",
               left: `${pos[i]}%`,
               // Sidewalk strip of the Road band (matches <Pedestrians>).
               // Road: bottom 168..288, sidewalk = top 30 px @ 258..288.
-              bottom: 258,
+              // City-Mode immersive: shifts with the ground stack.
+              bottom: "calc(258px - var(--ground-shift, 0px))",
               zIndex: 6,
               pointerEvents: "none",
             }}
