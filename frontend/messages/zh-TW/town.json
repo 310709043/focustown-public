@@ -239,7 +239,16 @@
     "nextAria": "下一首",
     "playAria": "播放",
     "pauseAria": "暫停",
-    "volumeAria": "音量"
+    "volumeAria": "音量",
+    "unlockHint": "🔊 點擊聆聽"
+  },
+  "syncedRoomPlayer": {
+    "label": "房間音樂",
+    "mutedTitle": "房間靜默中",
+    "playingFallback": "正在播放…",
+    "syncStatus": "與房主同步",
+    "mutedSubtitle": "—",
+    "unlockHint": "🔊 點擊聆聽"
   },
   "scene": {
     "youSuffix": "您",

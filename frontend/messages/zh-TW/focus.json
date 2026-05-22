@@ -119,7 +119,9 @@
         "italic": "斜體",
         "bullet": "項目",
         "check": "待辦",
-        "header": "標題"
+        "header": "標題",
+        "boldInsertion": "**粗體**",
+        "italicInsertion": "_斜體_"
       },
       "notSavedYet": "尚未儲存",
       "autoSavedAgo": "自動儲存 · {seconds} 秒前",

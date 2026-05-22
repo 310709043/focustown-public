@@ -15,6 +15,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 import { getPlayUrl } from "@/lib/audio/playUrlCache";
 import { useAudioStore } from "@/lib/state/audioStore";
@@ -23,10 +24,14 @@ import { useRealtime } from "@/lib/ws/useRealtime";
 
 interface Props {
   roomId: string;
+  /** Optional label override. When omitted the player uses the
+   *  localized `town.syncedRoomPlayer.label` translation. */
   label?: string;
 }
 
-export function SyncedRoomPlayer({ roomId, label = "房間音樂" }: Props) {
+export function SyncedRoomPlayer({ roomId, label }: Props) {
+  const t = useTranslations("town.syncedRoomPlayer");
+  const resolvedLabel = label ?? t("label");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const trackId = useRoomPlaybackStore((s) => s.trackId);
   const trackTitle = useRoomPlaybackStore((s) => s.trackTitle);
@@ -146,14 +151,14 @@ export function SyncedRoomPlayer({ roomId, label = "房間音樂" }: Props) {
   return (
     <div className="panel relative overflow-hidden flex flex-col gap-1 px-2.5 py-2 bg-card border border-border rounded">
       <div className="flex items-center justify-between">
-        <div className="text-[10px] text-muted">🎵 {label}</div>
+        <div className="text-[10px] text-muted">🎵 {resolvedLabel}</div>
         <EqBars playing={isPlaying && !!trackId} />
       </div>
       <div className="text-[10px] truncate" style={{ color: "var(--a2)" }}>
-        {muted ? "房間靜默中" : trackTitle ?? "正在播放…"}
+        {muted ? t("mutedTitle") : trackTitle ?? t("playingFallback")}
       </div>
       <div className="text-[9px] text-muted truncate">
-        {muted ? "—" : "與房主同步"}
+        {muted ? t("mutedSubtitle") : t("syncStatus")}
       </div>
       {showUnlock ? (
         <button
@@ -161,7 +166,7 @@ export function SyncedRoomPlayer({ roomId, label = "房間音樂" }: Props) {
           onClick={unlock}
           className="text-[10px] mt-1 px-2 py-1 rounded border border-amber text-amber hover:bg-amber/10"
         >
-          🔊 點擊聆聽
+          {t("unlockHint")}
         </button>
       ) : null}
       <audio ref={audioRef} preload="metadata" />

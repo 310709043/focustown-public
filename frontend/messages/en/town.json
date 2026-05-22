@@ -239,7 +239,16 @@
     "nextAria": "Next track",
     "playAria": "Play",
     "pauseAria": "Pause",
-    "volumeAria": "Volume"
+    "volumeAria": "Volume",
+    "unlockHint": "🔊 Tap to listen"
+  },
+  "syncedRoomPlayer": {
+    "label": "Room music",
+    "mutedTitle": "Room is silent",
+    "playingFallback": "Now playing…",
+    "syncStatus": "In sync with the host",
+    "mutedSubtitle": "—",
+    "unlockHint": "🔊 Tap to listen"
   },
   "scene": {
     "youSuffix": "you",

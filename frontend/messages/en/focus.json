@@ -119,7 +119,9 @@
         "italic": "Italic",
         "bullet": "Bullet",
         "check": "Checklist",
-        "header": "Header"
+        "header": "Header",
+        "boldInsertion": "**bold**",
+        "italicInsertion": "_italic_"
       },
       "notSavedYet": "Not saved yet",
       "autoSavedAgo": "Auto-saved · {seconds}s ago",

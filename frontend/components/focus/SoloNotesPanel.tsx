@@ -89,9 +89,9 @@ export function SoloNotesPanel() {
     const after = body.slice(el.selectionEnd);
     const insertion =
       symbol === "B"
-        ? "**粗體**"
+        ? t("toolbar.boldInsertion")
         : symbol === "I"
-          ? "_斜體_"
+          ? t("toolbar.italicInsertion")
           : symbol === "•"
             ? "\n• "
             : symbol === "✓"

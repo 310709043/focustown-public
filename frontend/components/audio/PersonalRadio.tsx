@@ -140,7 +140,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
           onClick={unlock}
           className="text-[10px] mt-1 px-2 py-1 rounded border border-amber text-amber hover:bg-amber/10"
         >
-          🔊 點擊聆聽
+          {t("unlockHint")}
         </button>
       ) : null}
     </div>
