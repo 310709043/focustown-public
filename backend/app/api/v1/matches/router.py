@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Query, Response
 
+from app.api.v1._common.pagination import Page, encode_cursor
 from app.api.v1.matches.schemas import (
     MatchAutoMatchedResponse,
     MatchAutoResponse,
@@ -148,22 +149,37 @@ async def skip_match(
     return await _dto(match, users)
 
 
-@router.get("/recent", response_model=list[MatchResponse])
-async def recent_matches(user_id: CurrentUserId, db: DbDep) -> list[MatchResponse]:
+@router.get("/recent", response_model=Page[MatchResponse])
+async def recent_matches(
+    user_id: CurrentUserId,
+    db: DbDep,
+    cursor: str | None = Query(None, max_length=256),
+    limit: int = Query(20, ge=1, le=100),
+) -> Page[MatchResponse]:
     repo: IMatchReader = SqlMatchRepo(db)
     users: IUserReader = SqlUserRepo(db)
-    matches = await repo.list_recent_for_user(user_id=user_id, limit=20)
+    matches = await repo.list_recent_for_user(
+        user_id=user_id, cursor=cursor, limit=limit
+    )
     if not matches:
-        return []
+        return Page[MatchResponse](items=[], next_cursor=None)
     user_ids = list(
         {m.requester_id for m in matches} | {m.candidate_id for m in matches}
     )
     fetched = await users.get_many_by_ids(user_ids)
     cache: dict[str, str | None] = {u.id: u.character_key for u in fetched}
-    # Mark misses as None so _dto's cache short-circuits instead of re-querying.
     for uid in user_ids:
         cache.setdefault(uid, None)
-    return [await _dto(m, users, cache=cache) for m in matches]
+    # build_page can't help here directly because each row needs an
+    # awaited DTO build; do the slice + cursor derivation inline so
+    # ordering matches the repo's (created_at DESC, id DESC).
+    page_rows = matches[:limit]
+    next_cursor = None
+    if len(matches) > limit and page_rows:
+        last = page_rows[-1]
+        next_cursor = encode_cursor(last.created_at, last.id)
+    items = [await _dto(m, users, cache=cache) for m in page_rows]
+    return Page[MatchResponse](items=items, next_cursor=next_cursor)
 
 
 @router.delete("/queue", status_code=204)

@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, NotFoundError
+from app.core.pagination import apply_keyset
 from app.core.sentinels import UNSET, UnsetType
 from app.domain.models import User
 from app.domain.repositories.user_repo import IUserRepo, UserCredentials
@@ -128,8 +129,19 @@ class SqlUserRepo(IUserRepo):
         row.password_hash = password_hash
         await self._s.flush()
 
-    async def list_recent(self, *, limit: int) -> list[User]:
-        stmt = select(UserORM).order_by(UserORM.created_at.desc()).limit(limit)
+    async def list_recent(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[User]:
+        stmt = select(UserORM)
+        stmt = apply_keyset(
+            stmt, ts_col=UserORM.created_at, id_col=UserORM.id, cursor=cursor
+        )
+        stmt = stmt.order_by(UserORM.created_at.desc(), UserORM.id.desc()).limit(
+            limit + 1
+        )
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
 

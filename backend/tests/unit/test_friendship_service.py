@@ -81,7 +81,8 @@ class FakeFriendshipRepo(IFriendshipRepo):
         user_id: str,
         *,
         status: str | None = None,
-        limit: int = 100,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[Friendship]:
         out = [
             r
@@ -89,10 +90,15 @@ class FakeFriendshipRepo(IFriendshipRepo):
             if user_id in (r.user_low_id, r.user_high_id)
             and (status is None or r.status == status)
         ]
-        return sorted(out, key=lambda r: r.created_at, reverse=True)[:limit]
+        ordered = sorted(out, key=lambda r: r.created_at, reverse=True)
+        return ordered[: limit + 1]
 
     async def list_incoming_requests(
-        self, user_id: str, *, limit: int = 100
+        self,
+        user_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[Friendship]:
         out = [
             r
@@ -101,7 +107,7 @@ class FakeFriendshipRepo(IFriendshipRepo):
             and r.status == STATUS_REQUESTED
             and r.requested_by != user_id
         ]
-        return out[:limit]
+        return out[: limit + 1]
 
     async def list_accepted_friend_ids(self, user_id: str) -> list[str]:
         ids: list[str] = []
@@ -172,7 +178,7 @@ class FakeFocusSessionRepo(IFocusSessionRepo):
     async def update_status(self, **_: Any) -> FocusSession | None:  # type: ignore[override]
         raise NotImplementedError
 
-    async def list_active(self) -> list[FocusSession]:
+    async def list_active(self, **_: Any) -> list[FocusSession]:  # type: ignore[override]
         return [
             s
             for s in self.sessions

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "@/lib/api/client";
 import { decorationApi, shopApi } from "@/lib/api/endpoints";
-import type { RoomItem, ShopItem } from "@/lib/api/types.gen";
+import type { RoomItem } from "@/lib/api/types.gen";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
 import { DecorationItem } from "./DecorationItem";
 import { DecorationToolbar } from "./DecorationToolbar";
@@ -63,10 +63,10 @@ export function DecorationCanvas({ isOwner, roomId }: Props) {
     if (items.length === 0) return;
     (async () => {
       try {
-        const catalog: ShopItem[] = await shopApi.list();
+        const page = await shopApi.list();
         if (cancelled) return;
         const next: Record<string, string> = {};
-        for (const s of catalog) next[s.id] = s.icon;
+        for (const s of page.items) next[s.id] = s.icon;
         setIconCatalog(next);
       } catch {
         // Falls back to "?" placeholder; rare in normal flow because

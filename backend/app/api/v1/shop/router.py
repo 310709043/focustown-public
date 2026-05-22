@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from datetime import UTC, datetime
 
+from fastapi import APIRouter, Query
+
+from app.api.v1._common.pagination import Page, build_page
 from app.api.v1.shop.schemas import (
     PurchaseRequest,
     PurchaseResponse,
@@ -47,18 +50,27 @@ def _item_to_response(
     )
 
 
-@router.get("", response_model=list[ShopItemResponse])
+_EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
+
+
+@router.get("", response_model=Page[ShopItemResponse])
 async def list_items(
-    db: DbDep, category: str | None = None
-) -> list[ShopItemResponse]:
+    db: DbDep,
+    category: str | None = None,
+    cursor: str | None = Query(None, max_length=256),
+    limit: int = Query(50, ge=1, le=100),
+) -> Page[ShopItemResponse]:
     repo = SqlShopRepo(db)
     prices_repo = SqlShopItemPriceRepo(db)
     items = (
-        await repo.list_by_category(category) if category else await repo.list_all()
+        await repo.list_by_category(category, cursor=cursor, limit=limit)
+        if category
+        else await repo.list_all(cursor=cursor, limit=limit)
     )
-    price_map = await prices_repo.list_for_items([i.id for i in items])
-    return [
-        _item_to_response(
+    price_map = await prices_repo.list_for_items([i.id for i in items[:limit]])
+
+    def _to_item(i: ShopItemRecord) -> ShopItemResponse:
+        return _item_to_response(
             i,
             [
                 ShopItemPriceResponse(
@@ -68,8 +80,13 @@ async def list_items(
                 for p in price_map.get(i.id, [])
             ],
         )
-        for i in items
-    ]
+
+    return build_page(
+        items,
+        limit=limit,
+        key=lambda i: (i.created_at or _EPOCH, i.id),
+        to_item=_to_item,
+    )
 
 
 @router.post(

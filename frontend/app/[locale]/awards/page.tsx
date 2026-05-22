@@ -12,7 +12,7 @@ export default function AwardsPage() {
 
   useEffect(() => {
     leaderboardApi.today().then(setLeaders).catch(() => {});
-    achievementsApi.all().then(setAchievements).catch(() => {});
+    achievementsApi.all().then((page) => setAchievements(page.items)).catch(() => {});
   }, []);
 
   return <AwardsScene leaders={leaders} achievements={achievements} />;

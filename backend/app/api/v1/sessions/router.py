@@ -4,11 +4,15 @@ import hashlib
 import json
 
 from fastapi import APIRouter, Header
+from fastapi.responses import StreamingResponse
+from sqlalchemy import select
 
+from app.api.v1._common.streaming import ndjson_response, stream_orm
 from app.api.v1.sessions.schemas import FocusSessionResponse, StartSessionRequest
 from app.core.deps import ClockDep, CurrentUserId, DbDep, EventBusDep, IdGenDep
 from app.domain.models import FocusSession
 from app.domain.services.focus_session_service import FocusSessionService
+from app.infrastructure.db.models.focus_session import FocusSessionORM
 from app.infrastructure.db.repositories import SqlFocusSessionRepo
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 
@@ -101,6 +105,40 @@ async def cancel_session(
 ) -> FocusSessionResponse:
     svc = _service(db, clock, ids, events)
     return _dto(await svc.cancel(session_id=session_id, user_id=user_id))
+
+
+@router.get("/export")
+async def export_sessions(
+    user_id: CurrentUserId,
+    db: DbDep,
+) -> StreamingResponse:
+    """Stream the caller's full focus-session history as NDJSON.
+
+    Uses ``stream_scalars`` + ``yield_per`` server-side so a long history
+    doesn't materialize as a single buffered list in memory; smoke-test
+    via ``curl --no-buffer`` to confirm row-by-row delivery.
+    """
+    stmt = (
+        select(FocusSessionORM)
+        .where(FocusSessionORM.user_id == user_id)
+        .order_by(FocusSessionORM.started_at.desc(), FocusSessionORM.id.desc())
+    )
+
+    def _to_dict(row: FocusSessionORM) -> dict:
+        return {
+            "id": row.id,
+            "user_id": row.user_id,
+            "partner_user_id": row.partner_user_id,
+            "mode": row.mode,
+            "duration_seconds": row.duration_seconds,
+            "elapsed_seconds": row.elapsed_seconds,
+            "status": row.status,
+            "task_label": row.task_label,
+            "started_at": row.started_at,
+            "ended_at": row.ended_at,
+        }
+
+    return ndjson_response(stream_orm(db, stmt, to_dict=_to_dict))
 
 
 @router.get("/{session_id}", response_model=FocusSessionResponse)

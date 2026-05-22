@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError
+from app.core.pagination import apply_keyset
 from app.domain.models.room_visit import RoomVisit
 from app.domain.repositories.room_visit_repo import IRoomVisitRepo
 from app.infrastructure.db.models.room_visit import RoomVisitORM
@@ -23,12 +24,25 @@ class SqlRoomVisitRepo(IRoomVisitRepo):
     def __init__(self, session: AsyncSession) -> None:
         self._s = session
 
-    async def list_by_room(self, room_id: str) -> list[RoomVisit]:
-        stmt = (
-            select(RoomVisitORM)
-            .where(RoomVisitORM.room_id == room_id)
-            .order_by(RoomVisitORM.joined_at.asc())
+    async def list_by_room(
+        self,
+        room_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[RoomVisit]:
+        stmt = select(RoomVisitORM).where(RoomVisitORM.room_id == room_id)
+        stmt = apply_keyset(
+            stmt,
+            ts_col=RoomVisitORM.joined_at,
+            id_col=RoomVisitORM.id,
+            cursor=cursor,
         )
+        # Reversed from the original asc() — newest visitors first so the
+        # cursor maps naturally onto "older than this" pagination.
+        stmt = stmt.order_by(
+            RoomVisitORM.joined_at.desc(), RoomVisitORM.id.desc()
+        ).limit(limit + 1)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
 

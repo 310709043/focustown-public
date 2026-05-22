@@ -26,6 +26,17 @@ import type {
   WalletTransaction,
 } from "./types.gen";
 
+/**
+ * Cursor-paginated envelope returned by all Phase 02 list endpoints.
+ * ``next_cursor === null`` means the caller has reached the end of the
+ * stream. Pass the opaque string verbatim back to the same endpoint to
+ * fetch the next page.
+ */
+export type Page<T> = {
+  items: T[];
+  next_cursor: string | null;
+};
+
 // ── auth ───────────────────────────────────────────────
 export const authApi = {
   async signUp(input: {
@@ -208,10 +219,10 @@ export interface MatchAgendaItem {
 }
 
 export const matchChatApi = {
-  list(matchId: string, before?: string, limit = 50) {
+  list(matchId: string, cursor?: string, limit = 50) {
     const qs = new URLSearchParams({ limit: String(limit) });
-    if (before) qs.set("before", before);
-    return apiFetch<{ messages: MatchChatMessage[] }>(
+    if (cursor) qs.set("cursor", cursor);
+    return apiFetch<Page<MatchChatMessage>>(
       `/api/v1/matches/${encodeURIComponent(matchId)}/messages?${qs.toString()}`,
       { method: "GET" },
     );
@@ -306,7 +317,7 @@ export interface FocusingNowItem {
 
 export const friendsApi = {
   list(status: "accepted" | "requested" = "accepted") {
-    return apiFetch<{ friends: FriendSummary[] }>(
+    return apiFetch<Page<FriendSummary>>(
       `/api/v1/friends?status=${status}`,
       { method: "GET" },
     );
@@ -375,7 +386,7 @@ export const notesApi = {
     const qs = opts.matchId
       ? `?match_id=${encodeURIComponent(opts.matchId)}`
       : "";
-    return apiFetch<NoteWithShare[]>(`/api/v1/notes${qs}`, { method: "GET" });
+    return apiFetch<Page<NoteWithShare>>(`/api/v1/notes${qs}`, { method: "GET" });
   },
   create(input: { title?: string; body?: string; shared_in_match_id?: string | null }) {
     return apiFetch<NoteWithShare>("/api/v1/notes", { method: "POST", body: input });
@@ -468,7 +479,10 @@ export const matchesApi = {
     return apiFetch<Match>(`/api/v1/matches/${id}/skip`, { method: "POST" });
   },
   recent() {
-    return apiFetch<Match[]>("/api/v1/matches/recent", { method: "GET" });
+    // Phase 02 cursor pagination — backend returns ``Page[Match]``.
+    // Existing callers only need the first page; ignore ``next_cursor``
+    // unless/until infinite scroll is wired up.
+    return apiFetch<Page<Match>>("/api/v1/matches/recent", { method: "GET" });
   },
   /** Fetch a single match by id. Used by /focus/{id} to rehydrate the
    *  partner pairing header after a page reload (the in-memory matchStore
@@ -486,16 +500,16 @@ export const leaderboardApi = {
 };
 export const achievementsApi = {
   all() {
-    return apiFetch<Achievement[]>("/api/v1/achievements", { method: "GET" });
+    return apiFetch<Page<Achievement>>("/api/v1/achievements", { method: "GET" });
   },
   mine() {
-    return apiFetch<Achievement[]>("/api/v1/achievements/me", { method: "GET" });
+    return apiFetch<Page<Achievement>>("/api/v1/achievements/me", { method: "GET" });
   },
 };
 export const shopApi = {
   list(category?: string) {
     const qs = category ? `?category=${encodeURIComponent(category)}` : "";
-    return apiFetch<ShopItem[]>(`/api/v1/shop${qs}`, { method: "GET", auth: false });
+    return apiFetch<Page<ShopItem>>(`/api/v1/shop${qs}`, { method: "GET", auth: false });
   },
 };
 
@@ -517,7 +531,7 @@ export const walletApi = {
     return apiFetch<Wallet[]>("/api/v1/me/wallet", { method: "GET" });
   },
   transactions(limit = 20) {
-    return apiFetch<WalletTransaction[]>(
+    return apiFetch<Page<WalletTransaction>>(
       `/api/v1/me/wallet/transactions?limit=${limit}`,
       { method: "GET" },
     );

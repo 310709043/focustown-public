@@ -102,12 +102,15 @@ class MatchingQueueService:
         return now_ms + offset
 
     async def _recent_partners(self, user_id: str) -> set[str]:
+        # Cursor-paginated repos over-fetch by one row so the API layer
+        # can compute ``next_cursor``; here we don't paginate, so trim
+        # back to ``RECENT_DEDUP_WINDOW`` to preserve dedup semantics.
         recent = await self._matches_reader.list_recent_for_user(
             user_id=user_id, limit=RECENT_DEDUP_WINDOW
         )
         return {
             m.candidate_id if m.requester_id == user_id else m.requester_id
-            for m in recent
+            for m in recent[:RECENT_DEDUP_WINDOW]
         }
 
     async def request(self, *, requester_id: str) -> RequestResult:

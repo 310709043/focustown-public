@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Header, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy import select
 
+from app.api.v1._common.pagination import Page, build_page
+from app.api.v1._common.streaming import ndjson_response, stream_orm
 from app.api.v1.wallet.schemas import (
     GiftRequest,
     GiftResponse,
@@ -20,6 +24,7 @@ from app.core.deps import (
 from app.domain.services.gift_service import GiftService
 from app.domain.services.redemption_service import RedemptionService
 from app.domain.services.wallet_service import WalletService
+from app.infrastructure.db.models.wallet_transaction import WalletTransactionORM
 from app.infrastructure.db.repositories import (
     SqlRedemptionCodeRepo,
     SqlUserRepo,
@@ -56,28 +61,71 @@ async def list_my_wallets(
     ]
 
 
-@router.get("/transactions", response_model=list[WalletTransactionResponse])
+def _txn_dto(t):  # type: ignore[no-untyped-def]
+    return WalletTransactionResponse(
+        id=t.id,
+        currency_code=t.currency_code,
+        delta_minor=t.delta_minor,
+        reason=t.reason,
+        ref_type=t.ref_type,
+        ref_id=t.ref_id,
+        balance_after_minor=t.balance_after_minor,
+        created_at=t.created_at,
+        metadata=t.metadata,
+    )
+
+
+@router.get("/transactions/export")
+async def export_my_transactions(
+    user_id: CurrentUserId,
+    db: DbDep,
+) -> StreamingResponse:
+    """Stream the caller's full wallet ledger as NDJSON.
+
+    Uses ``stream_scalars`` + ``yield_per`` so heavy accounts don't pull
+    the whole history into memory before the response starts. Verify
+    streaming with ``curl --no-buffer ... | head -3``.
+    """
+    stmt = (
+        select(WalletTransactionORM)
+        .where(WalletTransactionORM.user_id == user_id)
+        .order_by(
+            WalletTransactionORM.created_at.desc(),
+            WalletTransactionORM.id.desc(),
+        )
+    )
+
+    def _to_dict(row: WalletTransactionORM) -> dict:
+        return {
+            "id": row.id,
+            "currency_code": row.currency_code,
+            "delta_minor": row.delta_minor,
+            "reason": row.reason,
+            "ref_type": row.ref_type,
+            "ref_id": row.ref_id,
+            "balance_after_minor": row.balance_after_minor,
+            "created_at": row.created_at,
+            "metadata": row.meta,
+        }
+
+    return ndjson_response(stream_orm(db, stmt, to_dict=_to_dict))
+
+
+@router.get("/transactions", response_model=Page[WalletTransactionResponse])
 async def list_my_transactions(
     user_id: CurrentUserId,
     db: DbDep,
+    cursor: str | None = Query(None, max_length=256),
     limit: int = Query(20, ge=1, le=100),
-) -> list[WalletTransactionResponse]:
+) -> Page[WalletTransactionResponse]:
     repo = SqlWalletTransactionRepo(db)
-    rows = await repo.list_for_user(user_id, limit=limit)
-    return [
-        WalletTransactionResponse(
-            id=t.id,
-            currency_code=t.currency_code,
-            delta_minor=t.delta_minor,
-            reason=t.reason,
-            ref_type=t.ref_type,
-            ref_id=t.ref_id,
-            balance_after_minor=t.balance_after_minor,
-            created_at=t.created_at,
-            metadata=t.metadata,
-        )
-        for t in rows
-    ]
+    rows = await repo.list_for_user(user_id, cursor=cursor, limit=limit)
+    return build_page(
+        rows,
+        limit=limit,
+        key=lambda t: (t.created_at, t.id),
+        to_item=_txn_dto,
+    )
 
 
 @router.post("/redeem", response_model=RedeemCodeResponse)

@@ -38,7 +38,7 @@ export function AwardsView({ leaderboardColumns = 1 }: AwardsViewProps = {}) {
       });
     achievementsApi
       .all()
-      .then(setAchievements)
+      .then((page) => setAchievements(page.items))
       .catch((e) => {
         reportApiError(e, tApi);
         console.error({ event: "awards_achievements_failed", err: errShape(e) });

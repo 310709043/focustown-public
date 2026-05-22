@@ -53,11 +53,30 @@ class IFocusSessionRepo(Protocol):
         ended_at: datetime | None,
     ) -> FocusSession: ...
 
-    async def list_active(self) -> list[FocusSession]: ...
+    async def list_active(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int = 200,
+    ) -> list[FocusSession]:
+        """Active focus sessions in ``(started_at DESC, id DESC)`` order,
+        over-fetched by one for cursor pagination. Worker sweep callsites
+        pass a generous ``limit`` so they walk the whole active set in
+        one query.
+        """
+        ...
 
     async def list_by_user_since(
-        self, *, user_id: str, since: datetime
-    ) -> list[FocusSession]: ...
+        self,
+        *,
+        user_id: str,
+        since: datetime,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[FocusSession]:
+        """User's sessions started on/after ``since``, ordered most-recent
+        first and over-fetched by one for cursor pagination."""
+        ...
 
     async def count_completed_today(self, *, user_id: str, day_start: datetime) -> int: ...
 

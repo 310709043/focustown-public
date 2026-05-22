@@ -6,6 +6,7 @@ from typing import Any
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.pagination import apply_keyset
 from app.domain.repositories.match_realtime_repo import (
     IMatchAgendaRepo,
     IMatchMessageRepo,
@@ -53,13 +54,19 @@ class SqlMatchMessageRepo(IMatchMessageRepo):
         self,
         match_id: str,
         *,
-        before: datetime | None = None,
+        cursor: str | None = None,
         limit: int = 50,
     ) -> list[MatchMessage]:
         stmt = select(MatchMessageORM).where(MatchMessageORM.match_id == match_id)
-        if before is not None:
-            stmt = stmt.where(MatchMessageORM.created_at < before)
-        stmt = stmt.order_by(MatchMessageORM.created_at.desc()).limit(limit)
+        stmt = apply_keyset(
+            stmt,
+            ts_col=MatchMessageORM.created_at,
+            id_col=MatchMessageORM.id,
+            cursor=cursor,
+        )
+        stmt = stmt.order_by(
+            MatchMessageORM.created_at.desc(), MatchMessageORM.id.desc()
+        ).limit(limit + 1)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_msg_to_domain(r) for r in rows]
 

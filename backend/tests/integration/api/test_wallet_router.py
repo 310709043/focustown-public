@@ -25,7 +25,8 @@ async def test_transactions_empty_for_new_user(client, auth_headers):
         "/api/v1/me/wallet/transactions", headers=auth_headers
     )
     assert response.status_code == 200
-    assert response.json() == []
+    # Phase 02: list endpoints now return the cursor-paginated envelope.
+    assert response.json() == {"items": [], "next_cursor": None}
 
 
 @pytest.mark.asyncio

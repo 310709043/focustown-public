@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from app.core.clock import IClock
@@ -49,12 +48,12 @@ class MatchChatService:
         *,
         viewer_id: str,
         match_id: str,
-        before: datetime | None,
-        limit: int,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[MatchMessage]:
         await self._assert_member(match_id, viewer_id)
         return await self._messages.list_by_match(
-            match_id, before=before, limit=limit
+            match_id, cursor=cursor, limit=limit
         )
 
     async def send(

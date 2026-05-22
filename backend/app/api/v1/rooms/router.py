@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1._common.pagination import Page, build_page
 from app.api.v1.rooms.schemas import (
     AddRoomTrackRequest,
     MoveRoomItemRequest,
@@ -474,7 +475,7 @@ async def leave_room(
 
 @rooms_router.get(
     "/{room_id}/visitors",
-    response_model=list[RoomVisitResponse],
+    response_model=Page[RoomVisitResponse],
 )
 async def list_room_visitors(
     room_id: str,
@@ -483,16 +484,26 @@ async def list_room_visitors(
     id_gen: IdGenDep,
     tracker: PresenceTrackerDep,
     publisher: RealtimePublisherDep,
-) -> list[RoomVisitResponse]:
+    cursor: str | None = Query(None, max_length=256),
+    limit: int = Query(50, ge=1, le=100),
+) -> Page[RoomVisitResponse]:
     """List active visitors. Visitor-readable on public rooms; invite-only
     returns 403 unless the caller is the owner."""
     if not room_id or len(room_id) > 36:
         raise BusinessError("invalid_room_id")
     svc = _room_visit_service(db, id_gen, tracker, publisher)
     visits = await svc.list_visitors(
-        room_id=room_id, requester_user_id=user_id
+        room_id=room_id,
+        requester_user_id=user_id,
+        cursor=cursor,
+        limit=limit,
     )
-    return [_to_visit_response(v) for v in visits]
+    return build_page(
+        visits,
+        limit=limit,
+        key=lambda v: (v.joined_at, v.id),
+        to_item=_to_visit_response,
+    )
 
 
 # ── Per-room shared playback (Phase 9) ──────────────────────────────────────

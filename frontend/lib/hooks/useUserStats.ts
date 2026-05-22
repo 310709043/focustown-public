@@ -66,7 +66,8 @@ export function useUserStats(user: Pick<User, "id"> | null): UserStats {
       .then(([achResult, statsResult]) => {
         if (cancelled) return;
         if (achResult.status === "fulfilled") {
-          setRecent(achResult.value);
+          // Phase 02: endpoint now returns a Page<Achievement>.
+          setRecent(achResult.value.items);
         } else {
           setRecent([]);
         }

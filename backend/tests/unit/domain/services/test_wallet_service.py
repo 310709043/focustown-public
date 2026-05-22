@@ -90,8 +90,8 @@ class FakeWalletTransactionRepo(IWalletTransactionRepo):
         self.rows.append(t)
         return t
 
-    async def list_for_user(self, user_id, *, limit):
-        return [r for r in self.rows if r.user_id == user_id][:limit]
+    async def list_for_user(self, user_id, *, cursor=None, limit=20):
+        return [r for r in self.rows if r.user_id == user_id][: limit + 1]
 
 
 class RecordingPublisher:

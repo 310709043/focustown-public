@@ -150,9 +150,16 @@ class FriendshipService:
     # ── queries ───────────────────────────────────────────────────────
 
     async def list_friends(
-        self, *, user_id: str, status: str = STATUS_ACCEPTED
+        self,
+        *,
+        user_id: str,
+        status: str = STATUS_ACCEPTED,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[FriendSummary]:
-        rows = await self._friendships.list_for_user(user_id, status=status)
+        rows = await self._friendships.list_for_user(
+            user_id, status=status, cursor=cursor, limit=limit
+        )
         other_ids = [_other_side(r, user_id) for r in rows]
         users = await self._users.get_many_by_ids(other_ids) if other_ids else []
         users_by_id = {u.id: u for u in users}

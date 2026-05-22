@@ -1,8 +1,14 @@
 """Match waiting pool (PG source of truth for the queue)
 
-Revision ID: 0023
+Revision ID: 0023_match_pool
 Revises: 0022
 Create Date: 2026-05-22 00:00:00
+
+Renamed from ``0023`` to ``0023_match_pool`` during the Phase 02 merge
+so it can coexist with the Phase 04 ``0023`` (focus_session
+idempotency, in ``0023_focus_session_idempotency_key.py``). A follow-up
+merge migration ``0024`` joins both heads. Once develop unifies the two
+``0023``s upstream this rename can be reverted.
 
 Until now the matching waiting pool lived only in Redis (see
 ``app/infrastructure/matching/redis_queue.py``). A Redis restart with no
@@ -36,7 +42,7 @@ import sqlalchemy as sa
 
 from alembic import op
 
-revision: str = "0023"
+revision: str = "0023_match_pool"
 down_revision: str | Sequence[str] | None = "0022"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

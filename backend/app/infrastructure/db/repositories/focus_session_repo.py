@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import IdempotencyViolationError, NotFoundError
+from app.core.pagination import apply_keyset
 from app.domain.models import FocusSession, FocusSessionMode, FocusSessionStatus
 from app.domain.repositories.focus_session_repo import (
     IFocusSessionRepo,
@@ -135,21 +136,47 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
         await self._s.flush()
         return _to_domain(row)
 
-    async def list_active(self) -> list[FocusSession]:
+    async def list_active(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int = 200,
+    ) -> list[FocusSession]:
         stmt = select(FocusSessionORM).where(
             FocusSessionORM.status == FocusSessionStatus.ACTIVE.value
         )
+        stmt = apply_keyset(
+            stmt,
+            ts_col=FocusSessionORM.started_at,
+            id_col=FocusSessionORM.id,
+            cursor=cursor,
+        )
+        stmt = stmt.order_by(
+            FocusSessionORM.started_at.desc(), FocusSessionORM.id.desc()
+        ).limit(limit + 1)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
 
     async def list_by_user_since(
-        self, *, user_id: str, since: datetime
+        self,
+        *,
+        user_id: str,
+        since: datetime,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[FocusSession]:
-        stmt = (
-            select(FocusSessionORM)
-            .where(FocusSessionORM.user_id == user_id, FocusSessionORM.started_at >= since)
-            .order_by(FocusSessionORM.started_at.desc())
+        stmt = select(FocusSessionORM).where(
+            FocusSessionORM.user_id == user_id, FocusSessionORM.started_at >= since
         )
+        stmt = apply_keyset(
+            stmt,
+            ts_col=FocusSessionORM.started_at,
+            id_col=FocusSessionORM.id,
+            cursor=cursor,
+        )
+        stmt = stmt.order_by(
+            FocusSessionORM.started_at.desc(), FocusSessionORM.id.desc()
+        ).limit(limit + 1)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
 

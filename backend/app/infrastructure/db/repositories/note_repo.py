@@ -4,6 +4,7 @@ from sqlalchemy import delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
+from app.core.pagination import apply_keyset
 from app.core.sentinels import UNSET, UnsetType
 from app.domain.repositories.note_repo import INoteRepo, NoteRecord
 from app.infrastructure.db.models.note import NoteORM
@@ -31,27 +32,26 @@ class SqlNoteRepo(INoteRepo):
         user_id: str,
         *,
         include_shared_in_match_id: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[NoteRecord]:
         if include_shared_in_match_id is None:
-            stmt = (
-                select(NoteORM)
-                .where(NoteORM.user_id == user_id)
-                .order_by(NoteORM.created_at.desc())
-            )
+            stmt = select(NoteORM).where(NoteORM.user_id == user_id)
         else:
             # Own notes + any note shared into this match (including
-            # the partner's notes). De-dup on id implicit since each
-            # row participates in exactly one branch.
-            stmt = (
-                select(NoteORM)
-                .where(
-                    or_(
-                        NoteORM.user_id == user_id,
-                        NoteORM.shared_in_match_id == include_shared_in_match_id,
-                    )
+            # the partner's). Each row participates in exactly one branch.
+            stmt = select(NoteORM).where(
+                or_(
+                    NoteORM.user_id == user_id,
+                    NoteORM.shared_in_match_id == include_shared_in_match_id,
                 )
-                .order_by(NoteORM.created_at.desc())
             )
+        stmt = apply_keyset(
+            stmt, ts_col=NoteORM.created_at, id_col=NoteORM.id, cursor=cursor
+        )
+        stmt = stmt.order_by(NoteORM.created_at.desc(), NoteORM.id.desc()).limit(
+            limit + 1
+        )
         return [_to_record(r) for r in (await self._s.execute(stmt)).scalars().all()]
 
     async def get(self, note_id: str) -> NoteRecord | None:

@@ -59,7 +59,7 @@ export function ShopView() {
 
   useEffect(() => {
     void Promise.all([
-      shopApi.list().then(setItems),
+      shopApi.list().then((page) => setItems(page.items)),
       walletApi.list().then((ws) => useWalletStore.getState().hydrate(ws)),
       userItemsApi.list().then((is) => useUserItemsStore.getState().hydrate(is)),
     ]).catch((e) => {

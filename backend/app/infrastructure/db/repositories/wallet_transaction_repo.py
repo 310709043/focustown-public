@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import IdempotencyViolationError
+from app.core.pagination import apply_keyset
 from app.domain.repositories.wallet_transaction_repo import (
     IWalletTransactionRepo,
     WalletTransaction,
@@ -75,13 +76,24 @@ class SqlWalletTransactionRepo(IWalletTransactionRepo):
         return _to_domain(row)
 
     async def list_for_user(
-        self, user_id: str, *, limit: int
+        self,
+        user_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 20,
     ) -> list[WalletTransaction]:
-        stmt = (
-            select(WalletTransactionORM)
-            .where(WalletTransactionORM.user_id == user_id)
-            .order_by(WalletTransactionORM.created_at.desc())
-            .limit(limit)
+        stmt = select(WalletTransactionORM).where(
+            WalletTransactionORM.user_id == user_id
         )
+        stmt = apply_keyset(
+            stmt,
+            ts_col=WalletTransactionORM.created_at,
+            id_col=WalletTransactionORM.id,
+            cursor=cursor,
+        )
+        stmt = stmt.order_by(
+            WalletTransactionORM.created_at.desc(),
+            WalletTransactionORM.id.desc(),
+        ).limit(limit + 1)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]

@@ -25,14 +25,18 @@ class INoteRepo(Protocol):
         user_id: str,
         *,
         include_shared_in_match_id: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[NoteRecord]:
-        """Return ``user_id``'s notes.
+        """Return ``user_id``'s notes, paginated by ``(created_at, id)``.
 
         If ``include_shared_in_match_id`` is provided, also include
         notes (owned by anyone) whose ``shared_in_match_id`` matches —
         the matched-focus-room shared notepad. Auth is the caller's
         responsibility: this repo trusts that the requester is a
         member of the match.
+
+        Repos over-fetch by one row; callers derive ``next_cursor``.
         """
         ...
 

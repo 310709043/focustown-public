@@ -33,18 +33,30 @@ class IFriendshipRepo(Protocol):
         user_id: str,
         *,
         status: str | None = None,
-        limit: int = 100,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[Friendship]:
-        """Return all friendships where ``user_id`` is either side."""
+        """Return friendships where ``user_id`` is either side, paginated
+        by ``(created_at, id)``. Over-fetched by one for next_cursor.
+        """
 
     async def list_incoming_requests(
-        self, user_id: str, *, limit: int = 100
+        self,
+        user_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[Friendship]:
-        """Pending requests addressed to ``user_id`` (i.e. requested_by != user)."""
+        """Pending requests addressed to ``user_id``, paginated."""
 
     async def list_accepted_friend_ids(self, user_id: str) -> list[str]:
         """Just the *other* user ids of accepted friendships — fast path
-        for "focusing-now" type joins where we only need the id set."""
+        for "focusing-now" type joins where we only need the id set.
+
+        Not paginated: only callsite feeds into a follow-up ``IN`` filter
+        on focus sessions, and a typical user accumulates dozens of
+        friends, not thousands.
+        """
 
     async def create_request(
         self,

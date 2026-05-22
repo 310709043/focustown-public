@@ -36,8 +36,10 @@ export function SoloNotesPanel() {
     let cancelled = false;
     (async () => {
       try {
-        const all = await notesApi.list();
-        const personal = (all as NoteWithShare[]).filter((n) => !n.shared_in_match_id);
+        const page = await notesApi.list();
+        const personal = (page.items as NoteWithShare[]).filter(
+          (n) => !n.shared_in_match_id,
+        );
         const latest = personal[0];
         if (cancelled) return;
         if (latest) {

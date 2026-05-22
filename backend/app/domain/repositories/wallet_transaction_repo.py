@@ -45,5 +45,11 @@ class IWalletTransactionRepo(Protocol):
         """
 
     async def list_for_user(
-        self, user_id: str, *, limit: int
-    ) -> list[WalletTransaction]: ...
+        self,
+        user_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> list[WalletTransaction]:
+        """Cursor-paginated ledger; over-fetched by one for next_cursor."""
+        ...

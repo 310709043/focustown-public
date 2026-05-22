@@ -4,6 +4,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
+from app.core.pagination import apply_keyset
 from app.domain.models import Match, MatchStatus
 from app.domain.repositories.match_repo import IMatchRepo
 from app.infrastructure.db.models.match import MatchORM
@@ -64,12 +65,21 @@ class SqlMatchRepo(IMatchRepo):
         await self._s.refresh(row, ["updated_at"])
         return _to_domain(row)
 
-    async def list_recent_for_user(self, *, user_id: str, limit: int) -> list[Match]:
-        stmt = (
-            select(MatchORM)
-            .where(or_(MatchORM.requester_id == user_id, MatchORM.candidate_id == user_id))
-            .order_by(MatchORM.created_at.desc())
-            .limit(limit)
+    async def list_recent_for_user(
+        self,
+        *,
+        user_id: str,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> list[Match]:
+        stmt = select(MatchORM).where(
+            or_(MatchORM.requester_id == user_id, MatchORM.candidate_id == user_id)
+        )
+        stmt = apply_keyset(
+            stmt, ts_col=MatchORM.created_at, id_col=MatchORM.id, cursor=cursor
+        )
+        stmt = stmt.order_by(MatchORM.created_at.desc(), MatchORM.id.desc()).limit(
+            limit + 1
         )
         return [_to_domain(r) for r in (await self._s.execute(stmt)).scalars().all()]
 

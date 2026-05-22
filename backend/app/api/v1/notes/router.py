@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy import select
 
+from app.api.v1._common.pagination import Page, build_page
+from app.api.v1._common.streaming import ndjson_response, stream_orm
 from app.api.v1.notes.schemas import NoteCreate, NoteResponse, NoteUpdate
 from app.core.deps import CurrentUserId, DbDep, IdGenDep
 from app.domain.repositories.note_repo import NoteRecord
 from app.domain.services.note_service import NoteService
+from app.infrastructure.db.models.note import NoteORM
 from app.infrastructure.db.repositories import SqlMatchRepo, SqlNoteRepo
 
 router = APIRouter()
@@ -32,17 +37,27 @@ def _dto(n: NoteRecord) -> NoteResponse:
     )
 
 
-@router.get("", response_model=list[NoteResponse])
+@router.get("", response_model=Page[NoteResponse])
 async def list_notes(
     user_id: CurrentUserId,
     db: DbDep,
     ids: IdGenDep,
     match_id: str | None = Query(None, max_length=36),
-) -> list[NoteResponse]:
+    cursor: str | None = Query(None, max_length=256),
+    limit: int = Query(50, ge=1, le=100),
+) -> Page[NoteResponse]:
     """Owner's notes. If ``match_id`` is given and the user is a
     member of that match, also include notes shared into the match."""
     svc = _service(db, ids)
-    return [_dto(n) for n in await svc.list_for_user(user_id=user_id, match_id=match_id)]
+    rows = await svc.list_for_user(
+        user_id=user_id, match_id=match_id, cursor=cursor, limit=limit
+    )
+    return build_page(
+        rows,
+        limit=limit,
+        key=lambda n: (n.created_at, n.id),
+        to_item=_dto,
+    )
 
 
 @router.post("", response_model=NoteResponse, status_code=201)
@@ -88,3 +103,33 @@ async def delete_note(
 ) -> None:
     svc = _service(db, ids)
     await svc.delete(user_id=user_id, note_id=note_id)
+
+
+@router.get("/export")
+async def export_notes(
+    user_id: CurrentUserId,
+    db: DbDep,
+) -> StreamingResponse:
+    """Stream the caller's notes as NDJSON. Excludes notes shared into a
+    match unless they were authored by the caller — exports are for the
+    user's own backup, not a snapshot of the partnered notepad.
+    """
+    stmt = (
+        select(NoteORM)
+        .where(NoteORM.user_id == user_id)
+        .order_by(NoteORM.created_at.desc(), NoteORM.id.desc())
+    )
+
+    def _to_dict(row: NoteORM) -> dict:
+        return {
+            "id": row.id,
+            "user_id": row.user_id,
+            "title": row.title,
+            "body": row.body,
+            "done": row.done,
+            "shared_in_match_id": row.shared_in_match_id,
+            "created_at": row.created_at,
+            "updated_at": row.updated_at,
+        }
+
+    return ndjson_response(stream_orm(db, stmt, to_dict=_to_dict))

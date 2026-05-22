@@ -30,6 +30,8 @@ class FakeNoteRepo(INoteRepo):
         user_id: str,
         *,
         include_shared_in_match_id: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[NoteRecord]:
         out: list[NoteRecord] = []
         for r in self.rows.values():
@@ -41,7 +43,8 @@ class FakeNoteRepo(INoteRepo):
                 and r.shared_in_match_id == include_shared_in_match_id
             ):
                 out.append(r)
-        return sorted(out, key=lambda r: r.created_at, reverse=True)
+        ordered = sorted(out, key=lambda r: r.created_at, reverse=True)
+        return ordered[: limit + 1]
 
     async def get(self, note_id: str) -> NoteRecord | None:
         return self.rows.get(note_id)

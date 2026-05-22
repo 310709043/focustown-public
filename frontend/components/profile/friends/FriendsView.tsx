@@ -63,7 +63,7 @@ export function FriendsView({ onClose }: FriendsViewProps) {
           friendsApi.list("accepted"),
           friendsApi.list("requested"),
         ]);
-        if (!cancelled) hydrate({ accepted: a.friends, incoming: p.friends });
+        if (!cancelled) hydrate({ accepted: a.items, incoming: p.items });
       } catch {
         if (!cancelled) pushErrorToast(t("loadError"));
       } finally {

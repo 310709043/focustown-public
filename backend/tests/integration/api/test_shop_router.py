@@ -24,7 +24,8 @@ from sqlalchemy import text
 async def test_list_empty_when_no_items_seeded(client):
     response = await client.get("/api/v1/shop")
     assert response.status_code == 200
-    assert response.json() == []
+    # Phase 02: list endpoints return the cursor-paginated envelope.
+    assert response.json() == {"items": [], "next_cursor": None}
 
 
 @pytest.mark.asyncio

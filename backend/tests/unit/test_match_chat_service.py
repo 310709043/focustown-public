@@ -59,13 +59,14 @@ class FakeMessageRepo(IMatchMessageRepo):
         self,
         match_id: str,
         *,
-        before: datetime | None = None,
+        cursor: str | None = None,
         limit: int = 50,
     ) -> list[MatchMessage]:
         out = [r for r in self.rows if r.match_id == match_id]
-        if before is not None:
-            out = [r for r in out if r.created_at < before]
-        return sorted(out, key=lambda r: r.created_at, reverse=True)[:limit]
+        # Fakes don't decode cursors — tests assert the cursor codec
+        # round-trip in test_pagination.py; here we only need the limit
+        # over-fetch contract for service-layer behaviour tests.
+        return sorted(out, key=lambda r: r.created_at, reverse=True)[: limit + 1]
 
     async def create(
         self,
@@ -284,7 +285,7 @@ async def test_list_messages_returns_scrollback_for_member() -> None:
         sender_id="bob", match_id="m1", kind="text", body="yo", metadata=None
     )
     rows = await svc.list_messages(
-        viewer_id="bob", match_id="m1", before=None, limit=10
+        viewer_id="bob", match_id="m1", cursor=None, limit=10
     )
     assert len(rows) == 2
 

@@ -45,8 +45,8 @@ export function DecorationToolbar({ editMode, onToggle, onPlace }: Props) {
     let cancelled = false;
     void shopApi
       .list()
-      .then((items) => {
-        if (!cancelled) setCatalog(items);
+      .then((page) => {
+        if (!cancelled) setCatalog(page.items);
       })
       .catch(() => {
         if (!cancelled) setCatalogError(true);

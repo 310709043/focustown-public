@@ -28,8 +28,16 @@ class AchievementService:
         self._clock = clock
         events.subscribe(SessionCompleted, self._on_session_completed)
 
-    async def list_for_user(self, user_id: str) -> list[AchievementRecord]:
-        return await self._achievements.list_for_user(user_id)
+    async def list_for_user(
+        self,
+        user_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[AchievementRecord]:
+        return await self._achievements.list_for_user(
+            user_id, cursor=cursor, limit=limit
+        )
 
     async def _on_session_completed(self, event: SessionCompleted) -> None:
         # 7-day check: today + 6 distinct prior days

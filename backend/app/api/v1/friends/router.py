@@ -3,11 +3,11 @@ from __future__ import annotations
 from fastapi import APIRouter, Query
 from fastapi import status as http_status
 
+from app.api.v1._common.pagination import Page, build_page
 from app.api.v1.friends.schemas import (
     FocusingNowItem,
     FocusingNowResponse,
     FriendRequestRequest,
-    FriendsListResponse,
     FriendSummaryDTO,
 )
 from app.core.deps import (
@@ -44,7 +44,7 @@ def _service(  # type: ignore[no-untyped-def]
     )
 
 
-@router.get("", response_model=FriendsListResponse)
+@router.get("", response_model=Page[FriendSummaryDTO])
 async def list_my_friends(
     user_id: CurrentUserId,
     db: DbDep,
@@ -52,11 +52,18 @@ async def list_my_friends(
     clock: ClockDep,
     publisher: RealtimePublisherDep,
     status: str = Query(STATUS_ACCEPTED, max_length=16),
-) -> FriendsListResponse:
+    cursor: str | None = Query(None, max_length=256),
+    limit: int = Query(50, ge=1, le=100),
+) -> Page[FriendSummaryDTO]:
     svc = _service(db, publisher, ids, clock)
-    rows = await svc.list_friends(user_id=user_id, status=status)
-    return FriendsListResponse(
-        friends=[FriendSummaryDTO(**r.__dict__) for r in rows]
+    rows = await svc.list_friends(
+        user_id=user_id, status=status, cursor=cursor, limit=limit
+    )
+    return build_page(
+        rows,
+        limit=limit,
+        key=lambda r: (r.created_at, r.friendship_id),
+        to_item=lambda r: FriendSummaryDTO(**r.__dict__),
     )
 
 

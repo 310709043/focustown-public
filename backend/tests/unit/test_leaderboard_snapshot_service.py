@@ -32,7 +32,7 @@ class _FakeSessionRepo:
     async def update_status(self, **_kwargs):
         raise NotImplementedError
 
-    async def list_active(self) -> list[FocusSession]:
+    async def list_active(self, **_kwargs) -> list[FocusSession]:
         raise NotImplementedError
 
     async def list_by_user_since(self, **_kwargs):

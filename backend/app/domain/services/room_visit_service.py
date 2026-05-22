@@ -133,7 +133,12 @@ class RoomVisitService:
         )
 
     async def list_visitors(
-        self, *, room_id: str, requester_user_id: str
+        self,
+        *,
+        room_id: str,
+        requester_user_id: str,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[RoomVisit]:
         room = await self.rooms.get_by_id(room_id)
         if room is None:
@@ -143,4 +148,6 @@ class RoomVisitService:
             and room.visibility == "invite_only"
         ):
             raise ForbiddenError("room_not_accessible")
-        return await self.visit_reader.list_by_room(room_id)
+        return await self.visit_reader.list_by_room(
+            room_id, cursor=cursor, limit=limit
+        )

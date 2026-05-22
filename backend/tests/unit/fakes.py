@@ -232,8 +232,13 @@ class FakeUserRepo(IUserRepo):
         self.users[user_id] = new
         return new
 
-    async def list_recent(self, *, limit: int) -> list[User]:
-        return list(self.users.values())[:limit]
+    async def list_recent(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[User]:
+        return list(self.users.values())[: limit + 1]
 
     async def list_bots(self) -> list[User]:
         return [u for u in self.users.values() if u.is_bot]
@@ -446,10 +451,16 @@ class FakeRoomVisitRepo(IRoomVisitRepo):
 
     rows: dict[str, RoomVisit] = field(default_factory=dict)
 
-    async def list_by_room(self, room_id: str) -> list[RoomVisit]:
+    async def list_by_room(
+        self,
+        room_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[RoomVisit]:
         rows = [r for r in self.rows.values() if r.room_id == room_id]
-        rows.sort(key=lambda r: r.joined_at)
-        return rows
+        rows.sort(key=lambda r: r.joined_at, reverse=True)
+        return rows[: limit + 1]
 
     async def get_by_user(self, visitor_user_id: str) -> RoomVisit | None:
         return next(
@@ -654,11 +665,22 @@ class FakeShopRepo(IShopRepo):
     items: list[ShopItemRecord] = field(default_factory=list)
     render_metas: dict[str, dict[str, Any] | None] = field(default_factory=dict)
 
-    async def list_all(self) -> list[ShopItemRecord]:
-        return list(self.items)
+    async def list_all(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[ShopItemRecord]:
+        return list(self.items)[: limit + 1]
 
-    async def list_by_category(self, category: str) -> list[ShopItemRecord]:
-        return [i for i in self.items if i.category == category]
+    async def list_by_category(
+        self,
+        category: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[ShopItemRecord]:
+        return [i for i in self.items if i.category == category][: limit + 1]
 
     async def get_by_id(self, item_id: str) -> ShopItemRecord | None:
         for i in self.items:
@@ -898,7 +920,13 @@ class FakeMatchReader(IMatchReader):
     async def get(self, match_id: str):  # type: ignore[override]
         raise NotImplementedError
 
-    async def list_recent_for_user(self, *, user_id: str, limit: int):  # type: ignore[override]
+    async def list_recent_for_user(  # type: ignore[override]
+        self,
+        *,
+        user_id: str,
+        cursor: str | None = None,
+        limit: int = 20,
+    ):
         raise NotImplementedError
 
     async def has_accepted_pair_between(
@@ -996,17 +1024,31 @@ class FakeFocusSessionRepo(IFocusSessionRepo):
         self.rows[session_id] = updated
         return updated
 
-    async def list_active(self) -> list[FocusSession]:
-        return [s for s in self.rows.values() if s.status is FocusSessionStatus.ACTIVE]
+    async def list_active(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int = 200,
+    ) -> list[FocusSession]:
+        rows = [
+            s for s in self.rows.values() if s.status is FocusSessionStatus.ACTIVE
+        ]
+        return rows[: limit + 1]
 
     async def list_by_user_since(
-        self, *, user_id: str, since: datetime
+        self,
+        *,
+        user_id: str,
+        since: datetime,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[FocusSession]:
-        return [
+        rows = [
             s
             for s in self.rows.values()
             if s.user_id == user_id and s.started_at >= since
         ]
+        return rows[: limit + 1]
 
     async def count_completed_today(self, *, user_id: str, day_start: datetime) -> int:
         return sum(
@@ -1077,13 +1119,18 @@ class FakeMatchRepo(IMatchRepo):
         return updated
 
     async def list_recent_for_user(
-        self, *, user_id: str, limit: int
+        self,
+        *,
+        user_id: str,
+        cursor: str | None = None,
+        limit: int = 20,
     ) -> list[Match]:
-        return [
+        rows = [
             m
             for m in self.rows.values()
             if user_id in (m.requester_id, m.candidate_id)
-        ][:limit]
+        ]
+        return rows[: limit + 1]
 
 
 @dataclass
@@ -1093,15 +1140,27 @@ class FakeAchievementRepo(IAchievementRepo):
     catalog: dict[str, AchievementRecord] = field(default_factory=dict)
     grants: set[tuple[str, str]] = field(default_factory=set)
 
-    async def list_all(self) -> list[AchievementRecord]:
-        return list(self.catalog.values())
+    async def list_all(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[AchievementRecord]:
+        return list(self.catalog.values())[: limit + 1]
 
-    async def list_for_user(self, user_id: str) -> list[AchievementRecord]:
-        return [
+    async def list_for_user(
+        self,
+        user_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[AchievementRecord]:
+        rows = [
             self.catalog[code]
             for (uid, code) in self.grants
             if uid == user_id and code in self.catalog
         ]
+        return rows[: limit + 1]
 
     async def grant(self, *, user_id: str, achievement_code: str) -> bool:
         key = (user_id, achievement_code)

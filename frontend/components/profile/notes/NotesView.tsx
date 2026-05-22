@@ -27,8 +27,8 @@ export function NotesView({ onClose }: NotesViewProps) {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const rows = await notesApi.list();
-      setNotes(rows);
+      const page = await notesApi.list();
+      setNotes(page.items);
     } catch {
       pushErrorToast(t("loadError"));
     } finally {

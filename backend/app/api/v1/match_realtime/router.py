@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Query
 from fastapi import status as http_status
 
+from app.api.v1._common.pagination import Page, build_page
 from app.api.v1.match_realtime.schemas import (
     AgendaCreateRequest,
     AgendaItemDTO,
     AgendaListResponse,
     AgendaUpdateRequest,
     ChatMessageDTO,
-    ChatMessagesResponse,
     SendChatRequest,
 )
 from app.core.deps import (
@@ -60,7 +59,7 @@ def _agenda(  # type: ignore[no-untyped-def]
 
 
 @router.get(
-    "/{match_id}/messages", response_model=ChatMessagesResponse
+    "/{match_id}/messages", response_model=Page[ChatMessageDTO]
 )
 async def list_messages(
     match_id: str,
@@ -69,15 +68,18 @@ async def list_messages(
     ids: IdGenDep,
     clock: ClockDep,
     publisher: RealtimePublisherDep,
-    before: Annotated[datetime | None, Query()] = None,
+    cursor: Annotated[str | None, Query(max_length=256)] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
-) -> ChatMessagesResponse:
+) -> Page[ChatMessageDTO]:
     svc = _chat(db, publisher, ids, clock)
     rows = await svc.list_messages(
-        viewer_id=user_id, match_id=match_id, before=before, limit=limit
+        viewer_id=user_id, match_id=match_id, cursor=cursor, limit=limit
     )
-    return ChatMessagesResponse(
-        messages=[ChatMessageDTO(**r.__dict__) for r in rows]
+    return build_page(
+        rows,
+        limit=limit,
+        key=lambda r: (r.created_at, r.id),
+        to_item=lambda r: ChatMessageDTO(**r.__dict__),
     )
 
 

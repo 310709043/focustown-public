@@ -74,7 +74,8 @@ export function ChatStream({
   const reload = useCallback(async () => {
     try {
       const res = await matchChatApi.list(matchId);
-      const ordered = [...res.messages].sort(
+      // Phase 02: shape is ``{ items, next_cursor }`` instead of ``{ messages }``.
+      const ordered = [...res.items].sort(
         (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
       );
       setMessages(ordered.map((m) => toChatMessage(m, meId)));

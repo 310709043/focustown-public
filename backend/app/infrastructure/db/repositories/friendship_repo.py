@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import and_, delete, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.pagination import apply_keyset
 from app.domain.repositories.friendship_repo import Friendship, IFriendshipRepo
 from app.infrastructure.db.models.friendship import FriendshipORM
 
@@ -49,7 +50,8 @@ class SqlFriendshipRepo(IFriendshipRepo):
         user_id: str,
         *,
         status: str | None = None,
-        limit: int = 100,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[Friendship]:
         clause = or_(
             FriendshipORM.user_low_id == user_id,
@@ -58,12 +60,24 @@ class SqlFriendshipRepo(IFriendshipRepo):
         stmt = select(FriendshipORM).where(clause)
         if status:
             stmt = stmt.where(FriendshipORM.status == status)
-        stmt = stmt.order_by(FriendshipORM.created_at.desc()).limit(limit)
+        stmt = apply_keyset(
+            stmt,
+            ts_col=FriendshipORM.created_at,
+            id_col=FriendshipORM.id,
+            cursor=cursor,
+        )
+        stmt = stmt.order_by(
+            FriendshipORM.created_at.desc(), FriendshipORM.id.desc()
+        ).limit(limit + 1)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
 
     async def list_incoming_requests(
-        self, user_id: str, *, limit: int = 100
+        self,
+        user_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[Friendship]:
         clause = and_(
             or_(
@@ -73,12 +87,16 @@ class SqlFriendshipRepo(IFriendshipRepo):
             FriendshipORM.status == "requested",
             FriendshipORM.requested_by != user_id,
         )
-        stmt = (
-            select(FriendshipORM)
-            .where(clause)
-            .order_by(FriendshipORM.created_at.desc())
-            .limit(limit)
+        stmt = select(FriendshipORM).where(clause)
+        stmt = apply_keyset(
+            stmt,
+            ts_col=FriendshipORM.created_at,
+            id_col=FriendshipORM.id,
+            cursor=cursor,
         )
+        stmt = stmt.order_by(
+            FriendshipORM.created_at.desc(), FriendshipORM.id.desc()
+        ).limit(limit + 1)
         rows = (await self._s.execute(stmt)).scalars().all()
         return [_to_domain(r) for r in rows]
 

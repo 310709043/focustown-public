@@ -21,9 +21,9 @@ export function useWalletTransactions(limit = 20): State {
     setState({ rows: [], loading: true, error: null });
     walletApi
       .transactions(limit)
-      .then((rows) => {
+      .then((page) => {
         if (cancelled) return;
-        setState({ rows, loading: false, error: null });
+        setState({ rows: page.items, loading: false, error: null });
       })
       .catch((err: unknown) => {
         if (cancelled) return;

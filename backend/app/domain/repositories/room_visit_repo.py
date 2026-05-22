@@ -12,7 +12,17 @@ class IRoomVisitReader(Protocol):
     this Protocol so they cannot accidentally mutate session state.
     """
 
-    async def list_by_room(self, room_id: str) -> list[RoomVisit]: ...
+    async def list_by_room(
+        self,
+        room_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> list[RoomVisit]:
+        """Visitors of ``room_id`` paginated by ``(joined_at, id)`` DESC,
+        over-fetched by one row so callers can derive ``next_cursor``.
+        """
+        ...
     async def get_by_user(self, visitor_user_id: str) -> RoomVisit | None: ...
     async def count_by_room(self, room_id: str) -> int: ...
 

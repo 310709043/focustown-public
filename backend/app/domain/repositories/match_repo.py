@@ -15,8 +15,16 @@ class IMatchReader(Protocol):
 
     async def get(self, match_id: str) -> Match | None: ...
     async def list_recent_for_user(
-        self, *, user_id: str, limit: int
-    ) -> list[Match]: ...
+        self,
+        *,
+        user_id: str,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> list[Match]:
+        """Return up to ``limit + 1`` matches in (created_at DESC, id DESC)
+        order. Callers pass the over-fetch to ``build_page`` to derive
+        ``next_cursor``."""
+        ...
     async def has_accepted_pair_between(
         self, *, user_a_id: str, user_b_id: str
     ) -> bool:

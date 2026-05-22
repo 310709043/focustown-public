@@ -33,17 +33,22 @@ class NoteService:
         *,
         user_id: str,
         match_id: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
     ) -> list[NoteRecord]:
         """Owner's notes — and, if ``match_id`` is given and the
         requester is a member of that match, also the notes shared
-        into the match.
+        into the match. Pagination passes through to the repo.
         """
         if match_id is not None:
             await self._require_match_member(user_id=user_id, match_id=match_id)
             return await self.notes.list_for_user(
-                user_id, include_shared_in_match_id=match_id
+                user_id,
+                include_shared_in_match_id=match_id,
+                cursor=cursor,
+                limit=limit,
             )
-        return await self.notes.list_for_user(user_id)
+        return await self.notes.list_for_user(user_id, cursor=cursor, limit=limit)
 
     async def create(
         self,

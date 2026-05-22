@@ -35,10 +35,16 @@ class IMatchMessageRepo(Protocol):
         self,
         match_id: str,
         *,
-        before: datetime | None = None,
+        cursor: str | None = None,
         limit: int = 50,
     ) -> list[MatchMessage]:
-        """Reverse-chronological scrollback. ``before`` paginates."""
+        """Reverse-chronological scrollback paginated by ``(created_at, id)``.
+
+        The repo over-fetches by one row; routers compute ``next_cursor``
+        from the overflow. Replaces the previous ``before: datetime`` shape
+        — clients now hand back the opaque cursor returned by the
+        previous page rather than reconstructing a timestamp.
+        """
 
     async def create(
         self,
