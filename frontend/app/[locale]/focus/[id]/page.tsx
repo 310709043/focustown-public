@@ -326,10 +326,12 @@ export default function FocusRoomPage() {
       <div
         style={{
           position: "fixed",
-          top: 64,
+          top: "max(64px, calc(env(safe-area-inset-top) + 56px))",
           right: 12,
           zIndex: 200,
-          width: 220,
+          // Phones: shrink to fit so the banner never clips off the right
+          // edge of a 375 px viewport. Tablet+: stays at the intended 220 px.
+          width: "min(220px, calc(100vw - 24px))",
           display: "flex",
           flexDirection: "column",
           gap: 6,

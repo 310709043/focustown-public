@@ -65,13 +65,13 @@ export function ProfileModal({ open, onClose }: ProfileModalProps) {
       <div
         data-testid="profile-modal"
         onClick={(e) => e.stopPropagation()}
-        className="pixel-panel relative"
+        // Grid template + dimensions live in globals.css under
+        // .profile-modal-panel so a `@media (max-width: 720px)` rule can
+        // collapse the 240px sidebar to a horizontal strip above the
+        // main content — without that, the 240px column starves the
+        // detail pane on portrait phones.
+        className="profile-modal-panel pixel-panel relative"
         style={{
-          width: "min(1120px, 96vw)",
-          height: "min(720px, 92vh)",
-          display: "grid",
-          gridTemplateColumns: "240px 1fr",
-          gridTemplateRows: "1fr",
           padding: 0,
           background: "rgba(12,5,35,0.96)",
           boxShadow:

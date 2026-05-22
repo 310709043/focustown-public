@@ -55,7 +55,7 @@ export default function SplashPage() {
         aria-busy={loading || undefined}
         className="pixel-panel login-form-anim relative"
         style={{
-          width: 380,
+          width: "min(380px, calc(100vw - 32px))",
           padding: 20,
           display: "flex",
           flexDirection: "column",

@@ -76,12 +76,14 @@ export function SoloFocusScene() {
 
       <div
         data-testid="solo-body-grid"
+        // Container query: keep the 2fr/1fr split on tablets and wider
+        // (≥ 720px), stack vertically on phones so neither the notes pane
+        // nor the timer pane gets crushed. Both panes stay mounted with
+        // identical content — no element removed.
+        className="solo-body-grid"
         style={{
           position: "relative",
           zIndex: 2,
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr",
-          gap: 12,
           padding: 12,
           flex: 1,
           minHeight: 0,

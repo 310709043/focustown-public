@@ -74,14 +74,14 @@ export function BuddyFocusScene({
         <BuddyTopBar roomCode={matchId.slice(0, 6).toUpperCase()} />
       </div>
 
-      {/* Body */}
+      {/* Body. Grid template moved to `.buddy-body-grid` so a media query
+          can stack the panes on phones (zero-sacrifice — both panes still
+          render in full, just one above the other instead of side-by-side). */}
       <div
+        className="buddy-body-grid"
         style={{
           position: "relative",
           zIndex: 2,
-          display: "grid",
-          gridTemplateColumns: "1fr 1.3fr",
-          gap: 14,
           padding: 14,
           height: "calc(100% - 56px)",
           overflow: "hidden",

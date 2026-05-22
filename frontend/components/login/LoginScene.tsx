@@ -145,24 +145,35 @@ export function LoginScene({
       <LoginCitizens />
       <FloatingPixels />
 
-      {/* Top bar with FT marker, version, and live citizens count. */}
+      {/* Top bar with FT marker, version, and live citizens count.
+          Wraps cleanly on narrow phones so no chip clips out of view. */}
       <div
         className="font-silkscreen"
         style={{
           position: "absolute",
-          top: 16,
+          top: "max(16px, env(safe-area-inset-top))",
           left: 20,
           right: 20,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          rowGap: 6,
           zIndex: 10,
           fontSize: 10,
           color: "var(--ink-mute)",
           letterSpacing: "0.15em",
         }}
       >
-        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 14,
+            alignItems: "center",
+            flexWrap: "wrap",
+            rowGap: 4,
+          }}
+        >
           <span style={{ color: "var(--accent)" }}>
             <BlinkDot color="var(--accent)" marginRight={4} /> LBT
           </span>

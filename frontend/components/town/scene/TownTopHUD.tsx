@@ -130,23 +130,21 @@ export function TownTopHUD({
   return (
     <div
       data-testid="town-top-hud"
-      className="absolute top-0 left-0 right-0 z-20"
+      className="town-top-hud-root absolute top-0 left-0 right-0 z-20"
       onPointerEnter={immersive ? onEdgeEnter : undefined}
       onPointerLeave={immersive ? onEdgeLeave : undefined}
-      style={{
-        padding: "10px 18px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 14,
-        background:
-          "linear-gradient(180deg, rgba(7,4,26,0.85) 0%, rgba(7,4,26,0) 100%)",
-      }}
     >
+      {/* `.town-top-hud-inner` caps the three-cluster row to
+          `--app-content-max-width` and centres it. On common monitors
+          (≤ 2560 px) the variable is `none`, so the row spans full
+          width unchanged. On ≥ 2880 px screens the row clusters in a
+          2400 px column while the gradient background still spans the
+          whole viewport — Netflix / Apple-TV centring pattern. */}
+      <div className="town-top-hud-inner">
       {/* ═══ LEFT cluster: logo + version · scene/weather/temp · ONLINE ═══
            City-Mode immersive keeps the LOGO + weather chip anchored; the
            version chip + ONLINE chip collapse upward so the sky breathes. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className="town-top-hud-cluster is-left">
         <Logo scale={1.05} />
         <span
           data-testid="top-hud-version"
@@ -212,23 +210,23 @@ export function TownTopHUD({
       {/* ═══ CENTER: status pill ═══
            Collapses during immersive focus so the centered countdown
            (mounted in town/page.tsx as <ImmersiveCountdown />) can own
-           the centre slot without overlap. */}
-      <div style={collapsedStyle("-10px")}>
+           the centre slot without overlap. On narrow containers this
+           row takes its own line via the `is-center` @container rule. */}
+      <div
+        className="town-top-hud-cluster is-center"
+        style={collapsedStyle("-10px")}
+      >
         <UserStatusPill onClick={onOpenOwnProfile} />
       </div>
 
       {/* ═══ RIGHT cluster ═══
            MiniClock stays anchored (per the user's chosen trio);
            everything else collapses upward when immersive. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div className="town-top-hud-cluster is-right">
         <div
           data-testid="top-hud-right-cluster"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            ...collapsedStyle("-100%"),
-          }}
+          className="town-top-hud-nav-group"
+          style={collapsedStyle("-100%")}
         >
           <NavButton
             testId="nav-awards"
@@ -284,6 +282,7 @@ export function TownTopHUD({
         <div style={collapsedStyle("-100%")}>
           <CoinBadge />
         </div>
+      </div>
       </div>
     </div>
   );

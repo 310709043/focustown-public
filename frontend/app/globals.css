@@ -809,3 +809,309 @@ body {
   .scene-backdrop-fade-in,
   .scene-backdrop-fade-out { animation-duration: 1ms; }
 }
+
+/* ════════════════════════════════════════
+   Responsive primitives — zero-sacrifice mobile/tablet support
+   ════════════════════════════════════════ */
+
+/* Mark a wrapper as a query container so `@container` rules inside
+   respond to the wrapper's width (not the viewport). Lets one component
+   reflow correctly regardless of which slot it's mounted in. */
+.cq-inline { container-type: inline-size; }
+
+/* Safe-area padding (notch / Dynamic Island / iOS home indicator).
+   Combine with normal padding: e.g. `style={{ paddingTop: 'max(10px, env(safe-area-inset-top))' }}`.
+   These class shortcuts let component markup stay declarative. */
+.safe-pt { padding-top:    max(0px, env(safe-area-inset-top)); }
+.safe-pb { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+.safe-pl { padding-left:   max(0px, env(safe-area-inset-left)); }
+.safe-pr { padding-right:  max(0px, env(safe-area-inset-right)); }
+
+/* WCAG / Apple HIG minimum tap zone (44 × 44 css px). Apply to any
+   element that needs to be reliably tap-able on touch devices without
+   changing its visual size — extends the hit-box via padding. */
+.touch-target { min-width: 44px; min-height: 44px; }
+
+/* Horizontal scroll-snap row — used by HUD nav clusters at narrow widths
+   so every button stays reachable via swipe instead of being hidden.
+   Children should be flex items with `scroll-snap-align: start`. */
+.hscroll-snap {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.hscroll-snap::-webkit-scrollbar { display: none; }
+.hscroll-snap > * { scroll-snap-align: start; flex-shrink: 0; }
+
+/* Bottom-sheet base — slides up from viewport bottom on narrow widths;
+   reverts to inline panel on >= md via the parent's container query. */
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 14;
+  transform: translateY(100%);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-sheet[data-open="true"] { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .bottom-sheet { transition: none; }
+}
+
+/* ──────────────────────────────────────
+   TownTopHUD — zero-sacrifice reflow.
+   Structure: `.town-top-hud-root` owns the full-bleed background; an
+   inner `.town-top-hud-inner` wrapper owns the flex layout + padding
+   and respects `--app-content-max-width` so the three clusters stay
+   close together on ultra-wide / 4K / TV screens (the variable is
+   only set above the 2880 px breakpoint — common desktops fall through
+   the `none` default and behave exactly like before).
+   Narrow (≤ 720 px container): clusters wrap; right NavButton group
+   becomes a horizontal scroll-snap row so every button stays reachable.
+   ────────────────────────────────────── */
+.town-top-hud-root {
+  container-type: inline-size;
+  container-name: town-top-hud;
+  background: linear-gradient(180deg, rgba(7,4,26,0.85) 0%, rgba(7,4,26,0) 100%);
+}
+.town-top-hud-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 18px;
+  max-width: var(--app-content-max-width, none);
+  margin-inline: auto;
+}
+.town-top-hud-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.town-top-hud-cluster.is-right { gap: 8px; }
+.town-top-hud-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+@container town-top-hud (max-width: 720px) {
+  .town-top-hud-inner {
+    padding: 8px 12px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    flex-wrap: wrap;
+    gap: 8px;
+    row-gap: 6px;
+  }
+  /* Each cluster is allowed to wrap internally so no element gets clipped. */
+  .town-top-hud-cluster {
+    flex-wrap: wrap;
+    gap: 6px;
+    row-gap: 6px;
+  }
+  /* The centre Pill takes its own row, full container width, so it
+     can centre against the city horizon instead of fighting the
+     LEFT cluster for space. */
+  .town-top-hud-cluster.is-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .town-top-hud-cluster.is-right {
+    order: 2;
+    margin-left: auto;
+  }
+}
+
+/* Phone-narrow: NavButton group switches to horizontal scroll-snap so
+   ACHV / FRDS / future buttons remain reachable without hiding any. */
+@container town-top-hud (max-width: 440px) {
+  .town-top-hud-nav-group {
+    max-width: 140px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .town-top-hud-nav-group::-webkit-scrollbar { display: none; }
+  .town-top-hud-nav-group > * { scroll-snap-align: start; flex-shrink: 0; }
+}
+
+/* ──────────────────────────────────────
+   BottomHUD — container-query reflow.
+   Structure mirrors TownTopHUD: `.bottom-hud-root` owns position +
+   full-bleed background gradient; `.bottom-hud-inner` owns the grid,
+   padding, and `--app-content-max-width` cap that keeps the three
+   panels grouped on ultra-wide displays. Common desktops fall through
+   the `none` default and render exactly as before.
+   Narrow (≤ 880 px container, portrait tablets / phones): single
+   column stack, scene gets the majority of the viewport.
+   ────────────────────────────────────── */
+.bottom-hud-root {
+  container-type: inline-size;
+  container-name: bottom-hud;
+}
+.bottom-hud-inner {
+  display: grid;
+  grid-template-columns: 0.95fr 1.15fr 0.9fr;
+  height: 168px;
+  gap: 12px;
+  padding: 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  max-width: var(--app-content-max-width, none);
+  margin-inline: auto;
+}
+@container bottom-hud (max-width: 880px) {
+  .bottom-hud-inner {
+    grid-template-columns: 1fr;
+    height: auto;
+    /* Tablet portrait: cap at 55vh so the city skyline keeps the
+       majority of the viewport. The "no crowding before timer starts"
+       constraint takes precedence over showing all three panels in
+       full — they remain reachable via scroll inside this container. */
+    max-height: 55vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@container bottom-hud (max-width: 480px) {
+  .bottom-hud-inner {
+    /* Phone portrait: even tighter cap so the scene gets ≥ 52% of the
+       viewport. Padding shrinks too — every saved px is more city. */
+    max-height: 48vh;
+    padding: 10px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+}
+
+/* MatchPanel — keep two cards side-by-side as long as we have ≥ 360px
+   of container width; below that the cards stack so neither side gets
+   crushed (icons + label + CTA + extras all stay visible). */
+.match-panel-root {
+  container-type: inline-size;
+  container-name: match-panel;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+@container match-panel (max-width: 360px) {
+  .match-panel-root { grid-template-columns: 1fr; }
+}
+
+/* ──────────────────────────────────────
+   ProfileModal — dual-pane layout that needs to stack on phones.
+   Above 720px viewport: 240px sidebar + flex content (desktop ideal).
+   Below 720px: the sidebar moves to a top horizontal strip (auto height)
+   so the content pane gets the full container width. Both panes still
+   render — zero sacrifice — just reflowed.
+   ────────────────────────────────────── */
+.profile-modal-panel {
+  width: min(1120px, 96vw);
+  height: min(720px, 92vh);
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 1fr;
+}
+@media (max-width: 720px) {
+  .profile-modal-panel {
+    width: min(100%, 100vw);
+    height: min(100dvh, 100vh);
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+/* ──────────────────────────────────────
+   Focus rooms — body grids stack on phones.
+   Solo room: 2fr notes / 1fr timer at ≥ 720px, single-column below.
+   Buddy room: 1fr timer / 1.3fr chat at ≥ 720px, single-column below.
+   Both panes stay mounted at full content — no element hidden.
+   ────────────────────────────────────── */
+.solo-body-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 2fr 1fr;
+}
+.buddy-body-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr 1.3fr;
+}
+@media (max-width: 720px) {
+  .solo-body-grid,
+  .buddy-body-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(0, 1fr);
+    /* Allow the stacked panes to scroll independently inside their own
+       container — the timer pane should stay primary at top, notes/chat
+       below. Tap-and-drag scrolling on iOS needs -webkit-overflow-scrolling. */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ════════════════════════════════════════
+   Big-screen / TV — ≥ 2880 px breakpoints.
+   Thresholds chosen so that NO common computer monitor receives any
+   change. The user's "ensure common screens unchanged" constraint
+   means QHD (2560 × 1440), FHD (1920 × 1080), and HD+ (1366–1600 ×
+   768/900) all fall through to the existing styles. The first rule
+   only fires above 2880 px width, which excludes every monitor most
+   developers / creators use today and only activates on ultra-wide,
+   4K, 5K, and TV displays where HUD clusters would otherwise drift
+   so far apart that the layout loses its centre of gravity.
+
+   Strategy:
+   - Cap HUD content width via `--app-content-max-width` so the top
+     bar and bottom bar's three clusters stay grouped while the
+     gradient background and city scene continue to span the full
+     viewport (Netflix / Apple TV pattern).
+   - Headline / hero typography grows in two steps so text remains
+     legible at TV viewing distance (~2-3 m) without redesigning
+     the body type scale.
+   - Body text intentionally stays at its design size — the visual
+     anchor on big screens is the pixel art, not the chrome text.
+   ════════════════════════════════════════ */
+@media (min-width: 2880px) {
+  :root {
+    /* HUD content centres in a 2400 px column; background still spans
+       the whole viewport so the city skyline keeps its immersive feel. */
+    --app-content-max-width: 2400px;
+    /* Headlines + hero scale up gently — readable on a 27"+ desk
+       monitor without bursting the splash card. */
+    --font-size-page-title: 32px;
+    --font-size-hero: 56px;
+  }
+}
+
+@media (min-width: 3600px) {
+  /* 4K / 5K desktop monitors and short-throw TVs. */
+  :root {
+    --app-content-max-width: 2800px;
+    --font-size-page-title: 40px;
+    --font-size-hero: 72px;
+  }
+  /* Slightly larger HUD padding so the chrome has presence on a wall-
+     sized canvas — the original 10/16 px feels skinny at this scale. */
+  .town-top-hud-inner { padding: 14px 28px; }
+  .bottom-hud-inner   { padding: 20px 28px; gap: 16px; }
+}
+
+@media (min-width: 5000px) {
+  /* TV walls / 8K. Reading distance ~3 m: every glyph needs presence. */
+  :root {
+    --app-content-max-width: 3200px;
+    --font-size-page-title: 56px;
+    --font-size-hero: 96px;
+  }
+  .town-top-hud-inner { padding: 18px 36px; }
+  .bottom-hud-inner   { padding: 28px 36px; gap: 20px; }
+}

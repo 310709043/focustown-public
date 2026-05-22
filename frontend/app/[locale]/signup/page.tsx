@@ -77,7 +77,7 @@ export default function SignUpPage() {
         onSubmit={onSubmit}
         className="pixel-panel login-form-anim relative"
         style={{
-          width: 380,
+          width: "min(380px, calc(100vw - 32px))",
           padding: 20,
           display: "flex",
           flexDirection: "column",
@@ -130,8 +130,10 @@ export default function SignUpPage() {
           {errors.email ? <ErrorLine>{errors.email}</ErrorLine> : null}
         </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1 }}>
+        {/* Password + confirm: side-by-side on ≥ 400px form width, stack
+            on narrower (zh form labels need more breathing room on phones). */}
+        <div className="flex flex-col xs:flex-row" style={{ gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <Label>{t("passwordLabel").toUpperCase()}</Label>
             <PasswordInput
               data-testid="signup-password"
@@ -142,7 +144,7 @@ export default function SignUpPage() {
             />
             {errors.password ? <ErrorLine>{errors.password}</ErrorLine> : null}
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <Label>{t("confirmPasswordLabel").toUpperCase()}</Label>
             <PasswordInput
               placeholder={t("confirmPasswordPlaceholder")}

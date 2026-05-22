@@ -23,9 +23,16 @@ export function Logo({ scale = 1, glow = true, className }: Props) {
       height={height}
       priority
       className={className}
+      // Width is the cap; height follows aspect ratio so the wordmark
+      // shrinks proportionally inside narrow containers (e.g. splash hero
+      // at scale=3.6 on a 375 px phone — intrinsic 361 px wide would
+      // otherwise overflow). `aspectRatio` keeps height correct after
+      // CSS scaling without depending on the image to set it.
       style={{
-        height,
         width,
+        height: "auto",
+        maxWidth: "100%",
+        aspectRatio: `${ASPECT}`,
         filter: glow
           ? "drop-shadow(0 0 6px var(--a1)) drop-shadow(0 0 12px var(--a3))"
           : "none",

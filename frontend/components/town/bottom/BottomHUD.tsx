@@ -58,18 +58,20 @@ export function BottomHUD({
         data-testid="bottom-hud"
         onPointerEnter={immersive ? onEdgeEnter : undefined}
         onPointerLeave={immersive ? onEdgeLeave : undefined}
-        // Desktop: 3-col grid, fixed 168 px tall. Mobile (< md): single-
-        // column stack with auto height, capped at 50vh so it never eats
-        // more than half the viewport. Scroll if needed — the panels are
-        // compact enough that on most phones they'll fit naturally.
-        className="md:grid md:grid-cols-[0.95fr_1.15fr_0.9fr] flex flex-col h-auto max-h-[50vh] overflow-y-auto md:h-[168px] md:max-h-none md:overflow-visible"
+        // `.bottom-hud-root` owns full-bleed position + gradient
+        // background. The inner `.bottom-hud-inner` div owns the
+        // three-column grid + `--app-content-max-width` cap that
+        // keeps panels grouped on ≥ 2880 px screens (4K / 5K / TV).
+        // Common monitors (≤ 2560 px) fall through the `none` default
+        // and render exactly as before. Container queries (not viewport
+        // `md:`) so this stays correct even if a future layout drops
+        // the HUD inside a narrower slot.
+        className="bottom-hud-root"
         style={{
           position: "absolute",
           left: 0,
           right: 0,
           bottom: 0,
-          gap: 12,
-          padding: 16,
           background: collapsed
             ? "linear-gradient(180deg, transparent 0%, transparent 100%)"
             : "linear-gradient(180deg, transparent 0%, rgba(7,4,26,0.92) 30%, rgba(7,4,26,1) 100%)",
@@ -85,9 +87,11 @@ export function BottomHUD({
           pointerEvents: collapsed ? "none" : "auto",
         }}
       >
-        <FocusTimer />
-        <MatchPanel onFindBuddy={onFindBuddy} />
-        <MusicPlayer />
+        <div className="bottom-hud-inner">
+          <FocusTimer />
+          <MatchPanel onFindBuddy={onFindBuddy} />
+          <MusicPlayer />
+        </div>
       </div>
     </>
   );

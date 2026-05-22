@@ -74,15 +74,7 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
     : null;
 
   return (
-    <div
-      data-testid="match-panel"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 8,
-        minWidth: 0,
-      }}
-    >
+    <div data-testid="match-panel" className="match-panel-root">
       <div
         style={{
           transition: cardTransition,

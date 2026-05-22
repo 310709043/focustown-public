@@ -49,7 +49,10 @@ export function AwardsView({ leaderboardColumns = 1 }: AwardsViewProps = {}) {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+        // `min(280px, 100%)` lets the column shrink below 280px on
+        // phones so there's no horizontal scroll after outer padding.
+        // Above 280px the auto-fit still places two columns side-by-side.
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
         gap: 13,
       }}
     >
