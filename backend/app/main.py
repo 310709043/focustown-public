@@ -4,12 +4,14 @@ import asyncio
 from collections.abc import AsyncIterator, Awaitable
 from contextlib import asynccontextmanager
 from pathlib import Path
+from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import DataError, IntegrityError, OperationalError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.exc import StaleDataError
 
 from app.core.clock import SystemClock
@@ -35,6 +37,7 @@ from app.domain.services.room_realtime_link import RoomRealtimeLink
 from app.domain.services.session_presence_subscriber import SessionPresenceLink
 from app.domain.services.wallet_service import WalletService
 from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
+from app.infrastructure.db.observability import init_otel
 from app.infrastructure.db.repositories import (
     SqlUserRepo,
     SqlWalletRepo,
@@ -44,7 +47,11 @@ from app.infrastructure.db.seed.track_catalog import (
     import_r2_track_catalog,
     load_r2_manifest_entries,
 )
-from app.infrastructure.db.session import dispose_engine, get_session_factory
+from app.infrastructure.db.session import (
+    dispose_engine,
+    get_engine,
+    get_session_factory,
+)
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.presence.bot_seeder import refresh_bot_presence
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
@@ -190,6 +197,31 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await dispose_engine()
 
 
+async def _db_write_roundtrip(db: AsyncSession) -> None:
+    """INSERT + SELECT + DELETE on the ``health_probe`` table.
+
+    Each call uses a fresh ``uuid4`` PK so concurrent LB health checks
+    don't collide. The DELETE keeps the table at zero rows in steady
+    state — a sweep job isn't necessary in practice but would be cheap
+    insurance if one were ever needed.
+    """
+    probe_id = uuid4().hex
+    await db.execute(
+        text("INSERT INTO health_probe (id) VALUES (:id)"),
+        {"id": probe_id},
+    )
+    result = await db.execute(
+        text("SELECT 1 FROM health_probe WHERE id = :id"),
+        {"id": probe_id},
+    )
+    if result.scalar() != 1:
+        raise RuntimeError("health_probe row missing after insert")
+    await db.execute(
+        text("DELETE FROM health_probe WHERE id = :id"),
+        {"id": probe_id},
+    )
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
     # In production, OpenAPI surface (/docs, /redoc, /openapi.json) enumerates
@@ -320,6 +352,11 @@ def create_app() -> FastAPI:
         ``/healthz`` stays fast (liveness); ``/ready`` is for ALB target-group
         and k8s readiness probes that should fail-open when a dependency is
         down so the load balancer pulls the pod out of rotation.
+
+        The DB probe is a write round-trip — INSERT into ``health_probe``,
+        SELECT it back, DELETE it. ``SELECT 1`` would pass even when PG
+        is in read-only mode (failed-over replica, full disk), which is
+        the exact failure mode we want ``/ready`` to catch.
         """
         checks: dict[str, str] = {}
 
@@ -330,12 +367,20 @@ def create_app() -> FastAPI:
             except Exception:
                 checks[name] = "down"
 
-        await _probe("db", db.execute(text("SELECT 1")))
+        await _probe("db", _db_write_roundtrip(db))
         await _probe("redis", get_redis().ping())
         await _probe("secrets", secrets.get("_health"))
 
         status = 200 if all(v == "up" for v in checks.values()) else 503
         return JSONResponse(status_code=status, content=checks)
+
+    # OpenTelemetry — no-op unless ``OTEL_ENABLED=true``. Initialised
+    # AFTER middleware so FastAPIInstrumentor wraps the fully-composed
+    # ASGI app, but BEFORE router registration so route spans have the
+    # correct name (FastAPI resolves route templates at registration).
+    # Imports are deferred inside init_otel so the disabled path adds
+    # zero cost.
+    init_otel(app, get_engine(settings.database_url))
 
     # Routers are registered lazily so the app factory stays cheap to import
     from app.api.v1 import router as v1_router

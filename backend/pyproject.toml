@@ -42,6 +42,19 @@ dev = [
   # adapters can run without an AWS account or LocalStack container.
   "moto>=5",
 ]
+# Phase 09 — OpenTelemetry. Kept out of base install because the SDK
+# adds measurable cold-start cost and dev / test never need it.
+# Production: ``pip install -e ".[otel]"``; the engine event listeners
+# in ``app/infrastructure/db/observability.py`` always work (they only
+# need ``sqlalchemy.event``); these extras add OTLP export.
+otel = [
+  "opentelemetry-api>=1.27",
+  "opentelemetry-sdk>=1.27",
+  "opentelemetry-exporter-otlp-proto-grpc>=1.27",
+  "opentelemetry-instrumentation-fastapi>=0.48b0",
+  "opentelemetry-instrumentation-sqlalchemy>=0.48b0",
+  "opentelemetry-instrumentation-redis>=0.48b0",
+]
 
 [tool.setuptools.packages.find]
 # `app` is the only importable package; `alembic/` carries DDL scripts

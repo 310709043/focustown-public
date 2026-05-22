@@ -146,6 +146,17 @@ class Settings(BaseSettings):
     # every listener.
     station_snapshot_interval_seconds: int = 300
 
+    # Phase 09 — DB observability. ``otel_enabled`` is off by default
+    # because the OTel SDK has measurable import cost and dev / test
+    # never need it. Production sets ``OTEL_ENABLED=true`` plus
+    # ``OTEL_EXPORTER_OTLP_ENDPOINT`` (or relies on the SDK's own env
+    # var of the same name). ``db_slow_query_ms`` is the threshold at
+    # which the engine event listener emits a ``db_slow_query``
+    # structured log; 200ms is the conservative starting point.
+    otel_enabled: bool = False
+    otel_exporter_otlp_endpoint: str | None = None
+    db_slow_query_ms: int = 200
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.app_cors_origins.split(",") if o.strip()]

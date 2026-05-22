@@ -52,6 +52,9 @@ jobs:
       - name: Lint
         working-directory: backend
         run: ruff check .
+      - name: Lint migrations (Phase 09)
+        working-directory: backend
+        run: python scripts/check-migrations.py
       - name: Migrate
         working-directory: backend
         run: alembic upgrade head

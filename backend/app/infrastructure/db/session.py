@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.core.config import get_settings
+from app.infrastructure.db.observability import install_engine_event_listeners
 
 _engines: dict[str, AsyncEngine] = {}
 _factories: dict[str, async_sessionmaker[AsyncSession]] = {}
@@ -43,6 +44,7 @@ def get_engine(database_url: str) -> AsyncEngine:
             isolation_level="READ COMMITTED",
             future=True,
         )
+        install_engine_event_listeners(engine)
         _engines[database_url] = engine
     return engine
 
