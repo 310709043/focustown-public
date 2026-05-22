@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.ids import UUID4Generator
@@ -75,15 +75,22 @@ class SqlAchievementRepo(IAchievementRepo):
         return [_to_record(r) for r in rows]
 
     async def grant(self, *, user_id: str, achievement_code: str) -> bool:
-        row = UserAchievementORM(
-            id=self._ids.new_id(),
-            user_id=user_id,
-            achievement_code=achievement_code,
+        # Atomic INSERT-or-skip on the (user_id, achievement_code) unique
+        # constraint. Previously this caught IntegrityError and rolled the
+        # transaction back on every duplicate — aborting any other writes
+        # the caller had batched. ON CONFLICT keeps the transaction alive;
+        # rowcount tells us whether we actually granted (1) or it was
+        # already held (0).
+        stmt = (
+            pg_insert(UserAchievementORM)
+            .values(
+                id=self._ids.new_id(),
+                user_id=user_id,
+                achievement_code=achievement_code,
+            )
+            .on_conflict_do_nothing(
+                index_elements=["user_id", "achievement_code"]
+            )
         )
-        self._s.add(row)
-        try:
-            await self._s.flush()
-            return True
-        except IntegrityError:
-            await self._s.rollback()
-            return False
+        result = await self._s.execute(stmt)
+        return bool(result.rowcount)

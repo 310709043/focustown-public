@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from sqlalchemy import select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.repositories.wallet_repo import IWalletRepo, Wallet
@@ -32,18 +33,27 @@ class SqlWalletRepo(IWalletRepo):
     async def get_or_create(
         self, *, user_id: str, currency_code: str, wallet_id: str
     ) -> Wallet:
-        existing = await self.get(user_id, currency_code)
-        if existing is not None:
-            return existing
-        row = WalletORM(
-            id=wallet_id,
-            user_id=user_id,
-            currency_code=currency_code,
-            balance_minor=0,
+        # Atomic INSERT-or-skip on the (user_id, currency_code) unique
+        # constraint. Two concurrent first-credit events for the same user
+        # used to both pass a get() check and then race on the unique
+        # constraint, surfacing as a 500. ON CONFLICT DO NOTHING keeps the
+        # transaction alive; we SELECT the canonical row after.
+        stmt = (
+            pg_insert(WalletORM)
+            .values(
+                id=wallet_id,
+                user_id=user_id,
+                currency_code=currency_code,
+                balance_minor=0,
+            )
+            .on_conflict_do_nothing(
+                index_elements=["user_id", "currency_code"]
+            )
         )
-        self._s.add(row)
-        await self._s.flush()
-        return _to_domain(row)
+        await self._s.execute(stmt)
+        existing = await self.get(user_id, currency_code)
+        assert existing is not None  # INSERT-or-skip guarantees a row exists
+        return existing
 
     async def list_for_user(self, user_id: str) -> list[Wallet]:
         stmt = select(WalletORM).where(WalletORM.user_id == user_id)

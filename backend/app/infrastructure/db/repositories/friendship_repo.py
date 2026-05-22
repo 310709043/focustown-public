@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import and_, delete, or_, select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.pagination import apply_keyset
@@ -122,17 +123,30 @@ class SqlFriendshipRepo(IFriendshipRepo):
         requester_id: str,
         target_id: str,
     ) -> Friendship:
+        # Idempotent on the (user_low_id, user_high_id) unique pair. The
+        # service layer's request() already detects existing rows via
+        # get_between(); this repo guard catches the race window where two
+        # concurrent requests slip past that check. Previously an
+        # IntegrityError bubbled to a 500 (or noisy 409); now both callers
+        # see the canonical row.
         low, high = _order_pair(requester_id, target_id)
-        row = FriendshipORM(
-            id=friendship_id,
-            user_low_id=low,
-            user_high_id=high,
-            status="requested",
-            requested_by=requester_id,
+        stmt = (
+            pg_insert(FriendshipORM)
+            .values(
+                id=friendship_id,
+                user_low_id=low,
+                user_high_id=high,
+                status="requested",
+                requested_by=requester_id,
+            )
+            .on_conflict_do_nothing(
+                index_elements=["user_low_id", "user_high_id"]
+            )
         )
-        self._s.add(row)
-        await self._s.flush()
-        return _to_domain(row)
+        await self._s.execute(stmt)
+        existing = await self.get_between(requester_id, target_id)
+        assert existing is not None  # INSERT-or-skip guarantees a row exists
+        return existing
 
     async def update_status(
         self,

@@ -42,6 +42,9 @@ import random  # noqa: E402
 import secrets  # noqa: E402
 from datetime import UTC, datetime, timedelta  # noqa: E402
 
+from sqlalchemy import select  # noqa: E402
+from sqlalchemy.dialects.postgresql import insert as pg_insert  # noqa: E402
+
 from app.core.config import get_settings  # noqa: E402
 from app.core.ids import UUID4Generator  # noqa: E402
 from app.core.security import hash_password  # noqa: E402
@@ -116,40 +119,62 @@ async def main() -> None:
     ids = UUID4Generator()
 
     async with factory() as db:
-        # achievements (upsert by code)
-        for a in ACHIEVEMENTS:
-            existing = await db.execute(
-                _select(AchievementORM).where(AchievementORM.code == a["code"])
-            )
-            if existing.scalar_one_or_none() is None:
-                db.add(AchievementORM(id=ids.new_id(), **a))
+        # Achievements — single batch INSERT keyed on the unique `code`
+        # column. ON CONFLICT DO NOTHING makes re-runs no-ops at the SQL
+        # level (the auto-generated id differs per run, but `code` pins
+        # idempotency to the natural key).
+        achievement_rows = [
+            {"id": ids.new_id(), **a} for a in ACHIEVEMENTS
+        ]
+        await db.execute(
+            pg_insert(AchievementORM)
+            .values(achievement_rows)
+            .on_conflict_do_nothing(index_elements=["code"])
+        )
 
-        # Shop items + prices: only seed on first run (idempotent by row count).
+        # Shop items + prices: only seed on first run (the catalog has no
+        # natural unique key on name, so we gate on row count rather than
+        # ON CONFLICT). Inside the gate, build everything as one INSERT
+        # per table — primary-key collisions are guarded defensively.
         existing_rows = (await db.execute(_select(ShopItemORM))).scalars().all()
         if not existing_rows:
+            item_rows: list[dict] = []
+            price_rows: list[dict] = []
             for s in SHOP_ITEMS:
                 item_id = ids.new_id()
-                db.add(
-                    ShopItemORM(
-                        id=item_id,
-                        category=s["category"],
-                        icon=s["icon"],
-                        name=s["name"],
-                        description=s["description"],
-                        price_cents=s["price_cents"],
-                        featured=s["featured"],
-                        render_meta=s.get("render_meta"),
-                    )
+                item_rows.append(
+                    {
+                        "id": item_id,
+                        "category": s["category"],
+                        "icon": s["icon"],
+                        "name": s["name"],
+                        "description": s["description"],
+                        "price_cents": s["price_cents"],
+                        "featured": s["featured"],
+                        "render_meta": s.get("render_meta"),
+                    }
                 )
                 # T price: every catalog item is purchasable with T coins.
-                db.add(
-                    ShopItemPriceORM(
-                        id=ids.new_id(),
-                        shop_item_id=item_id,
-                        currency_code="T",
-                        amount_minor=s["price_cT"],
-                        active=True,
-                    )
+                price_rows.append(
+                    {
+                        "id": ids.new_id(),
+                        "shop_item_id": item_id,
+                        "currency_code": "T",
+                        "amount_minor": s["price_cT"],
+                        "active": True,
+                    }
+                )
+            if item_rows:
+                await db.execute(
+                    pg_insert(ShopItemORM)
+                    .values(item_rows)
+                    .on_conflict_do_nothing(index_elements=["id"])
+                )
+            if price_rows:
+                await db.execute(
+                    pg_insert(ShopItemPriceORM)
+                    .values(price_rows)
+                    .on_conflict_do_nothing(index_elements=["id"])
                 )
         else:
             # Phase 3 backfill: for previously-seeded items with no render_meta,
@@ -182,40 +207,69 @@ async def main() -> None:
 async def _seed_bots(db, ids) -> None:
     """Seed 7 NPC users + per-bot 7-day focus history.
 
-    User rows are idempotent (skip if email exists). FocusSession rows
-    are **re-seeded every run** so the sliding 7-day window the matching
-    strategy uses always contains data — without this, the rows would
-    decay out of the window after one week and overlap collapses to 0.
+    User rows are idempotent (ON CONFLICT DO NOTHING on the unique
+    ``email`` column). FocusSession rows are **re-seeded every run** so
+    the sliding 7-day window the matching strategy uses always contains
+    data — without this, the rows would decay out of the window after one
+    week and overlap collapses to 0.
     """
     rng = random.Random("lowbatterytown-bots-stable")
     now = datetime.now(UTC)
-    seeded = 0
+
+    # Look up any bots that already exist so we can reuse their ids
+    # (instead of generating new ones that would silently fail to insert
+    # via ON CONFLICT and leave us without the existing id).
+    emails = [BOT_EMAIL_FMT.format(key=spec["key"]) for spec in BOTS]
+    existing_rows = (
+        await db.execute(
+            select(UserORM.id, UserORM.email).where(UserORM.email.in_(emails))
+        )
+    ).all()
+    existing_by_email = {row.email: row.id for row in existing_rows}
+
+    bot_ids: dict[str, str] = {}  # email -> id (new or existing)
+    new_bot_rows: list[dict] = []
     for spec in BOTS:
         email = BOT_EMAIL_FMT.format(key=spec["key"])
-        bot = (
-            await db.execute(_select(UserORM).where(UserORM.email == email))
-        ).scalar_one_or_none()
-        if bot is None:
-            bot = UserORM(
-                id=ids.new_id(),
-                email=email,
-                password_hash=hash_password(secrets.token_urlsafe(32)),
-                display_name=spec["name"],
-                character_key=spec["key"],
-                role_label=spec["role"],
-                is_active=True,
-                is_bot=True,
-                terms_accepted_at=now,
-                terms_version="v1",
-            )
-            db.add(bot)
-            await db.flush()
-            seeded += 1
-        # Drop stale focus history and rebuild inside the rolling 7-day
-        # window so the compatibility strategy always has fresh signal.
-        await db.execute(
-            _delete(FocusSessionORM).where(FocusSessionORM.user_id == bot.id)
+        if email in existing_by_email:
+            bot_ids[email] = existing_by_email[email]
+            continue
+        bot_id = ids.new_id()
+        bot_ids[email] = bot_id
+        new_bot_rows.append(
+            {
+                "id": bot_id,
+                "email": email,
+                "password_hash": hash_password(secrets.token_urlsafe(32)),
+                "display_name": spec["name"],
+                "character_key": spec["key"],
+                "role_label": spec["role"],
+                "is_active": True,
+                "is_bot": True,
+                "terms_accepted_at": now,
+                "terms_version": "v1",
+            }
         )
+
+    if new_bot_rows:
+        await db.execute(
+            pg_insert(UserORM)
+            .values(new_bot_rows)
+            .on_conflict_do_nothing(index_elements=["email"])
+        )
+
+    # Drop stale focus history for all bots in one shot, then rebuild
+    # inside the rolling 7-day window so the compatibility strategy
+    # always has fresh signal.
+    all_bot_ids = list(bot_ids.values())
+    await db.execute(
+        _delete(FocusSessionORM).where(FocusSessionORM.user_id.in_(all_bot_ids))
+    )
+    session_rows: list[dict] = []
+    duration_seconds = 1500  # one 25-min pomodoro
+    for spec in BOTS:
+        email = BOT_EMAIL_FMT.format(key=spec["key"])
+        user_id = bot_ids[email]
         for _ in range(BOT_SESSION_COUNT):
             day_offset = rng.randint(0, 6)
             hour = rng.choice(spec["hours"])
@@ -223,23 +277,29 @@ async def _seed_bots(db, ids) -> None:
             started_at = (now - timedelta(days=day_offset)).replace(
                 hour=hour, minute=minute, second=0, microsecond=0
             )
-            duration_seconds = 1500  # one 25-min pomodoro
-            db.add(
-                FocusSessionORM(
-                    id=ids.new_id(),
-                    user_id=bot.id,
-                    mode="focus",
-                    duration_seconds=duration_seconds,
-                    elapsed_seconds=duration_seconds,
-                    status="completed",
-                    started_at=started_at,
-                    ended_at=started_at + timedelta(seconds=duration_seconds),
-                )
+            session_rows.append(
+                {
+                    "id": ids.new_id(),
+                    "user_id": user_id,
+                    "mode": "focus",
+                    "duration_seconds": duration_seconds,
+                    "elapsed_seconds": duration_seconds,
+                    "status": "completed",
+                    "started_at": started_at,
+                    "ended_at": started_at + timedelta(seconds=duration_seconds),
+                }
             )
+    if session_rows:
+        await db.execute(
+            pg_insert(FocusSessionORM)
+            .values(session_rows)
+            .on_conflict_do_nothing(index_elements=["id"])
+        )
+
     await db.flush()
     print(
         f"  (bot seed) ensured {len(BOTS)} bots "
-        f"({seeded} newly created), re-seeded focus history"
+        f"({len(new_bot_rows)} newly created), re-seeded focus history"
     )
 
 
