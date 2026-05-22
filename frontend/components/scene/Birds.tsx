@@ -1,16 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
 import { hashUserId } from "@/lib/data/hash";
-import { statusByCode, type StatusCode } from "@/lib/data/statuses";
+import type { StatusCode } from "@/lib/data/statuses";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceByKind } from "@/lib/state/usePresenceByKind";
 
 import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
 import { BIRD_FLY } from "@/lib/pixel/sprites/world";
+import { CitizenLabel } from "@/components/scene/CitizenLabel";
 
 /**
  * Users whose `entityKindFor(user.id) === "bird"` fly across the sky band
@@ -23,9 +23,7 @@ const fallbackCharacter = (userId: string): CharacterDef =>
   CHARACTERS[hashUserId(userId) % CHARACTERS.length];
 
 function Bird({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
-  const t = useTranslations("town.scene");
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
-  const status = statusByCode((user.status as StatusCode) || "afk");
 
   const params = useMemo(() => {
     const h = hashUserId(user.id);
@@ -49,26 +47,23 @@ function Bird({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
         } as React.CSSProperties
       }
     >
-      {/* tiny name plate — birds are small so the bubble must be smaller */}
+      {/* tiny xs pill — birds are small so the label tracks the sprite size */}
       <div
-        key={status.code}
-        className="font-japan"
         style={{
           position: "absolute",
           bottom: 20,
           left: "50%",
           transform: "translateX(-50%)",
-          background: "rgba(3,1,17,0.7)",
-          border: `1px solid ${isSelf ? "var(--amber)" : status.color}`,
-          color: isSelf ? "var(--amber)" : status.color,
-          fontSize: 8,
-          padding: "1px 4px",
-          borderRadius: 3,
-          whiteSpace: "nowrap",
-          letterSpacing: 0.4,
         }}
       >
-        🐦 {isSelf ? `${ch.name} ・ ${t("youSuffix")}` : ch.name}
+        <CitizenLabel
+          name={ch.name}
+          statusCode={(user.status as StatusCode) || "afk"}
+          activity={user.activity}
+          isSelf={isSelf}
+          size="xs"
+          prefix="🐦"
+        />
       </div>
 
       <div className={isSelf ? "animate-selfHalo" : undefined} style={{ display: "inline-block" }}>

@@ -25,13 +25,14 @@ def _make_user(
     active: bool = True,
     equipped_vehicle_item_id: str | None = None,
     is_bot: bool = False,
+    role_label: str | None = None,
 ) -> User:
     return User(
         id=user_id,
         email=f"{user_id}@example.com",
         display_name=f"User {user_id}",
         character_key=character_key,
-        role_label=None,
+        role_label=role_label,
         is_active=active,
         equipped_vehicle_item_id=equipped_vehicle_item_id,
         equipped_avatar_item_id=None,
@@ -212,6 +213,32 @@ async def test_list_street_orders_real_users_before_bots_under_cap():
     assert result[0].id == "real-1"
     assert result[0].is_bot is False
     assert result[1].is_bot is True
+
+
+@pytest.mark.asyncio
+async def test_list_street_passes_role_label_as_activity():
+    """The third dot-segment of the head label comes from User.role_label —
+    same code path for bots (seeded role) and real users (set on profile).
+    Real users without a role_label round-trip as activity=None so the
+    frontend can hide the third segment."""
+    tracker = FakePresenceTracker()
+    pub = RecordingPublisher()
+    svc = PresenceService(tracker, pub)
+    users = FakeUserRepo.from_users(
+        [
+            _make_user("bot-a", is_bot=True, role_label="UI 設計師"),
+            _make_user("real-1", role_label=None),
+        ]
+    )
+
+    await svc.connect("bot-a")
+    await svc.connect("real-1")
+
+    result = await svc.list_street(users, FakeShopRepo(), cap=10)
+    by_id = {u.id: u for u in result}
+
+    assert by_id["bot-a"].activity == "UI 設計師"
+    assert by_id["real-1"].activity is None
 
 
 @pytest.mark.asyncio

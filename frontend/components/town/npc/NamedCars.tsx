@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 
 import { PngAnimatedSprite } from "@/components/pixel/PngAnimatedSprite";
 import {
@@ -10,22 +9,17 @@ import {
 } from "@/lib/pixel/sprites/carsPng";
 
 /**
- * Reference-design driving cars — Phase 1.G port to 876810 PNG sheets.
+ * Decorative driving car — one anonymous vehicle that crosses the road
+ * so the asphalt strip doesn't feel empty when there are no online users
+ * routed to the "car" entity kind. Renders WITHOUT a head label.
  *
- * 3 named vehicles cross the bottom of the screen, mapped to 2 canonical
- * car types: Jeep_1 (twice — different lanes / directions) + Passenger.
- * Ride action loops at 10fps. Direction reversal uses CSS flip rather
- * than the alternate Ride_back asset to keep the canonical asset count
- * small and the render path uniform.
- *
- * NOT to confuse with `<CarsLane>`: that overlay renders presence-driven
- * vehicles (one per online citizen with a vehicle equipped) and uses a
- * different sprite source (`lib/pixel/sprites/world.ts:buildCar`). The
- * two coexist — NamedCars are scenery; CarsLane is presence.
+ * Coexists with `<CarsLane>` (presence-driven, labelled) — that overlay
+ * renders one car per online citizen with a vehicle and uses a different
+ * sprite source. See plan 1-city-2-ancient-hippo.md.
  */
 
 type CarNPC = {
-  readonly key: "ubermira" | "boltren" | "gogolin";
+  readonly key: "ubermira";
   readonly model: "jeep1" | "passenger";
   readonly speed: number; // %/frame
   readonly startX: number;
@@ -33,13 +27,10 @@ type CarNPC = {
 };
 
 const NPCS: readonly CarNPC[] = [
-  { key: "ubermira", model: "jeep1",     speed: 0.22, startX: 10, dir: 1  },
-  { key: "boltren",  model: "passenger", speed: 0.18, startX: 50, dir: -1 },
-  { key: "gogolin",  model: "jeep1",     speed: 0.16, startX: 80, dir: 1  },
+  { key: "ubermira", model: "jeep1", speed: 0.22, startX: 10, dir: 1 },
 ];
 
 export function NamedCars() {
-  const t = useTranslations("town.scene.npc.cars");
   const [pos, setPos] = useState<number[]>(() => NPCS.map((n) => n.startX));
 
   useEffect(() => {
@@ -83,22 +74,6 @@ export function NamedCars() {
               pointerEvents: "none",
             }}
           >
-            <span
-              className="font-silkscreen"
-              style={{
-                fontSize: 7,
-                color: "var(--ink)",
-                background: "rgba(15,20,38,0.85)",
-                padding: "0 3px",
-                border: "1px solid var(--panel-stroke)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {t(`${n.key}.name`)}
-              <span style={{ color: "var(--accent-3)", marginLeft: 4 }}>
-                · {t(`${n.key}.status`)}
-              </span>
-            </span>
             <PngAnimatedSprite
               url={sheet.url}
               frameW={sheet.frameW}
@@ -107,7 +82,7 @@ export function NamedCars() {
               fps={sheet.fps}
               scale={CAR_SCALE_DEFAULT}
               flip={n.dir < 0}
-              alt={t(`${n.key}.name`)}
+              alt=""
             />
           </div>
         );

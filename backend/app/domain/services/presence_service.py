@@ -28,12 +28,18 @@ class StreetUser:
     ``is_bot`` lets the frontend distinguish DB-seeded NPCs from logged-in
     humans when rendering nameplates / status bubbles. Set from
     ``UserORM.is_bot`` during hydration in ``list_street``.
+
+    ``activity`` is the third segment of the dot-separated head label
+    ("Name · Status · Activity"). Sourced uniformly from ``user.role_label``
+    so the same code path covers bots (seeded with their role) and real
+    users (who can set theirs on the citizen-ID card).
     """
 
     id: str
     display_name: str
     character_key: str | None
     status: str
+    activity: str | None
     is_bot: bool
     vehicle: VehicleView | None
 
@@ -147,6 +153,7 @@ class PresenceService:
                     display_name=user.public_name(),
                     character_key=user.character_key,
                     status=status_by_id.get(user.id, "afk"),
+                    activity=user.role_label,
                     is_bot=user.is_bot,
                     vehicle=vehicle,
                 )

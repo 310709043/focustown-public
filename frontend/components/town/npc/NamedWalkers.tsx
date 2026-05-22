@@ -1,20 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 
 import { PngAnimatedSprite } from "@/components/pixel/PngAnimatedSprite";
 import { PNG_WALKERS, WALKER_SCALE_DEFAULT } from "@/lib/pixel/sprites/walkersPng";
 
 /**
- * Reference-design named walkers — 7 scenery citizens that drift on the
- * sidewalk regardless of how many real users are online. Phase 1.F port:
- * swaps the legacy 8×14 inline char-grid sprites (lib/pixel/sprites/walkers.ts)
- * to the 516149 City_men PNG sheets via `<PngAnimatedSprite>`.
- *
- * 7 named NPCs distribute over 3 City_men variants. Each NPC gets a fixed
- * variant index to preserve identity across the day-cycle — Yuki always
- * looks like City_men_1, Aria always like City_men_2, etc.
+ * Decorative scenery walkers — silent NPCs that drift on the sidewalk so
+ * the city never looks empty. They render WITHOUT head labels (only real
+ * users + bots, driven through <Pedestrians>, get name/status/activity
+ * pills) and are kept intentionally few so they read as background life,
+ * not as players the user might try to interact with.
  *
  * Coexists with `<Pedestrians>` (presence-driven). Real users render on
  * top via DOM order so the player feels foregrounded among the town's
@@ -22,25 +18,22 @@ import { PNG_WALKERS, WALKER_SCALE_DEFAULT } from "@/lib/pixel/sprites/walkersPn
  */
 
 type WalkerNPC = {
-  readonly key: "yuki" | "aria" | "kai" | "doc" | "bear" | "milo" | "nova";
+  readonly key: "yuki" | "bear";
   readonly variantIdx: 0 | 1 | 2; // index into PNG_WALKERS
   readonly speed: number; // %/frame
   readonly startX: number; // initial left %
   readonly dir: 1 | -1;
 };
 
+// Two walkers cover both City_men variants users see most often. Keeping
+// the count low is part of the "only users/bots are moving named entities"
+// rule — see plan 1-city-2-ancient-hippo.md.
 const NPCS: readonly WalkerNPC[] = [
-  { key: "yuki", variantIdx: 0, speed: 0.025, startX: 5,  dir: 1 },
-  { key: "aria", variantIdx: 1, speed: 0.02,  startX: 22, dir: 1 },
-  { key: "kai",  variantIdx: 2, speed: 0.03,  startX: 38, dir: 1 },
-  { key: "doc",  variantIdx: 0, speed: 0.02,  startX: 52, dir: -1 },
-  { key: "bear", variantIdx: 1, speed: 0.025, startX: 66, dir: 1 },
-  { key: "milo", variantIdx: 2, speed: 0.025, startX: 80, dir: -1 },
-  { key: "nova", variantIdx: 0, speed: 0.025, startX: 93, dir: 1 },
+  { key: "yuki", variantIdx: 0, speed: 0.025, startX: 18, dir: 1 },
+  { key: "bear", variantIdx: 1, speed: 0.025, startX: 72, dir: -1 },
 ];
 
 export function NamedWalkers() {
-  const t = useTranslations("town.scene.npc.walkers");
   const [pos, setPos] = useState<number[]>(() => NPCS.map((n) => n.startX));
 
   useEffect(() => {
@@ -89,24 +82,6 @@ export function NamedWalkers() {
                 gap: 0,
               }}
             >
-              <span
-                className="font-silkscreen"
-                style={{
-                  fontSize: 8,
-                  color: "var(--ink)",
-                  background: "rgba(15,20,38,0.85)",
-                  padding: "1px 4px",
-                  border: "1px solid var(--panel-stroke)",
-                  whiteSpace: "nowrap",
-                  letterSpacing: "0.05em",
-                  marginBottom: 1,
-                }}
-              >
-                {t(`${n.key}.name`)}
-                <span style={{ color: "var(--accent-3)", marginLeft: 4 }}>
-                  · {t(`${n.key}.status`)}
-                </span>
-              </span>
               <PngAnimatedSprite
                 url={walk.url}
                 frameW={walk.frameW}
@@ -115,7 +90,7 @@ export function NamedWalkers() {
                 fps={walk.fps}
                 scale={WALKER_SCALE_DEFAULT}
                 flip={flipped}
-                alt={t(`${n.key}.name`)}
+                alt=""
               />
             </div>
           </div>

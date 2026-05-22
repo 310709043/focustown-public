@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
 import { hashUserId } from "@/lib/data/hash";
-import { statusByCode, type StatusCode } from "@/lib/data/statuses";
+import type { StatusCode } from "@/lib/data/statuses";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceByKind } from "@/lib/state/usePresenceByKind";
 
 import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
+import { CitizenLabel } from "@/components/scene/CitizenLabel";
 import { DOG_WALK } from "@/lib/pixel/sprites/world";
 
 /**
@@ -30,7 +30,6 @@ const seedPos = (userId: string): number =>
 
 function Dog({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
   const [x, setX] = useState<number>(() => seedPos(user.id));
-  const t = useTranslations("town.scene");
 
   useEffect(() => {
     const id = setInterval(
@@ -41,7 +40,6 @@ function Dog({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
   }, []);
 
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
-  const status = statusByCode((user.status as StatusCode) || "afk");
 
   return (
     <div
@@ -56,54 +54,17 @@ function Dog({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
           "left 20s cubic-bezier(0.4, 0, 0.2, 1), bottom 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
       }}
     >
-      {/* status bubble */}
-      <div
-        key={status.code}
-        className="animate-statusPop font-japan"
-        style={{
-          position: "absolute",
-          bottom: 40,
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: "rgba(3,1,17,0.94)",
-          border: `1px solid ${status.color}`,
-          color: status.color,
-          fontSize: 10,
-          padding: "2px 6px",
-          borderRadius: 99,
-          whiteSpace: "nowrap",
-          boxShadow: `0 0 10px ${status.color}55, inset 0 0 4px ${status.color}33`,
-          letterSpacing: 0.5,
-        }}
-      >
-        {status.emoji} {status.label}
-      </div>
-
-      {/* name plate — 🐕 prefix instead of the character emoji so the
-          owner of a dog is unambiguous at a glance */}
-      <div
-        className="font-japan"
-        style={{
-          fontSize: 10,
-          color: isSelf ? "var(--amber)" : "var(--a2)",
-          textAlign: "center",
-          textShadow: isSelf
-            ? "0 0 6px var(--amber), 0 0 12px rgba(252,211,77,0.55)"
-            : "0 0 6px var(--a3), 0 0 10px var(--a1)",
-          background: isSelf
-            ? "rgba(252,211,77,0.10)"
-            : "rgba(3,1,17,0.55)",
-          padding: "1px 5px",
-          borderRadius: 4,
-          marginBottom: 2,
-          whiteSpace: "nowrap",
-          border: isSelf
-            ? "1px solid rgba(252,211,77,0.45)"
-            : "1px solid rgba(167,139,250,0.25)",
-          letterSpacing: 0.5,
-        }}
-      >
-        🐕 {isSelf ? `${ch.name} ・ ${t("youSuffix")}` : ch.name}
+      {/* 🐕 prefix marks the owner of the dog unambiguously even though
+          the sprite itself is the dog, not the human. */}
+      <div style={{ marginBottom: 2, textAlign: "center" }}>
+        <CitizenLabel
+          name={ch.name}
+          statusCode={(user.status as StatusCode) || "afk"}
+          activity={user.activity}
+          isSelf={isSelf}
+          size="sm"
+          prefix="🐕"
+        />
       </div>
 
       <div className={isSelf ? "animate-selfHalo" : undefined} style={{ display: "inline-block" }}>

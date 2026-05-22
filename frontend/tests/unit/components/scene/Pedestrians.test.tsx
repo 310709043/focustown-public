@@ -43,6 +43,7 @@ const alice: StreetUser = {
   display_name: "Alice",
   character_key: null,
   status: "afk",
+  activity: null,
   vehicle: null,
 };
 
@@ -51,6 +52,7 @@ const eve: StreetUser = {
   display_name: "Eve",
   character_key: null,
   status: "afk",
+  activity: null,
   vehicle: null,
 };
 

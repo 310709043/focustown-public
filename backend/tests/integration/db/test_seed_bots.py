@@ -1,8 +1,8 @@
 """Integration test for ``scripts/seed-dev-data.py:_seed_bots``.
 
 Worth testing:
-- First run creates exactly 7 bot users with the expected character keys
-  (``luna``, ``kai``, ``milo``, ``aria``, ``zoe``, ``rex``, ``nyx``).
+- First run creates exactly ``len(BOTS)`` bot users with the expected
+  character keys (currently ``luna``, ``kai``, ``milo``, ``aria``, ``zoe``).
 - Each bot ends up with ``BOT_SESSION_COUNT`` (20) completed FocusSession
   rows in the past 7 days — the matching strategy's Jaccard window relies
   on this.
@@ -63,7 +63,7 @@ async def _count_sessions_for_bots(db_session) -> int:
 
 
 @pytest.mark.asyncio
-async def test_seed_bots_creates_seven_bots_with_focus_history(db_session) -> None:
+async def test_seed_bots_creates_all_bots_with_focus_history(db_session) -> None:
     await SEED._seed_bots(db_session, UUID4Generator())
     await db_session.flush()
 

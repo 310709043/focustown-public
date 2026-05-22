@@ -1,14 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
 import type { StreetUser } from "@/lib/api/types.gen";
 import { CHARACTERS, findCharacter, type CharacterDef } from "@/lib/data/characters";
 import { hashUserId } from "@/lib/data/hash";
+import type { StatusCode } from "@/lib/data/statuses";
 import { useAuthStore } from "@/lib/state/authStore";
 import { usePresenceByKind } from "@/lib/state/usePresenceByKind";
 
 import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
+import { CitizenLabel } from "@/components/scene/CitizenLabel";
 import { buildCar } from "@/lib/pixel/sprites/world";
 
 /**
@@ -38,7 +39,6 @@ function Car({
   isSelf: boolean;
   laneIndex: number;
 }) {
-  const t = useTranslations("town.scene");
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
   // If the user has an equipped vehicle, prefer its body/window colors over
   // the character defaults. The driver's *name* still uses the character
@@ -73,26 +73,25 @@ function Car({
         } as React.CSSProperties
       }
     >
-      {/* name plate — self in amber */}
+      {/* Unified label — the equipped car body colour stays as the border
+          accent (`borderOverride`) so cosmetic vehicles still feel personal. */}
       <div
         style={{
           position: "absolute",
           bottom: 36,
           left: "50%",
           transform: "translateX(-50%)",
-          background: "rgba(3,1,17,0.85)",
-          border: `1px solid ${isSelf ? "var(--amber)" : bodyColor}`,
-          padding: "0 4px",
-          fontSize: 7,
-          color: isSelf ? "var(--amber)" : "var(--a2)",
-          borderRadius: 2,
-          whiteSpace: "nowrap",
-          textShadow: isSelf
-            ? "0 0 4px var(--amber), 0 0 8px rgba(252,211,77,0.6)"
-            : "0 0 3px var(--a1)",
         }}
       >
-        {plateEmoji} {isSelf ? `${ch.name} ・ ${t("youSuffix")}` : ch.name}
+        <CitizenLabel
+          name={ch.name}
+          statusCode={(user.status as StatusCode) || "afk"}
+          activity={user.activity}
+          isSelf={isSelf}
+          size="xs"
+          prefix={plateEmoji}
+          borderOverride={bodyColor}
+        />
       </div>
 
       {/* pixel car body. The drop-shadow filter gives the neon-glow trail

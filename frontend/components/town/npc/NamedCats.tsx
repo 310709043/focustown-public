@@ -1,31 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 
 import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
 import { CAT_WALK } from "@/lib/pixel/sprites/walkers";
 
 /**
- * Reference-design wandering cats — port of
- * `reference/screen-town.jsx#WanderingCats` (lines 901–929). Repalettes
- * the shared `CAT_WALK` sprite via its `B`/`W` keys.
+ * Decorative scenery cat — wanders the sidewalk without a head label so
+ * it reads as background life, not as a player. One entry only; see plan
+ * 1-city-2-ancient-hippo.md for the 5-decorative-NPCs cap rationale.
  */
 
 type CatNPC = {
-  readonly key: "blackbean" | "milktea";
+  readonly key: "blackbean";
   readonly palette: { B: string; W: string };
   readonly speed: number; // %/frame
   readonly startX: number;
 };
 
 const NPCS: readonly CatNPC[] = [
-  { key: "blackbean", palette: { B: "#0a0524", W: "#fcd34d" }, speed: 0.04, startX: 30 },
-  { key: "milktea",   palette: { B: "#fef9c3", W: "#92400e" }, speed: 0.03, startX: 70 },
+  { key: "blackbean", palette: { B: "#0a0524", W: "#fcd34d" }, speed: 0.04, startX: 45 },
 ];
 
 export function NamedCats() {
-  const t = useTranslations("town.scene.npc.cats");
   const [pos, setPos] = useState<number[]>(() => NPCS.map((n) => n.startX));
 
   useEffect(() => {
@@ -65,19 +62,6 @@ export function NamedCats() {
             pointerEvents: "none",
           }}
         >
-          <span
-            className="font-silkscreen"
-            style={{
-              fontSize: 7,
-              color: "var(--accent-2)",
-              background: "rgba(7,4,26,0.85)",
-              padding: "0 3px",
-              border: "1px solid var(--panel-stroke)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            🐾 {t(`${n.key}.name`)} · {t(`${n.key}.status`)}
-          </span>
           <AnimatedSprite
             frames={CAT_WALK.frames}
             palette={n.palette}

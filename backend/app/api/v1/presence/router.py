@@ -55,6 +55,7 @@ async def list_street(
             display_name=u.display_name,
             character_key=u.character_key,
             status=u.status,
+            activity=u.activity,
             is_bot=u.is_bot,
             vehicle=(
                 VehicleViewResponse(

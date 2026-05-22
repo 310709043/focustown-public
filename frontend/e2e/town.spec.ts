@@ -52,11 +52,13 @@ test.describe("/town navigation", () => {
       .locator("[data-building]");
     await expect.poll(async () => await buildings.count()).toBeGreaterThan(0);
 
-    // Scenery NPCs: 7 walkers + 2 cats + 3 cars + 3 birds.
-    await expect.poll(async () => await page.getByTestId("named-walker").count()).toBe(7);
-    await expect.poll(async () => await page.getByTestId("named-cat").count()).toBe(2);
-    await expect.poll(async () => await page.getByTestId("named-car").count()).toBe(3);
-    await expect.poll(async () => await page.getByTestId("named-bird").count()).toBe(3);
+    // Decorative scenery is capped at 5 total so only real users + bots
+    // (rendered through <Pedestrians>/<Dogs>/<Birds>/<CarsLane> with labelled
+    // head pills) read as players. See plan 1-city-2-ancient-hippo.md.
+    await expect.poll(async () => await page.getByTestId("named-walker").count()).toBe(2);
+    await expect.poll(async () => await page.getByTestId("named-cat").count()).toBe(1);
+    await expect.poll(async () => await page.getByTestId("named-car").count()).toBe(1);
+    await expect.poll(async () => await page.getByTestId("named-bird").count()).toBe(1);
   });
 
   test("🏆 ACHV opens the awards modal", async ({ page }) => {

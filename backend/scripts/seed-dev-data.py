@@ -105,8 +105,6 @@ BOTS: list[dict] = [
     {"key": "milo",  "name": "Milo",  "role": "小說作家",   "hours": [14, 15, 16, 17]},
     {"key": "aria",  "name": "Aria",  "role": "研究員",     "hours": [18, 19, 20]},
     {"key": "zoe",   "name": "Zoe",   "role": "音樂製作人", "hours": [21, 22, 23]},
-    {"key": "rex",   "name": "Rex",   "role": "攝影師",     "hours": [0, 1, 2, 3, 4]},
-    {"key": "nyx",   "name": "Nyx",   "role": "哲學家",     "hours": [8, 12, 16, 20, 0]},
 ]
 
 BOT_SESSION_COUNT = 20
@@ -205,13 +203,23 @@ async def main() -> None:
 
 
 async def _seed_bots(db, ids) -> None:
-    """Seed 7 NPC users + per-bot 7-day focus history.
+    """Seed 5 NPC users + per-bot 7-day focus history.
 
     User rows are idempotent (ON CONFLICT DO NOTHING on the unique
     ``email`` column). FocusSession rows are **re-seeded every run** so
     the sliding 7-day window the matching strategy uses always contains
     data — without this, the rows would decay out of the window after one
     week and overlap collapses to 0.
+
+    Note: when the BOTS list shrinks, the previously-seeded rows for the
+    removed keys (e.g. rex / nyx) remain in the DB because seeding is
+    idempotent. To purge them in dev::
+
+        DELETE FROM users
+        WHERE email IN (
+          'bot-rex@bots.lowbatterytown.local',
+          'bot-nyx@bots.lowbatterytown.local'
+        );
     """
     rng = random.Random("lowbatterytown-bots-stable")
     now = datetime.now(UTC)

@@ -111,6 +111,10 @@ export type StreetUser = {
   display_name: string;
   character_key: string | null;
   status: string;
+  // role_label mirrored from the User row; used as the third dot-separated
+  // segment of the head label ("Name · Status · Activity"). Null hides the
+  // segment client-side — same code path for bots and real users.
+  activity: string | null;
   is_bot?: boolean;
   vehicle: VehicleRenderMeta | null;
 };

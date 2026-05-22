@@ -20,6 +20,7 @@ const alice: StreetUser = {
   display_name: "Alice",
   character_key: null,
   status: "focused",
+  activity: null,
   vehicle: null,
 };
 
