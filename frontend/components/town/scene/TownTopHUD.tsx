@@ -145,7 +145,13 @@ export function TownTopHUD({
            City-Mode immersive keeps the LOGO + weather chip anchored; the
            version chip + ONLINE chip collapse upward so the sky breathes. */}
       <div className="town-top-hud-cluster is-left">
-        <Logo scale={1.05} />
+        {/* `flex-shrink: 0` prevents the 712×284 wordmark from being
+            crushed by the pills next to it (the squashed-blob bug
+            visible in image.png). Scale 1.3 keeps the "Low Battery
+            Town" text legible at HUD size. */}
+        <div style={{ flexShrink: 0, lineHeight: 0 }}>
+          <Logo scale={1.3} />
+        </div>
         <span
           data-testid="top-hud-version"
           className="font-silkscreen"

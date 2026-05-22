@@ -99,10 +99,12 @@ export default async function LocaleLayout({
           a pure controller that dispatches to useAudioStore. */}
       <GlobalAudioMount />
       <StationRealtimeBridge />
-      <div className="fixed top-3 right-3 z-[20] pointer-events-auto">
-        <LocaleSwitcher
-          className="flex gap-1 bg-glass border border-border rounded px-2 py-1 touch:px-3 touch:py-2 backdrop-blur-md shadow-[0_0_12px_rgba(167,139,250,0.18)]"
-        />
+      {/* z-40 keeps the switcher above TownTopHUD (z-20) so it can
+          never be visually eaten by the right cluster again. Visual
+          styling now lives inside LocaleSwitcher itself (pixel-panel
+          vocabulary) — no wrapper override needed. */}
+      <div className="fixed top-3 right-3 z-40 pointer-events-auto">
+        <LocaleSwitcher />
       </div>
       {children}
     </NextIntlClientProvider>

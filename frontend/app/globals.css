@@ -883,7 +883,13 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 10px 18px;
+  /* Right padding reserves a 108px lane for the fixed LocaleSwitcher
+     (`top-3 right-3` in [locale]/layout.tsx) so the right cluster
+     (NavButtons + MiniClock + CoinBadge) cannot creep underneath it.
+     Was 18px — the locale toggle would render BEHIND the wallet badge,
+     leaving users with no visible way to switch language. */
+  padding: 10px 18px 10px 18px;
+  padding-inline-end: clamp(108px, 112px, 132px);
   max-width: var(--app-content-max-width, none);
   margin-inline: auto;
 }
@@ -892,6 +898,15 @@ body {
   align-items: center;
   gap: 10px;
   min-width: 0;
+}
+.town-top-hud-cluster.is-left {
+  /* Wordmark + version + weather pill + online pill all compete here.
+     Without `flex-shrink: 0` on the wordmark (set inline in TownTopHUD
+     via the wrapper), Next/Image's max-width:100% kicks in and squashes
+     the 712×284 pixel-art logo into an indecipherable smear — the bug
+     visible in image.png. The cluster keeps its own shrink behaviour
+     for the pills, which can wrap on narrow viewports. */
+  flex-shrink: 1;
 }
 .town-top-hud-cluster.is-right { gap: 8px; }
 .town-top-hud-nav-group {
@@ -905,6 +920,11 @@ body {
   .town-top-hud-inner {
     padding: 8px 12px;
     padding-top: max(8px, env(safe-area-inset-top));
+    /* Below 720px the bar wraps and the centre Pill takes its own row,
+       so the right cluster naturally sits below the LocaleSwitcher
+       lane. Drop the reserved end-padding so the right cluster can use
+       the full container width on phones. */
+    padding-inline-end: 12px;
     flex-wrap: wrap;
     gap: 8px;
     row-gap: 6px;
@@ -941,6 +961,80 @@ body {
   }
   .town-top-hud-nav-group::-webkit-scrollbar { display: none; }
   .town-top-hud-nav-group > * { scroll-snap-align: start; flex-shrink: 0; }
+}
+
+/* ──────────────────────────────────────
+   LocaleSwitcher — pixel-arcade segmented toggle.
+   Lives in the global `[locale]/layout.tsx` top-right slot at z-40 so
+   it always paints above the TownTopHUD (z-20) and other chrome.
+   Visual vocab mirrors `.pixel-panel`: bevelled dark card, hairline
+   stroke, double box-shadow for the inset frame feel. Active segment
+   lights up warm peach (`--a1`); inactive stays dim and brightens on
+   hover. The leading "▮" pip is purely decorative — keeps the active
+   label from shifting horizontally between locales of different glyph
+   width (e.g. "繁中" vs "EN").
+   ────────────────────────────────────── */
+.locale-switcher {
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--card);
+  border: 1px solid var(--panel-stroke);
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 3px var(--panel-stroke),
+    0 6px 18px rgba(0, 0, 0, 0.55);
+  padding: 0;
+  font-family: var(--font-silkscreen), var(--font-press-start-2p), monospace;
+  letter-spacing: 0.18em;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.locale-switcher__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    text-shadow 180ms ease;
+}
+.locale-switcher__btn + .locale-switcher__btn {
+  border-left: 1px solid var(--panel-stroke);
+}
+.locale-switcher__btn:hover {
+  color: var(--text);
+}
+.locale-switcher__btn:focus-visible {
+  outline: 1px dashed var(--a1);
+  outline-offset: 2px;
+}
+.locale-switcher__btn[data-active] {
+  color: var(--a1);
+  background: rgba(233, 167, 110, 0.08);
+  text-shadow: 0 0 6px rgba(233, 167, 110, 0.55);
+}
+.locale-switcher__pip {
+  display: inline-block;
+  width: 6px;
+  font-size: 9px;
+  color: var(--a1);
+  opacity: 0.85;
+}
+.locale-switcher__btn:not([data-active]) .locale-switcher__pip {
+  visibility: hidden;
+}
+.locale-switcher[data-pending] {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 /* ──────────────────────────────────────
