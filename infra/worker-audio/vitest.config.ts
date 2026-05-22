@@ -12,6 +12,7 @@ export default defineWorkersConfig({
           bindings: {
             AUDIO_PROXY_SECRET: "test-audio-secret-please-rotate-32chars",
             ALLOWED_ORIGINS: "https://lowbatterytown.com",
+            ALLOWED_REFERERS: "https://lowbatterytown.com/",
             TRACK_KEY_PREFIX: "tracks/",
           },
         },

@@ -19,6 +19,7 @@ export interface Env {
   AUDIO_BUCKET: R2Bucket;
   AUDIO_PROXY_SECRET: string;
   ALLOWED_ORIGINS: string;
+  ALLOWED_REFERERS: string;
   TRACK_KEY_PREFIX: string;
 }
 
@@ -35,6 +36,22 @@ export default {
     const match = TRACK_PATH.exec(url.pathname);
     if (!match) return cors(json(404, { error: "not_found" }), req, env);
     const trackId = match[1];
+
+    // Hot-link block: reject if Referer doesn't match an allowed prefix.
+    // Browsers always send Referer on cross-origin <audio> fetches (we
+    // never set Referrer-Policy: no-referrer on the frontend, see
+    // middleware.ts). Empty allowlist disables the check — used in dev
+    // / first-deploy. Mirrors the broadcast Worker's check (`worker-broadcast`).
+    if (env.ALLOWED_REFERERS && env.ALLOWED_REFERERS.trim() !== "") {
+      const referer = req.headers.get("referer") ?? "";
+      const allowedRefs = env.ALLOWED_REFERERS.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const ok = allowedRefs.some((prefix) => referer.startsWith(prefix));
+      if (!ok) {
+        return cors(json(403, { error: "referer_not_allowed" }), req, env);
+      }
+    }
 
     const token = url.searchParams.get("t");
     if (!token) return cors(json(401, { error: "missing_audio_token" }), req, env);

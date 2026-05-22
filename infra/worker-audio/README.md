@@ -5,8 +5,9 @@ Cloudflare Worker that fronts a private R2 bucket for Focus Town audio.
 ## What it does
 
 - `GET /track/<id>?t=<jwt>` — validates an HS256 JWT (shared secret with
-  the backend), reads the R2 object whose key was signed into the
-  token, and streams bytes back with Range support.
+  the backend), checks the Referer against `ALLOWED_REFERERS`, reads
+  the R2 object whose key was signed into the token, and streams bytes
+  back with Range support.
 - The R2 bucket is **private** — there's no public binding or
   presigned-URL flow. Only this Worker can read.
 

@@ -4,6 +4,7 @@ import { describe, expect, it, beforeAll } from "vitest";
 import worker from "../src/index";
 
 const SECRET = "test-audio-secret-please-rotate-32chars";
+const ALLOWED_REFERER = "https://lowbatterytown.com/town";
 
 function base64Url(input: Uint8Array | string): string {
   const bytes =
@@ -32,8 +33,17 @@ async function sign(payload: Record<string, unknown>): Promise<string> {
 
 const now = () => Math.floor(Date.now() / 1000);
 
-async function call(path: string, init?: RequestInit) {
-  const req = new Request(`https://audio.lowbatterytown.com${path}`, init);
+async function call(path: string, init: RequestInit = {}) {
+  // Default the Referer to a value that satisfies the Worker's allowlist
+  // so the pre-existing tests (which don't care about the hot-link
+  // check) stay green. Tests that exercise the Referer block override
+  // by passing their own `headers.referer`.
+  const headers = new Headers(init.headers);
+  if (!headers.has("referer")) headers.set("referer", ALLOWED_REFERER);
+  const req = new Request(`https://audio.lowbatterytown.com${path}`, {
+    ...init,
+    headers,
+  });
   createExecutionContext(); // initializes per-request waitUntil context
   return worker.fetch(req, env as any);
 }
@@ -46,6 +56,32 @@ beforeAll(async () => {
 });
 
 describe("audio worker", () => {
+  it("rejects request without Referer when allowlist is set", async () => {
+    // Bypass the helper so the request has no Referer at all — the
+    // Worker should treat that as "doesn't start with any prefix" and
+    // refuse before even looking at the token.
+    const req = new Request(
+      "https://audio.lowbatterytown.com/track/trk-1?t=anything",
+      { method: "GET" },
+    );
+    const res = await worker.fetch(req, env as any);
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects request with disallowed Referer", async () => {
+    const t = await sign({
+      sub: "u-1",
+      tid: "trk-1",
+      key: "tracks/test-key.mp3",
+      iat: now(),
+      exp: now() + 300,
+    });
+    const res = await call(`/track/trk-1?t=${t}`, {
+      headers: { referer: "https://evil.example/x" },
+    });
+    expect(res.status).toBe(403);
+  });
+
   it("rejects missing token with 401", async () => {
     const res = await call("/track/trk-1");
     expect(res.status).toBe(401);
