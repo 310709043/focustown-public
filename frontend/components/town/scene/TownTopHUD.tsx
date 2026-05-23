@@ -103,12 +103,7 @@ export function TownTopHUD({
 }) {
   const router = useRouter();
   const scene = useSceneStore((s) => s.current);
-  // Presence store may not be hydrated yet on initial paint (SSR + first WS
-  // tick). Floor at 1 so the chip never reads as "ONLINE 0" — at minimum the
-  // user looking at the page IS online.
-  const onlineCount = usePresenceStore(
-    (s) => Math.max(Object.keys(s.byId).length, 1),
-  );
+  const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
   const tNav = useTranslations("town.nav");
   const tHud = useTranslations("town");
   const tScene = useTranslations("scenes");

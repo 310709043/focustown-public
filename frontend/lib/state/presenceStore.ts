@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import type { StreetUser } from "../api/types.gen";
+import type { StreetUser, User } from "../api/types.gen";
 import type { PresenceStateValue } from "../ws/client";
 
 /**
@@ -33,6 +33,10 @@ interface PresenceStore {
   byId: Record<string, StreetUser>;
   pendingRehydrate: boolean;
   hydrate: (users: StreetUser[]) => void;
+  /** Idempotent: seed the local user into the projection so the ONLINE count
+   * reflects them before the HTTP snapshot / WS delta arrives. Skips when the
+   * id is already present — server data is always fresher. */
+  injectSelf: (user: User) => void;
   applyDelta: (msg: PresenceDelta) => void;
   clearPendingRehydrate: () => void;
   reset: () => void;
@@ -47,6 +51,22 @@ export const usePresenceStore = create<PresenceStore>((set, get) => ({
     const byId: Record<string, StreetUser> = {};
     for (const u of users) byId[u.id] = u;
     set({ byId, pendingRehydrate: false });
+  },
+
+  injectSelf(user) {
+    set((prev) => {
+      if (prev.byId[user.id]) return prev;
+      const self: StreetUser = {
+        id: user.id,
+        display_name: user.display_name,
+        character_key: user.character_key,
+        status: "afk",
+        activity: user.role_label,
+        is_bot: false,
+        vehicle: user.equipped_vehicle,
+      };
+      return { ...prev, byId: { ...prev.byId, [user.id]: self } };
+    });
   },
 
   applyDelta(msg) {

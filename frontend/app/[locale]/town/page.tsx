@@ -126,9 +126,12 @@ export default function TownPage() {
   }, [advanceScene]);
 
   // Hydrate the street view from the snapshot endpoint, then re-hydrate every
-  // 60 seconds as drift correction (in case any WS delta got dropped).
+  // 60 seconds as drift correction (in case any WS delta got dropped). Seed
+  // self into the projection synchronously so ONLINE reflects the viewer
+  // before HTTP/WS resolve — backend snapshots overwrite this on arrival.
   useEffect(() => {
     if (!user) return;
+    usePresenceStore.getState().injectSelf(user);
     let cancelled = false;
     const fetchSnapshot = async () => {
       try {
@@ -162,7 +165,8 @@ export default function TownPage() {
 
   useEffect(() => {
     if (!pendingRehydrate || !user) return;
-    // Debounce: coalesce burst arrivals into a single snapshot fetch.
+    // Debounce: coalesce burst arrivals into a single snapshot fetch. Kept
+    // short so the ONLINE count tracks reality without a perceptible lag.
     const id = setTimeout(async () => {
       try {
         const users = await presenceApi.listStreet(STREET_CAP);
@@ -170,7 +174,7 @@ export default function TownPage() {
       } catch {
         usePresenceStore.getState().clearPendingRehydrate();
       }
-    }, 1000);
+    }, 200);
     return () => clearTimeout(id);
   }, [pendingRehydrate, user]);
 
