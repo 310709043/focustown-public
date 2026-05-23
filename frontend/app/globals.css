@@ -313,8 +313,8 @@ body {
 /* Pixel input: matches form fields across login, signup, character
    select, chat, notes. Focus glow follows the active direction. */
 .pixel-input {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--dir-panel-stroke);
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid var(--dir-panel-stroke-strong);
   color: var(--text);
   padding: 10px 14px;
   /* Noto Sans TC first so lowercase Latin + CJK both render with real

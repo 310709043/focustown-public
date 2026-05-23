@@ -71,6 +71,42 @@ async def test_connect_marks_online_and_broadcasts():
 
 
 @pytest.mark.asyncio
+async def test_connect_and_snapshot_returns_self_and_other_users():
+    # Race-free WS handshake path: an existing user (u1) is already on the
+    # street; when u2 connects via the atomic method they must (a) appear in
+    # the tracker, (b) trigger exactly one STREET_CHANNEL broadcast for the
+    # new arrival, and (c) get back a snapshot listing both users — without
+    # any HTTP round-trip racing the tracker write.
+    tracker = FakePresenceTracker()
+    pub = RecordingPublisher()
+    svc = PresenceService(tracker, pub)
+    users = FakeUserRepo.from_users([_make_user("u1"), _make_user("u2")])
+
+    await svc.connect("u1")
+    pub.published.clear()
+
+    snapshot = await svc.connect_and_snapshot(
+        "u2", users, FakeShopRepo(), cap=10
+    )
+
+    entry = await tracker.get("u2")
+    assert entry is not None
+    assert entry.state == "on_street"
+    assert pub.published == [
+        (
+            STREET_CHANNEL,
+            {
+                "type": "presence.changed",
+                "user_id": "u2",
+                "state": "on_street",
+                "status": "afk",
+            },
+        )
+    ]
+    assert {u.id for u in snapshot} == {"u1", "u2"}
+
+
+@pytest.mark.asyncio
 async def test_disconnect_removes_and_broadcasts_offline():
     tracker = FakePresenceTracker()
     pub = RecordingPublisher()

@@ -85,6 +85,34 @@ class PresenceService:
             },
         )
 
+    async def connect_and_snapshot(
+        self,
+        user_id: str,
+        users: IUserReader,
+        shop: IShopRepo,
+        *,
+        cap: int,
+        state: PresenceState = "on_street",
+    ) -> list[StreetUser]:
+        # Atomic WS-handshake path: register the user online, broadcast the
+        # arrival on STREET_CHANNEL so other clients see them, and return the
+        # street snapshot (which includes the just-onlined caller) so the
+        # connecting socket gets an authoritative view without a separate
+        # HTTP round-trip. The snapshot is returned, not published, because
+        # it is only meaningful to the connecting user — broadcasting would
+        # force every subscriber to re-hydrate on every new arrival.
+        await self._tracker.online(user_id, state=state)
+        await self._pub.publish(
+            STREET_CHANNEL,
+            {
+                "type": "presence.changed",
+                "user_id": user_id,
+                "state": state,
+                "status": "afk",
+            },
+        )
+        return await self.list_street(users, shop, cap=cap)
+
     async def disconnect(self, user_id: str) -> None:
         await self._tracker.offline(user_id)
         await self._pub.publish(

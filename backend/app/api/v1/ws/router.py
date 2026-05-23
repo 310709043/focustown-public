@@ -13,7 +13,11 @@ from app.core.deps import (
 from app.core.exceptions import AuthError
 from app.core.logging import get_logger
 from app.domain.repositories.realtime import IRealtimePublisher
-from app.domain.services.presence_service import STREET_CHANNEL, PresenceService
+from app.domain.services.presence_service import (
+    STREET_CHANNEL,
+    PresenceService,
+    StreetUser,
+)
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.db.repositories.match_repo import SqlMatchRepo
 from app.infrastructure.db.repositories.match_waiting_pool_repo import (
@@ -24,6 +28,8 @@ from app.infrastructure.db.repositories.room_participant_repo import (
 )
 from app.infrastructure.db.repositories.room_repo import SqlRoomRepo
 from app.infrastructure.db.repositories.room_visit_repo import SqlRoomVisitRepo
+from app.infrastructure.db.repositories.shop_repo import SqlShopRepo
+from app.infrastructure.db.repositories.user_repo import SqlUserRepo
 from app.infrastructure.db.session import get_session_factory
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
@@ -37,6 +43,33 @@ _BEARER_PREFIX = "bearer."
 # trigger a fan-out of that size to every other socket on the room channel.
 # 2000 chars covers any sane Buddy chat line.
 _CHAT_TEXT_MAX_CHARS = 2000
+
+# Mirrors the HTTP `/presence/street` cap (max query value). The WS handshake
+# snapshot uses the same bound so behaviour matches the polling path.
+_STREET_SNAPSHOT_CAP = 200
+
+
+def _serialise_street_user(u: StreetUser) -> dict:
+    # Mirrors StreetUserResponse in api/v1/presence/schemas.py so frontend
+    # consumers can treat the WS snapshot payload and the HTTP snapshot
+    # payload as the same shape.
+    return {
+        "id": u.id,
+        "display_name": u.display_name,
+        "character_key": u.character_key,
+        "status": u.status,
+        "activity": u.activity,
+        "is_bot": u.is_bot,
+        "vehicle": (
+            {
+                "icon": u.vehicle.icon,
+                "body_color": u.vehicle.body_color,
+                "roof_color": u.vehicle.roof_color,
+            }
+            if u.vehicle is not None
+            else None
+        ),
+    }
 
 
 async def _is_room_subscriber(
@@ -228,7 +261,26 @@ async def ws_connect(
             IRealtimePublisher.station_channel("city", settings.default_city_id)
         )
     await pub.start(handler=_on_message, channels=initial_channels)
-    await presence.connect(user_id)
+    # Atomic connect: register online, broadcast arrival on STREET_CHANNEL,
+    # and grab the snapshot in one server-side step. Then deliver the snapshot
+    # to this socket only (via ws_mgr.deliver, NOT pub.publish) so the freshly
+    # connected user sees the authoritative street state without racing the
+    # HTTP /presence/street polling path.
+    factory = get_session_factory(settings.database_url)
+    async with factory() as session:
+        snapshot = await presence.connect_and_snapshot(
+            user_id,
+            SqlUserRepo(session),
+            SqlShopRepo(session),
+            cap=_STREET_SNAPSHOT_CAP,
+        )
+    await ws_mgr.deliver(
+        user_id,
+        {
+            "type": "presence.snapshot",
+            "users": [_serialise_street_user(u) for u in snapshot],
+        },
+    )
 
     try:
         while True:

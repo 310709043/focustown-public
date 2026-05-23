@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import type { StreetUser } from "@/lib/api/types.gen";
 import { presenceApi, userItemsApi, walletApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useHudReveal } from "@/lib/hooks/useHudReveal";
@@ -154,7 +155,16 @@ export default function TownPage() {
 
   // Subscribe to incremental presence deltas via WebSocket. Unknown users in
   // a delta flip pendingRehydrate, which the next effect picks up and resolves.
+  // The presence.snapshot frame (sent once per WS handshake by the backend)
+  // is the authoritative initial street view — overwrites any earlier
+  // injectSelf / HTTP-snapshot state without waiting on the WS-delta echo.
   useRealtime((msg) => {
+    if (msg.type === "presence.snapshot") {
+      // Narrow past the catch-all `{ type: string; [k]: unknown }` union arm
+      // that otherwise widens `users` to `unknown` at the call site.
+      usePresenceStore.getState().hydrate(msg.users as StreetUser[]);
+      return;
+    }
     if (msg.type === "presence.changed") {
       usePresenceStore.getState().applyDelta({
         user_id: String(msg.user_id),

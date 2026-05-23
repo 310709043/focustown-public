@@ -1,5 +1,6 @@
 import { config } from "../config";
 import { refreshTokens, tokenStore } from "../api/client";
+import type { StreetUser } from "../api/types.gen";
 
 export type PresenceStateValue = "on_street" | "in_room" | "offline";
 
@@ -38,6 +39,12 @@ export type WsMessage =
       // WS frame with the full payload).
       equipment_changed?: boolean;
     }
+  // Authoritative street snapshot delivered to the connecting socket
+  // immediately after WS handshake + presence.connect. Eliminates the
+  // race where the HTTP /presence/street poll could resolve before the
+  // backend had registered this user, leaving them invisible until the
+  // next 60s drift tick.
+  | { type: "presence.snapshot"; users: StreetUser[] }
   | {
       type: "wallet.updated";
       currency_code: string;
