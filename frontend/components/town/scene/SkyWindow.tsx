@@ -7,6 +7,7 @@ import { useRouter } from "@/i18n/routing";
 import { leaderboardApi } from "@/lib/api/endpoints";
 import type { LeaderboardEntry } from "@/lib/api/types.gen";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
+import { BroadcastClipPlayer } from "@/components/scene/BroadcastClipPlayer";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { AVATARS, type AvatarDef } from "@/lib/pixel/sprites/avatars";
 import { TOMATO } from "@/lib/pixel/sprites/props";
@@ -628,27 +629,39 @@ function VideoPicture({
 }) {
   const src = buildYouTubeEmbedSrc(mode.embedId);
   if (!src) {
-    // PLACEHOLDER state — render a static "tuning" picture instead of an
-    // empty iframe. Lets the CRT chrome still read while we wait for a
-    // real embed ID.
+    // PLACEHOLDER embedId. Prefer the R2 broadcast carousel when configured
+    // (returns null silently if the env var is absent or the token fetch
+    // fails), and fall back to the static "tuning" picture so the CRT
+    // chrome still reads during local dev / when broadcast is offline.
     return (
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--ink-dim)",
-          fontFamily: "var(--font-silkscreen), monospace",
-          letterSpacing: "0.25em",
-          fontSize: 10,
-          background:
-            "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 6px, transparent 6px 12px)",
-        }}
-      >
-        TUNING SIGNAL · STAND BY
-      </div>
+      <>
+        <BroadcastClipPlayer
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--ink-dim)",
+            fontFamily: "var(--font-silkscreen), monospace",
+            letterSpacing: "0.25em",
+            fontSize: 10,
+            background:
+              "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 6px, transparent 6px 12px)",
+            zIndex: -1,
+          }}
+        >
+          TUNING SIGNAL · STAND BY
+        </div>
+      </>
     );
   }
   return (

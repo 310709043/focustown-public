@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from app.core.clock import IClock
 from app.core.exceptions import BusinessError
@@ -17,6 +17,11 @@ from app.domain.repositories.track_repo import ITrackRepo
 from app.infrastructure.cache.station_cache import RedisStationCache
 
 DEFAULT_TRACK_DURATION_MS = 180_000  # 3 min — fallback when track has no duration
+
+# PostgreSQL BIGINT cap. Used to mask seed values defensively in
+# ``snapshot_to_db`` so a legacy unsigned-int64 cursor in Redis cannot
+# crash the snapshot worker on persist.
+_PG_BIGINT_MAX = 0x7FFFFFFFFFFFFFFF
 
 # A cursor is considered stale (and re-seeded) when fewer than this
 # fraction of its playlist IDs still exist in ``tracks``. Half is a
@@ -85,7 +90,7 @@ class StationService:
         # while staying within the BIGINT range.
         material = f"{kind}|{scope_id}|{day}".encode()
         digest = hashlib.sha256(material).digest()
-        return int.from_bytes(digest[:8], byteorder="big") & 0x7FFFFFFFFFFFFFFF
+        return int.from_bytes(digest[:8], byteorder="big") & _PG_BIGINT_MAX
 
     async def get_current(
         self, *, kind: StationKind, scope_id: str
@@ -224,6 +229,20 @@ class StationService:
         cursor = await self.cache.get(kind=kind, scope_id=scope_id)
         if cursor is None:
             return
+        # Defensive: a legacy cached cursor (generated before _seed_int
+        # gained its 63-bit mask) may carry a seed outside PostgreSQL
+        # BIGINT range. Mask + log rather than crashing the worker every
+        # tick. The masked seed lives in DB; on next cache miss the
+        # cursor reloads with the safe value and shuffle order stays
+        # stable across the rest of the day.
+        if cursor.seed > _PG_BIGINT_MAX:
+            log.warning(
+                "station_snapshot_seed_oob_masked",
+                kind=kind,
+                scope_id=scope_id,
+                original_seed=cursor.seed,
+            )
+            cursor = replace(cursor, seed=cursor.seed & _PG_BIGINT_MAX)
         await self.snapshots_writer.upsert_snapshot(cursor)
 
     async def cleanup_pair(self, *, match_id: str) -> None:

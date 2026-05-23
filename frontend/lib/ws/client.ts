@@ -133,6 +133,9 @@ export class RealtimeClient {
     const ws = new WebSocket(url, [`bearer.${token}`]);
     ws.onopen = () => {
       this.reconnectAttempts = 0;
+      // Pair with the close log so "still seeing [ws] close" reports can be
+      // distinguished from "WS never opened" reports without DevTools dive.
+      console.info("[ws] open");
     };
     ws.onmessage = (e) => {
       try {
@@ -146,15 +149,16 @@ export class RealtimeClient {
       // Diagnostic for AWS dev — close code tells us which class of
       // failure we're seeing: 1006 = transport reject / proxy didn't
       // upgrade; 4401 = backend rejected the bearer subprotocol
-      // (token missing or invalid; see backend/app/api/v1/ws/router.py).
-      // Intentionally only logs the code + reason, never the token.
-      // ``event`` is optional because mocked WS shims in tests call
-      // ``ws.onclose()`` without arguments.
-      console.warn("[ws] close", {
-        code: event?.code,
-        reason: event?.reason,
-        wasClean: event?.wasClean,
-      });
+      // (token missing or invalid; see backend/app/api/v1/ws/router.py);
+      // 4429 = per-IP rate limit. Flat string keeps the code visible in
+      // browser consoles that don't auto-expand objects (the "[ws] close
+      // Object" report that obscured the actual code).
+      const code = event?.code ?? "?";
+      const reason = event?.reason ?? "";
+      const clean = event?.wasClean ?? false;
+      console.warn(
+        `[ws] close code=${code} reason=${JSON.stringify(reason)} clean=${clean}`,
+      );
       this.ws = null;
       if (this.intentionalClose) return;
       // 4401 = the backend rejected our JWT before ``accept()``. Without

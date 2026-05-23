@@ -49,6 +49,15 @@ async def issue_broadcast_play_token(
         log.info("broadcast_play_token_unknown_clip", clip_id=clip_id, user_id=user_id)
         raise NotFoundError("broadcast_clip_not_found")
     tok = _service(settings, request).issue(clip_id=clip_id, user_id=user_id)
+    # Happy-path observability: without this, a silent "no video" symptom
+    # is indistinguishable from "FE never called the endpoint" in CloudWatch.
+    # Never log the token body itself — only metadata.
+    log.info(
+        "broadcast_play_token_issued",
+        clip_id=clip_id,
+        user_id=user_id,
+        ttl_seconds=settings.broadcast_token_ttl_seconds,
+    )
     return BroadcastPlayTokenResponse(url=tok.url, expires_at=tok.expires_at)
 
 

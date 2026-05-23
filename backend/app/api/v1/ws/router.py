@@ -174,6 +174,9 @@ async def ws_connect(
         window_seconds=60,
     )
     if not decision.allowed:
+        log.info(
+            "ws_rejected", reason="rate_limited", code=4429, peer_ip=peer_ip
+        )
         await websocket.close(code=4429)
         return
 
@@ -181,12 +184,18 @@ async def ws_connect(
         log.warning("ws_auth_query_param_deprecated")
 
     if not token:
+        log.info(
+            "ws_rejected", reason="no_token", code=4401, peer_ip=peer_ip
+        )
         await websocket.close(code=4401)
         return
 
     try:
         principal = await auth.verify_access_token(token)
     except AuthError:
+        log.info(
+            "ws_rejected", reason="invalid_token", code=4401, peer_ip=peer_ip
+        )
         await websocket.close(code=4401)
         return
 

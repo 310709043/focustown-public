@@ -478,3 +478,37 @@ def test_seed_int_top_bit_clear_for_known_overflow_input() -> None:
     # Pick any (kind, scope, day) — the assertion is shape, not value.
     seed = StationService._seed_int(kind="city", scope_id="lowbatterytown", day="2026-05-23")
     assert seed & (1 << 63) == 0, "top bit must be clear so BIGINT accepts it"
+
+
+@pytest.mark.asyncio
+async def test_snapshot_to_db_masks_legacy_overflow_seed_instead_of_crashing() -> None:
+    """Regression: a cached cursor written by a pre-mask backend may carry
+    a seed > BIGINT_MAX. ``snapshot_to_db`` must mask defensively rather
+    than letting asyncpg raise ``DataError: value out of int64 range``
+    every worker tick.
+    """
+    repo = FakeTrackRepo()
+    await _seed_tracks(repo, count=4, duration_ms=180_000)
+    svc, cache, _, _ = _make_service(tracks=repo)
+    # Stage a cursor with the exact prod seed value that crashed before.
+    overflow_seed = 9607630960552802898  # > 2**63 - 1
+    await cache.set(
+        StationCursor(
+            kind="city",
+            scope_id="lowbatterytown",
+            playlist_ids=["t-00", "t-01"],
+            cursor_index=0,
+            started_at_ms=1779505162772,
+            seed=overflow_seed,
+            version=1,
+        )
+    )
+
+    await svc.snapshot_to_db(kind="city", scope_id="lowbatterytown")
+
+    persisted = await svc.snapshots_writer.get_snapshot(
+        kind="city", scope_id="lowbatterytown"
+    )
+    assert persisted is not None
+    assert persisted.seed == overflow_seed & 0x7FFFFFFFFFFFFFFF
+    assert persisted.seed <= 0x7FFFFFFFFFFFFFFF
