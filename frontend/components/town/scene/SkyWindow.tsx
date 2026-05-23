@@ -111,20 +111,37 @@ export function SkyWindow() {
             </span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            <TabPill active={tab === "rank"} onClick={() => setTab("rank")}>
-              {t("todayRank")}
-            </TabPill>
-            <TabPill active={tab === "ad"} onClick={() => setTab("ad")}>
-              {t("skyAd")}
-            </TabPill>
+            <TabPill active={tab === "rank"}>{t("todayRank")}</TabPill>
+            <TabPill active={tab === "ad"}>{t("skyAd")}</TabPill>
           </div>
         </div>
 
         {/* Lock the body to a single height so toggling between rank and
             ad tabs doesn't reflow the floating panel (AdSpace is naturally
-            taller than RankBoard). */}
-        <div style={{ height: 220, overflow: "hidden" }}>
-          {tab === "rank" ? <RankBoard /> : <AdSpace idx={adIdx} />}
+            taller than RankBoard). Both panels stay mounted and we toggle
+            visibility so the broadcast video element survives every tab
+            flip — unmounting AdSpace every 6 s restarts the <video>. */}
+        <div style={{ height: 220, overflow: "hidden", position: "relative" }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              visibility: tab === "rank" ? "visible" : "hidden",
+              pointerEvents: tab === "rank" ? "auto" : "none",
+            }}
+          >
+            <RankBoard />
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              visibility: tab === "ad" ? "visible" : "hidden",
+              pointerEvents: tab === "ad" ? "auto" : "none",
+            }}
+          >
+            <AdSpace idx={adIdx} />
+          </div>
         </div>
 
         {/* Bottom signal bar */}
@@ -419,6 +436,13 @@ function AdSpace({ idx }: { idx: number }) {
   }, []);
 
   const mode = modes[idx % modes.length];
+  // Pick a single persistent video mode to mount continuously behind the
+  // sponsor card. Mode rotation (sponsor → video → sponsor) used to remount
+  // VideoPicture every cycle and reload the clip; now the video element
+  // lives behind the sponsor card and never tears down.
+  const persistentVideo = modes.find(
+    (m): m is Extract<BroadcastMode, { kind: "video" }> => m.kind === "video",
+  );
 
   return (
     <div
@@ -436,11 +460,12 @@ function AdSpace({ idx }: { idx: number }) {
         className="tv-screen"
         style={{ background: "rgba(0,0,0,0.55)" }}
       >
+        {persistentVideo ? <VideoPicture mode={persistentVideo} /> : null}
         {mode.kind === "sponsor" ? (
-          <SponsorPicture mode={mode} />
-        ) : (
-          <VideoPicture mode={mode} />
-        )}
+          <div style={{ position: "absolute", inset: 0, zIndex: 2 }}>
+            <SponsorPicture mode={mode} />
+          </div>
+        ) : null}
         <div aria-hidden className="tv-scanlines animate-scanDrift" />
         <div aria-hidden className="tv-vignette" />
         {mode.kind === "video" ? (
@@ -711,16 +736,13 @@ function SignalBars() {
 function TabPill({
   children,
   active,
-  onClick,
 }: {
   children: React.ReactNode;
   active: boolean;
-  onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <span
+      aria-current={active ? "true" : undefined}
       className="font-silkscreen"
       style={{
         padding: "4px 10px",
@@ -729,12 +751,12 @@ function TabPill({
         border: `1px solid ${active ? "var(--accent)" : "var(--panel-stroke)"}`,
         fontSize: 9,
         letterSpacing: "0.1em",
-        cursor: "pointer",
         whiteSpace: "nowrap",
+        userSelect: "none",
       }}
     >
       {children}
-    </button>
+    </span>
   );
 }
 
