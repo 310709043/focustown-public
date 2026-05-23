@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
+import { sanitizeReturnTo } from "@/lib/routing/safeReturnTo";
 import { useAuthStore } from "@/lib/state/authStore";
 import { userApi } from "@/lib/api/endpoints";
 import { AVATARS } from "@/lib/pixel/sprites/avatars";
@@ -51,8 +53,10 @@ function useTransientToast() {
  *    and are kept in local state for the visual port.
  *  • `useAuthStore.hydrate` after save, then `router.push("/town")`.
  */
-export default function SelectCharacterPage() {
+function SelectCharacterInner() {
   const router = useRouter();
+  const search = useSearchParams();
+  const returnTo = sanitizeReturnTo(search.get("returnTo"));
   const { user, hydrate } = useAuthStore();
   const t = useTranslations("characters.selectPage");
   const { msg, show } = useTransientToast();
@@ -97,7 +101,7 @@ export default function SelectCharacterPage() {
         role_label: avatar.name,
       });
       await hydrate();
-      router.push("/town");
+      router.push(returnTo ?? "/town");
     } finally {
       setSaving(false);
     }
@@ -295,5 +299,13 @@ export default function SelectCharacterPage() {
         </div>
       ) : null}
     </SelectCharacterScene>
+  );
+}
+
+export default function SelectCharacterPage() {
+  return (
+    <Suspense fallback={null}>
+      <SelectCharacterInner />
+    </Suspense>
   );
 }

@@ -91,6 +91,8 @@
       "prevAria": "上一首",
       "playAria": "播放",
       "pauseAria": "暫停",
+      "muteAria": "靜音",
+      "unmuteAria": "取消靜音",
       "nextAria": "下一首",
       "unlockHint": "點擊聆聽",
       "genres": {
@@ -243,6 +245,8 @@
     "nextAria": "下一首",
     "playAria": "播放",
     "pauseAria": "暫停",
+    "muteAria": "靜音",
+    "unmuteAria": "取消靜音",
     "volumeAria": "音量",
     "unlockHint": "🔊 點擊聆聽"
   },

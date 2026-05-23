@@ -156,6 +156,8 @@
       "showAria": "Show music player",
       "playAria": "Play",
       "pauseAria": "Pause",
+      "muteAria": "Mute",
+      "unmuteAria": "Unmute",
       "prevAria": "Previous track",
       "nextAria": "Next track",
       "volumeAria": "Volume",
@@ -222,7 +224,9 @@
       "trackTitle": "midnight city — lofi",
       "trackSubLine": "♪ 1 / 5 · lofi radio",
       "playAria": "Play",
-      "pauseAria": "Pause"
+      "pauseAria": "Pause",
+      "muteAria": "Mute",
+      "unmuteAria": "Unmute"
     },
     "sharedPanel": {
       "chatTab": "Chat",

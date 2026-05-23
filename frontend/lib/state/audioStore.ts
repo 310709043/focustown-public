@@ -98,6 +98,13 @@ interface AudioState {
   // Playback intent
   isPlaying: boolean;
   volume: number; // [0, 1]
+  /** When true, the singleton ``<audio>`` element runs muted. Mirrors
+   *  the cohort-station "immersion or step out" rule: no user-facing
+   *  pause anywhere; the only "make it stop" affordance is mute (or
+   *  navigate away). ``muted`` is independent of ``audioUnlocked`` —
+   *  the latter is the browser-autoplay-policy gate, this is the
+   *  user-driven silence flag. */
+  muted: boolean;
   audioUnlocked: boolean;
   // Floating player chrome
   hidden: boolean;
@@ -107,9 +114,13 @@ interface AudioState {
     contextId?: string | null,
   ) => Promise<void>;
   setTracks: (tracks: PersonalPlaylistTrack[]) => void;
+  /** Legacy play/pause actions kept for backwards compat with existing
+   *  tests and the GlobalAudioMount's audio-store branch. UI must NOT
+   *  expose these — per product, the only silence control is ``muted``. */
   play: () => void;
   pause: () => void;
   toggle: () => void;
+  toggleMute: () => void;
   next: () => void;
   prev: () => void;
   setVolume: (v: number) => void;
@@ -127,6 +138,7 @@ export const useAudioStore = create<AudioState>()(
       index: 0,
       isPlaying: false,
       volume: 0.65,
+      muted: false,
       audioUnlocked: false,
       hidden: false,
 
@@ -179,6 +191,23 @@ export const useAudioStore = create<AudioState>()(
         set({ isPlaying: !isPlaying });
       },
 
+      toggleMute: () => {
+        const { muted, audioUnlocked } = get();
+        // First mute-button click on a locked page also counts as the
+        // browser-autoplay unlock gesture, so the element starts playing
+        // (muted, then audible once they un-mute).
+        if (!audioUnlocked) {
+          markAudioUnlocked();
+          set({
+            audioUnlocked: true,
+            isPlaying: true,
+            muted: !muted,
+          });
+          return;
+        }
+        set({ muted: !muted });
+      },
+
       next: () => {
         const { tracks, index } = get();
         if (tracks.length === 0) return;
@@ -229,6 +258,7 @@ export const useAudioStore = create<AudioState>()(
       partialize: (s) => ({
         isPlaying: s.isPlaying,
         volume: s.volume,
+        muted: s.muted,
         hidden: s.hidden,
       }),
       // On rehydration, sync `audioUnlocked` from sessionStorage so the

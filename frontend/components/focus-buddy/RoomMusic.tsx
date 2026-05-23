@@ -26,7 +26,11 @@ NNNN.
  */
 export function RoomMusic() {
   const t = useTranslations("focus.buddy.roomMusic");
-  const [playing, setPlaying] = useState(true);
+  // Decorative panel — no real audio yet. ``muted`` mirrors the
+  // no-pause rule (see feedback-no-music-pause): the only "silence
+  // it" affordance anywhere in the app is a mute toggle.
+  const [muted, setMuted] = useState(false);
+  const playing = !muted;
 
   return (
     <div
@@ -110,13 +114,13 @@ export function RoomMusic() {
         </div>
         <button
           type="button"
-          data-testid="room-music-toggle"
-          aria-label={playing ? t("pauseAria") : t("playAria")}
+          data-testid="room-music-mute"
+          aria-label={muted ? t("unmuteAria") : t("muteAria")}
           className="pixel-btn primary"
           style={{ padding: "4px 8px", fontSize: 10 }}
-          onClick={() => setPlaying((p) => !p)}
+          onClick={() => setMuted((m) => !m)}
         >
-          {playing ? "⏸" : "▶"}
+          {muted ? "🔇" : "🔊"}
         </button>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>

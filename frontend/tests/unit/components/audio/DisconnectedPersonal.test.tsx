@@ -9,10 +9,10 @@
  * - reconnect button calls stationStore.reconnect()
  * - transport disabled when playlist is empty (no orphan state)
  *
- * 2026-05-22: standalone mute button removed (volume==0 is the
- * user-visible mute) so the panel fits inside the 168 px BottomHUD
- * band. The underlying ``mutedWhileDisconnected`` store flag is
- * untouched — still consumed by GlobalAudioMount for backward compat.
+ * 2026-05-23: the previous play/pause button was replaced with a mute
+ * toggle (no user-facing pause anywhere — see feedback-no-music-pause).
+ * The mute toggle pipes through ``stationStore.setMuted``, which
+ * GlobalAudioMount consumes via the personal source's ``muted`` field.
  */
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, test } from "vitest";
@@ -102,7 +102,15 @@ test("transport buttons are disabled when the personal playlist is empty", () =>
 
   expect(screen.getByTestId("station-prev")).toBeDisabled();
   expect(screen.getByTestId("station-next")).toBeDisabled();
-  expect(screen.getByTestId("station-toggle-play")).toBeDisabled();
+  expect(screen.getByTestId("station-mute")).toBeDisabled();
+});
+
+test("mute button flips stationStore.mutedWhileDisconnected", () => {
+  render(<DisconnectedPersonal scopeKind="city" />);
+
+  fireEvent.click(screen.getByTestId("station-mute"));
+
+  expect(useStationStore.getState().mutedWhileDisconnected).toBe(true);
 });
 
 test("renders the playlist-empty fallback title when there's no track", () => {

@@ -43,11 +43,12 @@ export function FloatingMusicPlayer({
   const index = useAudioStore((s) => s.index);
   const currentTrack = useAudioStore(selectCurrentTrack);
   const isPlaying = useAudioStore((s) => s.isPlaying);
+  const muted = useAudioStore((s) => s.muted);
   const volume = useAudioStore((s) => s.volume);
   const audioUnlocked = useAudioStore((s) => s.audioUnlocked);
   const hidden = useAudioStore((s) => s.hidden);
   const setContext = useAudioStore((s) => s.setContext);
-  const toggle = useAudioStore((s) => s.toggle);
+  const toggleMute = useAudioStore((s) => s.toggleMute);
   const next = useAudioStore((s) => s.next);
   const prev = useAudioStore((s) => s.prev);
   const setVolume = useAudioStore((s) => s.setVolume);
@@ -72,7 +73,9 @@ export function FloatingMusicPlayer({
         : `${index + 1}/${tracks.length}`
       : t("playlistEmpty");
 
-  // Collapsed chip — a single 44×44 pill in the same corner.
+  // Collapsed chip — a single 44×44 pill in the same corner. Tapping
+  // expands the panel; the chip itself is no longer a play/pause
+  // surface (no pause anywhere — see feedback-no-music-pause).
   if (hidden) {
     return (
       <button
@@ -94,13 +97,13 @@ export function FloatingMusicPlayer({
           borderColor: "var(--accent-3)",
           color: "var(--accent-3)",
           background: "rgba(7,4,26,0.92)",
-          boxShadow: isPlaying
+          boxShadow: isPlaying && !muted
             ? "0 0 18px rgba(34,211,238,0.5)"
             : "0 0 6px rgba(34,211,238,0.18)",
           zIndex: 10,
         }}
       >
-        {isPlaying ? "♪" : "▶"}
+        {muted ? "🔇" : "♪"}
       </button>
     );
   }
@@ -238,10 +241,10 @@ export function FloatingMusicPlayer({
         </button>
         <button
           type="button"
-          data-testid="floating-music-toggle-play"
-          aria-label={isPlaying ? t("pauseAria") : t("playAria")}
+          data-testid="floating-music-mute"
+          aria-label={muted ? t("unmuteAria") : t("muteAria")}
           disabled={disabled}
-          onClick={toggle}
+          onClick={toggleMute}
           className="pixel-btn primary"
           style={{
             width: 36,
@@ -255,7 +258,7 @@ export function FloatingMusicPlayer({
             cursor: disabled ? "not-allowed" : "pointer",
           }}
         >
-          {isPlaying ? "⏸" : "▶"}
+          {muted ? "🔇" : "🔊"}
         </button>
         <button
           type="button"

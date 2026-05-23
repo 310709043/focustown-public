@@ -133,17 +133,38 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     try {
       const res = await matchesApi.auto();
       if (res.status === "matched") {
-        // Immediate bot fallback: skip the modal step entirely. The
-        // backend has already accepted the match server-side (bot
-        // fallback path), so just stash it and let the page nav fire.
+        // Two backend paths reach here:
+        //   • Bot fallback (immediate)  — match arrives already ACCEPTED
+        //     because ``_fall_back_to_bot`` accepts on the user's behalf.
+        //   • Real-user immediate pair  — match arrives PENDING; the
+        //     candidate (the user that was waiting) will accept via WS,
+        //     but the requester (us) must also call accept() to drive
+        //     status to "accepted" + materialise the room before we
+        //     navigate into it.
+        if (res.match.status === "accepted") {
+          set({
+            status: "accepted",
+            current: null,
+            accepted: res.match,
+            waitingSince: null,
+            botFallbackAt: null,
+          });
+          persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+          return;
+        }
+        // Pending: stage as ``current`` and delegate to accept().
+        // We deliberately leave ``status`` alone here — accept() flips
+        // it to "accepting" itself, and its leading guard would
+        // early-return if it saw "accepting" already on the way in.
+        // accept() is idempotent server-side (pg_advisory_xact_lock +
+        // match_not_pending → 409, which we handle by refetching).
         set({
-          status: "accepted",
-          current: null,
-          accepted: res.match,
+          current: res.match,
           waitingSince: null,
           botFallbackAt: null,
         });
         persist({ status: "idle", waitingSince: null, botFallbackAt: null });
+        await get().accept();
         return;
       }
       set({
@@ -216,11 +237,27 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         botFallbackAt: null,
       });
       return updated;
-    } catch {
-      // Accept failed — drop back to idle so the user can re-queue. The
-      // old design rewound to "proposed" so the user could retry; with
-      // auto-accept there is no manual retry surface, so idle is the
-      // honest state.
+    } catch (e) {
+      // 409 ``match_not_pending`` means the other side raced us to
+      // accept — the match IS accepted server-side, our local view is
+      // just stale. Refetch and propagate; only treat other errors
+      // (network, 5xx) as a true failure that rewinds to idle.
+      if (e instanceof ApiError && e.status === 409) {
+        try {
+          const fresh = await matchesApi.getById(cur.id);
+          set({
+            status: "accepted",
+            current: null,
+            accepted: fresh,
+            waitingSince: null,
+            botFallbackAt: null,
+          });
+          return fresh;
+        } catch {
+          /* fall through to idle reset below */
+        }
+      }
+      // Accept failed — drop back to idle so the user can re-queue.
       set({
         status: "idle",
         current: null,

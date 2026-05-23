@@ -475,3 +475,51 @@ async def test_publish_event_payload_carries_other_user_display_fields() -> None
     assert payload["other_user_id"] == "alice"
     assert payload["other_display_name"] == "Alice"
     assert "other_character_key" in payload
+
+
+# ── input normalization ──────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_request_normalizes_uuid_whitespace_and_casing() -> None:
+    """A UUID copied from a profile card may arrive with surrounding
+    whitespace and upper-case hex digits. Both should resolve to the
+    same row that ``uuid4()`` produced (canonical lower-case)."""
+    target_uuid = "550e8400-e29b-41d4-a716-446655440000"
+    users = FakeUserRepo.from_users(
+        [_user("requester"), _user(target_uuid, name="Target")]
+    )
+    svc, *_ = _service(users=users)
+
+    pasted = "  550E8400-E29B-41D4-A716-446655440000  "
+    row = await svc.request(requester_id="requester", target_id=pasted)
+    assert row.status == STATUS_REQUESTED
+    # The match landed on the canonical lower-case row.
+    assert target_uuid in (row.user_low_id, row.user_high_id)
+
+
+@pytest.mark.asyncio
+async def test_request_empty_after_strip_raises_validation() -> None:
+    """Pure-whitespace input is a validation error, NOT a 404 — the FE
+    needs to distinguish "you typed nothing" from "no such user"."""
+    users = FakeUserRepo.from_users([_user("alice")])
+    svc, *_ = _service(users=users)
+    with pytest.raises(ValidationError):
+        await svc.request(requester_id="alice", target_id="   ")
+
+
+@pytest.mark.asyncio
+async def test_search_normalizes_uuid_casing() -> None:
+    """Same normalization on the search endpoint — uppercase UUID
+    matches the lowercase row that ``uuid4()`` produced."""
+    target_uuid = "550e8400-e29b-41d4-a716-446655440000"
+    users = FakeUserRepo.from_users(
+        [_user("viewer"), _user(target_uuid, name="Target")]
+    )
+    svc, *_ = _service(users=users)
+    results = await svc.search_users(
+        viewer_id="viewer",
+        query="550E8400-E29B-41D4-A716-446655440000",
+    )
+    assert len(results) == 1
+    assert results[0].user_id == target_uuid

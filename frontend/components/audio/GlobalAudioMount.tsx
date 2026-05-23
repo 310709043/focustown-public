@@ -239,21 +239,22 @@ export function GlobalAudioMount() {
 
     const applyPlaybackIntent = (el: HTMLAudioElement, src: Source): void => {
       const as = useAudioStore.getState();
-      // Mute mirrors the audioUnlocked flag — when locked, autoplay is
-      // only permitted because the element is muted; once unlocked,
-      // `el.muted` flips and the user hears sound mid-track at the
-      // shared station offset.
-      const desiredMuted = !as.audioUnlocked;
+      // Element is muted when (a) the browser-autoplay gate hasn't
+      // cleared yet, OR (b) the user clicked mute. (a) is required so
+      // ``el.play()`` doesn't reject with NotAllowedError on first
+      // load; (b) is the only user-visible silence control (no
+      // play/pause anywhere in the UI — see feedback-no-music-pause).
+      const desiredMuted = !as.audioUnlocked || as.muted;
       if (el.muted !== desiredMuted) el.muted = desiredMuted;
       const wantPlay = (() => {
-        // station / personal (active-scope sources) always autoplay
-        // — muted before the first gesture, audible after. The
-        // audio-store branch keeps the legacy `isPlaying && unlocked`
-        // gate because it powers /focus/solo and the splash player
-        // where there is no shared "everyone is hearing this" anchor.
+        // Every audio source autoplays once the audio is unlocked. The
+        // audio-store branch (solo focus, splash, library) used to gate
+        // on ``isPlaying && audioUnlocked`` because users could pause —
+        // now the only "stop the sound" affordance is mute, so the
+        // element keeps running and ``muted`` carries the user's intent.
         if (src.kind === "station") return true;
         if (src.kind === "personal") return true;
-        return as.isPlaying && as.audioUnlocked;
+        return as.audioUnlocked;
       })();
       if (wantPlay && el.paused) {
         void el.play().catch((err) => {

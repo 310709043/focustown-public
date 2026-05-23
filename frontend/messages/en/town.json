@@ -91,6 +91,8 @@
       "prevAria": "Previous track",
       "playAria": "Play",
       "pauseAria": "Pause",
+      "muteAria": "Mute",
+      "unmuteAria": "Unmute",
       "nextAria": "Next track",
       "unlockHint": "Tap to play",
       "genres": {
@@ -243,6 +245,8 @@
     "nextAria": "Next track",
     "playAria": "Play",
     "pauseAria": "Pause",
+    "muteAria": "Mute",
+    "unmuteAria": "Unmute",
     "volumeAria": "Volume",
     "unlockHint": "🔊 Tap to listen"
   },

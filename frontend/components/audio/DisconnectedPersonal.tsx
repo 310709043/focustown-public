@@ -34,11 +34,12 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
   const reconnect = useStationStore((s) => s.reconnect);
   const nextPersonal = useStationStore((s) => s.nextPersonal);
   const prevPersonal = useStationStore((s) => s.prevPersonal);
+  const muted = useStationStore((s) => s.mutedWhileDisconnected);
+  const setMuted = useStationStore((s) => s.setMuted);
 
   const isPlaying = useAudioStore((s) => s.isPlaying);
   const volume = useAudioStore((s) => s.volume);
   const audioUnlocked = useAudioStore((s) => s.audioUnlocked);
-  const toggle = useAudioStore((s) => s.toggle);
   const setVolume = useAudioStore((s) => s.setVolume);
   const unlock = useAudioStore((s) => s.unlock);
 
@@ -47,9 +48,11 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
   const reconnectLabel =
     scopeKind === "city" ? t("reconnectCity") : t("reconnectPair");
 
-  const onTogglePlay = async () => {
+  // First mute-button press doubles as the browser-autoplay unlock so
+  // audible playback can resume the moment the user un-mutes.
+  const onToggleMute = async () => {
     if (!audioUnlocked) await unlock();
-    toggle();
+    setMuted(!muted);
   };
 
   return (
@@ -141,10 +144,10 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
         </button>
         <button
           type="button"
-          data-testid="station-toggle-play"
-          aria-label={isPlaying ? t("pauseAria") : t("playAria")}
+          data-testid="station-mute"
+          aria-label={muted ? t("unmuteAria") : t("muteAria")}
           disabled={disabled}
-          onClick={onTogglePlay}
+          onClick={onToggleMute}
           className="pixel-btn primary"
           style={{
             padding: "4px 8px",
@@ -152,7 +155,7 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
             opacity: disabled ? 0.4 : 1,
           }}
         >
-          {isPlaying ? "⏸" : "▶"}
+          {muted ? "🔇" : "🔊"}
         </button>
         <button
           type="button"

@@ -40,10 +40,11 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
   const index = useAudioStore((s) => s.index);
   const currentTrack = useAudioStore(selectCurrentTrack);
   const isPlaying = useAudioStore((s) => s.isPlaying);
+  const muted = useAudioStore((s) => s.muted);
   const audioUnlocked = useAudioStore((s) => s.audioUnlocked);
   const volume = useAudioStore((s) => s.volume);
   const setContext = useAudioStore((s) => s.setContext);
-  const toggle = useAudioStore((s) => s.toggle);
+  const toggleMute = useAudioStore((s) => s.toggleMute);
   const unlock = useAudioStore((s) => s.unlock);
   const next = useAudioStore((s) => s.next);
   const prev = useAudioStore((s) => s.prev);
@@ -97,9 +98,9 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
         </button>
         <button
           type="button"
-          onClick={toggle}
+          onClick={toggleMute}
           disabled={disabled}
-          aria-label={isPlaying ? t("pauseAria") : t("playAria")}
+          aria-label={muted ? t("unmuteAria") : t("muteAria")}
           className={clsx(
             "w-[22px] h-[22px] border rounded-sm",
             disabled
@@ -107,7 +108,7 @@ export function PersonalRadio({ context, contextId, label, className }: Props) {
               : "border-accent-1 text-accent-1",
           )}
         >
-          {isPlaying ? "⏸" : "▶"}
+          {muted ? "🔇" : "🔊"}
         </button>
         <button
           type="button"

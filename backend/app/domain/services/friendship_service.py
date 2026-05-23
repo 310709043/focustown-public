@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 from app.core.clock import IClock
 from app.core.exceptions import (
@@ -21,6 +22,28 @@ from app.domain.repositories.user_repo import IUserRepo
 STATUS_REQUESTED = "requested"
 STATUS_ACCEPTED = "accepted"
 STATUS_BLOCKED = "blocked"
+
+
+def _normalize_user_id(raw: str) -> str:
+    """Normalize a user-supplied user_id so paste-from-profile works.
+
+    Always strips surrounding whitespace. When the input parses as a
+    UUID, canonicalises to ``str(uuid.UUID(...))`` (lower-case, hyphenated,
+    strips the optional ``urn:uuid:`` prefix) so a copied UUID with
+    incidental casing differences hits the same row that ``uuid4()``
+    produced. Non-UUID input is returned stripped-but-otherwise-unchanged
+    so synthetic IDs (used in unit tests) still flow through to
+    ``users.get_by_id`` and 404 as before.
+    """
+    if not raw:
+        return ""
+    candidate = raw.strip()
+    if not candidate:
+        return ""
+    try:
+        return str(UUID(candidate))
+    except (ValueError, AttributeError):
+        return candidate
 
 
 @dataclass(slots=True, frozen=True)
@@ -106,6 +129,13 @@ class FriendshipService:
     async def request(
         self, *, requester_id: str, target_id: str
     ) -> Friendship:
+        # Normalize so a UUID pasted from a profile card (which may
+        # arrive with surrounding whitespace, upper-case letters, or
+        # the ``urn:uuid:`` prefix) hits the same row that ``uuid4()``
+        # produced when the user was created.
+        target_id = _normalize_user_id(target_id)
+        if not target_id:
+            raise ValidationError("invalid_user_id")
         if requester_id == target_id:
             raise ValidationError("cannot_friend_self")
         target = await self._users.get_by_id(target_id)
@@ -213,10 +243,12 @@ class FriendshipService:
         identifier exists. See plan: docs/plans/...todo-md-modular-quokka
         Open Question 1.
         """
-        q = query.strip()
-        if not q or q == viewer_id:
+        # Same normalization as ``request`` — accept whitespace, casing,
+        # and ``urn:uuid:`` prefixes so paste-from-profile works.
+        normalized = _normalize_user_id(query)
+        if not normalized or normalized == viewer_id:
             return []
-        target = await self._users.get_by_id(q)
+        target = await self._users.get_by_id(normalized)
         if target is None:
             return []
         existing = await self._friendships.get_between(viewer_id, target.id)

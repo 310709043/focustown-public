@@ -25,8 +25,14 @@ type Tab = "friends" | "incoming" | "outgoing";
 function mapAddError(t: (k: string) => string, err: unknown): string {
   if (!(err instanceof ApiError)) return t("addGenericError");
   if (err.status === 404) return t("addInvalidError");
-  if (err.status === 400 || err.status === 422) return t("addSelfError");
+  if (err.status === 403) return t("addBlockedError");
   if (err.status === 409) return t("addExistingError");
+  if (err.status === 400 || err.status === 422) {
+    // Backend message disambiguates 422s: ``invalid_user_id`` (input
+    // wasn't a UUID) vs ``cannot_friend_self`` (you typed your own ID).
+    if (err.message === "invalid_user_id") return t("addInvalidIdError");
+    return t("addSelfError");
+  }
   return t("addGenericError");
 }
 

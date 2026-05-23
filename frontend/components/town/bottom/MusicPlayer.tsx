@@ -47,9 +47,10 @@ export function MusicPlayer() {
   const index = useAudioStore((s) => s.index);
   const currentTrack = useAudioStore(selectCurrentTrack);
   const isPlaying = useAudioStore((s) => s.isPlaying);
+  const muted = useAudioStore((s) => s.muted);
   const audioUnlocked = useAudioStore((s) => s.audioUnlocked);
   const setContext = useAudioStore((s) => s.setContext);
-  const toggle = useAudioStore((s) => s.toggle);
+  const toggleMute = useAudioStore((s) => s.toggleMute);
   const unlock = useAudioStore((s) => s.unlock);
   const next = useAudioStore((s) => s.next);
   const prev = useAudioStore((s) => s.prev);
@@ -112,11 +113,12 @@ export function MusicPlayer() {
   // legacy per-user player so /town never goes silent.
 
   // First click both unlocks audio (browser autoplay policy needs the
-  // play() call inside a user gesture) and toggles playback. Subsequent
-  // clicks are pure toggle.
-  const onPlayClick = async () => {
+  // play() call inside a user gesture) and toggles mute. There is no
+  // play/pause anywhere in the app — the only "silence it" affordance
+  // is mute (see feedback-no-music-pause).
+  const onMuteClick = async () => {
     if (!audioUnlocked) await unlock();
-    toggle();
+    toggleMute();
   };
 
   return (
@@ -169,13 +171,13 @@ export function MusicPlayer() {
         </button>
         <button
           type="button"
-          aria-label={isPlaying ? t("pauseAria") : t("playAria")}
-          data-testid="music-toggle"
+          aria-label={muted ? t("unmuteAria") : t("muteAria")}
+          data-testid="music-mute"
           className="pixel-btn primary"
           style={{ padding: "4px 8px", fontSize: 10 }}
-          onClick={onPlayClick}
+          onClick={onMuteClick}
         >
-          {isPlaying ? "⏸" : "▶"}
+          {muted ? "🔇" : "🔊"}
         </button>
         <button
           type="button"

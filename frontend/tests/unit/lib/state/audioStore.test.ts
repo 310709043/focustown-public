@@ -59,6 +59,7 @@ beforeEach(() => {
     index: 0,
     isPlaying: false,
     volume: 0.65,
+    muted: false,
     audioUnlocked: false,
     hidden: false,
   });
@@ -219,6 +220,26 @@ test("setUnlocked(false) clears audioUnlocked", () => {
   useAudioStore.setState({ audioUnlocked: true });
   useAudioStore.getState().setUnlocked(false);
   expect(useAudioStore.getState().audioUnlocked).toBe(false);
+});
+
+test("toggleMute flips muted when already unlocked", () => {
+  useAudioStore.setState({ audioUnlocked: true, muted: false });
+
+  useAudioStore.getState().toggleMute();
+  expect(useAudioStore.getState().muted).toBe(true);
+
+  useAudioStore.getState().toggleMute();
+  expect(useAudioStore.getState().muted).toBe(false);
+});
+
+test("toggleMute while locked unlocks audio + flips muted (gesture)", () => {
+  useAudioStore.setState({ audioUnlocked: false, muted: false });
+
+  useAudioStore.getState().toggleMute();
+
+  expect(useAudioStore.getState().audioUnlocked).toBe(true);
+  expect(useAudioStore.getState().isPlaying).toBe(true);
+  expect(useAudioStore.getState().muted).toBe(true);
 });
 
 test("resolveTrackSrc returns empty string for null track", () => {
