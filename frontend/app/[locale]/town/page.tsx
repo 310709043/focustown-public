@@ -63,6 +63,7 @@ import { ShopModal } from "@/components/modals/ShopModal";
 import { AchievementsModal } from "@/components/modals/AchievementsModal";
 import { FriendsModal } from "@/components/modals/FriendsModal";
 import { ProfileModal } from "@/components/modals/ProfileModal";
+import { UnmuteHint } from "@/components/audio/UnmuteHint";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
 import { EdgeRevealSentinel } from "@/components/town/focus/EdgeRevealSentinel";
 import { ImmersiveCountdown } from "@/components/town/focus/ImmersiveCountdown";
@@ -412,6 +413,15 @@ export default function TownPage() {
         open={openModal === "profile"}
         onClose={() => setOpenModal(null)}
       />
+
+      {/* Muted-autoplay unlock affordance — only visible while
+          `audioUnlocked` is false AND the active scope is the city
+          station. The component renders null otherwise; the chip
+          dismisses itself when any click in the document hits the
+          existing capture-phase tryUnlock listener in
+          <GlobalAudioMount />, OR when the user clicks the chip
+          directly (calls audioStore.unlock()). */}
+      <UnmuteHint />
 
       {/* First-time onboarding tour — auto-opens once per browser to
           introduce the City / Solo / Together focus modes. Mounts last

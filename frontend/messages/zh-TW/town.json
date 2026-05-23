@@ -80,6 +80,10 @@
         "matchedWith": "與 {name}"
       }
     },
+    "unmuteHint": {
+      "label": "點一下開聲音",
+      "aria": "取消靜音以聽見大家共享的音樂"
+    },
     "musicPlayer": {
       "liveLabel": "lofi · LIVE",
       "trackTitleFallback": "midnight city · lofi remix",

@@ -184,17 +184,20 @@ export function GlobalAudioMount() {
   }, []);
 
   // One-shot: the first user gesture on /town doubles as the audio
-  // unlock. Browsers reject `.play()` outside a gesture, and the
-  // sessionStorage flag alone doesn't actually permit playback — we
-  // need a real `play()` call inside a real click/keypress/touch
-  // handler. Capture-phase + once-then-remove avoids interfering with
-  // downstream click handlers.
+  // unlock. Muted autoplay already had the element playing — this
+  // listener flips `muted` off + sets the store flag so future apply()
+  // ticks no longer force-mute. Same listener still handles the legacy
+  // "first gesture also calls play()" path when nothing was autoplayed
+  // (audio-store branch outside an active scope).
   useEffect(() => {
     if (isAudioUnlocked()) return;
     const tryUnlock = () => {
       const el = audioRef.current;
-      if (el && el.src) {
-        void el.play().catch(() => {});
+      if (el) {
+        el.muted = false;
+        if (el.src && el.paused) {
+          void el.play().catch(() => {});
+        }
       }
       markAudioUnlocked();
       useAudioStore.setState({ audioUnlocked: true });
@@ -236,10 +239,21 @@ export function GlobalAudioMount() {
 
     const applyPlaybackIntent = (el: HTMLAudioElement, src: Source): void => {
       const as = useAudioStore.getState();
+      // Mute mirrors the audioUnlocked flag — when locked, autoplay is
+      // only permitted because the element is muted; once unlocked,
+      // `el.muted` flips and the user hears sound mid-track at the
+      // shared station offset.
+      const desiredMuted = !as.audioUnlocked;
+      if (el.muted !== desiredMuted) el.muted = desiredMuted;
       const wantPlay = (() => {
-        if (!as.audioUnlocked) return false;
+        // station / personal (active-scope sources) always autoplay
+        // — muted before the first gesture, audible after. The
+        // audio-store branch keeps the legacy `isPlaying && unlocked`
+        // gate because it powers /focus/solo and the splash player
+        // where there is no shared "everyone is hearing this" anchor.
         if (src.kind === "station") return true;
-        return as.isPlaying;
+        if (src.kind === "personal") return true;
+        return as.isPlaying && as.audioUnlocked;
       })();
       if (wantPlay && el.paused) {
         void el.play().catch((err) => {
@@ -422,10 +436,14 @@ export function GlobalAudioMount() {
   // would force the browser to require Access-Control-Allow-Origin on
   // the redirected S3 object, which is exactly the failure mode that
   // motivated this commit (no music in deployed AWS dev).
+  // `muted` defaults true so muted autoplay is permitted before the
+  // first user gesture; apply() flips it off as soon as `audioUnlocked`
+  // is true (sessionStorage rehydrate or the document-level tryUnlock).
   return (
     <audio
       ref={audioRef}
       preload="metadata"
+      muted
       onEnded={onEnded}
       onError={onError}
       style={{ display: "none" }}

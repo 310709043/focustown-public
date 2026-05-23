@@ -42,6 +42,13 @@ const CITY_PAYLOAD: StationCursorPayload = {
 };
 
 beforeEach(() => {
+  // jsdom's HTMLMediaElement.play returns undefined rather than a
+  // Promise — production paths chain `.catch` on the return value, so
+  // we mock it for every test in this file to avoid a TypeError on
+  // any code path that calls play().
+  vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(
+    undefined as unknown as void,
+  );
   useStationStore.setState({
     city: null,
     pair: {},
@@ -95,6 +102,34 @@ test("station-mode error on first track does NOT switch to local fallback", () =
   // Still in station mode; the next station.cursor will repoint normally.
   expect(useStationStore.getState().activeScope).not.toBeNull();
   expect(useAudioStore.getState().tracks).not.toEqual(LOCAL_FALLBACK_TRACKS);
+});
+
+test("audio element renders muted by default (muted-autoplay invariant)", () => {
+  // The JSX-level `muted` attribute is what permits browsers to start
+  // playback before any user gesture. We don't need an active scope to
+  // verify this — it's the unconditional default on mount.
+  const { container } = render(<GlobalAudioMount />);
+  const audio = container.querySelector("audio")!;
+
+  expect(audio.muted).toBe(true);
+});
+
+test("flipping audioUnlocked → true unmutes the audio element", () => {
+  useStationStore.getState().applyCursor(CITY_PAYLOAD);
+  useStationStore.getState().setActiveScope({
+    kind: "city",
+    id: "lowbatterytown",
+  });
+
+  const { container } = render(<GlobalAudioMount />);
+  const audio = container.querySelector("audio")!;
+  expect(audio.muted).toBe(true);
+
+  // Simulate the post-gesture state (what tryUnlock or
+  // audioStore.unlock() ultimately do).
+  useAudioStore.setState({ audioUnlocked: true });
+
+  expect(audio.muted).toBe(false);
 });
 
 test("station-mode burst-fail across whole playlist swaps to local fallback", () => {

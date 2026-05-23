@@ -80,6 +80,10 @@
         "matchedWith": "with {name}"
       }
     },
+    "unmuteHint": {
+      "label": "Tap to unmute",
+      "aria": "Unmute the shared station playing right now"
+    },
     "musicPlayer": {
       "liveLabel": "lofi · LIVE",
       "trackTitleFallback": "midnight city · lofi remix",
