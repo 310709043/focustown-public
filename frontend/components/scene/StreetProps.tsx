@@ -22,7 +22,7 @@ export function StreetProps() {
       // 2026-05-21: lifted onto the new Road sidewalk strip
       // (Road: bottom 168..288; sidewalk top 30 px @ 258..288).
       // City-Mode immersive: travels with the ground stack via --ground-shift.
-      style={{ bottom: "calc(258px - var(--ground-shift, 0px))", height: 90 }}
+      style={{ bottom: "calc(var(--ground-baseline) - var(--ground-shift, 0px))", height: 90 }}
       aria-hidden
     >
       {LAMP_XS.map((x) => (

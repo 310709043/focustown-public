@@ -3,39 +3,24 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { LeaderboardSection } from "@/components/awards/LeaderboardSection";
 import { AchievementsSection } from "@/components/awards/AchievementsSection";
-import { leaderboardApi, achievementsApi } from "@/lib/api/endpoints";
+import { achievementsApi } from "@/lib/api/endpoints";
 import { errShape, reportApiError } from "@/lib/api/report";
-import type { LeaderboardEntry, Achievement } from "@/lib/api/types.gen";
-
-interface AwardsViewProps {
-  /** Column count for the leaderboard's inner list. The /awards full-
-   *  page route uses the default (1, narrower column for easier scan);
-   *  the ACHV popup (AchievementsModal) passes `2` so more rows are
-   *  visible without scrolling — per 2026-05-20 user feedback. */
-  leaderboardColumns?: 1 | 2;
-}
+import type { Achievement } from "@/lib/api/types.gen";
 
 /**
  * Awards body (chromeless) — used inside AchievementsModal. The /awards
  * route page renders the full <AwardsScene> directly (it already includes
- * AwardsTopBar + this same section grid); this view exists so the modal
- * can host the pixel-faithful sections without their page-level top bar.
+ * AwardsTopBar + the same achievements grid); this view exists so the
+ * modal can host the pixel-faithful section without the page-level top
+ * bar. Leaderboard section was removed per 2026-05-23 user feedback —
+ * the ACHV popup is now achievements-only.
  */
-export function AwardsView({ leaderboardColumns = 1 }: AwardsViewProps = {}) {
-  const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
+export function AwardsView() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const tApi = useTranslations("errors");
 
   useEffect(() => {
-    leaderboardApi
-      .today()
-      .then(setLeaders)
-      .catch((e) => {
-        reportApiError(e, tApi);
-        console.error({ event: "awards_leaderboard_failed", err: errShape(e) });
-      });
     achievementsApi
       .all()
       .then((page) => setAchievements(page.items))
@@ -51,12 +36,11 @@ export function AwardsView({ leaderboardColumns = 1 }: AwardsViewProps = {}) {
         display: "grid",
         // `min(280px, 100%)` lets the column shrink below 280px on
         // phones so there's no horizontal scroll after outer padding.
-        // Above 280px the auto-fit still places two columns side-by-side.
+        // With a single child the grid simply spans full width.
         gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
         gap: 13,
       }}
     >
-      <LeaderboardSection leaders={leaders} columns={leaderboardColumns} />
       <AchievementsSection achievements={achievements} />
     </div>
   );

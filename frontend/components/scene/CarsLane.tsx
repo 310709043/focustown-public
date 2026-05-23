@@ -128,7 +128,7 @@ export function CarsLane() {
       // Pedestrians / NamedWalkers occupy the sidewalk strip above.
       // City-Mode immersive: shifts with the ground stack via --ground-shift.
       style={{
-        bottom: "calc(175px - var(--ground-shift, 0px))",
+        bottom: "calc(var(--road-surface-y) - var(--ground-shift, 0px))",
         height: 70,
       }}
       aria-hidden

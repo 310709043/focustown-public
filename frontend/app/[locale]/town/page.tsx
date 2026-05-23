@@ -318,7 +318,7 @@ export default function TownPage() {
         className="flex-1 relative overflow-hidden scene-stage"
         style={
           {
-            "--ground-shift": immersive ? "168px" : "0px",
+            "--ground-shift": immersive ? "var(--bottom-hud-h)" : "0px",
           } as React.CSSProperties
         }
       >

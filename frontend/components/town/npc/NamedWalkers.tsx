@@ -69,7 +69,7 @@ export function NamedWalkers() {
               // Sidewalk strip of the Road band (matches <Pedestrians>).
               // Road: bottom 168..288, sidewalk = top 30 px @ 258..288.
               // City-Mode immersive: shifts with the ground stack.
-              bottom: "calc(258px - var(--ground-shift, 0px))",
+              bottom: "calc(var(--ground-baseline) - var(--ground-shift, 0px))",
               zIndex: 6,
               pointerEvents: "none",
             }}

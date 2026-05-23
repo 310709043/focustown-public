@@ -23,11 +23,9 @@ export function AchievementsModal({
       width="min(720px, 94vw)"
       testId="achievements-modal"
     >
-      {/* Modal context: the leaderboard's inner list reflows to 2 columns
-          so more rows are visible without scrolling. The /awards full-page
-          route keeps the default 1-column layout for easier vertical scan
-          (2026-05-20 user feedback). */}
-      <AwardsView leaderboardColumns={2} />
+      {/* Achievements-only popup per 2026-05-23 user feedback. The /awards
+          full-page route still renders the leaderboard alongside. */}
+      <AwardsView />
     </Modal>
   );
 }

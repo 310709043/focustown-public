@@ -21,7 +21,7 @@ export function Road() {
   return (
     <div
       className="absolute left-0 right-0 z-[5] pointer-events-none ground-anchor"
-      style={{ bottom: "calc(168px - var(--ground-shift, 0px))", height: 120 }}
+      style={{ bottom: "calc(var(--bottom-hud-h) - var(--ground-shift, 0px))", height: 120 }}
       aria-hidden
     >
       {/* sidewalk strip (top 30 px) — slightly lighter panel tone so it

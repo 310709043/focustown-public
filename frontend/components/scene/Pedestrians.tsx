@@ -72,7 +72,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
         // 258 anchors the figure's feet on the sidewalk so cars
         // driving on the asphalt below stay visually separated.
         // City-Mode immersive: shifts with the ground stack via --ground-shift.
-        bottom: "calc(258px - var(--ground-shift, 0px))",
+        bottom: "calc(var(--ground-baseline) - var(--ground-shift, 0px))",
         transition:
           "left 18s cubic-bezier(0.4, 0, 0.2, 1), bottom 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
       }}

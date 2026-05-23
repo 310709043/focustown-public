@@ -96,12 +96,12 @@ export function NamedBuildings({ showLabels = true }: NamedBuildingsProps = {}) 
     <div
       data-testid="named-buildings"
       className="absolute left-0 right-0 pointer-events-none ground-anchor"
-      // Anchored to the top of the BottomHUD (168 px) so the skyline sits
-      // directly on the control panel pre-timer. When the timer starts,
-      // --ground-shift (168) glides the base to the viewport bottom in
-      // sync with the BottomHUD sliding away (fullscreen).
+      // Anchored to sidewalk top (--ground-baseline = BottomHUD + asphalt)
+      // so the skyline stands on the same level as pedestrians/dogs/cats —
+      // matching every other ground-anchored layer. --ground-shift glides
+      // the whole stack down in sync when the focus timer enters immersive.
       style={{
-        bottom: "calc(168px - var(--ground-shift, 0px))",
+        bottom: "calc(var(--ground-baseline) - var(--ground-shift, 0px))",
         height: 420,
         zIndex: 3,
       }}
