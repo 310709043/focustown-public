@@ -35,12 +35,26 @@ const RANK_BADGE_LABELS = ["CHAMP", "SILVER", "BRONZE"];
  */
 export function SkyWindow() {
   const [tab, setTab] = useState<"rank" | "ad">("rank");
+  // Broadcast index lives here, not in AdSpace, because AdSpace unmounts
+  // every time the tab flips back to "rank" (tab toggles every 6 s, mode
+  // rotation is every BROADCAST_ROTATE_MS = 9 s). A locally-held idx would
+  // reset to 0 on every remount and never reach the video mode.
+  const [adIdx, setAdIdx] = useState(0);
   const t = useTranslations("town");
 
   useEffect(() => {
     const id = window.setInterval(
       () => setTab((x) => (x === "rank" ? "ad" : "rank")),
       6000,
+    );
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (BROADCAST_MODES.length <= 1) return;
+    const id = window.setInterval(
+      () => setAdIdx((i) => (i + 1) % BROADCAST_MODES.length),
+      BROADCAST_ROTATE_MS,
     );
     return () => window.clearInterval(id);
   }, []);
@@ -110,7 +124,7 @@ export function SkyWindow() {
             ad tabs doesn't reflow the floating panel (AdSpace is naturally
             taller than RankBoard). */}
         <div style={{ height: 220, overflow: "hidden" }}>
-          {tab === "rank" ? <RankBoard /> : <AdSpace />}
+          {tab === "rank" ? <RankBoard /> : <AdSpace idx={adIdx} />}
         </div>
 
         {/* Bottom signal bar */}
@@ -385,20 +399,10 @@ function hashStringToInt(s: string): number {
  * "AUDIO ← TOWN RADIO") only appears for `video` mode — sponsor mode
  * keeps the original branded-card look so existing copy still applies.
  */
-function AdSpace() {
-  const [idx, setIdx] = useState(0);
+function AdSpace({ idx }: { idx: number }) {
   const tCommon = useTranslations("town");
   const screenRef = useRef<HTMLDivElement>(null);
   const modes = BROADCAST_MODES;
-
-  useEffect(() => {
-    if (modes.length <= 1) return;
-    const id = window.setInterval(
-      () => setIdx((i) => (i + 1) % modes.length),
-      BROADCAST_ROTATE_MS,
-    );
-    return () => window.clearInterval(id);
-  }, [modes.length]);
 
   // Phosphor flash every ~12s — short brightness pulse that sells the
   // channel-changing tic without paying full animation cost.
@@ -414,7 +418,7 @@ function AdSpace() {
     return () => window.clearInterval(id);
   }, []);
 
-  const mode = modes[idx];
+  const mode = modes[idx % modes.length];
 
   return (
     <div
