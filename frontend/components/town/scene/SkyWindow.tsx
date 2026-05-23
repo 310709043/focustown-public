@@ -26,8 +26,9 @@ const RANK_BADGE_LABELS = ["CHAMP", "SILVER", "BRONZE"];
  * The "FOCUS BROADCAST" sky window — replaces `LeaderboardWindow`.
  * A pixel-bordered pane floats just under the top HUD with an
  * antenna mount + blinking transmitter dot on top, a tabbed body
- * that swaps between leaderboard rank rows and rotating sponsor
- * ads every 6 s, and a signal-bar + LIVE indicator at the bottom.
+ * that swaps between leaderboard rank rows and sponsor/video broadcast
+ * (rank ↔ ad is user-toggled via the title-bar pills; the broadcast
+ * carousel inside the ad tab rotates every BROADCAST_ROTATE_MS).
  *
  * Backend data: the rank tab calls `leaderboardApi.today()` (same
  * source as before, polled every 30 s). The ad tab is purely
@@ -35,20 +36,13 @@ const RANK_BADGE_LABELS = ["CHAMP", "SILVER", "BRONZE"];
  */
 export function SkyWindow() {
   const [tab, setTab] = useState<"rank" | "ad">("rank");
-  // Broadcast index lives here, not in AdSpace, because AdSpace unmounts
-  // every time the tab flips back to "rank" (tab toggles every 6 s, mode
-  // rotation is every BROADCAST_ROTATE_MS = 9 s). A locally-held idx would
-  // reset to 0 on every remount and never reach the video mode.
+  // Broadcast index lives here, not in AdSpace, because AdSpace stays
+  // mounted-but-hidden when the user is on the rank tab; if idx lived
+  // inside AdSpace it would still survive (no remount now), but keeping
+  // it in the parent also lets the indicator dots reflect progress even
+  // while the rank tab is showing.
   const [adIdx, setAdIdx] = useState(0);
   const t = useTranslations("town");
-
-  useEffect(() => {
-    const id = window.setInterval(
-      () => setTab((x) => (x === "rank" ? "ad" : "rank")),
-      6000,
-    );
-    return () => window.clearInterval(id);
-  }, []);
 
   useEffect(() => {
     if (BROADCAST_MODES.length <= 1) return;
@@ -111,8 +105,12 @@ export function SkyWindow() {
             </span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            <TabPill active={tab === "rank"}>{t("todayRank")}</TabPill>
-            <TabPill active={tab === "ad"}>{t("skyAd")}</TabPill>
+            <TabPill active={tab === "rank"} onClick={() => setTab("rank")}>
+              {t("todayRank")}
+            </TabPill>
+            <TabPill active={tab === "ad"} onClick={() => setTab("ad")}>
+              {t("skyAd")}
+            </TabPill>
           </div>
         </div>
 
@@ -736,13 +734,17 @@ function SignalBars() {
 function TabPill({
   children,
   active,
+  onClick,
 }: {
   children: React.ReactNode;
   active: boolean;
+  onClick: () => void;
 }) {
   return (
-    <span
-      aria-current={active ? "true" : undefined}
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
       className="font-silkscreen"
       style={{
         padding: "4px 10px",
@@ -753,10 +755,11 @@ function TabPill({
         letterSpacing: "0.1em",
         whiteSpace: "nowrap",
         userSelect: "none",
+        cursor: "pointer",
       }}
     >
       {children}
-    </span>
+    </button>
   );
 }
 
