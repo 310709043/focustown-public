@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { ApiError } from "@/lib/api/client";
 import { friendsApi } from "@/lib/api/endpoints";
+import { useAuthStore } from "@/lib/state/authStore";
 import {
   selectAccepted,
   selectIncomingRequests,
@@ -32,6 +33,8 @@ function mapAddError(t: (k: string) => string, err: unknown): string {
 export function FriendsView({ onClose }: FriendsViewProps) {
   const t = useTranslations("profile.friends");
   const tModal = useTranslations("profile.modal");
+  const locale = useLocale();
+  const viewer = useAuthStore((s) => s.user);
   const [tab, setTab] = useState<Tab>("friends");
   const [loading, setLoading] = useState(true);
   const [inviteId, setInviteId] = useState("");
@@ -134,6 +137,17 @@ export function FriendsView({ onClose }: FriendsViewProps) {
     }
   }
 
+  async function handleShareLink() {
+    if (!viewer || typeof window === "undefined") return;
+    const link = `${window.location.origin}/${locale}/u/${viewer.id}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      pushInfoToast(t("shareCopied"));
+    } catch {
+      pushErrorToast(t("shareError"));
+    }
+  }
+
   return (
     <div
       data-testid="friends-view"
@@ -180,6 +194,27 @@ export function FriendsView({ onClose }: FriendsViewProps) {
           ✕ {tModal("close")}
         </button>
       </header>
+
+      {viewer ? (
+        <button
+          type="button"
+          data-testid="friends-share-link"
+          onClick={handleShareLink}
+          className="pixel-btn font-silkscreen"
+          style={{
+            alignSelf: "flex-start",
+            padding: "8px 14px",
+            fontSize: 11,
+            letterSpacing: "0.22em",
+            background: "transparent",
+            border: "1px solid var(--accent-3)",
+            color: "var(--accent-3)",
+            cursor: "pointer",
+          }}
+        >
+          {t("shareCta")}
+        </button>
+      ) : null}
 
       <form
         onSubmit={handleInvite}

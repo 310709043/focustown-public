@@ -17,6 +17,37 @@ import type { FocusingNowItem, FriendSummary } from "@/lib/api/endpoints";
  * Stored as `byFriendshipId` for O(1) updates by friendship id, plus a
  * `focusingNow` slice for the "FRIENDS NOW" widget.
  */
+/**
+ * WS payload shape emitted by ``FriendshipService._publish_event``.
+ *
+ *   { type: "friend.requested" | "friend.accepted" |
+ *           "friend.rejected" | "friend.removed",
+ *     friendship_id, status, requested_by, other_user_id }
+ *
+ * The backend keeps the wire format flat (no full ``FriendSummary``) so
+ * fan-out frames stay small. ``applyEvent`` translates the flat shape
+ * into store mutations:
+ *
+ *   - ``friend.requested`` from another user → optimistic upsert with a
+ *     placeholder display name; ``FriendsView.reload`` is expected to
+ *     replace it with the canonical row on next refresh.
+ *   - ``friend.accepted`` → set ``status=accepted`` if we already have
+ *     the row; otherwise upsert placeholder (the same hydrate will
+ *     fix it).
+ *   - ``friend.rejected`` / ``friend.removed`` → drop the row.
+ */
+export type FriendEventPayload = {
+  type:
+    | "friend.requested"
+    | "friend.accepted"
+    | "friend.rejected"
+    | "friend.removed";
+  friendship_id: string;
+  status: "requested" | "accepted" | "blocked";
+  requested_by: string;
+  other_user_id: string;
+};
+
 interface FriendsStore {
   byFriendshipId: Record<string, FriendSummary>;
   focusingNow: FocusingNowItem[];
@@ -28,6 +59,7 @@ interface FriendsStore {
   setFocusingNow: (rows: FocusingNowItem[]) => void;
   upsert: (friend: FriendSummary) => void;
   remove: (friendshipId: string) => void;
+  applyEvent: (payload: FriendEventPayload, viewerId: string) => void;
   reset: () => void;
 }
 
@@ -57,6 +89,45 @@ export const useFriendsStore = create<FriendsStore>((set) => ({
       const next = { ...prev.byFriendshipId };
       delete next[friendshipId];
       return { byFriendshipId: next };
+    });
+  },
+
+  applyEvent(payload, viewerId) {
+    set((prev) => {
+      if (
+        payload.type === "friend.rejected" ||
+        payload.type === "friend.removed"
+      ) {
+        if (!(payload.friendship_id in prev.byFriendshipId)) return prev;
+        const next = { ...prev.byFriendshipId };
+        delete next[payload.friendship_id];
+        return { byFriendshipId: next };
+      }
+      // requested / accepted: upsert. Patch onto the existing row when
+      // present so we don't clobber display_name / character_key with
+      // placeholders.
+      const existing = prev.byFriendshipId[payload.friendship_id];
+      const merged: FriendSummary = existing
+        ? { ...existing, status: payload.status }
+        : {
+            friendship_id: payload.friendship_id,
+            user_id: payload.other_user_id,
+            display_name: payload.other_user_id,
+            character_key: null,
+            status: payload.status,
+            requested_by_me: payload.requested_by === viewerId,
+            created_at: new Date().toISOString(),
+            accepted_at:
+              payload.status === "accepted"
+                ? new Date().toISOString()
+                : null,
+          };
+      return {
+        byFriendshipId: {
+          ...prev.byFriendshipId,
+          [payload.friendship_id]: merged,
+        },
+      };
     });
   },
 

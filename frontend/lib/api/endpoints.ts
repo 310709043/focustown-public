@@ -315,6 +315,15 @@ export interface FocusingNowItem {
   minutes_planned: number | null;
 }
 
+export interface FriendSearchResult {
+  user_id: string;
+  display_name: string;
+  character_key: string | null;
+  friendship_status: "none" | "requested" | "accepted" | "blocked";
+  friendship_id: string | null;
+  requested_by_me: boolean;
+}
+
 export const friendsApi = {
   list(status: "accepted" | "requested" = "accepted") {
     return apiFetch<Page<FriendSummary>>(
@@ -325,6 +334,13 @@ export const friendsApi = {
   focusingNow() {
     return apiFetch<{ friends_focusing: FocusingNowItem[] }>(
       "/api/v1/friends/focusing-now",
+      { method: "GET" },
+    );
+  },
+  search(query: string) {
+    const q = encodeURIComponent(query.trim());
+    return apiFetch<{ results: FriendSearchResult[] }>(
+      `/api/v1/friends/search?q=${q}`,
       { method: "GET" },
     );
   },

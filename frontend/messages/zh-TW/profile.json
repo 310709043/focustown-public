@@ -252,6 +252,28 @@
     "actionUnfriend": "解除好友",
     "unfriendConfirm": "確定要解除這位好友嗎？",
     "loading": "載入中…",
-    "loadError": "無法載入好友名單，請稍後再試。"
+    "loadError": "無法載入好友名單，請稍後再試。",
+    "shareCta": "✦ 分享我的連結",
+    "shareCopied": "連結已複製 — 分享給朋友吧！",
+    "shareError": "複製連結失敗，請手動複製。",
+    "deepLink": {
+      "title": "鎮民邀請",
+      "loading": "查詢鎮民中…",
+      "notFound": "找不到這位鎮民。",
+      "selfTitle": "這是你自己的連結",
+      "selfBody": "把它分享給朋友——對方點進來就能加你為好友。",
+      "selfBackToTown": "◀ 回到城裡",
+      "addCta": "+ 加為好友",
+      "addSubmitting": "送出中…",
+      "addError": "請求送出失敗，請稍後再試。",
+      "addedToastBody": "已送出好友邀請給 {name}。",
+      "pendingOutgoing": "邀請已送出，等待 {name} 接受。",
+      "pendingIncomingCta": "接受 {name} 的邀請",
+      "pendingIncomingSubmitting": "接受中…",
+      "alreadyFriends": "你們已經是好友 ✓",
+      "blocked": "這個連結目前無法使用。",
+      "signInPrompt": "登入後才能加這位鎮民為好友。",
+      "signInCta": "登入"
+    }
   }
 }

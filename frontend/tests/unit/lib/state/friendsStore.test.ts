@@ -161,3 +161,124 @@ test("selectOutgoingRequests returns only requested + by-me", () => {
 
   expect(ids).toEqual(["f-1"]);
 });
+
+// ── applyEvent (WS payload dispatch) ─────────────────────────────────
+
+test("applyEvent friend.requested upserts placeholder when row is unknown", () => {
+  useFriendsStore.getState().applyEvent(
+    {
+      type: "friend.requested",
+      friendship_id: "f-new",
+      status: "requested",
+      requested_by: "u-other",
+      other_user_id: "u-other",
+    },
+    "u-me",
+  );
+
+  const row = useFriendsStore.getState().byFriendshipId["f-new"];
+  expect(row).toBeDefined();
+  expect(row.status).toBe("requested");
+  expect(row.requested_by_me).toBe(false);
+  expect(row.user_id).toBe("u-other");
+});
+
+test("applyEvent friend.requested preserves display_name when row already cached", () => {
+  useFriendsStore
+    .getState()
+    .hydrate({
+      accepted: [],
+      incoming: [
+        mkFriend({
+          friendship_id: "f-1",
+          display_name: "Bob",
+          status: "requested",
+        }),
+      ],
+    });
+
+  useFriendsStore.getState().applyEvent(
+    {
+      type: "friend.requested",
+      friendship_id: "f-1",
+      status: "requested",
+      requested_by: "u-other",
+      other_user_id: "u-other",
+    },
+    "u-me",
+  );
+
+  expect(useFriendsStore.getState().byFriendshipId["f-1"].display_name).toBe(
+    "Bob",
+  );
+});
+
+test("applyEvent friend.accepted flips status on an existing row", () => {
+  useFriendsStore
+    .getState()
+    .hydrate({
+      accepted: [],
+      incoming: [
+        mkFriend({ friendship_id: "f-1", status: "requested" }),
+      ],
+    });
+
+  useFriendsStore.getState().applyEvent(
+    {
+      type: "friend.accepted",
+      friendship_id: "f-1",
+      status: "accepted",
+      requested_by: "u-me",
+      other_user_id: "u-other",
+    },
+    "u-me",
+  );
+
+  expect(useFriendsStore.getState().byFriendshipId["f-1"].status).toBe(
+    "accepted",
+  );
+});
+
+test("applyEvent friend.rejected drops the row", () => {
+  useFriendsStore
+    .getState()
+    .hydrate({
+      accepted: [mkFriend({ friendship_id: "f-1" })],
+      incoming: [],
+    });
+
+  useFriendsStore.getState().applyEvent(
+    {
+      type: "friend.rejected",
+      friendship_id: "f-1",
+      status: "requested",
+      requested_by: "u-me",
+      other_user_id: "u-other",
+    },
+    "u-me",
+  );
+
+  expect(useFriendsStore.getState().byFriendshipId["f-1"]).toBeUndefined();
+});
+
+test("applyEvent friend.removed is idempotent when row is unknown", () => {
+  useFriendsStore
+    .getState()
+    .hydrate({
+      accepted: [mkFriend({ friendship_id: "f-1" })],
+      incoming: [],
+    });
+
+  useFriendsStore.getState().applyEvent(
+    {
+      type: "friend.removed",
+      friendship_id: "f-ghost",
+      status: "accepted",
+      requested_by: "u-me",
+      other_user_id: "u-other",
+    },
+    "u-me",
+  );
+
+  expect(useFriendsStore.getState().byFriendshipId["f-1"]).toBeDefined();
+});

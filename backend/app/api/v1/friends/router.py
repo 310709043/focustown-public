@@ -8,6 +8,8 @@ from app.api.v1.friends.schemas import (
     FocusingNowItem,
     FocusingNowResponse,
     FriendRequestRequest,
+    FriendSearchResponse,
+    FriendSearchResultDTO,
     FriendSummaryDTO,
 )
 from app.core.deps import (
@@ -64,6 +66,28 @@ async def list_my_friends(
         limit=limit,
         key=lambda r: (r.created_at, r.friendship_id),
         to_item=lambda r: FriendSummaryDTO(**r.__dict__),
+    )
+
+
+@router.get("/search", response_model=FriendSearchResponse)
+async def search_users(
+    user_id: CurrentUserId,
+    db: DbDep,
+    ids: IdGenDep,
+    clock: ClockDep,
+    publisher: RealtimePublisherDep,
+    q: str = Query("", max_length=64),
+) -> FriendSearchResponse:
+    """UUID-exact user lookup with friendship-status tag.
+
+    v1 only resolves UUIDs; empty / non-UUID / self / unknown queries
+    return ``results: []`` so the FE renders a "no match" hint without
+    a separate 404 branch.
+    """
+    svc = _service(db, publisher, ids, clock)
+    rows = await svc.search_users(viewer_id=user_id, query=q)
+    return FriendSearchResponse(
+        results=[FriendSearchResultDTO(**r.__dict__) for r in rows]
     )
 
 

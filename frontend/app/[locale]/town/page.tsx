@@ -11,6 +11,7 @@ import { SCENE_TICK_MS, useSceneStore } from "@/lib/state/sceneStore";
 import { useUserItemsStore } from "@/lib/state/userItemsStore";
 import { useWalletStore } from "@/lib/state/walletStore";
 import { useRealtime } from "@/lib/ws/useRealtime";
+import { useRealtimeFriends } from "@/lib/ws/useRealtimeFriends";
 import { useRealtimeMatch } from "@/lib/ws/useRealtimeMatch";
 import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionCompleted";
 import { useMatchStore } from "@/lib/state/matchStore";
@@ -249,6 +250,11 @@ export default function TownPage() {
     // to a focus room the backend already marked complete.
     useMatchStore.getState().clear();
   });
+
+  // Phase 5: keep the friends store live while the user is on /town so
+  // an inbound friend.requested / friend.accepted arrives in the
+  // FriendsModal panels without a polling refresh.
+  useRealtimeFriends();
 
   const currentScene = useSceneStore((s) => s.current);
   const sceneIsWet = currentScene === "rain" || currentScene === "storm";

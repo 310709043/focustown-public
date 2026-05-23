@@ -252,6 +252,28 @@
     "actionUnfriend": "Unfriend",
     "unfriendConfirm": "Unfriend this citizen?",
     "loading": "Loading…",
-    "loadError": "Could not load friends. Please try again."
+    "loadError": "Could not load friends. Please try again.",
+    "shareCta": "✦ Share my link",
+    "shareCopied": "Link copied — share it with a friend!",
+    "shareError": "Could not copy link. Try copying it manually.",
+    "deepLink": {
+      "title": "Citizen invite",
+      "loading": "Looking up citizen…",
+      "notFound": "We couldn't find this citizen.",
+      "selfTitle": "This is your own link",
+      "selfBody": "Share it with a friend — they'll land here and can add you.",
+      "selfBackToTown": "◀ Back to town",
+      "addCta": "+ Add as friend",
+      "addSubmitting": "Sending…",
+      "addError": "Could not send the request. Please try again.",
+      "addedToastBody": "Friend request sent to {name}.",
+      "pendingOutgoing": "Request pending — waiting for {name} to accept.",
+      "pendingIncomingCta": "Accept invite from {name}",
+      "pendingIncomingSubmitting": "Accepting…",
+      "alreadyFriends": "You're already friends ✓",
+      "blocked": "This link can't be used right now.",
+      "signInPrompt": "Sign in to add this citizen as a friend.",
+      "signInCta": "Sign in"
+    }
   }
 }

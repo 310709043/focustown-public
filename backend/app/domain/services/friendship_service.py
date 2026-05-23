@@ -48,6 +48,21 @@ class FriendFocusingNow:
     minutes_planned: int | None
 
 
+@dataclass(slots=True, frozen=True)
+class FriendSearchResult:
+    """One row of a user-search hit, with the current friendship state
+    relative to the viewer so the FE can render the right CTA
+    (Add / Pending / Accept / Already friends) without a follow-up call.
+    """
+
+    user_id: str
+    display_name: str
+    character_key: str | None
+    friendship_status: str  # "none" | "requested" | "accepted" | "blocked"
+    friendship_id: str | None
+    requested_by_me: bool
+
+
 class FriendshipService:
     """Friend graph CRUD + WS fan-out.
 
@@ -182,6 +197,44 @@ class FriendshipService:
                 )
             )
         return out
+
+    async def search_users(
+        self, *, viewer_id: str, query: str
+    ) -> list[FriendSearchResult]:
+        """v1: UUID-exact match only.
+
+        Why not display-name substring: anonymous name search is an
+        enumeration vector (anyone authenticated could harvest the user
+        directory). The product's primary discovery flow is the deep
+        link, so name search is deferred until a separate ``handle``
+        identifier exists. See plan: docs/plans/...todo-md-modular-quokka
+        Open Question 1.
+        """
+        q = query.strip()
+        if not q or q == viewer_id:
+            return []
+        target = await self._users.get_by_id(q)
+        if target is None:
+            return []
+        existing = await self._friendships.get_between(viewer_id, target.id)
+        if existing is None:
+            status = "none"
+            friendship_id: str | None = None
+            requested_by_me = False
+        else:
+            status = existing.status
+            friendship_id = existing.id
+            requested_by_me = existing.requested_by == viewer_id
+        return [
+            FriendSearchResult(
+                user_id=target.id,
+                display_name=target.display_name,
+                character_key=target.character_key,
+                friendship_status=status,
+                friendship_id=friendship_id,
+                requested_by_me=requested_by_me,
+            )
+        ]
 
     async def list_focusing_now(
         self, *, user_id: str

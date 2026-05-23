@@ -383,3 +383,75 @@ async def test_accept_unknown_friendship_raises_not_found() -> None:
     svc, *_ = _service(users=users)
     with pytest.raises(NotFoundError):
         await svc.accept(friendship_id="ghost", accepter_id="bob")
+
+
+# ── search_users ───────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_search_empty_query_returns_empty() -> None:
+    users = FakeUserRepo.from_users([_user("alice"), _user("bob")])
+    svc, *_ = _service(users=users)
+    assert await svc.search_users(viewer_id="alice", query="") == []
+    assert await svc.search_users(viewer_id="alice", query="   ") == []
+
+
+@pytest.mark.asyncio
+async def test_search_self_is_filtered_out() -> None:
+    users = FakeUserRepo.from_users([_user("alice")])
+    svc, *_ = _service(users=users)
+    assert await svc.search_users(viewer_id="alice", query="alice") == []
+
+
+@pytest.mark.asyncio
+async def test_search_unknown_user_returns_empty() -> None:
+    users = FakeUserRepo.from_users([_user("alice")])
+    svc, *_ = _service(users=users)
+    assert await svc.search_users(viewer_id="alice", query="ghost") == []
+
+
+@pytest.mark.asyncio
+async def test_search_known_user_with_no_friendship_returns_status_none() -> None:
+    users = FakeUserRepo.from_users(
+        [_user("alice"), _user("bob", name="Bob")]
+    )
+    svc, *_ = _service(users=users)
+    results = await svc.search_users(viewer_id="alice", query="bob")
+    assert len(results) == 1
+    hit = results[0]
+    assert hit.user_id == "bob"
+    assert hit.display_name == "Bob"
+    assert hit.friendship_status == "none"
+    assert hit.friendship_id is None
+    assert hit.requested_by_me is False
+
+
+@pytest.mark.asyncio
+async def test_search_when_request_outgoing_tags_requested_by_me() -> None:
+    users = FakeUserRepo.from_users([_user("alice"), _user("bob")])
+    svc, friendships, *_ = _service(users=users)
+    await svc.request(requester_id="alice", target_id="bob")
+    results = await svc.search_users(viewer_id="alice", query="bob")
+    assert results[0].friendship_status == "requested"
+    assert results[0].requested_by_me is True
+    assert results[0].friendship_id is not None
+
+
+@pytest.mark.asyncio
+async def test_search_when_request_incoming_tags_not_requested_by_me() -> None:
+    users = FakeUserRepo.from_users([_user("alice"), _user("bob")])
+    svc, friendships, *_ = _service(users=users)
+    await svc.request(requester_id="bob", target_id="alice")
+    results = await svc.search_users(viewer_id="alice", query="bob")
+    assert results[0].friendship_status == "requested"
+    assert results[0].requested_by_me is False
+
+
+@pytest.mark.asyncio
+async def test_search_when_already_friends_returns_accepted_status() -> None:
+    users = FakeUserRepo.from_users([_user("alice"), _user("bob")])
+    svc, friendships, *_ = _service(users=users)
+    row = await svc.request(requester_id="alice", target_id="bob")
+    await svc.accept(friendship_id=row.id, accepter_id="bob")
+    results = await svc.search_users(viewer_id="alice", query="bob")
+    assert results[0].friendship_status == "accepted"

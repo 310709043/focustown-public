@@ -16,12 +16,11 @@ class Friendship:
     accepted_at: datetime | None
 
 
-class IFriendshipRepo(Protocol):
-    """Single-row-per-pair friendship CRUD.
+class IFriendshipReader(Protocol):
+    """Read-only view over friendships.
 
-    The Protocol owns the (low, high) ordering invariant: every method
-    accepts the two ids in any order and the adapter normalises them
-    before talking to storage. Callers never have to sort themselves.
+    Services that only query (e.g. a future "friend-of-friend" suggester)
+    depend on this Protocol so they cannot accidentally mutate state.
     """
 
     async def get_between(
@@ -39,6 +38,7 @@ class IFriendshipRepo(Protocol):
         """Return friendships where ``user_id`` is either side, paginated
         by ``(created_at, id)``. Over-fetched by one for next_cursor.
         """
+        ...
 
     async def list_incoming_requests(
         self,
@@ -48,6 +48,7 @@ class IFriendshipRepo(Protocol):
         limit: int = 50,
     ) -> list[Friendship]:
         """Pending requests addressed to ``user_id``, paginated."""
+        ...
 
     async def list_accepted_friend_ids(self, user_id: str) -> list[str]:
         """Just the *other* user ids of accepted friendships — fast path
@@ -57,6 +58,16 @@ class IFriendshipRepo(Protocol):
         on focus sessions, and a typical user accumulates dozens of
         friends, not thousands.
         """
+        ...
+
+
+class IFriendshipWriter(Protocol):
+    """Write-side over friendships (create + status transitions + delete).
+
+    The Protocol owns the (low, high) ordering invariant: every method
+    accepts the two ids in any order and the adapter normalises them
+    before talking to storage. Callers never have to sort themselves.
+    """
 
     async def create_request(
         self,
@@ -75,3 +86,12 @@ class IFriendshipRepo(Protocol):
     ) -> Friendship | None: ...
 
     async def delete(self, friendship_id: str) -> None: ...
+
+
+class IFriendshipRepo(IFriendshipReader, IFriendshipWriter, Protocol):
+    """Full friendship repository — composes reader + writer.
+
+    ``FriendshipService`` needs both sides; narrow consumers (read-only
+    HTTP handlers, future suggesters) should depend on
+    ``IFriendshipReader`` per Interface Segregation.
+    """

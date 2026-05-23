@@ -35,3 +35,16 @@ class FocusingNowItem(BaseModel):
 
 class FocusingNowResponse(BaseModel):
     friends_focusing: list[FocusingNowItem]
+
+
+class FriendSearchResultDTO(BaseModel):
+    user_id: str
+    display_name: str
+    character_key: str | None = None
+    friendship_status: str
+    friendship_id: str | None = None
+    requested_by_me: bool
+
+
+class FriendSearchResponse(BaseModel):
+    results: list[FriendSearchResultDTO]

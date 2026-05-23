@@ -92,7 +92,7 @@ def _has_real_body(func: ast.FunctionDef) -> bool:
 
 def check_file(path: Path) -> list[str]:
     """Return a list of human-readable problems for one migration file."""
-    src = path.read_text()
+    src = path.read_text(encoding="utf-8")
     try:
         tree = ast.parse(src, filename=str(path))
     except SyntaxError as exc:
