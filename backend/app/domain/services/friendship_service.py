@@ -75,10 +75,13 @@ class FriendshipService:
       • OCP — adding a "blocked" state branch only needs new methods +
         a new status string; existing happy-path code is closed.
 
-    Realtime: every state transition is published to **both** users via
-    `user:{id}` channels so each side's friendsStore can react without
-    polling. Payload carries the friendship row + the *other* user's
-    public summary so the FE can render instantly.
+    Realtime: state transitions publish to the side that did NOT initiate
+    the action (the initiator updates optimistically). ``accept`` is the
+    exception — both sides get the frame so the original requester's UI
+    flips from pending to accepted without a refresh. Payload carries the
+    friendship id, status, and a snapshot of the *other* user's public
+    fields (display_name + character_key) so the receiving FE can render
+    the row without a follow-up fetch.
     """
 
     def __init__(
@@ -312,12 +315,24 @@ class FriendshipService:
     ) -> None:
         if self._pub is None:
             return
+        other_id = _other_side(row, viewer_id)
+        # Carry the other user's display fields on the wire so the receiver
+        # can render the row immediately. Without this, friendsStore was
+        # forced to fall back to ``display_name = uuid`` and FriendsView
+        # showed a raw 36-char UUID until the next manual reload.
+        other_user = await self._users.get_by_id(other_id)
         payload: dict[str, Any] = {
             "type": kind,
             "friendship_id": row.id,
             "status": row.status,
             "requested_by": row.requested_by,
-            "other_user_id": _other_side(row, viewer_id),
+            "other_user_id": other_id,
+            "other_display_name": (
+                other_user.public_name() if other_user is not None else None
+            ),
+            "other_character_key": (
+                other_user.character_key if other_user is not None else None
+            ),
         }
         await self._pub.publish(
             IRealtimePublisher.user_channel(viewer_id), payload

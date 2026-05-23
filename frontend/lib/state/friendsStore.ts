@@ -42,6 +42,12 @@ export type FriendEventPayload = {
     | "friend.accepted"
     | "friend.rejected"
     | "friend.removed";
+  // Other-user public fields carried on the wire from
+  // FriendshipService._publish_event so the receiving FE renders the row
+  // without falling back to "UUID as display_name". Optional for forward
+  // compatibility with payloads from older backend versions.
+  other_display_name?: string | null;
+  other_character_key?: string | null;
   friendship_id: string;
   status: "requested" | "accepted" | "blocked";
   requested_by: string;
@@ -112,8 +118,9 @@ export const useFriendsStore = create<FriendsStore>((set) => ({
         : {
             friendship_id: payload.friendship_id,
             user_id: payload.other_user_id,
-            display_name: payload.other_user_id,
-            character_key: null,
+            display_name:
+              payload.other_display_name ?? payload.other_user_id,
+            character_key: payload.other_character_key ?? null,
             status: payload.status,
             requested_by_me: payload.requested_by === viewerId,
             created_at: new Date().toISOString(),

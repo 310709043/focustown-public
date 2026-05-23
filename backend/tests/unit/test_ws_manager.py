@@ -24,18 +24,20 @@ from app.infrastructure.messaging.ws_manager import WSManager
 class FakeWebSocket:
     """Duck-typed WebSocket — identity-hashable so it can go in a ``set``.
 
-    Only the methods WSManager touches: ``accept(subprotocol=...)`` and
-    ``send_json(payload)``. ``raise_on_send`` lets a single test simulate
-    a socket whose peer hung up between deliver attempts.
+    Only the method WSManager touches: ``send_json(payload)``. ``accept``
+    lives on the router now (handshake-order regression: see
+    ``test_ws_handshake_order``); ``accept_called`` tracks whether
+    WSManager accidentally invokes it. ``raise_on_send`` lets a single
+    test simulate a socket whose peer hung up between deliver attempts.
     """
 
     def __init__(self, raise_on_send: bool = False) -> None:
         self.sent: list[dict[str, Any]] = []
-        self.accepted_with: str | None | object = object()
+        self.accept_called = False
         self.raise_on_send = raise_on_send
 
     async def accept(self, subprotocol: str | None = None) -> None:
-        self.accepted_with = subprotocol
+        self.accept_called = True
 
     async def send_json(self, payload: dict[str, Any]) -> None:
         if self.raise_on_send:
@@ -57,15 +59,17 @@ async def test_connect_registers_socket_under_user_id() -> None:
 
 
 @pytest.mark.asyncio
-async def test_connect_echoes_subprotocol_back_on_accept() -> None:
+async def test_connect_does_not_call_accept_router_owns_handshake() -> None:
+    """``ws.accept`` moved to the router so close codes for pre-auth
+    rejections (4401 / 4429) reach the client as proper WS close frames
+    instead of HTTP 403. WSManager must NOT re-accept the same socket —
+    Starlette raises if accept() runs twice."""
     mgr = WSManager()
     ws = FakeWebSocket()
 
-    await mgr.connect("alice", ws, subprotocol="bearer.tkn")
+    await mgr.connect("alice", ws)
 
-    # Echoing the subprotocol is what makes the browser accept the
-    # Sec-WebSocket-Protocol: bearer.{token} handshake.
-    assert ws.accepted_with == "bearer.tkn"
+    assert ws.accept_called is False
 
 
 @pytest.mark.asyncio

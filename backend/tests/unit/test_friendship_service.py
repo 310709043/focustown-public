@@ -455,3 +455,23 @@ async def test_search_when_already_friends_returns_accepted_status() -> None:
     await svc.accept(friendship_id=row.id, accepter_id="bob")
     results = await svc.search_users(viewer_id="alice", query="bob")
     assert results[0].friendship_status == "accepted"
+
+
+@pytest.mark.asyncio
+async def test_publish_event_payload_carries_other_user_display_fields() -> None:
+    """Receiver renders the row immediately when the wire payload includes
+    the other user's display fields — without these, friendsStore falls
+    back to ``display_name = uuid`` and the FE shows a raw 36-char id."""
+    users = FakeUserRepo.from_users(
+        [_user("alice", name="Alice"), _user("bob", name="Bob")]
+    )
+    svc, *_, pub = _service(users=users)
+
+    await svc.request(requester_id="alice", target_id="bob")
+
+    channel, payload = pub.published[-1]
+    assert channel == "user:bob"
+    assert payload["type"] == "friend.requested"
+    assert payload["other_user_id"] == "alice"
+    assert payload["other_display_name"] == "Alice"
+    assert "other_character_key" in payload

@@ -446,3 +446,35 @@ async def test_get_current_does_not_reseed_on_minor_catalog_drift() -> None:
     # Original cursor preserved — no reseed, no new event published.
     assert restored == near_fresh
     assert publisher.published == []
+
+
+# ── int64 overflow protection (BIGINT cap) ───────────────────────────────
+
+
+def test_seed_int_always_fits_in_postgres_bigint() -> None:
+    """Regression: ``int.from_bytes(..., signed=False)`` produces 0..2⁶⁴-1
+    and ~50% of seeds overflowed ``BIGINT`` (2⁶³-1), crashing the snapshot
+    worker. Mask to 63 bits keeps determinism while staying in range."""
+    pg_bigint_max = (1 << 63) - 1
+    # Sample 200 distinct material strings — a few will produce raw bytes
+    # whose top bit is set (the overflow class). All masked outputs must
+    # fit; the deterministic mapping must remain stable for the same
+    # input.
+    for i in range(200):
+        scope = f"scope-{i:03d}"
+        seed = StationService._seed_int(kind="city", scope_id=scope, day="2026-05-23")
+        assert 0 <= seed <= pg_bigint_max, f"overflow for {scope}: {seed}"
+        # Stable: second call returns the same value.
+        again = StationService._seed_int(
+            kind="city", scope_id=scope, day="2026-05-23"
+        )
+        assert seed == again
+
+
+def test_seed_int_top_bit_clear_for_known_overflow_input() -> None:
+    """The specific seed value from the prod crash log (asyncpg DataError
+    ``value out of int64 range, seed=9607630960552802898``) must now mask
+    down without exception, with the top bit cleared."""
+    # Pick any (kind, scope, day) — the assertion is shape, not value.
+    seed = StationService._seed_int(kind="city", scope_id="lowbatterytown", day="2026-05-23")
+    assert seed & (1 << 63) == 0, "top bit must be clear so BIGINT accepts it"

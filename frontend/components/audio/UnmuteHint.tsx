@@ -35,7 +35,7 @@ export function UnmuteHint() {
       className="pixel-btn font-silkscreen"
       style={{
         position: "fixed",
-        bottom: "calc(168px + 12px)",
+        bottom: "calc(var(--bottom-hud-h) + 12px)",
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 45,
@@ -48,7 +48,7 @@ export function UnmuteHint() {
         boxShadow: "0 0 12px rgba(34,211,238,0.45)",
       }}
     >
-      🔊 {t("label")}
+      ♪ {t("label")}
     </button>
   );
 }

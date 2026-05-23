@@ -45,20 +45,21 @@ export default function AddFriendDeepLinkPage() {
 
   useEffect(() => {
     if (!targetId) return;
+    // /api/v1/users/{id}/public is auth-gated, so an unauthenticated visitor
+    // would receive a 401 here and the catch below would mask it as
+    // not_found — breaking the headline "share link" use case (recipient
+    // signs up). Short-circuit before the fetch.
+    if (!viewer) {
+      setState({ kind: "signin_required" });
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
         const profile = await userApi.getPublicProfile(targetId);
         if (cancelled) return;
-        if (viewer?.id === targetId) {
+        if (viewer.id === targetId) {
           setState({ kind: "self", profile });
-          return;
-        }
-        if (!viewer) {
-          // No live auth — still show the citizen card so the recipient
-          // sees who they're being invited by, but gate the CTA behind
-          // the sign-in prompt.
-          setState({ kind: "signin_required" });
           return;
         }
         const search = await friendsApi.search(targetId);
@@ -74,6 +75,12 @@ export default function AddFriendDeepLinkPage() {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 404) {
           setState({ kind: "not_found" });
+          return;
+        }
+        if (err instanceof ApiError && err.status === 401) {
+          // Token expired during the fetch — bounce to sign-in instead of
+          // showing a misleading not_found.
+          setState({ kind: "signin_required" });
           return;
         }
         // Network / 5xx — treat as not_found so we don't expose internals

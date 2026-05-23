@@ -33,10 +33,11 @@ class WSManager:
         self._conns: dict[str, set[WebSocket]] = defaultdict(set)
         self._seen: dict[str, OrderedDict[str, None]] = {}
 
-    async def connect(self, user_id: str, ws: WebSocket, subprotocol: str | None = None) -> None:
-        # When the client offered Sec-WebSocket-Protocol: bearer.{token},
-        # echo it back on accept — browsers reject the handshake otherwise.
-        await ws.accept(subprotocol=subprotocol)
+    async def connect(self, user_id: str, ws: WebSocket) -> None:
+        # Caller MUST have already called ``ws.accept(...)`` — accept now
+        # lives in the router so close codes for pre-auth rejections (4401
+        # / 4429) are delivered as proper WS close frames instead of an
+        # HTTP 403 that clients can't introspect.
         self._conns[user_id].add(ws)
         log.info("ws_connected", user_id=user_id, count=len(self._conns[user_id]))
 

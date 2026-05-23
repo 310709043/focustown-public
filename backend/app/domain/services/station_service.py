@@ -77,9 +77,15 @@ class StationService:
 
     @staticmethod
     def _seed_int(*, kind: StationKind, scope_id: str, day: str) -> int:
+        # Mask to 63 bits so the value fits in PostgreSQL ``BIGINT`` (signed
+        # int64). Raw ``int.from_bytes(..., signed=False)`` returns 0..2⁶⁴-1
+        # and ~50% of seeds overflow on snapshot, crashing the worker job
+        # with asyncpg ``DataError: value out of int64 range``. The mask
+        # preserves determinism (each material maps to one positive seed)
+        # while staying within the BIGINT range.
         material = f"{kind}|{scope_id}|{day}".encode()
         digest = hashlib.sha256(material).digest()
-        return int.from_bytes(digest[:8], byteorder="big")
+        return int.from_bytes(digest[:8], byteorder="big") & 0x7FFFFFFFFFFFFFFF
 
     async def get_current(
         self, *, kind: StationKind, scope_id: str

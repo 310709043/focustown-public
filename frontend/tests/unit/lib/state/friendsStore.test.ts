@@ -261,6 +261,28 @@ test("applyEvent friend.rejected drops the row", () => {
   expect(useFriendsStore.getState().byFriendshipId["f-1"]).toBeUndefined();
 });
 
+test("applyEvent friend.requested uses other_display_name from payload when present", () => {
+  // Backend now carries other_display_name + other_character_key on the wire
+  // so the FE renders the row immediately. Without these, display_name fell
+  // back to the raw UUID (the bug the hotfix repairs).
+  useFriendsStore.getState().applyEvent(
+    {
+      type: "friend.requested",
+      friendship_id: "f-new",
+      status: "requested",
+      requested_by: "u-other",
+      other_user_id: "u-other",
+      other_display_name: "Real Name",
+      other_character_key: "ami",
+    },
+    "u-me",
+  );
+
+  const row = useFriendsStore.getState().byFriendshipId["f-new"];
+  expect(row.display_name).toBe("Real Name");
+  expect(row.character_key).toBe("ami");
+});
+
 test("applyEvent friend.removed is idempotent when row is unknown", () => {
   useFriendsStore
     .getState()

@@ -152,11 +152,22 @@ async def ws_connect(
       {"type": "match.proposed", ...}
       {"type": "session.completed", ...}
     """
-    # Per-IP connect throttle BEFORE the JWT decode. Attackers probing tokens
-    # otherwise pay only the JWT-verify cost; rejecting at the handshake stage
-    # bounds both CPU and the auth-failure log volume. Close code 4429 mirrors
-    # the HTTP 429 convention for WebSocket clients.
+    # Starlette returns HTTP 403 (not a WS close frame) when ``close()`` is
+    # called before ``accept()``; clients then see a generic connection
+    # failure with no close code, the 4401 refresh-and-reconnect path on
+    # the frontend never fires, and the browser thrashes the endpoint with
+    # the same bad token. Accept the handshake first so the rejection codes
+    # below (4429 / 4401) reach the client as proper WS close frames.
+    #
+    # Subprotocol echo must happen at accept time (browsers reject the
+    # handshake otherwise), so subprotocol extraction also moves above
+    # accept. The JWT-verify cost is still gated by the per-IP throttle
+    # below — accept itself is one socket write, negligible.
     peer_ip = websocket.client.host if websocket.client else None
+    subprotocols = websocket.scope.get("subprotocols") or []
+    token, chosen_subprotocol, used_query = extract_ws_token(subprotocols, token)
+    await websocket.accept(subprotocol=chosen_subprotocol)
+
     decision = await limiter.hit(
         f"ws:ip:{peer_ip or 'unknown'}",
         limit=settings.ws_rl_connect_per_ip_per_min,
@@ -166,11 +177,6 @@ async def ws_connect(
         await websocket.close(code=4429)
         return
 
-    # Prefer Sec-WebSocket-Protocol: bearer.{token} so the JWT stays out of
-    # proxy access logs. Keep ?token=... as a transitional fallback with a
-    # deprecation log so the next release can drop it.
-    subprotocols = websocket.scope.get("subprotocols") or []
-    token, chosen_subprotocol, used_query = extract_ws_token(subprotocols, token)
     if used_query:
         log.warning("ws_auth_query_param_deprecated")
 
@@ -185,7 +191,7 @@ async def ws_connect(
         return
 
     user_id = principal.user_id
-    await ws_mgr.connect(user_id, websocket, subprotocol=chosen_subprotocol)
+    await ws_mgr.connect(user_id, websocket)
     pub = RedisPubSubPublisher(get_redis())
     presence = PresenceService(tracker=tracker, publisher=pub)
 

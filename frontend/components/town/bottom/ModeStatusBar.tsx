@@ -59,7 +59,7 @@ export function ModeStatusBar({
         position: "absolute",
         left: 0,
         right: 0,
-        bottom: 168,
+        bottom: "var(--bottom-hud-h)",
         height: 36,
         padding: "0 18px",
         display: "flex",
