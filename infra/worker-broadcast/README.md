@@ -36,7 +36,7 @@ account:
 ```bash
 pnpm wrangler r2 object put focustown-broadcast/broadcasts/clip-01.mp4 \
   --file ./clip-01.mp4 --content-type video/mp4
-# repeat for clip-02.mp4 ... clip-10.mp4
+# repeat for clip-02.mp4 ... clip-09.mp4
 ```
 
 The key prefix `broadcasts/` is enforced by the Worker (see

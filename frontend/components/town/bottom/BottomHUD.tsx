@@ -12,9 +12,10 @@ interface BottomHUDProps {
   /** Triggered when "Find Buddy" is clicked. Town page lifts the
    *  modal-open state (parent of `BottomHUD` AND `<MatchModal>`). */
   onFindBuddy: () => void;
-  /** City-Mode immersive: parent owns the edge-reveal state machine
-   *  (shared with the bottom-edge sentinel in /town). When true, the
-   *  HUD slides back in even while the timer is running. */
+  /** Bottom-edge sentinel revealed flag — shared with the 24 px
+   *  invisible strip the town page always mounts (normal + immersive).
+   *  Drives the ModeStatusBar visibility in every mode and the 3-panel
+   *  panel visibility only while immersive. */
   edgeRevealed?: boolean;
   onEdgeEnter?: () => void;
   onEdgeLeave?: () => void;
@@ -46,18 +47,25 @@ export function BottomHUD({
 }: BottomHUDProps) {
   const immersive = useImmersiveFocus();
   const reduceMotion = usePrefersReducedMotion();
-  const collapsed = immersive && !edgeRevealed;
+  // The bar overlaps the road in normal city mode (sits at
+  // bottom: var(--bottom-hud-h), same row as the Road), so we hide it
+  // by default everywhere and only reveal it when the bottom-edge
+  // sentinel (or a pointer over the panel itself) fires. The 3-column
+  // panel keeps the original immersive-only collapse so the always-
+  // visible 168 px HUD doesn't churn.
+  const barCollapsed = !edgeRevealed;
+  const panelCollapsed = immersive && !edgeRevealed;
   return (
     <>
       <ModeStatusBar
         onFindBuddy={onFindBuddy}
-        collapsed={collapsed}
+        collapsed={barCollapsed}
         reduceMotion={reduceMotion}
       />
       <div
         data-testid="bottom-hud"
-        onPointerEnter={immersive ? onEdgeEnter : undefined}
-        onPointerLeave={immersive ? onEdgeLeave : undefined}
+        onPointerEnter={onEdgeEnter}
+        onPointerLeave={onEdgeLeave}
         // `.bottom-hud-root` owns full-bleed position + gradient
         // background. The inner `.bottom-hud-inner` div owns the
         // three-column grid + `--app-content-max-width` cap that
@@ -72,19 +80,19 @@ export function BottomHUD({
           left: 0,
           right: 0,
           bottom: 0,
-          background: collapsed
+          background: panelCollapsed
             ? "linear-gradient(180deg, transparent 0%, transparent 100%)"
             : "linear-gradient(180deg, transparent 0%, rgba(7,4,26,0.92) 30%, rgba(7,4,26,1) 100%)",
-          borderTop: collapsed
+          borderTop: panelCollapsed
             ? "1px solid transparent"
             : "1px solid var(--panel-stroke)",
           zIndex: 12,
           transition: reduceMotion
             ? "none"
             : "transform 420ms cubic-bezier(0.22,1,0.36,1), opacity 320ms ease-out, background 320ms ease-out, border-top-color 320ms ease-out",
-          transform: collapsed ? "translateY(100%)" : "translateY(0)",
-          opacity: collapsed ? 0 : 1,
-          pointerEvents: collapsed ? "none" : "auto",
+          transform: panelCollapsed ? "translateY(100%)" : "translateY(0)",
+          opacity: panelCollapsed ? 0 : 1,
+          pointerEvents: panelCollapsed ? "none" : "auto",
         }}
       >
         <div className="bottom-hud-inner">

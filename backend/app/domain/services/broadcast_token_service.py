@@ -26,7 +26,7 @@ class VerifiedBroadcastClaims:
 # ``frontend/lib/data/broadcast-clips.ts``. The service refuses to mint
 # a token for anything outside this set so a forged clip id can never
 # coax the Worker into reading a stray object.
-KNOWN_CLIP_IDS: frozenset[str] = frozenset(f"clip-{i:02d}" for i in range(1, 11))
+KNOWN_CLIP_IDS: frozenset[str] = frozenset(f"clip-{i:02d}" for i in range(1, 10))
 
 
 def clip_file_key(clip_id: str, *, prefix: str = "broadcasts") -> str:

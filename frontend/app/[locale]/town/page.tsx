@@ -288,26 +288,29 @@ export default function TownPage() {
           fade is a pure CSS transition. */}
       <ImmersiveCountdown />
 
-      {/* Edge sentinels — only mount while immersive so the page
-          stays interaction-clean in normal city-mode. The sentinels'
-          rendering + positioning is owned by EdgeRevealSentinel; this
-          page owns only the mount decision and the handlers. */}
+      {/* Edge sentinels. The TOP sentinel only mounts while immersive
+          (TownTopHUD is always visible in normal city-mode, so no need
+          to reveal it). The BOTTOM sentinel mounts always — even in
+          normal city-mode — so the ModeStatusBar stays hidden by
+          default and reveals on a 24 px bottom-edge hover instead of
+          overlapping the road. The 3-column BottomHUD panel itself
+          keeps its immersive-only collapse (driven by the same flag),
+          so normal-mode behavior for the timer/match/music cluster is
+          unchanged. */}
       {immersive ? (
-        <>
-          <EdgeRevealSentinel
-            edge="top"
-            testId="hud-top-sentinel"
-            onPointerEnter={topHandlers.onPointerEnter}
-            onPointerLeave={topHandlers.onPointerLeave}
-          />
-          <EdgeRevealSentinel
-            edge="bottom"
-            testId="hud-bottom-sentinel"
-            onPointerEnter={bottomHandlers.onPointerEnter}
-            onPointerLeave={bottomHandlers.onPointerLeave}
-          />
-        </>
+        <EdgeRevealSentinel
+          edge="top"
+          testId="hud-top-sentinel"
+          onPointerEnter={topHandlers.onPointerEnter}
+          onPointerLeave={topHandlers.onPointerLeave}
+        />
       ) : null}
+      <EdgeRevealSentinel
+        edge="bottom"
+        testId="hud-bottom-sentinel"
+        onPointerEnter={bottomHandlers.onPointerEnter}
+        onPointerLeave={bottomHandlers.onPointerLeave}
+      />
 
       {/* ═══ SCENE (full-bleed, no bottom panel row) ═══
            z-order: scene backdrop (city composite + cloud sprites + optional

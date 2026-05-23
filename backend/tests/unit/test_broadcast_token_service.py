@@ -162,10 +162,10 @@ def test_verify_raises_when_secret_not_configured():
         svc.verify(token="anything", expected_clip_id="clip-01")
 
 
-def test_known_clip_set_contains_10_slugs():
+def test_known_clip_set_contains_9_slugs():
     # Mirror the frontend playlist length; protects against an off-by-one
     # when somebody extends one side without the other.
-    assert len(KNOWN_CLIP_IDS) == 10
+    assert len(KNOWN_CLIP_IDS) == 9
     assert "clip-01" in KNOWN_CLIP_IDS
-    assert "clip-10" in KNOWN_CLIP_IDS
-    assert "clip-11" not in KNOWN_CLIP_IDS
+    assert "clip-09" in KNOWN_CLIP_IDS
+    assert "clip-10" not in KNOWN_CLIP_IDS

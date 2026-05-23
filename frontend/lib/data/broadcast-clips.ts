@@ -28,8 +28,7 @@ export type BroadcastClipId =
   | "clip-06"
   | "clip-07"
   | "clip-08"
-  | "clip-09"
-  | "clip-10";
+  | "clip-09";
 
 export const BROADCAST_CLIP_IDS: ReadonlyArray<BroadcastClipId> = [
   "clip-01",
@@ -41,7 +40,6 @@ export const BROADCAST_CLIP_IDS: ReadonlyArray<BroadcastClipId> = [
   "clip-07",
   "clip-08",
   "clip-09",
-  "clip-10",
 ];
 
 /**
