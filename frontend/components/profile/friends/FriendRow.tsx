@@ -10,6 +10,9 @@ interface FriendRowProps {
   onAccept: () => void;
   onReject: () => void;
   onUnfriend: () => void;
+  /** Open the gift dialog with this friend's user_id pre-filled.
+   *  Only meaningful on the `friends` tab (accepted friendships). */
+  onGift?: () => void;
 }
 
 export function FriendRow({
@@ -18,6 +21,7 @@ export function FriendRow({
   onAccept,
   onReject,
   onUnfriend,
+  onGift,
 }: FriendRowProps) {
   const t = useTranslations("profile.friends");
 
@@ -112,22 +116,43 @@ export function FriendRow({
             ✕
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={onUnfriend}
-            className="font-silkscreen"
-            style={{
-              padding: "5px 12px",
-              fontSize: 10,
-              letterSpacing: "0.2em",
-              color: "var(--ink-mute)",
-              background: "rgba(20,10,55,0.65)",
-              border: "1px solid var(--panel-stroke)",
-              cursor: "pointer",
-            }}
-          >
-            {t("actionUnfriend")}
-          </button>
+          <>
+            {onGift ? (
+              <button
+                type="button"
+                onClick={onGift}
+                data-testid="friend-row-gift"
+                className="font-silkscreen"
+                style={{
+                  padding: "5px 12px",
+                  fontSize: 10,
+                  letterSpacing: "0.2em",
+                  color: "var(--amber)",
+                  background: "rgba(20,10,55,0.65)",
+                  border: "1px solid var(--amber)",
+                  cursor: "pointer",
+                }}
+              >
+                {t("actionGift")}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onUnfriend}
+              className="font-silkscreen"
+              style={{
+                padding: "5px 12px",
+                fontSize: 10,
+                letterSpacing: "0.2em",
+                color: "var(--ink-mute)",
+                background: "rgba(20,10,55,0.65)",
+                border: "1px solid var(--panel-stroke)",
+                cursor: "pointer",
+              }}
+            >
+              {t("actionUnfriend")}
+            </button>
+          </>
         )}
       </div>
     </li>

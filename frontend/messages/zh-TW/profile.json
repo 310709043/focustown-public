@@ -252,6 +252,7 @@
     "actionAccept": "接受",
     "actionReject": "拒絕",
     "actionUnfriend": "解除好友",
+    "actionGift": "🎁 送T幣",
     "unfriendConfirm": "確定要解除這位好友嗎？",
     "loading": "載入中…",
     "loadError": "無法載入好友名單，請稍後再試。",

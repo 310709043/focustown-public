@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Modal } from "@/components/modals/Modal";
@@ -11,6 +11,10 @@ import { useWalletStore } from "@/lib/state/walletStore";
 interface GiftDialogProps {
   open: boolean;
   onClose: () => void;
+  /** Optional pre-filled recipient (e.g. opened from a friend row).
+   *  When supplied, the recipient input is locked-and-displayed so
+   *  the friend can't be accidentally retargeted. */
+  prefilledRecipient?: string | null;
 }
 
 type DialogState =
@@ -31,16 +35,26 @@ function mapError(t: (k: string) => string, err: unknown): string {
   return t("errorGeneric");
 }
 
-export function GiftDialog({ open, onClose }: GiftDialogProps) {
+export function GiftDialog({
+  open,
+  onClose,
+  prefilledRecipient = null,
+}: GiftDialogProps) {
   const t = useTranslations("profile.wallet.gift");
   const setBalance = useWalletStore((s) => s.setBalance);
-  const [recipient, setRecipient] = useState("");
+  const [recipient, setRecipient] = useState(prefilledRecipient ?? "");
   const [amount, setAmount] = useState("10");
   const [message, setMessage] = useState("");
   const [state, setState] = useState<DialogState>({ kind: "idle" });
 
+  // Re-sync the recipient whenever the dialog is re-opened with a new
+  // pre-fill (e.g. user clicks gift on a different friend).
+  useEffect(() => {
+    if (open) setRecipient(prefilledRecipient ?? "");
+  }, [open, prefilledRecipient]);
+
   const close = () => {
-    setRecipient("");
+    setRecipient(prefilledRecipient ?? "");
     setAmount("10");
     setMessage("");
     setState({ kind: "idle" });
@@ -62,10 +76,15 @@ export function GiftDialog({ open, onClose }: GiftDialogProps) {
     }
     setState({ kind: "submitting" });
     try {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `gift-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const res = await walletApi.gift({
         recipient_user_id: id,
         amount_minor: Math.round(amountT * 100),
         message: message.trim() || null,
+        idempotencyKey,
       });
       setBalance("T", res.balance_after_minor);
       setState({
@@ -154,6 +173,12 @@ export function GiftDialog({ open, onClose }: GiftDialogProps) {
             className="pixel-input"
             maxLength={36}
             autoFocus
+            readOnly={prefilledRecipient != null}
+            style={
+              prefilledRecipient != null
+                ? { opacity: 0.75, cursor: "not-allowed" }
+                : undefined
+            }
           />
 
           <label

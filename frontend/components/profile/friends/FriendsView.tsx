@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { GiftDialog } from "@/components/profile/wallet/GiftDialog";
 import { ApiError } from "@/lib/api/client";
 import { friendsApi } from "@/lib/api/endpoints";
 import { useAuthStore } from "@/lib/state/authStore";
@@ -49,6 +50,7 @@ export function FriendsView({ onClose }: FriendsViewProps) {
     | { kind: "submitting" }
     | { kind: "error"; msg: string }
   >({ kind: "idle" });
+  const [giftTarget, setGiftTarget] = useState<string | null>(null);
 
   const hydrate = useFriendsStore((s) => s.hydrate);
   const upsert = useFriendsStore((s) => s.upsert);
@@ -346,10 +348,21 @@ export function FriendsView({ onClose }: FriendsViewProps) {
               onAccept={() => handleAccept(row.friendship_id)}
               onReject={() => handleReject(row.friendship_id)}
               onUnfriend={() => handleUnfriend(row.friendship_id)}
+              onGift={
+                tab === "friends"
+                  ? () => setGiftTarget(row.user_id)
+                  : undefined
+              }
             />
           ))}
         </ul>
       )}
+
+      <GiftDialog
+        open={giftTarget != null}
+        onClose={() => setGiftTarget(null)}
+        prefilledRecipient={giftTarget}
+      />
     </div>
   );
 }

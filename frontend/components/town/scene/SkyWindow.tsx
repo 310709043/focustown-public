@@ -12,6 +12,7 @@ import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { AVATARS, type AvatarDef } from "@/lib/pixel/sprites/avatars";
 import { TOMATO } from "@/lib/pixel/sprites/props";
 import { findCharacter } from "@/lib/data/characters";
+import { usePresenceStore } from "@/lib/state/presenceStore";
 import {
   BROADCAST_MODES,
   BROADCAST_ROTATE_MS,
@@ -43,6 +44,7 @@ export function SkyWindow() {
   // while the rank tab is showing.
   const [adIdx, setAdIdx] = useState(0);
   const t = useTranslations("town");
+  const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
 
   useEffect(() => {
     if (BROADCAST_MODES.length <= 1) return;
@@ -165,7 +167,9 @@ export function SkyWindow() {
             }}
           >
             <SignalBars />
-            <span>{t("liveOnline", { count: 2847 })}</span>
+            <span data-testid="sky-window-online">
+              {t("liveOnline", { count: onlineCount })}
+            </span>
           </div>
           <span
             className="font-silkscreen"
@@ -236,9 +240,32 @@ function RankBoard() {
     };
   }, []);
 
-  // Falls back to a curated sample so the broadcast pane reads "live"
-  // even before the API responds.
-  const display = rows.length > 0 ? rows.slice(0, 5) : SAMPLE_ROWS;
+  // No more demo fallback rows — real leaderboard data or an empty
+  // state. A fresh deployment with zero completed pomodoros must read
+  // honestly rather than show fabricated names.
+  const display = rows.slice(0, 5);
+  const tEmpty = useTranslations("town.leaderboard");
+
+  if (display.length === 0) {
+    return (
+      <div
+        data-testid="sky-window-rank"
+        style={{
+          padding: "24px 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          color: "var(--ink-dim)",
+          fontFamily: "var(--font-silkscreen), monospace",
+          letterSpacing: "0.2em",
+          fontSize: 11,
+        }}
+      >
+        {tEmpty("empty")}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -255,19 +282,12 @@ function RankBoard() {
         const badgeColor = i < 3 ? RANK_BADGE_COLORS[i] : undefined;
         const badgeLabel = i < 3 ? RANK_BADGE_LABELS[i] : undefined;
         const avatar = pickAvatarFor(r);
-        const isLive = "user_id" in r;
-        // Only live rows route — sample rows have no real user id.
-        const clickable = isLive;
-        const onRowClick = clickable
-          ? () => router.push(`/users/${r.user_id}`)
-          : undefined;
         return (
           <button
-            key={isLive ? r.user_id : r.sampleId}
+            key={r.user_id}
             type="button"
             data-testid={`sky-window-rank-row-${rank}`}
-            onClick={onRowClick}
-            disabled={!clickable}
+            onClick={() => router.push(`/users/${r.user_id}`)}
             className="font-silkscreen"
             style={{
               display: "grid",
@@ -276,7 +296,7 @@ function RankBoard() {
               alignItems: "center",
               padding: "4px 8px",
               textAlign: "left",
-              cursor: clickable ? "pointer" : "default",
+              cursor: "pointer",
               background:
                 rank === 1
                   ? "rgba(252,211,77,0.1)"
@@ -293,7 +313,7 @@ function RankBoard() {
               filter: "brightness(1)",
             }}
             onMouseEnter={(e) => {
-              if (clickable) e.currentTarget.style.filter = "brightness(1.18)";
+              e.currentTarget.style.filter = "brightness(1.18)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.filter = "brightness(1)";
@@ -315,7 +335,7 @@ function RankBoard() {
             />
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: 12, color: "var(--ink)" }}>
-                {"display_name" in r ? r.display_name : r.sampleName}
+                {r.display_name}
               </span>
               <span
                 style={{
@@ -324,9 +344,7 @@ function RankBoard() {
                   letterSpacing: "0.1em",
                 }}
               >
-                {"completed_count" in r
-                  ? r.completed_count * 25
-                  : r.sampleMins}
+                {r.completed_count * 25}
                 min · {avatar.name}
               </span>
             </div>
@@ -354,7 +372,7 @@ function RankBoard() {
                 justifyContent: "flex-end",
               }}
             >
-              {"completed_count" in r ? r.completed_count : r.samplePomos}
+              {r.completed_count}
               <PixelSprite
                 sprite={TOMATO.sprite}
                 palette={TOMATO.palette}
@@ -371,23 +389,8 @@ function RankBoard() {
   );
 }
 
-interface SampleRow {
-  readonly sampleId: string;
-  readonly sampleName: string;
-  readonly sampleMins: number;
-  readonly samplePomos: number;
-}
-
-const SAMPLE_ROWS: readonly SampleRow[] = [
-  { sampleId: "s1", sampleName: "Kai", sampleMins: 325, samplePomos: 13 },
-  { sampleId: "s2", sampleName: "Bear", sampleMins: 275, samplePomos: 11 },
-  { sampleId: "s3", sampleName: "Aria", sampleMins: 225, samplePomos: 9 },
-  { sampleId: "s4", sampleName: "Panda", sampleMins: 200, samplePomos: 8 },
-  { sampleId: "s5", sampleName: "Doc", sampleMins: 175, samplePomos: 7 },
-];
-
-function pickAvatarFor(row: LeaderboardEntry | SampleRow): AvatarDef {
-  if ("character_key" in row && row.character_key) {
+function pickAvatarFor(row: LeaderboardEntry): AvatarDef {
+  if (row.character_key) {
     const char = findCharacter(row.character_key);
     if (char) {
       // Pick a stable avatar by hashing the character key — keeps the

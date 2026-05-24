@@ -124,7 +124,14 @@ export default function CitizenProfilePage() {
         }}
       >
         {profile ? (
-          <CitizenIdCard profile={profile} />
+          <CitizenIdCard
+            profile={profile}
+            streakDays={profile.streak_days}
+            allTimeHours={profile.all_time_focus_hours}
+            level={profile.level}
+            xp={profile.xp}
+            xpNextLevel={profile.xp_next_level}
+          />
         ) : error ? (
           <ErrorState message={error} />
         ) : (

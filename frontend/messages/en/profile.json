@@ -252,6 +252,7 @@
     "actionAccept": "Accept",
     "actionReject": "Decline",
     "actionUnfriend": "Unfriend",
+    "actionGift": "🎁 Gift",
     "unfriendConfirm": "Unfriend this citizen?",
     "loading": "Loading…",
     "loadError": "Could not load friends. Please try again.",

@@ -47,6 +47,9 @@ class PublicUserProfile(BaseModel):
 
     `today_focus_minutes` is derived from completed-pomodoro count * 25
     so the value lines up with what the leaderboard widget shows.
+    Streak / all-time / level fields mirror the corresponding values
+    from ``/users/me/stats`` for the target user — same DB-derived
+    aggregates, no synthetic fill.
     """
 
     id: str
@@ -55,3 +58,8 @@ class PublicUserProfile(BaseModel):
     role_label: str | None = None
     joined_at: datetime
     today_focus_minutes: int = 0
+    streak_days: int = 0
+    all_time_focus_hours: float = 0.0
+    level: int = 1
+    xp: int = 0
+    xp_next_level: int = 0

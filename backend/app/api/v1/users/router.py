@@ -123,7 +123,9 @@ async def get_public_user_profile(
     the `is_bot` debug flag.
 
     Today's focus minutes is derived from completed-pomodoro count * 25
-    so the value lines up with what the leaderboard widget shows.
+    so the value lines up with what the leaderboard widget shows. The
+    streak / all-time / level fields come from the same aggregates the
+    owner sees on `/me/stats` — i.e. always from the DB, never synthetic.
     """
     user_repo = SqlUserRepo(db)
     sessions_repo = SqlFocusSessionRepo(db)
@@ -132,9 +134,14 @@ async def get_public_user_profile(
         raise NotFoundError("user_not_found")
     now = datetime.now(UTC)
     day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = _week_start_utc(now)
     completed_today = await sessions_repo.count_completed_today(
         user_id=user.id, day_start=day_start
     )
+    totals = await sessions_repo.user_totals(
+        user_id=user.id, week_start=week_start
+    )
+    streak = await _current_streak_days(sessions_repo, user_id=user.id)
     return PublicUserProfile(
         id=user.id,
         display_name=user.public_name(),
@@ -142,4 +149,9 @@ async def get_public_user_profile(
         role_label=user.role_label,
         joined_at=user.created_at,
         today_focus_minutes=completed_today * 25,
+        streak_days=streak,
+        all_time_focus_hours=round(totals.completed_focus_seconds / 3600, 1),
+        level=compute_level(totals.completed_focus_seconds),
+        xp=compute_xp(totals.completed_focus_seconds),
+        xp_next_level=XP_PER_LEVEL,
     )

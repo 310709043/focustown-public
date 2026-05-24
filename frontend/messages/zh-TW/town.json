@@ -233,6 +233,7 @@
   "statusPill": {
     "level": "LV.{level}",
     "focusing": "專注中 · 🍅 #{count}",
+    "idle": "休息中",
     "minutes": "{count} min"
   },
   "clock": {

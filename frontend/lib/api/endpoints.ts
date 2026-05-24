@@ -94,6 +94,11 @@ export interface PublicUserProfile {
   role_label: string | null;
   joined_at: string;
   today_focus_minutes: number;
+  streak_days: number;
+  all_time_focus_hours: number;
+  level: number;
+  xp: number;
+  xp_next_level: number;
 }
 
 export interface UserStats {

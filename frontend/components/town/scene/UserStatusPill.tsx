@@ -4,33 +4,44 @@ import { useTranslations } from "next-intl";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useUserStats } from "@/lib/hooks/useUserStats";
+import { useTimerStore } from "@/lib/state/timerStore";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import { TOMATO } from "@/lib/pixel/sprites/props";
 
 interface UserStatusPillProps {
-  /** Filled tomato count; the rest of `total` render dimmed. */
-  filled?: number;
-  total?: number;
   /** Click handler — reference routes to a profile modal; we leave it
    *  as an optional callback so callers can decide. */
   onClick?: () => void;
 }
 
+const TOMATO_STRIP_LEN = 8;
+
 /**
  * The center pill of the town top HUD: avatar tile (with the user's
- * pixel sprite + online green dot) + name + LV badge + "專注中" status
- * line + tomato chip strip. Visual port of `reference/screen-town.jsx`'s
- * `UserStatusPill`.
+ * pixel sprite + online green dot) + name + LV badge + status line +
+ * tomato chip strip.
+ *
+ * All numbers are live: tomato count + level from `/users/me/stats`,
+ * focus state from the local timer store. The 8-cell strip caps the
+ * visual width — overflow past 8 is conveyed by the trailing `N/M`
+ * counter so a power user with 23 tomatoes today still sees the real
+ * total in text. Nothing is hardcoded.
  */
-export function UserStatusPill({
-  filled = 4,
-  total = 8,
-  onClick,
-}: UserStatusPillProps) {
+export function UserStatusPill({ onClick }: UserStatusPillProps) {
   const user = useAuthStore((s) => s.user);
+  const stats = useUserStats(user);
+  const timerRunning = useTimerStore((s) => s.running);
+  const timerRemaining = useTimerStore((s) => s.remaining);
+  const timerMode = useTimerStore((s) => s.mode);
   const t = useTranslations("town.statusPill");
   const avatar = characterKeyToAvatar(user?.character_key);
-  const tomatoes = Array.from({ length: total });
+
+  const totalTomatoes = stats.kpis.totalTomatoes;
+  const stripLen = Math.max(TOMATO_STRIP_LEN, totalTomatoes);
+  const filled = Math.min(stripLen, totalTomatoes);
+  const tomatoes = Array.from({ length: stripLen });
+  const minutesRemaining = Math.max(0, Math.ceil(timerRemaining / 60));
   return (
     <button
       type="button"
@@ -105,6 +116,7 @@ export function UserStatusPill({
             {user?.display_name ?? "..."}
           </span>
           <span
+            data-testid="user-status-pill-level"
             style={{
               fontSize: 10,
               color: "var(--accent)",
@@ -113,7 +125,7 @@ export function UserStatusPill({
               border: "1px solid var(--accent)",
             }}
           >
-            {t("level", { level: 4 })}
+            {t("level", { level: stats.level })}
           </span>
         </div>
         <div
@@ -130,17 +142,33 @@ export function UserStatusPill({
             style={{
               width: 6,
               height: 6,
-              background: "var(--accent-2)",
-              boxShadow: "var(--neon-glow-pink)",
+              background: timerRunning && timerMode === "focus"
+                ? "var(--accent-2)"
+                : "var(--ink-dim)",
+              boxShadow: timerRunning && timerMode === "focus"
+                ? "var(--neon-glow-pink)"
+                : "none",
             }}
           />
-          <span style={{ color: "var(--accent-2)", letterSpacing: "0.15em" }}>
-            {t("focusing", { count: filled + 1 })}
+          <span
+            data-testid="user-status-pill-status"
+            style={{ color: "var(--accent-2)", letterSpacing: "0.15em" }}
+          >
+            {timerRunning && timerMode === "focus"
+              ? t("focusing", { count: totalTomatoes + 1 })
+              : t("idle")}
           </span>
-          <span style={{ color: "var(--ink-dim)" }}>·</span>
-          <span style={{ color: "var(--accent-3)", letterSpacing: "0.1em" }}>
-            {t("minutes", { count: 22 })}
-          </span>
+          {timerRunning ? (
+            <>
+              <span style={{ color: "var(--ink-dim)" }}>·</span>
+              <span
+                data-testid="user-status-pill-minutes"
+                style={{ color: "var(--accent-3)", letterSpacing: "0.1em" }}
+              >
+                {t("minutes", { count: minutesRemaining })}
+              </span>
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -162,8 +190,11 @@ export function UserStatusPill({
             style={i >= filled ? { opacity: 0.3 } : undefined}
           />
         ))}
-        <span style={{ fontSize: 10, color: "var(--ink-dim)", marginLeft: 4 }}>
-          {filled}/{total}
+        <span
+          data-testid="user-status-pill-tomatoes"
+          style={{ fontSize: 10, color: "var(--ink-dim)", marginLeft: 4 }}
+        >
+          {totalTomatoes}
         </span>
       </div>
     </button>
