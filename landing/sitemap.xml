@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.lowbatterytown.com/</loc>
-    <changefreq>monthly</changefreq>
+    <xhtml:link rel="alternate" hreflang="zh-Hant-TW" href="https://www.lowbatterytown.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.lowbatterytown.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.lowbatterytown.com/" />
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://www.lowbatterytown.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hant-TW" href="https://www.lowbatterytown.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.lowbatterytown.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.lowbatterytown.com/" />
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- Legal pages live on the app (app.lowbatterytown.com / lowbatterytown.com)
+       at /zh-TW/legal/* and /en/legal/* — they are intentionally NOT mirrored
+       in this static site to keep one canonical source. -->
 </urlset>

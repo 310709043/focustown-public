@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1426" />
+  <title>Low Battery Town — A focus space you can walk into</title>
+  <meta name="description" content="Pomodoro × Pixel city × Live company. A web space you can move into to focus. Free forever, runs in any browser, no install." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="canonical" href="https://www.lowbatterytown.com/en/" />
+  <link rel="alternate" hreflang="zh-Hant-TW" href="https://www.lowbatterytown.com/" />
+  <link rel="alternate" hreflang="en" href="https://www.lowbatterytown.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://www.lowbatterytown.com/" />
+
+  <meta property="og:title" content="Low Battery Town — A focus space you can walk into" />
+  <meta property="og:description" content="A city that's always charging. Find your people, find your focus. Free, browser-native, no install." />
+  <meta property="og:url" content="https://www.lowbatterytown.com/en/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://www.lowbatterytown.com/logo.png" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="zh_TW" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Inter:wght@400;500;700&family=Press+Start+2P&family=VT323&display=swap" />
+
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <link rel="stylesheet" href="/styles/overlays.css" />
+  <link rel="stylesheet" href="/styles/animations.css" />
+  <link rel="stylesheet" href="/styles/components.css" />
+  <link rel="stylesheet" href="/styles/responsive.css" />
+  <style>
+    /* English locale uses Inter for body — keeps DotGothic16 only for pixel-y
+       marquee surfaces. Heading remains the pixel-friendly stack. */
+    html[lang="en"] body,
+    html[lang="en"] .feature-card p,
+    html[lang="en"] .hero-tag,
+    html[lang="en"] .legal-body p,
+    html[lang="en"] .legal-body li,
+    html[lang="en"] .section-sub,
+    html[lang="en"] .use-card p,
+    html[lang="en"] .step p,
+    html[lang="en"] .price-list li {
+      font-family: "Inter", "Noto Sans TC", "DotGothic16", system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+<div class="aura-glow" aria-hidden="true"></div>
+<div class="aura-glow aura-glow--cool" aria-hidden="true"></div>
+<div class="grain-overlay" aria-hidden="true"></div>
+<div class="vignette-overlay" aria-hidden="true"></div>
+<div class="crt-overlay" aria-hidden="true"></div>
+
+<nav class="nav" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a href="#top" class="nav-brand" aria-label="Low Battery Town · Home">
+      <img src="/logo.png" alt="Low Battery Town" class="brand-logo" />
+      <span>LOW BATTERY TOWN</span>
+    </a>
+    <input type="checkbox" id="nav-menu-toggle" class="nav-menu-toggle" aria-hidden="true" />
+    <label for="nav-menu-toggle" class="nav-burger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </label>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#live">Live</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <span class="lang-toggle" role="group" aria-label="Language">
+        <a href="/">中文</a>
+        <span class="sep">|</span>
+        <a href="/en/" class="active" aria-current="page">EN</a>
+      </span>
+      <a href="https://lowbatterytown.com/signup" class="nav-cta">▸ Sign up</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero-sky" aria-hidden="true"></div>
+  <div class="hero-stars" aria-hidden="true"></div>
+
+  <div class="hero-cityscape" aria-hidden="true">
+    <div class="city-layer layer-1"></div>
+    <div class="city-layer layer-2"></div>
+    <div class="city-layer layer-3"></div>
+    <div class="city-layer layer-4"></div>
+    <div class="city-layer layer-5"></div>
+
+    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape4_2.png" alt=""
+         style="top: 12%; left: -200px; width: 146px; --dur: 95s; --d: -10s;" loading="lazy" />
+    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape2_1.png" alt=""
+         style="top: 18%; left: -300px; width: 272px; --dur: 130s; --d: -55s; opacity: 0.7;" loading="lazy" />
+    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape5_2.png" alt=""
+         style="top: 28%; left: -200px; width: 159px; --dur: 110s; --d: -25s; opacity: 0.8;" loading="lazy" />
+    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape6_1.png" alt=""
+         style="top: 9%; left: -300px; width: 284px; --dur: 150s; --d: -70s; opacity: 0.6;" loading="lazy" />
+
+    <div class="sprite-actor walker walker-1" aria-hidden="true"></div>
+    <div class="sprite-actor walker walker-2" aria-hidden="true"></div>
+    <div class="sprite-actor walker walker-3" aria-hidden="true"></div>
+    <div class="sprite-actor car-jeep" aria-hidden="true"></div>
+    <div class="sprite-actor bird-chick" aria-hidden="true"></div>
+  </div>
+
+  <div class="container">
+    <div class="hero-content">
+      <span class="hero-eyebrow"><span class="dot"></span>2026 · Pomodoro × Pixel city × Live company</span>
+      <h1 id="hero-title">
+        A focus space<br/>
+        you can <span class="accent">walk</span> into.
+        <span class="accent-rose"></span>
+      </h1>
+      <p class="hero-tag">
+        25-minute pomodoros, pixel streets, real people focusing right now.
+        Open a tab and move in — no app, no card, no install.
+        Turn the lonely low-battery moments into a place with a roof,
+        neighbors, and a moon.
+      </p>
+      <div class="hero-cta-row">
+        <a href="https://lowbatterytown.com/signup" class="btn btn--lg">▸ Move in</a>
+        <a href="#live" class="btn btn--ghost btn--lg">Peek at the street</a>
+      </div>
+      <div class="hero-meta" role="list">
+        <span class="meta-item" role="listitem">Free forever</span>
+        <span class="meta-item" role="listitem">30-second signup</span>
+        <span class="meta-item" role="listitem">Runs in any browser</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" aria-labelledby="features-title">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Features</span>
+      <h2 class="section-title" id="features-title">Six small things that make focus stop feeling like punishment</h2>
+      <p class="section-sub">Every one of them is designed from "you'd open this on your own" — not from forced lockouts or anxiety.</p>
+    </div>
+
+    <div class="feature-grid">
+      <article class="feature-card reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg>
+        </div>
+        <h3>Pixel streetscape</h3>
+        <p>Every focus session adds another walker to the street. You can see how many citizens are working alongside you, quietly.</p>
+      </article>
+
+      <article class="feature-card reveal delay-1">
+        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        </div>
+        <h3>Pomodoro × Pairing</h3>
+        <p>25 / 5 / 50 / 10, your call. Or pair with another focuser and quietly witness each other through one round.</p>
+      </article>
+
+      <article class="feature-card reveal delay-2">
+        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h12"/></svg>
+        </div>
+        <h3>Your room</h3>
+        <p>Every citizen gets a small room. Place a bed, a desk, a wall calendar. Friends can visit but they can only watch — never touch.</p>
+      </article>
+
+      <article class="feature-card reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <h3>Background music</h3>
+        <p>lofi, rainfall, café, late-night jazz. Royalty-free library, no ads, no sudden silence, no notifications.</p>
+      </article>
+
+      <article class="feature-card reveal delay-1">
+        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2M5 6h14l-1 14H6L5 6zM10 11v5M14 11v5"/></svg>
+        </div>
+        <h3>Town shop</h3>
+        <p>Focus earns T-coins; T-coins buy furniture, scenery, limited themes. No gacha, no pay-to-win, just things worth collecting.</p>
+      </article>
+
+      <article class="feature-card reveal delay-2">
+        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21h16M6 18V8m12 10V12M12 21V3"/></svg>
+        </div>
+        <h3>Ranks & achievements</h3>
+        <p>Weekly, monthly, all-time. Unlocked achievements show up as small badges on the street — soft, but every citizen can see.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="how" aria-labelledby="how-title">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">How it works</span>
+      <h2 class="section-title" id="how-title">Three steps into the town</h2>
+      <p class="section-sub">Nothing to download, nothing to configure. From "open tab" to "first focus" averages 47 seconds.</p>
+    </div>
+
+    <div class="steps-row">
+      <article class="step reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="step-num">01</div>
+        <h3>Sign up free</h3>
+        <p>Email + password, 30 seconds. You get a fresh character on the street, footprints and all.</p>
+      </article>
+      <article class="step reveal delay-1">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="step-num">02</div>
+        <h3>Pick a mode</h3>
+        <p>Solo focus, paired co-working, or just drop in to watch. 25 minutes at a time, switch whenever.</p>
+      </article>
+      <article class="step reveal delay-2">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="step-num">03</div>
+        <h3>Start the timer</h3>
+        <p>Music plays, the moon drifts, neighbors get on with their thing. You only need to do one thing.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="live" aria-labelledby="live-title">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Live scene</span>
+      <h2 class="section-title" id="live-title">Right now, on the street</h2>
+      <p class="section-sub">A few citizens currently focusing in town. The timer below is a preview — the real thing is quieter, and warmer.</p>
+    </div>
+
+    <div class="live-grid">
+      <div class="pomodoro-card reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+        <div class="pomodoro-head">
+          <span class="live-dot">LIVE · in focus</span>
+          <span>FOCUS · 25:00</span>
+        </div>
+        <div class="pomodoro-time" aria-live="polite">18:42<span class="caret"></span></div>
+        <div class="pomodoro-progress" aria-hidden="true">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="music-bars" aria-label="Music playing">
+          <span class="music-bar" style="height: 24px;"></span>
+          <span class="music-bar" style="height: 18px;"></span>
+          <span class="music-bar" style="height: 28px;"></span>
+          <span class="music-bar" style="height: 22px;"></span>
+          <span class="music-bar" style="height: 30px;"></span>
+          <span class="music-bar" style="height: 16px;"></span>
+          <span class="music-bar" style="height: 26px;"></span>
+        </div>
+        <div class="pomodoro-foot">
+          <span>Now playing — Late Night Café · lofi</span>
+          <span>Paired with — citizen #4729</span>
+        </div>
+      </div>
+
+      <div class="use-cases">
+        <article class="use-card reveal delay-1">
+          <div class="who">Student</div>
+          <h4>"Finally a reason to open that textbook."</h4>
+          <p>Turn pre-exam procrastination into one more walker on the street. Looking at the street is calmer than looking at the timer — the street doesn't judge.</p>
+        </article>
+        <article class="use-card reveal delay-2">
+          <div class="who">Remote worker</div>
+          <h4>"Coworkers, but at home."</h4>
+          <p>No video, no Slack. Open the tab and someone is there with you. Finish a round, go make coffee, come back, start again.</p>
+        </article>
+        <article class="use-card reveal delay-3">
+          <div class="who">Creative</div>
+          <h4>"The 47-second ritual before the blank page."</h4>
+          <p>Pick a song, dim the room, hit start. The little ritual makes facing the cursor much easier than just facing it.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="room" aria-labelledby="room-title">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Your room · Shop</span>
+      <h2 class="section-title" id="room-title">A small corner that's only yours</h2>
+      <p class="section-sub">T-coins from focus sessions can slowly buy furniture, slowly decorate. No expiry, no gacha, no paywall.</p>
+    </div>
+
+    <div class="shop-room-grid">
+      <div class="room-mockup reveal" role="img" aria-label="Pixel-style room preview">
+        <div class="room-label">YOUR ROOM</div>
+        <div class="room-window" aria-hidden="true"></div>
+        <div class="room-floor" aria-hidden="true"></div>
+        <div class="room-furniture" aria-hidden="true">
+          <div class="room-bed"></div>
+          <div class="room-desk"></div>
+        </div>
+      </div>
+
+      <div class="shop-strip reveal delay-1" aria-label="Sample shop items">
+        <article class="shop-item">
+          <div class="shop-item-art" aria-hidden="true">☕</div>
+          <div class="shop-item-name">Coffee table</div>
+          <div class="shop-item-price">120</div>
+        </article>
+        <article class="shop-item">
+          <div class="shop-item-art" aria-hidden="true">🪴</div>
+          <div class="shop-item-name">Window plant</div>
+          <div class="shop-item-price">80</div>
+        </article>
+        <article class="shop-item">
+          <div class="shop-item-art" aria-hidden="true">🌙</div>
+          <div class="shop-item-name">Moon lamp</div>
+          <div class="shop-item-price">200</div>
+        </article>
+        <article class="shop-item">
+          <div class="shop-item-art" aria-hidden="true">🐈</div>
+          <div class="shop-item-name">Study cat</div>
+          <div class="shop-item-price">450</div>
+        </article>
+        <article class="shop-item">
+          <div class="shop-item-art" aria-hidden="true">📻</div>
+          <div class="shop-item-name">Retro radio</div>
+          <div class="shop-item-price">160</div>
+        </article>
+        <article class="shop-item">
+          <div class="shop-item-art" aria-hidden="true">🖼</div>
+          <div class="shop-item-name">Town poster</div>
+          <div class="shop-item-price">60</div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" aria-labelledby="pricing-title">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Pricing</span>
+      <h2 class="section-title" id="pricing-title">Free, no asterisks</h2>
+      <p class="section-sub">All core features — streets, pairing, shop, room, music, visitors — are free forever. The future FOCUS+ subscription only unlocks advanced themes; it never changes the baseline.</p>
+    </div>
+
+    <div class="pricing-row">
+      <article class="price-card reveal">
+        <h3>Free</h3>
+        <div class="price-amount">$0<span class="unit"> /forever</span></div>
+        <ul class="price-list">
+          <li>All focus modes</li>
+          <li>Pixel streets and pairing</li>
+          <li>Personal room + visitor mode</li>
+          <li>Full built-in music library</li>
+          <li>Weekly / monthly / all-time rankings</li>
+          <li>Shop T-coins (earned by focusing)</li>
+        </ul>
+        <a href="https://lowbatterytown.com/signup" class="btn btn--ghost">▸ Start now</a>
+      </article>
+
+      <article class="price-card price-card--featured reveal delay-1">
+        <h3>FOCUS+</h3>
+        <div class="price-amount">$2.99<span class="unit"> /month</span></div>
+        <ul class="price-list">
+          <li>Seasonal themes (Cherry, Summer Night, Snow City)</li>
+          <li>Shop-exclusive furniture and looks</li>
+          <li>Advanced stats (trends, deep reports)</li>
+          <li>Priority support, replies in 1–2 business days</li>
+          <li class="muted">Never affects free features</li>
+          <li class="muted">Cancel anytime, no commitment</li>
+        </ul>
+        <a href="https://lowbatterytown.com/signup" class="btn">▸ Try FOCUS+</a>
+      </article>
+    </div>
+
+    <div class="reveal delay-2">
+      <h3 class="section-title" style="font-size: var(--t-xl); margin-top: var(--space-6);">How it compares</h3>
+      <table class="compare-table" aria-label="LBT vs other focus tools">
+        <thead>
+          <tr>
+            <th>What you get</th>
+            <th>Low Battery Town</th>
+            <th>Plain pomodoro</th>
+            <th>Forest-style</th>
+            <th>Co-study livestream</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Sense of company</td><td class="yes">Live citizens</td><td class="no">None</td><td class="no">Virtual tree</td><td class="yes">Real people</td></tr>
+          <tr><td>Zero interruption</td><td class="yes">Calm visuals</td><td class="yes">Timer only</td><td class="yes">Timer only</td><td class="no">Webcam pressure</td></tr>
+          <tr><td>Free core</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">Partial</td><td class="no">No</td></tr>
+          <tr><td>Browser-native</td><td class="yes">Yes</td><td class="no">App needed</td><td class="no">App needed</td><td class="yes">Yes</td></tr>
+          <tr><td>Personal space</td><td class="yes">Room + shop</td><td class="no">None</td><td class="no">None</td><td class="no">None</td></tr>
+        </tbody>
+      </table>
+
+      <ul class="compare-mobile" aria-label="What stands out">
+        <li>Live citizens — no webcam required</li>
+        <li>Calm visuals, no ads, zero interruption</li>
+        <li>Free core, browser-native, no install</li>
+        <li>Personal room + collectible shop</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="faq" aria-labelledby="faq-title">
+  <div class="container" style="max-width: 880px;">
+    <div class="reveal">
+      <span class="section-tag">FAQ</span>
+      <h2 class="section-title" id="faq-title">Things you'd ask</h2>
+      <p class="section-sub">Didn't find it? Use the form below — we read every note and reply personally.</p>
+    </div>
+
+    <div class="faq-list reveal delay-1">
+      <details class="faq-item">
+        <summary>Is it really free?</summary>
+        <div class="faq-a">Yes. All core features — streets, focus, pairing, room, shop, music, visitors — are free forever. The future FOCUS+ subscription unlocks only advanced themes and limited cosmetics, never the baseline.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Does it work on mobile?</summary>
+        <div class="faq-a">Works on any desktop browser (Chrome / Safari / Firefox). Mobile web is usable but the experience is tuned for desktop. Native apps aren't on the near-term roadmap.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can visitors mess with my room?</summary>
+        <div class="faq-a">No. Visitors can only watch and listen — they can't move décor, control music, or talk. The room owner has every control.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Is my data safe?</summary>
+        <div class="faq-a">Email + password sign-up; passwords are bcrypt-hashed (never plaintext). All API traffic is HTTPS-encrypted. Full privacy policy via the footer link.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can I upload my own music?</summary>
+        <div class="faq-a">For v1, music comes from the built-in library (lofi, jazz, rainfall, royalty-free). Self-upload is on the roadmap once licensing is sorted.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="feedback" aria-labelledby="feedback-title">
+  <div class="container" style="max-width: 720px;">
+    <div class="feedback-panel reveal">
+      <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
+      <div class="corner-deco bl"></div><div class="corner-deco br"></div>
+      <h3 id="feedback-title">✦ Send feedback</h3>
+      <p>Wishes, bug reports, or just a hello — all welcome. Leave an email and we'll write back personally (1–2 business days).</p>
+
+      <form class="feedback-form" id="feedback-form" novalidate>
+        <div>
+          <label>Category</label>
+          <div class="feedback-categories" id="feedback-categories" role="radiogroup" aria-label="Feedback category">
+            <button type="button" class="feedback-cat-btn active" data-cat="suggestion">Suggestion</button>
+            <button type="button" class="feedback-cat-btn" data-cat="bug">Bug report</button>
+            <button type="button" class="feedback-cat-btn" data-cat="praise">Kudos</button>
+            <button type="button" class="feedback-cat-btn" data-cat="other">Other</button>
+          </div>
+        </div>
+        <div>
+          <label for="feedback-body">Message</label>
+          <textarea id="feedback-body" name="body" maxlength="4000" required placeholder="What's on your mind..."></textarea>
+        </div>
+        <div>
+          <label for="feedback-contact">Email (optional)</label>
+          <input type="email" id="feedback-contact" name="contact_email" placeholder="Leave an email so we can reply (optional)" />
+        </div>
+        <div class="feedback-submit-row">
+          <div class="feedback-status" id="feedback-status" role="status" aria-live="polite"></div>
+          <button type="submit" class="btn" id="feedback-submit">▸ Send</button>
+        </div>
+      </form>
+
+      <div class="feedback-success" id="feedback-success" hidden>
+        <div class="ico">✦</div>
+        <h4>Got it!</h4>
+        <p>Thanks for the note. If you left an email, we'll reply within 1–2 business days.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-links">
+    <a href="https://lowbatterytown.com/en/legal/terms">Terms of Service</a>
+    <a href="https://lowbatterytown.com/en/legal/privacy">Privacy Policy</a>
+    <a href="https://lowbatterytown.com/en/legal/refund">Refund Policy</a>
+    <a href="#feedback">Contact</a>
+  </div>
+  <div>© 2026 Low Battery Town · Made with ☕ &amp; 🌙 in Taipei</div>
+  <div class="footer-status">All systems operational</div>
+</footer>
+
+<script>
+  /* EN-locale form uses English copy. Override the few user-facing strings
+     the shared main.js sets (status messages). */
+  window.__FEEDBACK_STRINGS__ = {
+    emptyBody: 'Please write something.',
+    tooLong: 'Message is too long (max 4000 characters).',
+    sending: 'Sending…',
+    rateLimited: 'Slowing things down — please try again in a moment.',
+    sendFailed: 'Could not send. Please try again shortly.',
+    networkError: 'Network error. Please check your connection and try again.',
+    sendCta: '▸ Send',
+  };
+</script>
+<script src="/scripts/main.js" defer></script>
+</body>
+</html>

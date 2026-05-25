@@ -1,0 +1,109 @@
+/* Era B canonical palette — ported verbatim from frontend/app/globals.css :root.
+   2026-05-20 rebrand lock. The landing page mirrors the in-app palette so the
+   visitor's eye doesn't recalibrate between landing and signed-in surfaces. */
+
+:root {
+  --bg: #0f1426;
+  --bg-1: #16203c;
+  --bg-2: #1f2a4d;
+
+  --a1: #e9a76e;
+  --a2: #f4d289;
+  --a3: #c98aa3;
+  --a4: #91a8c4;
+  --teal: #a8c4a0;
+  --pink: #c98aa3;
+  --coral: #e9a76e;
+
+  --text: #f4ecd8;
+  --muted: #b8b4cc;
+  --dim: #6b6788;
+
+  --card: rgba(15, 20, 38, 0.55);
+  --glass: rgba(22, 32, 60, 0.7);
+  --border: rgba(184, 180, 204, 0.18);
+  --border2: rgba(184, 180, 204, 0.32);
+
+  --r: 6px;
+  --r2: 10px;
+  --r3: 14px;
+
+  --shadow-panel: 0 2px 0 rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-press: 4px 4px 0 rgba(0, 0, 0, 0.6);
+  --glow-peach: 0 0 12px rgba(233, 167, 110, 0.45);
+  --glow-pink: 0 0 12px rgba(201, 138, 163, 0.45);
+  --glow-slate: 0 0 12px rgba(145, 168, 196, 0.45);
+
+  --sky-top: #15203d;
+  --sky-mid: #2a3a64;
+  --sky-low: #4d5e88;
+  --sky-dawn: linear-gradient(180deg, #1f2a4d 0%, #4d5e88 40%, #c98aa3 75%, #f4d289 100%);
+  --sky-day: linear-gradient(180deg, #4d5e88 0%, #91a8c4 50%, #f4ecd8 100%);
+
+  --font-pixel: "Press Start 2P", "DotGothic16", monospace;
+  --font-cjk: "DotGothic16", "Noto Sans TC", sans-serif;
+  --font-mono: "VT323", "Courier New", monospace;
+  --font-body: "Noto Sans TC", "DotGothic16", system-ui, sans-serif;
+
+  --t-xs: 12px;
+  --t-sm: 14px;
+  --t-md: 16px;
+  --t-lg: 19px;
+  --t-xl: 24px;
+  --t-2xl: 34px;
+  --t-3xl: 48px;
+  --t-hero: clamp(40px, 7.5vw, 86px);
+  --t-section: clamp(28px, 4.5vw, 48px);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-8: 96px;
+  --space-9: 128px;
+
+  --container-max: 1200px;
+  --section-pad-y: clamp(64px, 10vw, 128px);
+
+  --nav-h: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  line-height: 1.7;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--a1);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+a:hover { color: var(--a2); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--a4); }
+
+::selection { background: rgba(233, 167, 110, 0.35); color: var(--text); }

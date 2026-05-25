@@ -1,0 +1,149 @@
+/* Animations — sprite frame stepping + drift paths + reveals + breathing.
+   All decorative; reduced-motion users get a flat snapshot via the @media
+   block at the bottom. */
+
+@keyframes auraBreath {
+  0%, 100% { opacity: 0.55; transform: translate(0, 0) scale(1); }
+  50%      { opacity: 1;    transform: translate(-30px, 20px) scale(1.08); }
+}
+
+/* ── Walker frame stepping ───────────────────────────────────────────
+   City_men_*_Walk.png = 1280×128, 10 frames @128 each. steps(10) pumps
+   background-position from 0 → -1280px across 1s, giving 10fps idle gait.
+   Backward variant for walkers heading left. */
+@keyframes walkFrames {
+  from { background-position: 0 0; }
+  to   { background-position: -1280px 0; }
+}
+@keyframes idleFrames {
+  /* City_men_1_Idle.png = 768×128, 6 frames @128 */
+  from { background-position: 0 0; }
+  to   { background-position: -768px 0; }
+}
+
+/* Walker horizontal path — across the full hero. Two variants: one slow
+   pedestrian (32s) and a faster jogger (22s). Random delays via inline
+   --d custom property on the element keep them desynced. */
+@keyframes walkPath {
+  from { transform: translateX(-200px); }
+  to   { transform: translateX(calc(100vw + 200px)); }
+}
+@keyframes walkPathReverse {
+  from { transform: translateX(calc(100vw + 200px)) scaleX(-1); }
+  to   { transform: translateX(-200px) scaleX(-1); }
+}
+
+/* ── Car ride (Jeep) ─────────────────────────────────────────────────
+   Jeep_1_Ride.png = 1536×192, 8 frames @192 */
+@keyframes jeepFrames {
+  from { background-position: 0 0; }
+  to   { background-position: -1536px 0; }
+}
+@keyframes jeepPath {
+  from { transform: translateX(-260px); }
+  to   { transform: translateX(calc(100vw + 260px)); }
+}
+
+/* ── Bird (Chick.png) ─────────────────────────────────────────────────
+   Grid: 6 cols × 8 rows of 16×16 frames. We pick a single row (direction)
+   via background-position-y and animate cols. Use steps(6). */
+@keyframes birdFrames {
+  /* Animate -X only, locked to row 1 (16px deep). 16px × 6 cols = -96px. */
+  from { background-position: 0 -16px; }
+  to   { background-position: -96px -16px; }
+}
+@keyframes birdPath {
+  0%   { transform: translate(-80px, 30px); }
+  100% { transform: translate(calc(100vw + 80px), -60px); }
+}
+
+/* ── Clouds — single PNGs that just drift. ───────────────────────────── */
+@keyframes cloudDrift {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(calc(100vw + 100%)); }
+}
+
+/* ── Parallax-y city base — single layer subtly breathing as if the
+   sun is shifting. No actual scroll-coupled parallax (avoids the iOS
+   background-attachment jank). */
+@keyframes cityBreath {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-4px, 0, 0) scale(1.005); }
+}
+
+/* ── Section reveal ──────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 700ms cubic-bezier(.2,.7,.2,1), transform 700ms cubic-bezier(.2,.7,.2,1);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: none;
+}
+.reveal.delay-1 { transition-delay: 120ms; }
+.reveal.delay-2 { transition-delay: 240ms; }
+.reveal.delay-3 { transition-delay: 360ms; }
+
+/* ── Hero peach wash (one-shot on load) ──────────────────────────── */
+@keyframes dawnToDay {
+  0%   { background: linear-gradient(180deg, #1f2a4d 0%, #4d5e88 35%, #c98aa3 70%, #f4d289 100%); }
+  100% { background: linear-gradient(180deg, #4d5e88 0%, #91a8c4 45%, #f4ecd8 100%); }
+}
+
+/* ── Twinkle (for sparse stars over the hero) ────────────────────── */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 0.95; }
+}
+
+/* ── Caret blink for typewriter detail ─────────────────────────────── */
+@keyframes caretBlink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ── Music bars (live-scene mockup) ──────────────────────────────── */
+@keyframes barBounce {
+  0%, 100% { transform: scaleY(0.35); }
+  25%      { transform: scaleY(0.9); }
+  50%      { transform: scaleY(0.55); }
+  75%      { transform: scaleY(1); }
+}
+
+/* ── Progress demo (pomodoro mockup) ──────────────────────────────── */
+@keyframes progress {
+  from { width: 6%; }
+  to   { width: 92%; }
+}
+
+/* ── Pulse halo for badge dots ──────────────────────────────────── */
+@keyframes pulseHalo {
+  0%   { box-shadow: 0 0 0 0 rgba(233, 167, 110, 0.55); }
+  100% { box-shadow: 0 0 0 14px rgba(233, 167, 110, 0); }
+}
+
+/* ── Hover float for cards ──────────────────────────────────────── */
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────
+   Kill infinite decorative loops; leave reveals + transitions intact. */
+@media (prefers-reduced-motion: reduce) {
+  .walker,
+  .cloud,
+  .car-jeep,
+  .bird-chick,
+  .aura-glow,
+  .city-layer,
+  .music-bar,
+  .pulse-dot::after,
+  .progress-fill {
+    animation: none !important;
+  }
+  .walker { background-position: 0 0 !important; }
+  .car-jeep { background-position: 0 0 !important; }
+  .bird-chick { background-position: 0 -16px !important; }
+}

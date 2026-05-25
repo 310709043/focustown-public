@@ -22,12 +22,31 @@ if [[ ! -f "$LANDING_DIR/index.html" ]]; then
     exit 1
 fi
 
-# Product rule: no public email addresses on the landing page — contact is
-# form-only. Fail the deploy if one slips back in.
-if grep -RIE '[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}' "$LANDING_DIR" >/dev/null; then
-    echo "✗ Found an email address in $LANDING_DIR — landing must contact-via-form only:" >&2
-    grep -RIEn '[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}' "$LANDING_DIR" >&2 || true
+# Product rule: no public email addresses on marketing surfaces — contact is
+# form-only. Legal pages legitimately need a support contact (per LEGAL config),
+# so the guard scopes to non-legal HTML/text and skips the legal/ trees in both
+# locales.
+if grep -RIE \
+    --exclude-dir=legal --exclude-dir=en \
+    '[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}' "$LANDING_DIR" >/dev/null; then
+    echo "✗ Found an email address in $LANDING_DIR (outside legal/) — marketing surfaces must contact-via-form only:" >&2
+    grep -RIEn \
+        --exclude-dir=legal --exclude-dir=en \
+        '[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}' "$LANDING_DIR" >&2 || true
     exit 1
+fi
+# The /en/ tree is allowed for the same reason — it mirrors legal/ plus the
+# English marketing copy. Re-apply the guard to /en/ but skip /en/legal/ too.
+if [[ -d "$LANDING_DIR/en" ]]; then
+    if grep -RIE \
+        --exclude-dir=legal \
+        '[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}' "$LANDING_DIR/en" >/dev/null; then
+        echo "✗ Found an email address in $LANDING_DIR/en (outside legal/) — marketing surfaces must contact-via-form only:" >&2
+        grep -RIEn \
+            --exclude-dir=legal \
+            '[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}' "$LANDING_DIR/en" >&2 || true
+        exit 1
+    fi
 fi
 
 echo "▸ Syncing to s3://$BUCKET..."
