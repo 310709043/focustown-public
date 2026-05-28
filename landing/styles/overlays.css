@@ -74,3 +74,60 @@
   );
   animation-delay: -14s;
 }
+
+/* Rose / pink orb — drifts through mid-page, left side */
+.aura-glow.aura-glow--rose {
+  top: 38vh;
+  left: -180px;
+  right: auto;
+  bottom: auto;
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(
+    circle,
+    rgba(201, 138, 163, 0.2) 0%,
+    rgba(233, 167, 110, 0.06) 40%,
+    transparent 68%
+  );
+  filter: blur(72px);
+  animation-delay: -7s;
+  animation-duration: 36s;
+}
+
+/* Teal orb — anchored right-center, slower drift */
+.aura-glow.aura-glow--teal {
+  top: 65vh;
+  right: -160px;
+  left: auto;
+  bottom: auto;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(
+    circle,
+    rgba(168, 196, 160, 0.18) 0%,
+    rgba(145, 168, 196, 0.09) 40%,
+    transparent 68%
+  );
+  filter: blur(68px);
+  animation-delay: -21s;
+  animation-duration: 44s;
+}
+
+/* Violet accent — subtle, top-center, blinks gently */
+.aura-glow.aura-glow--violet {
+  top: -160px;
+  left: 30%;
+  right: auto;
+  bottom: auto;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle,
+    rgba(145, 120, 200, 0.12) 0%,
+    rgba(201, 138, 163, 0.05) 40%,
+    transparent 68%
+  );
+  filter: blur(80px);
+  animation-delay: -35s;
+  animation-duration: 50s;
+}

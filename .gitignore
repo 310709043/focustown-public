@@ -82,3 +82,6 @@ reference/
 !frontend/public/audio/lofi-1.mp3
 !frontend/public/audio/lofi-2.mp3
 !frontend/public/audio/lofi-3.mp3
+
+# Landing page video assets (large files — deployed via S3, not git)
+landing/assets/video/

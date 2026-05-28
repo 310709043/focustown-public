@@ -34,12 +34,16 @@
 <!-- ╭─ Atmospheric overlays (fixed full-viewport) ─────────────╮ -->
 <div class="aura-glow" aria-hidden="true"></div>
 <div class="aura-glow aura-glow--cool" aria-hidden="true"></div>
+<div class="aura-glow aura-glow--rose" aria-hidden="true"></div>
+<div class="aura-glow aura-glow--teal" aria-hidden="true"></div>
+<div class="aura-glow aura-glow--violet" aria-hidden="true"></div>
 <div class="grain-overlay" aria-hidden="true"></div>
 <div class="vignette-overlay" aria-hidden="true"></div>
 <div class="crt-overlay" aria-hidden="true"></div>
 
 <!-- ╭─ Nav ────────────────────────────────────────────────────╮ -->
 <nav class="nav" aria-label="主導覽">
+  <div class="scroll-progress" aria-hidden="true"></div>
   <div class="nav-inner">
     <a href="#top" class="nav-brand" aria-label="Low Battery Town · Home">
       <img src="/logo.png" alt="Low Battery Town" class="brand-logo" />
@@ -51,16 +55,15 @@
     </label>
     <div class="nav-links">
       <a href="#features">特色</a>
-      <a href="#how">如何運作</a>
+      <a href="#story">故事</a>
       <a href="#live">實況</a>
-      <a href="#pricing">方案</a>
+      <a href="#team">團隊</a>
       <a href="#faq">FAQ</a>
       <span class="lang-toggle" role="group" aria-label="Language">
         <a href="/" class="active" aria-current="page">中文</a>
         <span class="sep">|</span>
         <a href="/en/">EN</a>
       </span>
-      <a href="https://lowbatterytown.com/signup" class="nav-cta">▸ 註冊</a>
     </div>
   </div>
 </nav>
@@ -87,41 +90,43 @@
     <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape6_1.png" alt=""
          style="top: 9%; left: -300px; width: 284px; --dur: 150s; --d: -70s; opacity: 0.6;" loading="lazy" />
 
-    <!-- Walkers strolling along ground line (Era B canonical sprites) -->
-    <div class="sprite-actor walker walker-1" aria-hidden="true"></div>
-    <div class="sprite-actor walker walker-2" aria-hidden="true"></div>
-    <div class="sprite-actor walker walker-3" aria-hidden="true"></div>
+    <!-- Jeep with name -->
+    <div class="citizen-wrap car-wrap" aria-hidden="true">
+      <div class="citizen-label">
+        <span class="citizen-name">阿傑</span>
+        <span class="citizen-badge citizen-badge--pass">通勤中</span>
+      </div>
+      <span class="citizen-online"></span>
+      <div class="sprite-actor car-jeep"></div>
+    </div>
 
-    <!-- Jeep cruising the road -->
-    <div class="sprite-actor car-jeep" aria-hidden="true"></div>
-
-    <!-- Bird gliding diagonally -->
-    <div class="sprite-actor bird-chick" aria-hidden="true"></div>
   </div>
 
   <div class="container">
     <div class="hero-content">
-      <span class="hero-eyebrow"><span class="dot"></span>2026 · 番茄鐘 × 像素小鎮 × 即時陪伴</span>
-      <h1 id="hero-title">
+      <span class="hero-eyebrow reveal reveal--time"><span class="dot"></span>Lofi × 電量 × 像素小鎮 × 即時陪伴</span>
+      <h1 id="hero-title" class="reveal reveal--time delay-1">
         把專注<br/>
         變成可以<span class="accent">走進去</span>的<span class="accent-rose">小鎮</span>。
       </h1>
-      <p class="hero-tag">
+      <p class="hero-manifesto reveal reveal--time delay-2">我們不搞遊戲。只是讓你好好專注。</p>
+      <p class="hero-tag reveal reveal--time delay-3">
         25 分鐘倒數、像素街道、真實正在專注的人。打開瀏覽器就能搬進來 ——
         不用 App、不用信用卡、不用安裝。把孤獨的低電量時刻，
         變成有屋頂、有鄰居、有月亮的地方。
       </p>
-      <div class="hero-cta-row">
-        <a href="https://lowbatterytown.com/signup" class="btn btn--lg">▸ 立刻搬進來</a>
-        <a href="#live" class="btn btn--ghost btn--lg">看看現在的街景</a>
+      <div class="hero-cta-row reveal reveal--time delay-4">
+        <span class="btn btn--lg btn--disabled" aria-disabled="true">Coming Soon</span>
+        <a href="https://www.youtube.com/@LowBatteryTown" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--lg">▶ 宣傳片</a>
       </div>
-      <div class="hero-meta" role="list">
+      <div class="hero-meta reveal reveal--time delay-5" role="list">
         <span class="meta-item" role="listitem">完全免費</span>
         <span class="meta-item" role="listitem">30 秒註冊</span>
         <span class="meta-item" role="listitem">瀏覽器即開即用</span>
       </div>
     </div>
   </div>
+
 </section>
 
 <!-- ╭─ 2 · Features ──────────────────────────────────────────╮ -->
@@ -134,7 +139,7 @@
     </div>
 
     <div class="feature-grid">
-      <article class="feature-card reveal">
+      <article class="feature-card reveal--scale">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
@@ -144,24 +149,24 @@
         <p>每一次專注都讓街上多一個行人。你會看見此刻有多少人正在和你一起努力，安靜地走動著。</p>
       </article>
 
-      <article class="feature-card reveal delay-1">
+      <article class="feature-card reveal--scale delay-1">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
         </div>
-        <h3>番茄鐘 × 配對</h3>
-        <p>25 / 5 / 50 / 10，自由切換。也可以和另一個正在專注的人配對，互相當對方的見證人。</p>
+        <h3>充電鐘 × 配對</h3>
+        <p>25 / 5 / 50 / 10，自由切換。也可以和另一個正在充電的人配對，互相當對方的見證人。</p>
       </article>
 
-      <article class="feature-card reveal delay-2">
+      <article class="feature-card reveal--scale delay-2">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h12"/></svg>
         </div>
-        <h3>你的房間</h3>
-        <p>每個鎮民都有自己的小房間。可以擺床、擺桌、貼月曆。歡迎朋友來逛但他們只能看，不能動。</p>
+        <h3>個人獨立專注空間</h3>
+        <p>每個鎮民都有自己的專屬角落。可以擺床、擺桌、貼月曆，打造最適合自己的充電環境。</p>
       </article>
 
       <article class="feature-card reveal">
@@ -180,11 +185,11 @@
         <div class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2M5 6h14l-1 14H6L5 6zM10 11v5M14 11v5"/></svg>
         </div>
-        <h3>小鎮商店</h3>
-        <p>專注換金幣，金幣換家具、布景、限定主題。沒有抽卡、沒有 pay-to-win，只是讓你有理由收集。</p>
+        <h3>小鎮商店 <span class="badge-soon">即將開放</span></h3>
+        <p>充電換金幣，金幣換家具、布景、限定主題。沒有抽卡、沒有 pay-to-win，只是讓你有理由收集。</p>
       </article>
 
-      <article class="feature-card reveal delay-2">
+      <article class="feature-card reveal--scale delay-2">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
@@ -197,7 +202,45 @@
   </div>
 </section>
 
-<!-- ╭─ 3 · How It Works ──────────────────────────────────────╮ -->
+<!-- ╭─ 3 · Story ─────────────────────────────────────────────╮ -->
+<section id="story" aria-labelledby="story-title">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">我們的故事</span>
+      <h2 class="section-title" id="story-title">一個能讓人重新進入專注狀態的地方</h2>
+    </div>
+
+    <div class="story-layout">
+      <div class="story-pull reveal--left delay-1">
+        <p class="story-quote">「有時候不是做不到。<br/>只是很難<br/>一個人維持專注。」</p>
+        <p class="story-quote-source">— Simon · 2026</p>
+      </div>
+      <div class="story-body reveal--right delay-1">
+        <p>Low Battery Town 不是為了提高效率而誕生的。它更像是在混亂裡，試著找回「能夠安靜做自己的事」的空間。</p>
+        <p>我們每天都被太多東西拉走注意力——訊息、短影音、通知、社群、焦慮、孤獨感。很多人其實不是懶，只是長時間處在一種「低電量」的狀態。明明有想完成的事，想讀的書、想做的作品、想開始的人生，但一打開電腦，又被世界沖散。</p>
+        <p>後來我發現，人真正需要的，未必是更多效率工具，而是一種<strong>「有人陪你一起專注」</strong>的感覺。不用一直聊天、不用社交、不用表現自己——只是知道，此時此刻，也有人正在努力。</p>
+        <p>於是 Low Battery Town 出現了。一座給低電量的人待的小鎮。你可以進入專注房間、播放 lofi、和陌生人一起讀書、工作、創作，或者只是安靜地把今天過完。沒有過度打擾，沒有社交壓力，只有一群正在慢慢把生活重新接回來的人。</p>
+      </div>
+    </div>
+
+    <div class="story-scene-wrap reveal delay-2">
+      <div class="scene-img-wrap">
+        <img src="/assets/scenes/alley-walker.png"
+             alt="夜晚像素小鎮巷弄，霓虹燈下一個人獨自走著"
+             loading="lazy" style="max-height:420px;object-fit:cover;object-position:center center;" />
+      </div>
+      <div class="story-callout">
+        <div class="story-callout-icon" aria-hidden="true">⚡</div>
+        <div>
+          <p class="story-callout-title">Low Battery Town 不是逼你燃燒自己。</p>
+          <p class="story-callout-sub">而是讓你在快沒電的時候，還能找到一個願意陪你慢慢充電的地方。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╭─ 4 · How It Works ──────────────────────────────────────╮ -->
 <section id="how" aria-labelledby="how-title">
   <div class="container">
     <div class="reveal">
@@ -206,36 +249,83 @@
       <p class="section-sub">不需要下載、不需要設定。從點開到第一次專注，平均 47 秒。</p>
     </div>
 
-    <div class="steps-row">
-      <article class="step reveal">
+    <div class="flowchart">
+      <div class="flow-node reveal">
         <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="step-num">01</div>
+        <div class="flow-num">01</div>
+        <div class="flow-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
         <h3>免費註冊</h3>
-        <p>Email + 密碼，30 秒。立刻發給你一個剛搬進來的角色，街上有自己的腳印。</p>
-      </article>
-      <article class="step reveal delay-1">
+        <p>Email + 密碼，30 秒搞定。立刻分配一個剛搬進來的角色，街上留下你的腳印。</p>
+        <div class="flow-tag">⏱ 約 30 秒</div>
+      </div>
+
+      <div class="flow-connector" aria-hidden="true">
+        <span class="connector-arrow">▶</span>
+      </div>
+
+      <div class="flow-node reveal delay-1">
         <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="step-num">02</div>
+        <div class="flow-num">02</div>
+        <div class="flow-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        </div>
         <h3>選擇模式</h3>
-        <p>單人專注、配對共讀、或只是來看街景。每次 25 分鐘，自由切換。</p>
-      </article>
-      <article class="step reveal delay-2">
+        <p>單人充電、配對共讀，或只是來感受街景。每次 25 分鐘，模式隨時切換。</p>
+        <div class="flow-tag">🎵 音樂自動開始</div>
+      </div>
+
+      <div class="flow-connector" aria-hidden="true">
+        <span class="connector-arrow">▶</span>
+      </div>
+
+      <div class="flow-node reveal delay-2">
         <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="step-num">03</div>
-        <h3>開始倒數</h3>
-        <p>背景音樂自動播放，月亮慢慢移動，街上的鄰居各自做事。你也只需要做一件事。</p>
-      </article>
+        <div class="flow-num">03</div>
+        <div class="flow-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>開始充電</h3>
+        <p>街上的鄰居各自努力，月亮慢慢移動。你也只需要做一件事——專注在當下。</p>
+        <div class="flow-tag">⚡ 電量慢慢回來了</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ╭─ 4 · Live Scene ────────────────────────────────────────╮ -->
+<!-- ╭─ 5 · Live Scene ────────────────────────────────────────╮ -->
 <section id="live" aria-labelledby="live-title">
   <div class="container">
     <div class="reveal">
       <span class="section-tag">Live Scene</span>
-      <h2 class="section-title" id="live-title">現在街上正在發生的事</h2>
-      <p class="section-sub">隨機抽幾組正在小鎮裡專注的鎮民。下方計時器是模擬畫面，實際使用時更安靜、也更溫暖。</p>
+      <h2 class="section-title" id="live-title">此刻，小鎮裡正在發生的事</h2>
+      <p class="section-sub">你不會孤單——此刻有真實的人在這裡充電。你只是還沒走進來。</p>
+    </div>
+
+    <div class="live-scene-img reveal">
+      <div class="scene-img-wrap">
+        <img src="/assets/scenes/lbt-station.png"
+             alt="Low Battery Town 霓虹站牌，自動販賣機與深夜街道"
+             loading="lazy" style="max-height:300px;object-fit:cover;object-position:center 15%;" />
+      </div>
+    </div>
+
+    <div class="live-stats-bar reveal">
+      <div class="live-stat">
+        <span class="live-stat-num" data-counter data-target="247">247</span>
+        <span class="live-stat-label">人正在充電</span>
+      </div>
+      <span class="live-stat-sep" aria-hidden="true">·</span>
+      <div class="live-stat">
+        <span class="live-stat-num" data-counter data-target="83">83</span>
+        <span class="live-stat-label">個配對進行中</span>
+      </div>
+      <span class="live-stat-sep" aria-hidden="true">·</span>
+      <div class="live-stat">
+        <span class="live-stat-num" data-counter data-target="12451">12,451</span>
+        <span class="live-stat-label">充電鐘完成</span>
+      </div>
     </div>
 
     <div class="live-grid">
@@ -243,8 +333,8 @@
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="pomodoro-head">
-          <span class="live-dot">LIVE · 專注中</span>
-          <span>FOCUS · 25:00</span>
+          <span class="live-dot">LIVE · 充電中</span>
+          <span>CHARGE · 25:00</span>
         </div>
         <div class="pomodoro-time" aria-live="polite">18:42<span class="caret"></span></div>
         <div class="pomodoro-progress" aria-hidden="true">
@@ -263,156 +353,78 @@
           <span>正在播放 — Late Night Café · lofi</span>
           <span>配對對象 — 鎮民 #4729</span>
         </div>
+        <div class="live-town-note">模擬畫面，實際使用時更安靜、也更溫暖。</div>
       </div>
 
       <div class="use-cases">
         <article class="use-card reveal delay-1">
-          <div class="who">學生 · STUDENT</div>
+          <div class="use-card-header">
+            <span class="use-avatar" aria-hidden="true">📚</span>
+            <div class="who">學生 · STUDENT</div>
+          </div>
           <h4>「終於有理由打開那本書了」</h4>
-          <p>把考試前那種拖延變成街上多了一個小人。看著街景比看計時器讓人安心，因為街景不會嘲笑你。</p>
+          <p>考試前的拖延，變成街上多了一個小人。街景不會嘲笑你，只是靜靜陪著你。</p>
+          <div class="use-time">今天已充電 3h 20m</div>
         </article>
         <article class="use-card reveal delay-2">
-          <div class="who">遠端工作者 · REMOTE</div>
+          <div class="use-card-header">
+            <span class="use-avatar" aria-hidden="true">💻</span>
+            <div class="who">遠端工作者 · REMOTE</div>
+          </div>
           <h4>「在家也有同事的感覺」</h4>
-          <p>不用視訊、不用 Slack。打開頁面就有人和你一起，做完一輪去廚房泡咖啡，回來再打開繼續。</p>
+          <p>不用視訊、不用 Slack。打開頁面就有人陪，做完一輪泡杯咖啡，回來繼續。</p>
+          <div class="use-time">連續第 14 天上線</div>
         </article>
         <article class="use-card reveal delay-3">
-          <div class="who">創作者 · CREATIVE</div>
+          <div class="use-card-header">
+            <span class="use-avatar" aria-hidden="true">✍️</span>
+            <div class="who">創作者 · CREATIVE</div>
+          </div>
           <h4>「動筆前的儀式感」</h4>
-          <p>選個音樂、調好房間燈光、按下開始 —— 比起立刻面對空白稿，這個 47 秒的儀式讓事情容易很多。</p>
+          <p>選個音樂、按下開始——比起立刻面對空白稿，這 47 秒的儀式讓事情容易太多。</p>
+          <div class="use-time">本週完成 24 個充電鐘</div>
         </article>
       </div>
+    </div>
+
+    <div class="live-join-cta reveal delay-2">
+      <a href="https://lowbatterytown.com" class="btn btn--lg">▸ 加入正在充電的人</a>
+      <span class="live-join-note">完全免費 · 瀏覽器即開即用 · 30 秒搬進來</span>
     </div>
   </div>
 </section>
 
-<!-- ╭─ 5 · Shop + Your Room ──────────────────────────────────╮ -->
-<section id="room" aria-labelledby="room-title">
+<!-- ╭─ 5 · Team ───────────────────────────────────────────────╮ -->
+<section id="team" aria-labelledby="team-title">
   <div class="container">
     <div class="reveal">
-      <span class="section-tag">Your Room · Shop</span>
-      <h2 class="section-title" id="room-title">一個只屬於你的小角落</h2>
-      <p class="section-sub">專注完的金幣可以慢慢買家具、慢慢佈置。沒有限時、沒有抽卡、沒有付費跳關。</p>
+      <span class="section-tag">The Team</span>
+      <h2 class="section-title section-title--neon" id="team-title" tabindex="0">在台北的角落蓋這座鎮的人</h2>
+      <p class="section-sub">小鎮還小，但每一磚每一瓦都是認真蓋的。</p>
     </div>
 
-    <div class="shop-room-grid">
-      <div class="room-mockup reveal" role="img" aria-label="像素風格房間預覽">
-        <div class="room-label">YOUR ROOM</div>
-        <div class="room-window" aria-hidden="true"></div>
-        <div class="room-floor" aria-hidden="true"></div>
-        <div class="room-furniture" aria-hidden="true">
-          <div class="room-bed"></div>
-          <div class="room-desk"></div>
-        </div>
-      </div>
+    <div class="team-grid">
+      <article class="team-card reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="team-avatar" aria-hidden="true">🏗️</div>
+        <div class="team-role">Founder · Product</div>
+        <h3 class="team-name">Simon</h3>
+        <p class="team-bio">相信真正讓人持續前進的，不只是效率，而是有人陪你一起存在。因此開始打造一系列圍繞「吃、喝、玩、樂與陪伴感」的產品。<br/><br/>產品一：Low Battery Town ——一座獻給低電量世代的數位小鎮，讓人能在陪伴感裡安心專注、慢慢充電。</p>
+      </article>
 
-      <div class="shop-strip reveal delay-1" aria-label="商店道具範例">
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">☕</div>
-          <div class="shop-item-name">咖啡桌</div>
-          <div class="shop-item-price">120</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🪴</div>
-          <div class="shop-item-name">窗邊植物</div>
-          <div class="shop-item-price">80</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🌙</div>
-          <div class="shop-item-name">月亮燈</div>
-          <div class="shop-item-price">200</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🐈</div>
-          <div class="shop-item-name">陪讀貓</div>
-          <div class="shop-item-price">450</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">📻</div>
-          <div class="shop-item-name">復古收音機</div>
-          <div class="shop-item-price">160</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🖼</div>
-          <div class="shop-item-name">小鎮海報</div>
-          <div class="shop-item-price">60</div>
-        </article>
-      </div>
+      <article class="team-card team-card--open reveal delay-1">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="team-avatar team-avatar--open" aria-hidden="true">✦</div>
+        <div class="team-role">待增加夥伴</div>
+        <h3 class="team-name">是你嗎？</h3>
+        <p class="team-bio">我們在找對這件事有感覺的人——不限角色，可以是設計、工程、社群、或是你有其他想法。</p>
+        <a href="#feedback" class="team-join-btn">✉ 寫信給我們</a>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- ╭─ 6 · Pricing + Compare ─────────────────────────────────╮ -->
-<section id="pricing" aria-labelledby="pricing-title">
-  <div class="container">
-    <div class="reveal">
-      <span class="section-tag">Pricing</span>
-      <h2 class="section-title" id="pricing-title">免費，沒有但是</h2>
-      <p class="section-sub">所有核心功能（街景、配對、商店、房間、音樂、訪客）完全免費。未來推出的 FOCUS+ 只解鎖進階主題，不會影響基本體驗。</p>
-    </div>
-
-    <div class="pricing-row">
-      <article class="price-card reveal">
-        <h3>Free</h3>
-        <div class="price-amount">$0<span class="unit"> /永久</span></div>
-        <ul class="price-list">
-          <li>所有專注模式</li>
-          <li>像素街景與配對</li>
-          <li>個人房間 + 訪客模式</li>
-          <li>內建音樂全曲庫</li>
-          <li>每週 / 每月 / 總時數排行</li>
-          <li>商店金幣（專注時長換取）</li>
-        </ul>
-        <a href="https://lowbatterytown.com/signup" class="btn btn--ghost">▸ 直接開始</a>
-      </article>
-
-      <article class="price-card price-card--featured reveal delay-1">
-        <h3>FOCUS+</h3>
-        <div class="price-amount">$2.99<span class="unit"> /月</span></div>
-        <ul class="price-list">
-          <li>限定季節主題（春櫻、夏夜、雪都）</li>
-          <li>商店限定家具與外觀</li>
-          <li>進階統計（趨勢、深度報告）</li>
-          <li>優先客服 1–2 工作日內回覆</li>
-          <li class="muted">不影響任何免費功能</li>
-          <li class="muted">隨時取消、不綁約</li>
-        </ul>
-        <a href="https://lowbatterytown.com/signup" class="btn">▸ 試試 FOCUS+</a>
-      </article>
-    </div>
-
-    <div class="reveal delay-2">
-      <h3 class="section-title" style="font-size: var(--t-xl); margin-top: var(--space-6);">與其他工具比較</h3>
-      <table class="compare-table" aria-label="LBT vs 其他專注工具比較">
-        <thead>
-          <tr>
-            <th>項目</th>
-            <th>低電量小鎮</th>
-            <th>傳統番茄鐘</th>
-            <th>Forest 類</th>
-            <th>共讀直播</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>陪伴感</td><td class="yes">即時鎮民</td><td class="no">無</td><td class="no">虛擬樹</td><td class="yes">真人</td></tr>
-          <tr><td>無干擾</td><td class="yes">純畫面</td><td class="yes">純計時</td><td class="yes">純計時</td><td class="no">攝影機壓力</td></tr>
-          <tr><td>免費核心</td><td class="yes">是</td><td class="yes">是</td><td class="no">部分</td><td class="no">否</td></tr>
-          <tr><td>瀏覽器即用</td><td class="yes">是</td><td class="no">需 App</td><td class="no">需 App</td><td class="yes">是</td></tr>
-          <tr><td>個人化空間</td><td class="yes">房間 + 商店</td><td class="no">無</td><td class="no">無</td><td class="no">無</td></tr>
-        </tbody>
-      </table>
-
-      <ul class="compare-mobile" aria-label="比較重點">
-        <li>即時鎮民陪伴，不需開鏡頭</li>
-        <li>純畫面零干擾，無廣告</li>
-        <li>免費核心、瀏覽器即開即用</li>
-        <li>個人化房間 + 收集系統</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ╭─ 7 · FAQ + Contact + Footer ────────────────────────────╮ -->
+<!-- ╭─ 8 · FAQ + Contact + Footer ────────────────────────────╮ -->
 <section id="faq" aria-labelledby="faq-title">
   <div class="container" style="max-width: 880px;">
     <div class="reveal">
@@ -442,35 +454,93 @@
         <summary>我可以上傳自己的音樂嗎？</summary>
         <div class="faq-a">初版只能從平台音樂庫挑選（lofi、爵士、雨聲等 royalty-free 曲目）。自上傳功能在規劃中，會處理版權後再開放。</div>
       </details>
+      <details class="faq-item">
+        <summary>充電鐘是什麼？和普通番茄鐘有什麼不同？</summary>
+        <div class="faq-a">充電鐘是我們對番茄鐘的詮釋——不只是倒數計時，而是把每一段專注想成「替自己充電」的過程。時間結構一樣（25 分鐘專注 + 5 分鐘休息），但畫面、氛圍和設計都圍繞「能量回升」而非「任務完成」的感受。</div>
+      </details>
+      <details class="faq-item">
+        <summary>配對功能怎麼使用？需要認識對方嗎？</summary>
+        <div class="faq-a">不需要認識。系統會根據你目前的充電模式，自動配對一位也在充電的鎮民。你們會共享同一個充電計時器，但不需要說話、不需要開鏡頭，就是安靜地一起充電。配對過程完全自願，可以隨時選擇單人模式。</div>
+      </details>
+      <details class="faq-item">
+        <summary>小鎮商店什麼時候開放？</summary>
+        <div class="faq-a">小鎮商店目前正在開發中，預計在近期版本開放。屆時你累積的金幣（充電時長換取）就能在商店兌換家具、布景和限定道具。我們不會在開放前清除任何已累積的金幣。</div>
+      </details>
+      <details class="faq-item">
+        <summary>金幣怎麼賺？累積速度快嗎？</summary>
+        <div class="faq-a">每完成一個充電鐘（25 分鐘）就會獲得金幣獎勵。連續充電、配對成功等行為也有額外獎勵。設計原則是「正常使用就能慢慢收集」，不需要每天瘋狂刷時數。</div>
+      </details>
+      <details class="faq-item">
+        <summary>可以邀請朋友一起充電嗎？</summary>
+        <div class="faq-a">可以。你可以把自己的個人專注空間連結分享給朋友，他們進入後可以以訪客身分陪你充電——看著你的計時器一起倒數，但不會干擾你的空間設置。專屬配對邀請功能也在規劃中。</div>
+      </details>
+      <details class="faq-item">
+        <summary>如果中途離開或關掉視窗，充電鐘會怎樣？</summary>
+        <div class="faq-a">充電中的計時狀態會保留在伺服器端。如果你短暫關閉視窗再回來，計時器仍在繼續。如果離開超過一定時間，系統會自動結算並記錄已完成的時長。</div>
+      </details>
+      <details class="faq-item">
+        <summary>需要一直盯著螢幕嗎？</summary>
+        <div class="faq-a">不需要。你可以把 Low Battery Town 開在背景，讓音樂和計時靜靜運作，偶爾瞥一眼就好。它的設計目的是「陪伴」而非「監視」——你不需要對著畫面才算在充電。</div>
+      </details>
     </div>
   </div>
 </section>
 
 <section id="feedback" aria-labelledby="feedback-title">
-  <div class="container" style="max-width: 720px;">
-    <div class="feedback-panel reveal">
+  <div class="container" style="max-width: 1100px;">
+
+    <div class="beta-scene-img reveal">
+      <div class="scene-img-wrap">
+        <img src="/assets/scenes/rooftop-neon.png"
+             alt="Low Battery Town 霓虹招牌，在城市屋頂閃爍著粉藍光芒"
+             loading="lazy" style="max-height:280px;object-fit:cover;object-position:center 35%;" />
+      </div>
+    </div>
+
+    <div class="feedback-two-col">
+
+      <!-- 左側：Beta 報名 -->
+      <div class="beta-panel reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="beta-badge">BETA</div>
+        <h3 class="beta-title">搶先體驗小鎮</h3>
+        <p class="beta-desc">小鎮還在蓋，但第一批鎮民已經在等了。填寫測試報名，有新功能上線你會是第一個知道的。</p>
+        <ul class="beta-perks">
+          <li>優先進入 Beta 測試</li>
+          <li>功能開放前搶先體驗</li>
+          <li>回饋直接影響產品方向</li>
+        </ul>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSd3aojnaxROpPTwR7zYojOg9cs1_x2gAqqlIOTHSLgINwBGPA/viewform?usp=dialog"
+           target="_blank" rel="noopener noreferrer" class="btn beta-cta">
+          ▸ 我要報名測試
+        </a>
+      </div>
+
+    <div class="feedback-panel reveal delay-1">
       <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
       <div class="corner-deco bl"></div><div class="corner-deco br"></div>
       <h3 id="feedback-title">✦ 意見回饋</h3>
       <p>許願、回報問題、單純打個招呼都歡迎。如果你留下聯絡 Email，我們會親自回覆（1–2 工作日內）。</p>
 
       <form class="feedback-form" id="feedback-form" novalidate>
+        <input type="hidden" name="_subject" value="[Low Battery Town] 意見回饋" />
+        <input type="hidden" name="_captcha" value="false" />
         <div>
           <label>類別</label>
           <div class="feedback-categories" id="feedback-categories" role="radiogroup" aria-label="意見類別">
-            <button type="button" class="feedback-cat-btn active" data-cat="suggestion">建議</button>
-            <button type="button" class="feedback-cat-btn" data-cat="bug">問題回報</button>
-            <button type="button" class="feedback-cat-btn" data-cat="praise">鼓勵</button>
-            <button type="button" class="feedback-cat-btn" data-cat="other">其他</button>
+            <button type="button" class="feedback-cat-btn active" data-cat="建議">建議</button>
+            <button type="button" class="feedback-cat-btn" data-cat="問題回報">問題回報</button>
+            <button type="button" class="feedback-cat-btn" data-cat="鼓勵">鼓勵</button>
+            <button type="button" class="feedback-cat-btn" data-cat="其他">其他</button>
           </div>
         </div>
         <div>
           <label for="feedback-body">內容</label>
-          <textarea id="feedback-body" name="body" maxlength="4000" required placeholder="想說的話..."></textarea>
+          <textarea id="feedback-body" name="message" maxlength="4000" required placeholder="想說的話..."></textarea>
         </div>
         <div>
           <label for="feedback-contact">聯絡 Email（選填）</label>
-          <input type="email" id="feedback-contact" name="contact_email" placeholder="留下 email 我們才能回覆你（選填）" />
+          <input type="email" id="feedback-contact" name="email" placeholder="留下 email 我們才能回覆你（選填）" />
         </div>
         <div class="feedback-submit-row">
           <div class="feedback-status" id="feedback-status" role="status" aria-live="polite"></div>
@@ -484,14 +554,16 @@
         <p>謝謝你的回饋。如果你留了 email，我們會在 1–2 個工作天內回覆。</p>
       </div>
     </div>
+
+    </div><!-- end feedback-two-col -->
   </div>
 </section>
 
 <footer class="site-footer">
   <div class="footer-links">
-    <a href="https://lowbatterytown.com/zh-TW/legal/terms">使用條款</a>
-    <a href="https://lowbatterytown.com/zh-TW/legal/privacy">隱私政策</a>
-    <a href="https://lowbatterytown.com/zh-TW/legal/refund">退款政策</a>
+    <a href="/legal/terms.html">使用條款</a>
+    <a href="/legal/privacy.html">隱私政策</a>
+    <a href="/legal/refund.html">退款政策</a>
     <a href="#feedback">聯絡我們</a>
   </div>
   <div>© 2026 Low Battery Town · Made with ☕ &amp; 🌙 in Taipei</div>

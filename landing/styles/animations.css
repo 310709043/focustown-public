@@ -3,8 +3,11 @@
    block at the bottom. */
 
 @keyframes auraBreath {
-  0%, 100% { opacity: 0.55; transform: translate(0, 0) scale(1); }
-  50%      { opacity: 1;    transform: translate(-30px, 20px) scale(1.08); }
+  0%   { opacity: 0.5;  transform: translate(0,    0)    scale(1); }
+  20%  { opacity: 0.85; transform: translate(-40px, 30px) scale(1.07); }
+  45%  { opacity: 1;    transform: translate(-60px,-20px) scale(1.12); }
+  70%  { opacity: 0.7;  transform: translate( 25px,-45px) scale(0.95); }
+  100% { opacity: 0.5;  transform: translate(0,    0)    scale(1); }
 }
 
 /* ── Walker frame stepping ───────────────────────────────────────────
@@ -31,6 +34,18 @@
 @keyframes walkPathReverse {
   from { transform: translateX(calc(100vw + 200px)) scaleX(-1); }
   to   { transform: translateX(-200px) scaleX(-1); }
+}
+/* Path-only reverse (wrapper carries translate; sprite carries scaleX) */
+@keyframes walkPathReverseTranslate {
+  from { transform: translateX(calc(100vw + 200px)); }
+  to   { transform: translateX(-200px); }
+}
+
+/* Online status pulse for citizen dots */
+@keyframes onlinePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+  70%  { box-shadow: 0 0 0 7px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
 }
 
 /* ── Car ride (Jeep) ─────────────────────────────────────────────────
@@ -74,16 +89,128 @@
 /* ── Section reveal ──────────────────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(32px);
+  transition: opacity 750ms cubic-bezier(.2,.7,.2,1), transform 750ms cubic-bezier(.2,.7,.2,1);
+}
+.reveal.in-view { opacity: 1; transform: none; }
+
+/* Directional variants */
+.reveal--left {
+  opacity: 0;
+  transform: translateX(-36px);
   transition: opacity 700ms cubic-bezier(.2,.7,.2,1), transform 700ms cubic-bezier(.2,.7,.2,1);
 }
-.reveal.in-view {
+.reveal--right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity 700ms cubic-bezier(.2,.7,.2,1), transform 700ms cubic-bezier(.2,.7,.2,1);
+}
+/* Scale-up with slight spring */
+.reveal--scale {
+  opacity: 0;
+  transform: scale(0.92) translateY(16px);
+  transition: opacity 650ms cubic-bezier(.2,.7,.2,1), transform 650ms cubic-bezier(.34,1.4,.64,1);
+}
+.reveal--left.in-view,
+.reveal--right.in-view,
+.reveal--scale.in-view {
   opacity: 1;
   transform: none;
 }
-.reveal.delay-1 { transition-delay: 120ms; }
-.reveal.delay-2 { transition-delay: 240ms; }
-.reveal.delay-3 { transition-delay: 360ms; }
+
+.reveal.delay-1,
+.reveal--left.delay-1, .reveal--right.delay-1, .reveal--scale.delay-1 { transition-delay: 100ms; }
+.reveal.delay-2,
+.reveal--left.delay-2, .reveal--right.delay-2, .reveal--scale.delay-2 { transition-delay: 200ms; }
+.reveal.delay-3,
+.reveal--left.delay-3, .reveal--right.delay-3, .reveal--scale.delay-3 { transition-delay: 320ms; }
+.reveal.delay-4,
+.reveal--left.delay-4, .reveal--right.delay-4, .reveal--scale.delay-4 { transition-delay: 440ms; }
+.reveal.delay-5,
+.reveal--left.delay-5, .reveal--right.delay-5, .reveal--scale.delay-5 { transition-delay: 560ms; }
+
+/* ── Scroll-driven reveal (native CSS animation-timeline)
+   In supporting browsers (Chrome/Edge 115+, Safari 26+), let the timeline
+   drive opacity/translate per scroll progress — true "float-up as you
+   scroll" feel. In non-supporting browsers (Firefox stable today, older
+   Safari), this whole block is ignored and the IO + transition path above
+   continues to work unchanged. */
+@supports (animation-timeline: view()) {
+  .reveal,
+  .reveal--left,
+  .reveal--right,
+  .reveal--scale {
+    /* Disable the transition path so IO's .in-view class doesn't fight
+       the timeline-driven animation. */
+    transition: none;
+    opacity: 0;
+    animation: revealEnter linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+  .reveal--left  { animation-name: revealEnterLeft;  transform: translateX(-36px); }
+  .reveal--right { animation-name: revealEnterRight; transform: translateX(36px);  }
+  .reveal--scale { animation-name: revealEnterScale; transform: scale(0.92) translateY(16px); }
+
+  .reveal.delay-1, .reveal--left.delay-1, .reveal--right.delay-1, .reveal--scale.delay-1 { animation-delay: 100ms; }
+  .reveal.delay-2, .reveal--left.delay-2, .reveal--right.delay-2, .reveal--scale.delay-2 { animation-delay: 200ms; }
+  .reveal.delay-3, .reveal--left.delay-3, .reveal--right.delay-3, .reveal--scale.delay-3 { animation-delay: 320ms; }
+  .reveal.delay-4, .reveal--left.delay-4, .reveal--right.delay-4, .reveal--scale.delay-4 { animation-delay: 440ms; }
+  .reveal.delay-5, .reveal--left.delay-5, .reveal--right.delay-5, .reveal--scale.delay-5 { animation-delay: 560ms; }
+
+  /* Above-the-fold elements (hero) opt out of the scroll timeline:
+     under scroll-timeline mode they'd already be past their entry range
+     on load and would snap to the final state instantly, killing the
+     staircase. .reveal--time switches them back to the document timeline
+     so animation-delay plays as a real time-based stagger. */
+  .reveal--time.reveal,
+  .reveal--time.reveal--left,
+  .reveal--time.reveal--right,
+  .reveal--time.reveal--scale {
+    animation-timeline: auto;
+    animation-duration: 750ms;
+    animation-timing-function: cubic-bezier(.2,.7,.2,1);
+  }
+}
+
+@keyframes revealEnter {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes revealEnterLeft {
+  from { opacity: 0; transform: translateX(-36px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+@keyframes revealEnterRight {
+  from { opacity: 0; transform: translateX(36px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+@keyframes revealEnterScale {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to   { opacity: 1; transform: none;                         }
+}
+
+/* ── Section-title letter-spacing settle (loose → tight as section reveals) */
+@keyframes titleSettle {
+  from { letter-spacing: 0.04em; }
+  to   { letter-spacing: 0.02em; }
+}
+
+/* ── Nav scroll-progress bar (native scroll timeline; JS fallback in main.js) */
+@keyframes scrollProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Coming Soon button shimmer ─────────────────────────────── */
+@keyframes comingSoonShimmer {
+  0%   { background-position: 150% center; }
+  100% { background-position: -50% center; }
+}
+@keyframes comingSoonGlow {
+  0%, 100% { box-shadow: 4px 4px 0 rgba(0,0,0,0.35), 0 0 18px rgba(233,167,110,0.15); border-color: rgba(233,167,110,0.35); }
+  50%       { box-shadow: 4px 4px 0 rgba(0,0,0,0.35), 0 0 36px rgba(233,167,110,0.55); border-color: rgba(233,167,110,0.85); }
+}
 
 /* ── Hero peach wash (one-shot on load) ──────────────────────────── */
 @keyframes dawnToDay {
@@ -132,10 +259,12 @@
 /* ── Reduced motion ────────────────────────────────────────────────
    Kill infinite decorative loops; leave reveals + transitions intact. */
 @media (prefers-reduced-motion: reduce) {
+  .citizen-wrap,
   .walker,
   .cloud,
   .car-jeep,
   .bird-chick,
+  .citizen-online,
   .aura-glow,
   .city-layer,
   .music-bar,
@@ -146,4 +275,17 @@
   .walker { background-position: 0 0 !important; }
   .car-jeep { background-position: 0 0 !important; }
   .bird-chick { background-position: 0 -16px !important; }
+
+  /* Reveal: no ramp, snap to the in-view state immediately. */
+  .reveal,
+  .reveal--left,
+  .reveal--right,
+  .reveal--scale {
+    transition: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* Title settle + scroll-progress: skip the motion entirely. */
+  .scroll-progress { display: none !important; }
 }

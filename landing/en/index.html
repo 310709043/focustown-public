@@ -50,11 +50,15 @@
 
 <div class="aura-glow" aria-hidden="true"></div>
 <div class="aura-glow aura-glow--cool" aria-hidden="true"></div>
+<div class="aura-glow aura-glow--rose" aria-hidden="true"></div>
+<div class="aura-glow aura-glow--teal" aria-hidden="true"></div>
+<div class="aura-glow aura-glow--violet" aria-hidden="true"></div>
 <div class="grain-overlay" aria-hidden="true"></div>
 <div class="vignette-overlay" aria-hidden="true"></div>
 <div class="crt-overlay" aria-hidden="true"></div>
 
 <nav class="nav" aria-label="Main navigation">
+  <div class="scroll-progress" aria-hidden="true"></div>
   <div class="nav-inner">
     <a href="#top" class="nav-brand" aria-label="Low Battery Town · Home">
       <img src="/logo.png" alt="Low Battery Town" class="brand-logo" />
@@ -66,16 +70,15 @@
     </label>
     <div class="nav-links">
       <a href="#features">Features</a>
-      <a href="#how">How it works</a>
+      <a href="#story">Story</a>
       <a href="#live">Live</a>
-      <a href="#pricing">Pricing</a>
+      <a href="#team">Team</a>
       <a href="#faq">FAQ</a>
       <span class="lang-toggle" role="group" aria-label="Language">
         <a href="/">中文</a>
         <span class="sep">|</span>
         <a href="/en/" class="active" aria-current="page">EN</a>
       </span>
-      <a href="https://lowbatterytown.com/signup" class="nav-cta">▸ Sign up</a>
     </div>
   </div>
 </nav>
@@ -100,38 +103,43 @@
     <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape6_1.png" alt=""
          style="top: 9%; left: -300px; width: 284px; --dur: 150s; --d: -70s; opacity: 0.6;" loading="lazy" />
 
-    <div class="sprite-actor walker walker-1" aria-hidden="true"></div>
-    <div class="sprite-actor walker walker-2" aria-hidden="true"></div>
-    <div class="sprite-actor walker walker-3" aria-hidden="true"></div>
-    <div class="sprite-actor car-jeep" aria-hidden="true"></div>
-    <div class="sprite-actor bird-chick" aria-hidden="true"></div>
+    <div class="citizen-wrap car-wrap" aria-hidden="true">
+      <div class="citizen-label">
+        <span class="citizen-name">Jay</span>
+        <span class="citizen-badge citizen-badge--pass">Commuting</span>
+      </div>
+      <span class="citizen-online"></span>
+      <div class="sprite-actor car-jeep"></div>
+    </div>
   </div>
 
   <div class="container">
     <div class="hero-content">
-      <span class="hero-eyebrow"><span class="dot"></span>2026 · Pomodoro × Pixel city × Live company</span>
-      <h1 id="hero-title">
+      <span class="hero-eyebrow reveal reveal--time"><span class="dot"></span>Lofi × Battery × Pixel Town × Live Company</span>
+      <h1 id="hero-title" class="reveal reveal--time delay-1">
         A focus space<br/>
         you can <span class="accent">walk</span> into.
         <span class="accent-rose"></span>
       </h1>
-      <p class="hero-tag">
+      <p class="hero-manifesto reveal reveal--time delay-2">Not a game. Just a place to focus.</p>
+      <p class="hero-tag reveal reveal--time delay-3">
         25-minute pomodoros, pixel streets, real people focusing right now.
         Open a tab and move in — no app, no card, no install.
         Turn the lonely low-battery moments into a place with a roof,
         neighbors, and a moon.
       </p>
-      <div class="hero-cta-row">
-        <a href="https://lowbatterytown.com/signup" class="btn btn--lg">▸ Move in</a>
-        <a href="#live" class="btn btn--ghost btn--lg">Peek at the street</a>
+      <div class="hero-cta-row reveal reveal--time delay-4">
+        <span class="btn btn--lg btn--disabled" aria-disabled="true">Coming Soon</span>
+        <a href="https://www.youtube.com/@LowBatteryTown" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--lg">▶ Watch trailer</a>
       </div>
-      <div class="hero-meta" role="list">
+      <div class="hero-meta reveal reveal--time delay-5" role="list">
         <span class="meta-item" role="listitem">Free forever</span>
         <span class="meta-item" role="listitem">30-second signup</span>
         <span class="meta-item" role="listitem">Runs in any browser</span>
       </div>
     </div>
   </div>
+
 </section>
 
 <section id="features" aria-labelledby="features-title">
@@ -143,7 +151,7 @@
     </div>
 
     <div class="feature-grid">
-      <article class="feature-card reveal">
+      <article class="feature-card reveal--scale">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
@@ -153,7 +161,7 @@
         <p>Every focus session adds another walker to the street. You can see how many citizens are working alongside you, quietly.</p>
       </article>
 
-      <article class="feature-card reveal delay-1">
+      <article class="feature-card reveal--scale delay-1">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
@@ -163,7 +171,7 @@
         <p>25 / 5 / 50 / 10, your call. Or pair with another focuser and quietly witness each other through one round.</p>
       </article>
 
-      <article class="feature-card reveal delay-2">
+      <article class="feature-card reveal--scale delay-2">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
@@ -189,11 +197,11 @@
         <div class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2M5 6h14l-1 14H6L5 6zM10 11v5M14 11v5"/></svg>
         </div>
-        <h3>Town shop</h3>
+        <h3>Town shop <span class="badge-soon">Coming soon</span></h3>
         <p>Focus earns T-coins; T-coins buy furniture, scenery, limited themes. No gacha, no pay-to-win, just things worth collecting.</p>
       </article>
 
-      <article class="feature-card reveal delay-2">
+      <article class="feature-card reveal--scale delay-2">
         <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
         <div class="corner-deco bl"></div><div class="corner-deco br"></div>
         <div class="feature-icon" aria-hidden="true">
@@ -202,6 +210,44 @@
         <h3>Ranks & achievements</h3>
         <p>Weekly, monthly, all-time. Unlocked achievements show up as small badges on the street — soft, but every citizen can see.</p>
       </article>
+    </div>
+  </div>
+</section>
+
+<!-- ╭─ 2.5 · Story ───────────────────────────────────────────╮ -->
+<section id="story" aria-labelledby="story-title">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Our Story</span>
+      <h2 class="section-title" id="story-title">A place to find your focus again</h2>
+    </div>
+
+    <div class="story-layout">
+      <div class="story-pull reveal--left delay-1">
+        <p class="story-quote">"Sometimes it's not that you can't.<br/>It's just very hard<br/>to stay focused alone."</p>
+        <p class="story-quote-source">— Simon · 2026</p>
+      </div>
+      <div class="story-body reveal--right delay-1">
+        <p>Low Battery Town wasn't born to make you more productive. It's more like — in the middle of the noise, trying to find a space where you can quietly do your own thing.</p>
+        <p>Every day, too many things pull our attention away. Messages, short videos, notifications, social media, anxiety, loneliness. Many people aren't lazy. They're just running on low battery — for a long time. They have things they want to finish: books to read, work to make, lives to begin. But the moment they open a laptop, the world pulls them away again.</p>
+        <p>Then I realized: what people actually need isn't more productivity tools. It's the feeling of <strong>having someone focused alongside you</strong>. No need to chat. No need to socialise. No need to perform. Just knowing — right now, someone else is also trying.</p>
+        <p>That's why Low Battery Town exists. A town for people running low. You can enter a focus room, put on lofi, sit with strangers who are studying, working, creating — or just quietly get through the day. No pressure, no interruption. Just people slowly reconnecting with their lives.</p>
+      </div>
+    </div>
+
+    <div class="story-scene-wrap reveal delay-2">
+      <div class="scene-img-wrap">
+        <img src="/assets/scenes/alley-walker.png"
+             alt="Pixel town alley at night — neon signs, a lone figure walking"
+             loading="lazy" style="max-height:420px;object-fit:cover;object-position:center center;" />
+      </div>
+      <div class="story-callout">
+        <div class="story-callout-icon" aria-hidden="true">⚡</div>
+        <div>
+          <p class="story-callout-title">Low Battery Town isn't here to push you harder.</p>
+          <p class="story-callout-sub">It's here so that when you're almost out of charge, you can still find a place that's willing to charge slowly alongside you.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -243,6 +289,14 @@
       <span class="section-tag">Live scene</span>
       <h2 class="section-title" id="live-title">Right now, on the street</h2>
       <p class="section-sub">A few citizens currently focusing in town. The timer below is a preview — the real thing is quieter, and warmer.</p>
+    </div>
+
+    <div class="live-scene-img reveal">
+      <div class="scene-img-wrap">
+        <img src="/assets/scenes/lbt-station.png"
+             alt="Low Battery Town neon station — vending machines and late-night streets"
+             loading="lazy" style="max-height:300px;object-fit:cover;object-position:center 15%;" />
+      </div>
     </div>
 
     <div class="live-grid">
@@ -293,126 +347,32 @@
   </div>
 </section>
 
-<section id="room" aria-labelledby="room-title">
+<!-- ╭─ Team ───────────────────────────────────────────────────╮ -->
+<section id="team" aria-labelledby="team-title">
   <div class="container">
     <div class="reveal">
-      <span class="section-tag">Your room · Shop</span>
-      <h2 class="section-title" id="room-title">A small corner that's only yours</h2>
-      <p class="section-sub">T-coins from focus sessions can slowly buy furniture, slowly decorate. No expiry, no gacha, no paywall.</p>
+      <span class="section-tag">The Team</span>
+      <h2 class="section-title section-title--neon" id="team-title" tabindex="0">Building this town from a corner of Taipei</h2>
+      <p class="section-sub">Small team, but every brick is laid with care.</p>
     </div>
 
-    <div class="shop-room-grid">
-      <div class="room-mockup reveal" role="img" aria-label="Pixel-style room preview">
-        <div class="room-label">YOUR ROOM</div>
-        <div class="room-window" aria-hidden="true"></div>
-        <div class="room-floor" aria-hidden="true"></div>
-        <div class="room-furniture" aria-hidden="true">
-          <div class="room-bed"></div>
-          <div class="room-desk"></div>
-        </div>
-      </div>
-
-      <div class="shop-strip reveal delay-1" aria-label="Sample shop items">
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">☕</div>
-          <div class="shop-item-name">Coffee table</div>
-          <div class="shop-item-price">120</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🪴</div>
-          <div class="shop-item-name">Window plant</div>
-          <div class="shop-item-price">80</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🌙</div>
-          <div class="shop-item-name">Moon lamp</div>
-          <div class="shop-item-price">200</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🐈</div>
-          <div class="shop-item-name">Study cat</div>
-          <div class="shop-item-price">450</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">📻</div>
-          <div class="shop-item-name">Retro radio</div>
-          <div class="shop-item-price">160</div>
-        </article>
-        <article class="shop-item">
-          <div class="shop-item-art" aria-hidden="true">🖼</div>
-          <div class="shop-item-name">Town poster</div>
-          <div class="shop-item-price">60</div>
-        </article>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="pricing" aria-labelledby="pricing-title">
-  <div class="container">
-    <div class="reveal">
-      <span class="section-tag">Pricing</span>
-      <h2 class="section-title" id="pricing-title">Free, no asterisks</h2>
-      <p class="section-sub">All core features — streets, pairing, shop, room, music, visitors — are free forever. The future FOCUS+ subscription only unlocks advanced themes; it never changes the baseline.</p>
-    </div>
-
-    <div class="pricing-row">
-      <article class="price-card reveal">
-        <h3>Free</h3>
-        <div class="price-amount">$0<span class="unit"> /forever</span></div>
-        <ul class="price-list">
-          <li>All focus modes</li>
-          <li>Pixel streets and pairing</li>
-          <li>Personal room + visitor mode</li>
-          <li>Full built-in music library</li>
-          <li>Weekly / monthly / all-time rankings</li>
-          <li>Shop T-coins (earned by focusing)</li>
-        </ul>
-        <a href="https://lowbatterytown.com/signup" class="btn btn--ghost">▸ Start now</a>
+    <div class="team-grid">
+      <article class="team-card reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="team-avatar" aria-hidden="true">🏗️</div>
+        <div class="team-role">Founder · Product</div>
+        <h3 class="team-name">Simon</h3>
+        <p class="team-bio">Believes what keeps people moving forward isn't efficiency — it's having someone there with you. Building a series of products around eating, drinking, playing, and the feeling of company.<br/><br/>Product one: Low Battery Town — a digital town for the low-battery generation, where focus lives alongside presence.</p>
       </article>
 
-      <article class="price-card price-card--featured reveal delay-1">
-        <h3>FOCUS+</h3>
-        <div class="price-amount">$2.99<span class="unit"> /month</span></div>
-        <ul class="price-list">
-          <li>Seasonal themes (Cherry, Summer Night, Snow City)</li>
-          <li>Shop-exclusive furniture and looks</li>
-          <li>Advanced stats (trends, deep reports)</li>
-          <li>Priority support, replies in 1–2 business days</li>
-          <li class="muted">Never affects free features</li>
-          <li class="muted">Cancel anytime, no commitment</li>
-        </ul>
-        <a href="https://lowbatterytown.com/signup" class="btn">▸ Try FOCUS+</a>
+      <article class="team-card team-card--open reveal delay-1">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="team-avatar team-avatar--open" aria-hidden="true">✦</div>
+        <div class="team-role">Open seat</div>
+        <h3 class="team-name">Is it you?</h3>
+        <p class="team-bio">We're looking for people who feel something about this — design, engineering, community, or something else entirely.</p>
+        <a href="#feedback" class="team-join-btn">✉ Write to us</a>
       </article>
-    </div>
-
-    <div class="reveal delay-2">
-      <h3 class="section-title" style="font-size: var(--t-xl); margin-top: var(--space-6);">How it compares</h3>
-      <table class="compare-table" aria-label="LBT vs other focus tools">
-        <thead>
-          <tr>
-            <th>What you get</th>
-            <th>Low Battery Town</th>
-            <th>Plain pomodoro</th>
-            <th>Forest-style</th>
-            <th>Co-study livestream</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Sense of company</td><td class="yes">Live citizens</td><td class="no">None</td><td class="no">Virtual tree</td><td class="yes">Real people</td></tr>
-          <tr><td>Zero interruption</td><td class="yes">Calm visuals</td><td class="yes">Timer only</td><td class="yes">Timer only</td><td class="no">Webcam pressure</td></tr>
-          <tr><td>Free core</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">Partial</td><td class="no">No</td></tr>
-          <tr><td>Browser-native</td><td class="yes">Yes</td><td class="no">App needed</td><td class="no">App needed</td><td class="yes">Yes</td></tr>
-          <tr><td>Personal space</td><td class="yes">Room + shop</td><td class="no">None</td><td class="no">None</td><td class="no">None</td></tr>
-        </tbody>
-      </table>
-
-      <ul class="compare-mobile" aria-label="What stands out">
-        <li>Live citizens — no webcam required</li>
-        <li>Calm visuals, no ads, zero interruption</li>
-        <li>Free core, browser-native, no install</li>
-        <li>Personal room + collectible shop</li>
-      </ul>
     </div>
   </div>
 </section>
@@ -451,8 +411,36 @@
 </section>
 
 <section id="feedback" aria-labelledby="feedback-title">
-  <div class="container" style="max-width: 720px;">
-    <div class="feedback-panel reveal">
+  <div class="container" style="max-width: 1100px;">
+
+    <div class="beta-scene-img reveal">
+      <div class="scene-img-wrap">
+        <img src="/assets/scenes/rooftop-neon.png"
+             alt="Low Battery Town neon sign glowing pink and blue on a city rooftop"
+             loading="lazy" style="max-height:280px;object-fit:cover;object-position:center 35%;" />
+      </div>
+    </div>
+
+    <div class="feedback-two-col">
+
+      <!-- Beta signup panel -->
+      <div class="beta-panel reveal">
+        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+        <div class="beta-badge">BETA</div>
+        <h3 class="beta-title">Get early access</h3>
+        <p class="beta-desc">The town is still being built, but the first citizens are already waiting. Sign up for beta testing — you'll be the first to know when new features land.</p>
+        <ul class="beta-perks">
+          <li>Priority access to beta features</li>
+          <li>Try new things before public release</li>
+          <li>Your feedback shapes the product</li>
+        </ul>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSd3aojnaxROpPTwR7zYojOg9cs1_x2gAqqlIOTHSLgINwBGPA/viewform?usp=dialog"
+           target="_blank" rel="noopener noreferrer" class="btn beta-cta">
+          ▸ Join the waitlist
+        </a>
+      </div>
+
+    <div class="feedback-panel reveal delay-1">
       <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
       <div class="corner-deco bl"></div><div class="corner-deco br"></div>
       <h3 id="feedback-title">✦ Send feedback</h3>
@@ -488,14 +476,16 @@
         <p>Thanks for the note. If you left an email, we'll reply within 1–2 business days.</p>
       </div>
     </div>
+
+    </div><!-- end feedback-two-col -->
   </div>
 </section>
 
 <footer class="site-footer">
   <div class="footer-links">
-    <a href="https://lowbatterytown.com/en/legal/terms">Terms of Service</a>
-    <a href="https://lowbatterytown.com/en/legal/privacy">Privacy Policy</a>
-    <a href="https://lowbatterytown.com/en/legal/refund">Refund Policy</a>
+    <a href="/legal/en/terms.html">Terms of Service</a>
+    <a href="/legal/en/privacy.html">Privacy Policy</a>
+    <a href="/legal/en/refund.html">Refund Policy</a>
     <a href="#feedback">Contact</a>
   </div>
   <div>© 2026 Low Battery Town · Made with ☕ &amp; 🌙 in Taipei</div>
