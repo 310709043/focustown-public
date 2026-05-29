@@ -2,438 +2,1156 @@
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f1426" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Low Battery Town — 把專注變成可以走進去的小鎮</title>
   <meta name="description" content="番茄鐘 × 像素小鎮 × 即時陪伴。一個能讓你「住進去專注」的線上空間。完全免費，瀏覽器即開即用。" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="canonical" href="https://www.lowbatterytown.com/" />
-  <link rel="alternate" hreflang="zh-Hant-TW" href="https://www.lowbatterytown.com/" />
-  <link rel="alternate" hreflang="en" href="https://www.lowbatterytown.com/en/" />
-  <link rel="alternate" hreflang="x-default" href="https://www.lowbatterytown.com/" />
-
-  <meta property="og:title" content="Low Battery Town — 把專注變成可以走進去的小鎮" />
-  <meta property="og:description" content="把專注變成可以走進去的小鎮 — 番茄鐘 × 像素小鎮 × 即時陪伴。" />
-  <meta property="og:url" content="https://www.lowbatterytown.com/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://www.lowbatterytown.com/favicon.svg" />
-  <meta name="twitter:card" content="summary_large_image" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@400;500;700&family=Press+Start+2P&family=VT323&display=swap" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600&family=VT323&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <link rel="stylesheet" href="/styles/tokens.css" />
-  <link rel="stylesheet" href="/styles/overlays.css" />
-  <link rel="stylesheet" href="/styles/animations.css" />
-  <link rel="stylesheet" href="/styles/components.css" />
-  <link rel="stylesheet" href="/styles/responsive.css" />
+    :root {
+      --bg:       #09090f;
+      --bg2:      #0d0e18;
+      --bg3:      #111525;
+      --surface:  rgba(255,255,255,0.025);
+      --border:   rgba(255,255,255,0.07);
+      --border2:  rgba(255,255,255,0.12);
+      --text:     #e8e3d8;
+      --muted:    rgba(232,227,216,0.42);
+      --warm:     #e9a76e;
+      --warm2:    rgba(233,167,110,0.12);
+      --warm3:    rgba(233,167,110,0.06);
+      --rose:     #e07c8a;
+      --teal:     #52cdc4;
+      --violet:   #8b7cf8;
+      --serif:    "DM Serif Display", serif;
+      --sans:     "Space Grotesk", "Noto Sans TC", sans-serif;
+      --pixel:    "VT323", monospace;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow-x: hidden;
+      cursor: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── CURSOR ── */
+    #cur {
+      position: fixed; width: 10px; height: 10px;
+      border-radius: 50%; background: var(--warm);
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .25s, height .25s, opacity .25s;
+      mix-blend-mode: screen;
+    }
+    #cur-ring {
+      position: fixed; width: 36px; height: 36px;
+      border-radius: 50%; border: 1px solid rgba(233,167,110,0.4);
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform .12s ease-out, width .3s, height .3s, border-color .3s;
+    }
+    #cur-glow {
+      position: fixed; width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(233,167,110,0.07) 0%, transparent 70%);
+      pointer-events: none; z-index: 9997;
+      transform: translate(-50%, -50%);
+      transition: transform .5s ease-out;
+    }
+
+    /* ── OVERLAYS ── */
+    #crt {
+      position: fixed; inset: 0; z-index: 9990; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px
+      );
+      animation: flicker 12s infinite;
+    }
+    @keyframes flicker {
+      0%,97%,100% { opacity: 1; }
+      97.5% { opacity: .82; }
+      98% { opacity: 1; }
+      99% { opacity: .91; }
+    }
+    #vignette {
+      position: fixed; inset: 0; z-index: 9989; pointer-events: none;
+      background: radial-gradient(ellipse 85% 85% at 50% 50%, transparent 35%, rgba(0,0,0,0.72) 100%);
+    }
+    #noise {
+      position: fixed; inset: 0; z-index: 9988; pointer-events: none;
+      opacity: .018;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+    #particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* ── PAGE TRANSITION ── */
+    #transition {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 99999; pointer-events: none;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 500; padding: 28px 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(9,9,15,0.85) 0%, transparent 100%);
+      transition: padding .4s var(--ease-out);
+    }
+    nav.scrolled { padding: 18px 56px; background: rgba(9,9,15,0.92); backdrop-filter: blur(20px); }
+    .nav-brand {
+      font-family: var(--pixel); font-size: 16px;
+      color: var(--warm); text-decoration: none;
+      letter-spacing: .22em;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .brand-pulse {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--warm);
+      animation: glow-pulse 2.4s ease-in-out infinite;
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+    .nav-links a {
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      letter-spacing: .08em; transition: color .25s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-lang {
+      display: flex; gap: 6px; align-items: center;
+      font-size: 13px;
+      border-left: 1px solid var(--border); padding-left: 20px;
+    }
+    .nav-lang a { color: var(--muted); text-decoration: none; transition: color .25s; }
+    .nav-lang a:hover, .nav-lang a.active { color: var(--warm); }
+    .nav-lang .sep { opacity: .3; color: var(--muted); }
+    .nav-enter {
+      font-family: var(--pixel); font-size: 14px; letter-spacing: .14em;
+      color: var(--warm); border: 1px solid rgba(233,167,110,0.28);
+      padding: 9px 22px; text-decoration: none;
+      transition: background .3s, box-shadow .3s, border-color .3s;
+    }
+    .nav-enter:hover {
+      background: rgba(233,167,110,0.08);
+      border-color: var(--warm);
+      box-shadow: 0 0 24px rgba(233,167,110,0.16);
+    }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative; min-height: 100svh;
+      display: flex; align-items: center;
+      overflow: hidden;
+    }
+    .hero-ambient {
+      position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 50% at 72% 45%, rgba(233,167,110,0.065) 0%, transparent 70%),
+        radial-gradient(ellipse 35% 40% at 15% 75%, rgba(139,124,248,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 55% at 85% 80%, rgba(82,205,196,0.03) 0%, transparent 60%);
+    }
+    #stars { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+    .city-wrap {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 65%; z-index: 3; pointer-events: none;
+    }
+    .city-layer {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background-repeat: repeat-x;
+      background-position: bottom center;
+      image-rendering: pixelated;
+    }
+    .city-l1 {
+      height: 65%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='120'%3E%3Crect x='0' y='60' width='30' height='60' fill='%230a0b14'/%3E%3Crect x='35' y='30' width='45' height='90' fill='%230a0b14'/%3E%3Crect x='5' y='50' width='8' height='4' fill='%23e9a76e' opacity='.4'/%3E%3Crect x='38' y='40' width='8' height='4' fill='%23e9a76e' opacity='.3'/%3E%3Crect x='38' y='55' width='8' height='4' fill='%234ecdc4' opacity='.25'/%3E%3Crect x='85' y='45' width='35' height='75' fill='%230a0b14'/%3E%3Crect x='125' y='20' width='55' height='100' fill='%230a0b14'/%3E%3Crect x='128' y='30' width='10' height='5' fill='%23e9a76e' opacity='.5'/%3E%3Crect x='128' y='45' width='10' height='5' fill='%23e9a76e' opacity='.3'/%3E%3Crect x='148' y='30' width='10' height='5' fill='%234ecdc4' opacity='.3'/%3E%3Crect x='185' y='50' width='30' height='70' fill='%230a0b14'/%3E%3Crect x='220' y='35' width='50' height='85' fill='%230a0b14'/%3E%3Crect x='223' y='45' width='8' height='4' fill='%23e9a76e' opacity='.4'/%3E%3Crect x='235' y='45' width='8' height='4' fill='%23e9a76e' opacity='.2'/%3E%3Crect x='275' y='55' width='35' height='65' fill='%230a0b14'/%3E%3Crect x='315' y='25' width='45' height='95' fill='%230a0b14'/%3E%3Crect x='318' y='35' width='8' height='4' fill='%23e07c8a' opacity='.35'/%3E%3Crect x='318' y='50' width='8' height='4' fill='%23e9a76e' opacity='.3'/%3E%3Crect x='365' y='60' width='35' height='60' fill='%230a0b14'/%3E%3C/svg%3E");
+      opacity: 0.55;
+    }
+    .city-l2 {
+      height: 80%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='180'%3E%3Crect x='0' y='90' width='50' height='90' fill='%230d0e18'/%3E%3Crect x='55' y='50' width='70' height='130' fill='%230d0e18'/%3E%3Crect x='58' y='60' width='12' height='6' fill='%23e9a76e' opacity='.5'/%3E%3Crect x='58' y='80' width='12' height='6' fill='%23e9a76e' opacity='.3'/%3E%3Crect x='75' y='60' width='12' height='6' fill='%234ecdc4' opacity='.35'/%3E%3Crect x='75' y='80' width='12' height='6' fill='%234ecdc4' opacity='.2'/%3E%3Crect x='130' y='70' width='45' height='110' fill='%230d0e18'/%3E%3Crect x='180' y='30' width='80' height='150' fill='%230d0e18'/%3E%3Crect x='184' y='45' width='14' height='7' fill='%23e9a76e' opacity='.55'/%3E%3Crect x='184' y='65' width='14' height='7' fill='%23e9a76e' opacity='.35'/%3E%3Crect x='205' y='45' width='14' height='7' fill='%23e07c8a' opacity='.3'/%3E%3Crect x='265' y='65' width='55' height='115' fill='%230d0e18'/%3E%3Crect x='325' y='45' width='65' height='135' fill='%230d0e18'/%3E%3Crect x='329' y='55' width='12' height='6' fill='%23e9a76e' opacity='.45'/%3E%3Crect x='346' y='55' width='12' height='6' fill='%23e9a76e' opacity='.25'/%3E%3Crect x='329' y='75' width='12' height='6' fill='%234ecdc4' opacity='.3'/%3E%3Crect x='395' y='75' width='50' height='105' fill='%230d0e18'/%3E%3Crect x='450' y='40' width='75' height='140' fill='%230d0e18'/%3E%3Crect x='454' y='52' width='14' height='7' fill='%23e9a76e' opacity='.5'/%3E%3Crect x='454' y='72' width='14' height='7' fill='%23e9a76e' opacity='.3'/%3E%3Crect x='474' y='52' width='14' height='7' fill='%23e07c8a' opacity='.35'/%3E%3Crect x='530' y='80' width='70' height='100' fill='%230d0e18'/%3E%3C/svg%3E");
+      opacity: 0.75;
+    }
+    .city-l3 {
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='240'%3E%3Crect x='0' y='120' width='60' height='120' fill='%23111525'/%3E%3Crect x='65' y='70' width='90' height='170' fill='%23111525'/%3E%3Crect x='70' y='85' width='16' height='8' fill='%23e9a76e' opacity='.6'/%3E%3Crect x='70' y='108' width='16' height='8' fill='%23e9a76e' opacity='.4'/%3E%3Crect x='92' y='85' width='16' height='8' fill='%234ecdc4' opacity='.4'/%3E%3Crect x='92' y='108' width='16' height='8' fill='%234ecdc4' opacity='.25'/%3E%3Crect x='160' y='90' width='55' height='150' fill='%23111525'/%3E%3Crect x='164' y='105' width='14' height='7' fill='%23e9a76e' opacity='.5'/%3E%3Crect x='220' y='50' width='100' height='190' fill='%23111525'/%3E%3Crect x='226' y='65' width='18' height='9' fill='%23e9a76e' opacity='.65'/%3E%3Crect x='250' y='65' width='18' height='9' fill='%23e9a76e' opacity='.45'/%3E%3Crect x='226' y='90' width='18' height='9' fill='%23e07c8a' opacity='.4'/%3E%3Crect x='250' y='90' width='18' height='9' fill='%234ecdc4' opacity='.35'/%3E%3Crect x='226' y='115' width='18' height='9' fill='%23e9a76e' opacity='.3'/%3E%3Crect x='325' y='80' width='70' height='160' fill='%23111525'/%3E%3Crect x='400' y='55' width='95' height='185' fill='%23111525'/%3E%3Crect x='406' y='70' width='18' height='9' fill='%23e9a76e' opacity='.6'/%3E%3Crect x='430' y='70' width='18' height='9' fill='%23e9a76e' opacity='.4'/%3E%3Crect x='406' y='95' width='18' height='9' fill='%234ecdc4' opacity='.45'/%3E%3Crect x='430' y='95' width='18' height='9' fill='%23e07c8a' opacity='.3'/%3E%3Crect x='500' y='100' width='60' height='140' fill='%23111525'/%3E%3Crect x='565' y='60' width='85' height='180' fill='%23111525'/%3E%3Crect x='570' y='75' width='16' height='8' fill='%23e9a76e' opacity='.55'/%3E%3Crect x='592' y='75' width='16' height='8' fill='%23e9a76e' opacity='.35'/%3E%3Crect x='570' y='100' width='16' height='8' fill='%234ecdc4' opacity='.4'/%3E%3Crect x='655' y='90' width='70' height='150' fill='%23111525'/%3E%3Crect x='730' y='65' width='70' height='175' fill='%23111525'/%3E%3Crect x='735' y='80' width='16' height='8' fill='%23e9a76e' opacity='.5'/%3E%3Crect x='757' y='80' width='16' height='8' fill='%23e07c8a' opacity='.35'/%3E%3C/svg%3E");
+      opacity: 1;
+    }
+    .city-fade {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 60%;
+      background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+    }
+
+    /* Hero content */
+    .hero-inner {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 1440px;
+      margin: 0 auto; padding: 0 80px;
+      padding-top: 110px;
+      display: grid; grid-template-columns: 1fr 480px;
+      align-items: center; gap: 80px;
+    }
+    .hero-eyebrow {
+      font-family: var(--pixel); font-size: 13px; letter-spacing: .22em;
+      color: var(--warm);
+      display: inline-flex; align-items: center; gap: 14px;
+      margin-bottom: 28px;
+      opacity: 0; transform: translateY(12px);
+    }
+    .hero-eyebrow::before {
+      content: ''; display: block; width: 28px; height: 1px; background: var(--warm);
+    }
+    h1.hero-h {
+      font-family: var(--serif);
+      font-size: clamp(52px, 6.2vw, 96px);
+      line-height: 1.08; letter-spacing: -.025em;
+      margin-bottom: 28px;
+      opacity: 0; transform: translateY(20px);
+    }
+    h1.hero-h em { font-style: italic; color: var(--warm); }
+    h1.hero-h .rose { font-style: italic; color: var(--rose); }
+    .hero-desc {
+      font-size: 16px; line-height: 1.85;
+      color: var(--muted); max-width: 480px;
+      margin-bottom: 44px;
+      opacity: 0; transform: translateY(16px);
+    }
+    .hero-btns {
+      display: flex; align-items: center; gap: 20px;
+      opacity: 0; transform: translateY(12px);
+    }
+    .btn-fill {
+      font-family: var(--pixel); font-size: 16px; letter-spacing: .1em;
+      background: var(--warm); color: #09090f;
+      padding: 14px 36px; text-decoration: none;
+      cursor: pointer; border: none;
+      transition: box-shadow .3s, transform .2s;
+    }
+    .btn-fill:not(.disabled):hover {
+      box-shadow: 0 0 48px rgba(233,167,110,0.45);
+      transform: translateY(-1px);
+    }
+    .btn-fill.disabled {
+      opacity: .55; cursor: not-allowed;
+    }
+    .btn-line {
+      font-size: 13px; letter-spacing: .08em;
+      color: var(--muted); text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+      transition: color .25s;
+    }
+    .btn-line::before { content: ''; display: block; width: 16px; height: 1px; background: currentColor; }
+    .btn-line:hover { color: var(--text); }
+    .hero-meta {
+      display: flex; gap: 20px; margin-top: 28px;
+      font-family: var(--pixel); font-size: 11px;
+      letter-spacing: .14em; color: var(--muted);
+      opacity: 0;
+    }
+    .hero-meta span::before { content: '· '; color: var(--warm); }
+    .hero-live {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-family: var(--pixel); font-size: 12px;
+      letter-spacing: .18em; color: var(--teal);
+      margin-top: 20px;
+      opacity: 0;
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--teal);
+      animation: glow-pulse 1.8s ease-in-out infinite;
+    }
+
+    /* ── BATTERY ── */
+    .battery-side {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 24px;
+      opacity: 0;
+    }
+    .bat-outer { position: relative; display: flex; flex-direction: column; align-items: center; }
+    .bat-tip {
+      width: 44px; height: 10px;
+      background: rgba(233,167,110,0.28);
+      border-radius: 3px 3px 0 0;
+      margin-bottom: -1px; z-index: 1;
+    }
+    .bat-body {
+      position: relative; width: 108px; height: 210px;
+      border: 2.5px solid rgba(233,167,110,0.35);
+      border-radius: 6px; overflow: hidden;
+      background: rgba(9,9,15,0.9);
+      box-shadow: 0 0 60px rgba(233,167,110,0.08), inset 0 0 24px rgba(0,0,0,0.4);
+    }
+    .bat-fill {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(233,167,110,1) 0%, rgba(233,167,110,0.75) 50%, rgba(233,167,110,0.25) 100%);
+      animation: bat-charge 3.5s ease-in-out infinite alternate;
+      box-shadow: 0 -8px 40px rgba(233,167,110,0.35);
+    }
+    @keyframes bat-charge { from { height: 12%; } to { height: 82%; } }
+    .bat-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      display: flex; flex-direction: column; justify-content: space-evenly; padding: 4px;
+    }
+    .bat-rule { height: 1px; background: rgba(9,9,15,0.55); }
+    .bat-bolt {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+    .bat-bolt svg {
+      width: 32px; height: 32px; fill: rgba(9,9,15,0.65);
+      filter: drop-shadow(0 0 4px rgba(233,167,110,0.5));
+      animation: bat-bolt-pulse 3.5s ease-in-out infinite alternate;
+    }
+    @keyframes bat-bolt-pulse {
+      from { opacity: 0.4; transform: scale(0.95); }
+      to   { opacity: 0.9; transform: scale(1.05); }
+    }
+    .bat-glow {
+      position: absolute; inset: -40px; border-radius: 50px;
+      background: radial-gradient(ellipse 60% 80% at 50% 80%, rgba(233,167,110,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .bat-pct {
+      font-family: var(--pixel); font-size: 36px;
+      color: var(--warm); letter-spacing: .06em;
+      text-shadow: 0 0 24px rgba(233,167,110,0.5); line-height: 1;
+    }
+    .bat-status {
+      font-family: var(--pixel); font-size: 12px;
+      color: var(--teal); letter-spacing: .2em;
+      animation: step-blink 1.4s step-end infinite;
+    }
+    @keyframes step-blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+    /* Online users */
+    .online-strip {
+      position: absolute; bottom: 72px; left: 80px; right: 80px;
+      display: flex; align-items: flex-end; gap: 0;
+      z-index: 10; pointer-events: none; opacity: 0;
+    }
+    .usr {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      animation: usr-float var(--df, 4s) ease-in-out infinite;
+      animation-delay: var(--dd, 0s);
+    }
+    .usr-av {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--bg3); border: 1.5px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; position: relative;
+      box-shadow: 0 0 16px rgba(233,167,110,0.08);
+    }
+    .usr-online {
+      position: absolute; top: 0; right: 0;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #4ade80; border: 1.5px solid var(--bg);
+      animation: glow-pulse 2.2s ease-in-out infinite;
+    }
+    .usr-name { font-family: var(--pixel); font-size: 10px; color: var(--muted); letter-spacing: .04em; }
+    .usr-st   { font-family: var(--pixel); font-size: 9px; color: var(--warm); opacity: .7; }
+    @keyframes usr-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+
+    /* Scroll cue */
+    .scroll-cue {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 8px;
+      font-family: var(--pixel); font-size: 9px; letter-spacing: .28em; color: var(--muted);
+      opacity: 0;
+    }
+    .scroll-cue-line {
+      width: 1px; height: 44px;
+      background: linear-gradient(to bottom, var(--warm), transparent);
+      animation: scroll-pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes scroll-pulse { 0%,100% { opacity:.35; } 50% { opacity:1; } }
+
+    /* ── MANIFESTO ── */
+    .manifesto-wrap {
+      max-width: 1440px; margin: 0 auto; padding: 140px 80px;
+      display: grid; grid-template-columns: 160px 1fr; gap: 80px; align-items: start;
+    }
+    .manifesto-num {
+      font-family: var(--pixel); font-size: 11px; color: var(--muted); letter-spacing: .3em;
+      padding-top: 10px; writing-mode: vertical-rl; text-orientation: mixed;
+    }
+    .manifesto-q {
+      font-family: var(--serif); font-size: clamp(40px, 5.5vw, 76px);
+      line-height: 1.15; letter-spacing: -.02em;
+    }
+    .manifesto-q em { color: var(--warm); font-style: italic; }
+    .manifesto-body {
+      margin-top: 52px; font-size: 15px; line-height: 2; color: var(--muted);
+      max-width: 580px; border-left: 1px solid rgba(233,167,110,0.18); padding-left: 28px;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px; max-width: 1440px; margin: 0 auto;
+      background: linear-gradient(to right, transparent, var(--border2), transparent);
+    }
+
+    /* ── SECTION COMMON ── */
+    .sec-label {
+      font-family: var(--pixel); font-size: 11px;
+      color: var(--warm); letter-spacing: .3em; margin-bottom: 18px;
+    }
+    .sec-title {
+      font-family: var(--serif); font-size: clamp(34px, 4vw, 58px);
+      line-height: 1.15; letter-spacing: -.02em; margin-bottom: 16px;
+    }
+    .sec-title em { font-style: italic; color: var(--warm); }
+    .sec-sub {
+      font-size: 15px; color: var(--muted); line-height: 1.8;
+      max-width: 560px; margin-bottom: 64px;
+    }
+
+    /* ── FEATURES ── */
+    .features-wrap { max-width: 1440px; margin: 0 auto; padding: 100px 80px 120px; }
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+      background: var(--border); margin-top: 72px;
+    }
+    .feat {
+      background: var(--bg); padding: 44px 36px;
+      transition: background .35s; position: relative; overflow: hidden;
+    }
+    .feat::after {
+      content: ''; position: absolute; inset-x: 0; top: 0; height: 1px;
+      background: linear-gradient(to right, transparent, var(--warm), transparent);
+      opacity: 0; transition: opacity .35s;
+    }
+    .feat:hover { background: var(--bg2); }
+    .feat:hover::after { opacity: 1; }
+    .feat-n { font-family: var(--pixel); font-size: 10px; color: var(--muted); letter-spacing: .25em; margin-bottom: 36px; }
+    .feat-icon { width: 44px; height: 44px; margin-bottom: 22px; display: flex; align-items: center; justify-content: center; }
+    .feat-icon svg { width: 28px; height: 28px; stroke: var(--warm); fill: none; stroke-width: 1.5; }
+    .feat-t { font-family: var(--serif); font-size: 22px; line-height: 1.25; margin-bottom: 14px; }
+    .feat-d { font-size: 14px; line-height: 1.85; color: var(--muted); }
+    .badge-soon {
+      font-family: var(--pixel); font-size: 10px; color: var(--muted); letter-spacing: .1em;
+      border: 1px solid var(--border2); padding: 2px 8px; vertical-align: middle; margin-left: 6px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-wrap { max-width: 1440px; margin: 0 auto; padding: 100px 80px 120px; }
+    .flow-row { display: flex; align-items: stretch; gap: 0; margin-top: 64px; }
+    .flow-node {
+      flex: 1; border: 1px solid var(--border2); padding: 40px 32px;
+      background: var(--bg2); transition: border-color .35s, background .35s;
+    }
+    .flow-node:hover { border-color: rgba(233,167,110,0.3); background: var(--bg3); }
+    .flow-num { font-family: var(--pixel); font-size: 11px; letter-spacing: .3em; color: var(--warm); margin-bottom: 24px; }
+    .flow-icon { width: 40px; height: 40px; margin-bottom: 18px; display: flex; align-items: center; justify-content: center; }
+    .flow-icon svg { width: 26px; height: 26px; stroke: var(--warm); fill: none; stroke-width: 1.5; }
+    .flow-title { font-family: var(--serif); font-size: 20px; line-height: 1.3; margin-bottom: 12px; }
+    .flow-desc { font-size: 14px; line-height: 1.8; color: var(--muted); }
+    .flow-tag { margin-top: 20px; font-family: var(--pixel); font-size: 11px; color: var(--teal); letter-spacing: .14em; }
+    .flow-arrow {
+      padding: 0 24px; display: flex; align-items: center;
+      font-family: var(--pixel); font-size: 20px; color: rgba(233,167,110,0.35);
+      flex-shrink: 0; animation: arrow-pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes arrow-pulse { 0%,100% { opacity:.35; transform: translateX(0); } 50% { opacity:.8; transform: translateX(5px); } }
+
+    /* ── LIVE TERMINAL ── */
+    .live-wrap { background: var(--bg2); padding: 100px 80px; position: relative; overflow: hidden; }
+    .live-wrap::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 65% 65% at 50% 50%, rgba(233,167,110,0.04) 0%, transparent 70%);
+    }
+    .live-inner { max-width: 1440px; margin: 0 auto; position: relative; z-index: 1; }
+    .live-stats { display: flex; gap: 64px; margin-top: 52px; margin-bottom: 56px; }
+    .stat-num {
+      display: block; font-family: var(--pixel); font-size: 54px;
+      color: var(--warm); letter-spacing: .04em;
+      text-shadow: 0 0 28px rgba(233,167,110,0.28); line-height: 1;
+    }
+    .stat-lbl { font-size: 13px; color: var(--muted); letter-spacing: .04em; margin-top: 6px; }
+    .terminal {
+      background: #070811; border: 1px solid rgba(233,167,110,0.12); border-radius: 2px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 32px 96px rgba(0,0,0,0.5), 0 0 80px rgba(233,167,110,0.04);
+      overflow: hidden;
+    }
+    .term-bar {
+      background: rgba(255,255,255,0.025); border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 12px 20px; display: flex; align-items: center; gap: 8px;
+    }
+    .term-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .term-title { font-family: var(--pixel); font-size: 11px; color: var(--muted); letter-spacing: .18em; margin: 0 auto; }
+    .term-body { padding: 32px 36px; font-family: var(--pixel); font-size: 14px; line-height: 1.9; }
+    .tl { display: block; }
+    .t-dim  { color: rgba(232,227,216,0.28); }
+    .t-warm { color: var(--warm); }
+    .t-teal { color: var(--teal); }
+    .t-rose { color: var(--rose); }
+    .t-cursor {
+      display: inline-block; width: 9px; height: 15px;
+      background: var(--warm); vertical-align: middle;
+      animation: step-blink 1s step-end infinite;
+    }
+
+    /* ── STORY ── */
+    .story-wrap { max-width: 1440px; margin: 0 auto; padding: 140px 80px; }
+    .story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: start; margin-top: 64px; }
+    .story-q { font-family: var(--serif); font-size: clamp(34px, 4vw, 54px); line-height: 1.22; letter-spacing: -.015em; }
+    .story-q em { color: var(--warm); font-style: italic; }
+    .story-src { margin-top: 24px; font-family: var(--pixel); font-size: 11px; color: var(--muted); letter-spacing: .22em; }
+    .story-body { font-size: 15px; line-height: 2.05; color: var(--muted); }
+    .story-body p + p { margin-top: 22px; }
+    .story-body strong { color: var(--text); font-weight: 500; }
+    .story-callout {
+      margin-top: 64px; border: 1px solid rgba(233,167,110,0.2);
+      padding: 36px 40px; display: flex; align-items: flex-start; gap: 24px;
+      background: var(--warm3);
+    }
+    .story-callout-icon { font-size: 28px; flex-shrink: 0; line-height: 1; }
+    .story-callout-title { font-family: var(--serif); font-size: 20px; line-height: 1.4; margin-bottom: 10px; }
+    .story-callout-sub { font-size: 14px; color: var(--muted); line-height: 1.8; }
+
+    /* ── TEAM ── */
+    .team-wrap { max-width: 1440px; margin: 0 auto; padding: 100px 80px 120px; }
+    .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin-top: 64px; }
+    .team-card { background: var(--bg2); padding: 52px 44px; }
+    .team-card--open { background: var(--bg3); }
+    .team-avatar { font-size: 40px; margin-bottom: 20px; display: block; }
+    .team-avatar-img { width: 96px; height: 96px; object-fit: cover; border-radius: 4px; image-rendering: pixelated; border: 1px solid rgba(233,167,110,0.25); }
+    .team-role { font-family: var(--pixel); font-size: 11px; color: var(--warm); letter-spacing: .25em; margin-bottom: 10px; }
+    .team-name { font-family: var(--serif); font-size: 32px; line-height: 1.1; margin-bottom: 20px; }
+    .team-bio { font-size: 14px; line-height: 1.9; color: var(--muted); }
+    .team-join-btn {
+      display: inline-block; margin-top: 28px;
+      font-family: var(--pixel); font-size: 13px; letter-spacing: .14em;
+      color: var(--warm); text-decoration: none;
+      border: 1px solid rgba(233,167,110,0.28); padding: 10px 24px;
+      transition: background .3s, border-color .3s;
+    }
+    .team-join-btn:hover { background: rgba(233,167,110,0.08); border-color: var(--warm); }
+
+    /* ── FAQ ── */
+    .faq-wrap { max-width: 960px; margin: 0 auto; padding: 100px 80px 120px; }
+    .faq-list { margin-top: 52px; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item summary {
+      padding: 22px 0; font-size: 16px; font-weight: 500;
+      cursor: pointer; list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: color .25s;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary:hover { color: var(--warm); }
+    .faq-item summary::after {
+      content: '+'; font-family: var(--pixel); font-size: 20px;
+      color: var(--warm); transition: transform .3s;
+      flex-shrink: 0; margin-left: 20px;
+    }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item[open] summary { color: var(--warm); }
+    .faq-a { padding: 0 0 24px; font-size: 14px; line-height: 1.9; color: var(--muted); }
+
+    /* ── BETA + FEEDBACK ── */
+    .beta-wrap { background: var(--bg2); padding: 100px 80px; }
+    .beta-inner { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+    .beta-panel { border: 1px solid rgba(233,167,110,0.2); padding: 52px 44px; background: var(--warm3); }
+    .beta-badge {
+      font-family: var(--pixel); font-size: 11px; letter-spacing: .3em;
+      color: var(--warm); border: 1px solid rgba(233,167,110,0.3);
+      padding: 4px 12px; display: inline-block; margin-bottom: 24px;
+    }
+    .beta-title { font-family: var(--serif); font-size: 30px; line-height: 1.2; margin-bottom: 16px; }
+    .beta-desc { font-size: 14px; color: var(--muted); line-height: 1.85; margin-bottom: 28px; }
+    .beta-perks { list-style: none; margin-bottom: 36px; }
+    .beta-perks li { font-size: 14px; color: var(--muted); padding: 7px 0; display: flex; align-items: center; gap: 10px; }
+    .beta-perks li::before { content: '\25B8'; color: var(--warm); font-size: 11px; }
+    .feedback-panel { border: 1px solid var(--border2); padding: 52px 44px; background: var(--bg); }
+    .feedback-panel h3 { font-family: var(--serif); font-size: 26px; margin-bottom: 12px; }
+    .feedback-panel > p { font-size: 14px; color: var(--muted); line-height: 1.8; margin-bottom: 32px; }
+    .feedback-form { display: flex; flex-direction: column; gap: 20px; }
+    .feedback-form label { font-family: var(--pixel); font-size: 11px; letter-spacing: .2em; color: var(--muted); display: block; margin-bottom: 8px; }
+    .feedback-form textarea, .feedback-form input[type="email"] {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+      padding: 14px 16px; color: var(--text); font-family: var(--sans); font-size: 14px;
+      resize: vertical; outline: none; transition: border-color .25s;
+    }
+    .feedback-form textarea:focus, .feedback-form input[type="email"]:focus { border-color: rgba(233,167,110,0.4); }
+    .feedback-form textarea { min-height: 120px; }
+    .feedback-cats { display: flex; flex-wrap: wrap; gap: 8px; }
+    .feedback-cat {
+      font-family: var(--pixel); font-size: 12px; letter-spacing: .1em;
+      color: var(--muted); border: 1px solid var(--border); padding: 7px 16px;
+      cursor: pointer; background: none; transition: border-color .25s, color .25s;
+    }
+    .feedback-cat:hover, .feedback-cat.active { color: var(--warm); border-color: rgba(233,167,110,0.35); }
+    .feedback-submit-row { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
+    .feedback-status { font-family: var(--pixel); font-size: 12px; color: var(--teal); }
+    .feedback-success { text-align: center; padding: 40px 0; }
+    .feedback-success .ico { font-size: 36px; color: var(--warm); margin-bottom: 16px; }
+    .feedback-success h4 { font-family: var(--serif); font-size: 24px; margin-bottom: 10px; }
+    .feedback-success p { font-size: 14px; color: var(--muted); }
+
+    /* ── CTA ── */
+    .cta-wrap { padding: 140px 80px; text-align: center; background: var(--bg2); position: relative; overflow: hidden; }
+    .cta-wrap::before {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(233,167,110,0.055) 0%, transparent 70%); pointer-events: none;
+    }
+    .cta-inner { position: relative; z-index: 1; }
+    .cta-h { font-family: var(--serif); font-size: clamp(44px, 6vw, 88px); line-height: 1.1; letter-spacing: -.025em; margin-bottom: 28px; }
+    .cta-h em { font-style: italic; color: var(--warm); }
+    .cta-sub { font-size: 16px; color: var(--muted); line-height: 1.8; max-width: 440px; margin: 0 auto 52px; }
+    .cta-note { margin-top: 22px; font-family: var(--pixel); font-size: 11px; color: var(--muted); letter-spacing: .2em; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 44px 80px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; color: var(--muted);
+    }
+    .foot-brand { font-family: var(--pixel); font-size: 14px; color: var(--warm); letter-spacing: .22em; }
+    footer a { color: var(--muted); text-decoration: none; transition: color .25s; }
+    footer a:hover { color: var(--text); }
+    .foot-links { display: flex; gap: 32px; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes glow-pulse {
+      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(233,167,110,0.4); }
+      50%      { opacity: .65; box-shadow: 0 0 0 5px rgba(233,167,110,0); }
+    }
+    .breathe { animation: breathe 5s ease-in-out infinite; }
+    @keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.015); } }
+
+    /* ── SCROLL REVEALS ── */
+    .rv  { opacity: 0; transform: translateY(28px); transition: opacity .85s var(--ease-out), transform .85s var(--ease-out); }
+    .rvl { opacity: 0; transform: translateX(-36px); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); }
+    .rvr { opacity: 0; transform: translateX(36px);  transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); }
+    .rv.in-view, .rvl.in-view, .rvr.in-view { opacity: 1; transform: none; }
+    .d1 { transition-delay: .08s !important; }
+    .d2 { transition-delay: .16s !important; }
+    .d3 { transition-delay: .24s !important; }
+
+    /* ── SECTION IMAGES ── */
+    .section-img {
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+      display: block;
+    }
+    .manifesto-content {
+      display: flex; gap: 56px; align-items: flex-start;
+    }
+    .manifesto-text { flex: 1; min-width: 0; }
+    .manifesto-img {
+      width: 300px; max-width: 34vw; flex-shrink: 0;
+      image-rendering: pixelated;
+      box-shadow: 0 0 48px rgba(82,205,196,0.14), 0 4px 20px rgba(0,0,0,0.65);
+      margin-top: 8px;
+    }
+    .live-img-wrap { margin-top: 48px; }
+    .live-img {
+      width: 100%; max-height: 380px; object-fit: cover; object-position: center;
+      image-rendering: pixelated;
+      box-shadow: 0 0 56px rgba(139,124,248,0.12), 0 4px 20px rgba(0,0,0,0.65);
+    }
+    .preview-img-wrap {
+      max-width: 1440px; margin: 0 auto; padding: 0 80px 64px;
+    }
+    .preview-img {
+      width: 100%; max-height: 460px; object-fit: cover; object-position: top;
+      box-shadow: 0 0 64px rgba(139,124,248,0.14), 0 8px 32px rgba(0,0,0,0.7);
+    }
+    .cta-img-wrap { margin-top: 52px; }
+    .cta-img {
+      max-width: 420px; width: 88%;
+      image-rendering: pixelated;
+      box-shadow: 0 0 48px rgba(233,167,110,0.12), 0 4px 20px rgba(0,0,0,0.65);
+      display: block; margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .manifesto-content { flex-direction: column; gap: 32px; }
+      .manifesto-img { width: 100%; max-width: 100%; }
+      .preview-img-wrap { padding: 0 24px 40px; }
+    }
+
+    /* ── LIGHT MODE ── */
+    body.light {
+      --bg:      #f5f0e8;
+      --bg2:     #ede7d8;
+      --bg3:     #e4dcc8;
+      --surface: rgba(0,0,0,0.04);
+      --border:  rgba(0,0,0,0.1);
+      --border2: rgba(0,0,0,0.15);
+      --text:    #2a2218;
+      --muted:   rgba(42,34,24,0.55);
+      --warm2:   rgba(180,100,40,0.1);
+      --warm3:   rgba(180,100,40,0.05);
+    }
+    body.light #crt { opacity: .5; }
+    body.light #vignette { opacity: .4; }
+    body.light .city-l1 { opacity: 0.7; filter: brightness(0.5); }
+    body.light .city-l2 { opacity: 0.85; filter: brightness(0.5); }
+    body.light .city-l3 { opacity: 1; filter: brightness(0.4); }
+    body.light .city-fade { background: linear-gradient(to top, var(--bg) 0%, transparent 100%); }
+    body.light nav { background: linear-gradient(to bottom, rgba(245,240,232,0.92) 0%, transparent 100%); }
+    body.light nav.scrolled { background: rgba(245,240,232,0.95); }
+
+    /* ── BRAND LOGO ── */
+    .brand-logo {
+      height: 28px; width: auto; object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    /* ── FLOATING CONTROLS ── */
+    .float-controls {
+      position: fixed; bottom: 28px; right: 28px; z-index: 600;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .float-btn {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid rgba(233,167,110,0.35);
+      background: rgba(9,9,15,0.8); backdrop-filter: blur(12px);
+      color: var(--warm); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .25s, box-shadow .25s, border-color .25s;
+      font-family: var(--pixel); letter-spacing: 0;
+    }
+    .float-btn:hover {
+      background: rgba(233,167,110,0.12);
+      border-color: var(--warm);
+      box-shadow: 0 0 20px rgba(233,167,110,0.2);
+    }
+    body.light .float-btn {
+      background: rgba(245,240,232,0.88);
+      border-color: rgba(180,100,40,0.3);
+    }
+
+    /* ── SCENE IMAGES ── */
+    .scene-img {
+      width: 100%; max-width: 680px; margin: 0 auto;
+      display: block; image-rendering: pixelated;
+      border: 1px solid var(--border);
+    }
+    .scene-rooftop-wrap {
+      padding: 0 80px 56px; max-width: 1440px; margin: 0 auto;
+      text-align: center;
+    }
+    .scene-alley-wrap {
+      margin: 40px 0 0;
+    }
+    .scene-alley-wrap img {
+      width: 100%; max-width: 520px;
+      image-rendering: pixelated;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    /* ── WINDOW GLOW CANVAS ── */
+    #win-canvas {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 65%; z-index: 4; pointer-events: none;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1100px) {
+      nav { padding: 24px 40px; }
+      nav.scrolled { padding: 16px 40px; }
+      .hero-inner { padding: 0 40px; padding-top: 110px; grid-template-columns: 1fr; gap: 0; }
+      .battery-side { display: none; }
+      .online-strip { left: 40px; right: 40px; }
+      .manifesto-wrap { padding: 100px 40px; grid-template-columns: 1fr; gap: 32px; }
+      .manifesto-num { writing-mode: horizontal-tb; }
+      .features-wrap, .how-wrap, .team-wrap { padding: 80px 40px 100px; }
+      .faq-wrap { padding: 80px 40px 100px; }
+      .feat-grid { grid-template-columns: repeat(2,1fr); }
+      .flow-row { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); padding: 16px 0; justify-content: center; }
+      .live-wrap, .beta-wrap { padding: 80px 40px; }
+      .story-wrap { padding: 100px 40px; }
+      .story-grid { grid-template-columns: 1fr; gap: 52px; }
+      .team-grid { grid-template-columns: 1fr; }
+      .beta-inner { grid-template-columns: 1fr; }
+      .cta-wrap { padding: 100px 40px; }
+      footer { padding: 36px 40px; }
+    }
+    @media (max-width: 640px) {
+      nav { padding: 18px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links, .nav-enter { display: none; }
+      .hero-inner { padding: 0 24px; padding-top: 96px; }
+      .online-strip { left: 24px; right: 24px; bottom: 56px; }
+      .manifesto-wrap { padding: 80px 24px; }
+      .features-wrap, .how-wrap, .team-wrap, .faq-wrap { padding: 64px 24px 80px; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .live-wrap, .beta-wrap { padding: 64px 24px; }
+      .live-stats { flex-direction: column; gap: 28px; }
+      .story-wrap { padding: 80px 24px; }
+      .story-callout { flex-direction: column; }
+      .cta-wrap { padding: 80px 24px; }
+      footer { padding: 28px 24px; flex-direction: column; gap: 20px; text-align: center; }
+      .foot-links { flex-wrap: wrap; justify-content: center; gap: 20px; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ╭─ Atmospheric overlays (fixed full-viewport) ─────────────╮ -->
-<div class="aura-glow" aria-hidden="true"></div>
-<div class="aura-glow aura-glow--cool" aria-hidden="true"></div>
-<div class="aura-glow aura-glow--rose" aria-hidden="true"></div>
-<div class="aura-glow aura-glow--teal" aria-hidden="true"></div>
-<div class="aura-glow aura-glow--violet" aria-hidden="true"></div>
-<div class="grain-overlay" aria-hidden="true"></div>
-<div class="vignette-overlay" aria-hidden="true"></div>
-<div class="crt-overlay" aria-hidden="true"></div>
+<div id="transition"></div>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="cur-glow"></div>
+<div id="crt"></div>
+<div id="vignette"></div>
+<div id="noise"></div>
+<canvas id="particles"></canvas>
+<audio id="bgm" src="assets/bgm.mp3" loop preload="none"></audio>
 
-<!-- ╭─ Nav ────────────────────────────────────────────────────╮ -->
-<nav class="nav" aria-label="主導覽">
-  <div class="scroll-progress" aria-hidden="true"></div>
-  <div class="nav-inner">
-    <a href="#top" class="nav-brand" aria-label="Low Battery Town · Home">
-      <img src="/logo.png" alt="Low Battery Town" class="brand-logo" />
-      <span>LOW BATTERY TOWN</span>
-    </a>
-    <input type="checkbox" id="nav-menu-toggle" class="nav-menu-toggle" aria-hidden="true" />
-    <label for="nav-menu-toggle" class="nav-burger" aria-label="切換選單">
-      <span></span><span></span><span></span>
-    </label>
-    <div class="nav-links">
-      <a href="#features">特色</a>
-      <a href="#story">故事</a>
-      <a href="#live">實況</a>
-      <a href="#team">團隊</a>
-      <a href="#faq">FAQ</a>
-      <span class="lang-toggle" role="group" aria-label="Language">
-        <a href="/" class="active" aria-current="page">中文</a>
-        <span class="sep">|</span>
-        <a href="/en/">EN</a>
-      </span>
-    </div>
-  </div>
+<!-- FLOATING CONTROLS -->
+<div class="float-controls">
+  <button class="float-btn" id="theme-btn" title="切換亮/暗模式" onclick="toggleTheme()">&#9788;</button>
+  <button class="float-btn" id="music-btn" title="音樂開/關" onclick="toggleMusic()">&#9834;</button>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-brand">
+    <img src="assets/logo.png" alt="Low Battery Town" class="brand-logo">
+    LOW BATTERY TOWN
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features" data-zh="特色" data-en="Features">特色</a></li>
+    <li><a href="#story" data-zh="故事" data-en="Story">故事</a></li>
+    <li><a href="#live" data-zh="實況" data-en="Live">實況</a></li>
+    <li><a href="#team" data-zh="團隊" data-en="Team">團隊</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li class="nav-lang">
+      <a href="#" id="lang-zh" class="active" onclick="setLang('zh');return false">中</a>
+      <span class="sep">|</span>
+      <a href="#" id="lang-en" onclick="setLang('en');return false">EN</a>
+    </li>
+  </ul>
+  <a href="#beta" class="nav-enter" data-zh="進入小鎮 ▶" data-en="ENTER ▶">ENTER &#9658;</a>
 </nav>
 
-<!-- ╭─ 1 · Hero ──────────────────────────────────────────────╮ -->
-<section class="hero" id="top" aria-labelledby="hero-title">
-  <div class="hero-sky" aria-hidden="true"></div>
-  <div class="hero-stars" aria-hidden="true"></div>
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-ambient"></div>
+  <div id="stars"></div>
 
-  <div class="hero-cityscape" aria-hidden="true">
-    <div class="city-layer layer-1"></div>
-    <div class="city-layer layer-2"></div>
-    <div class="city-layer layer-3"></div>
-    <div class="city-layer layer-4"></div>
-    <div class="city-layer layer-5"></div>
-
-    <!-- Drifting clouds (sizes vary via the cloud-N classes) -->
-    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape4_2.png" alt=""
-         style="top: 12%; left: -200px; width: 146px; --dur: 95s; --d: -10s;" loading="lazy" />
-    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape2_1.png" alt=""
-         style="top: 18%; left: -300px; width: 272px; --dur: 130s; --d: -55s; opacity: 0.7;" loading="lazy" />
-    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape5_2.png" alt=""
-         style="top: 28%; left: -200px; width: 159px; --dur: 110s; --d: -25s; opacity: 0.8;" loading="lazy" />
-    <img class="sprite-actor cloud" src="/assets/clouds/cloud_shape6_1.png" alt=""
-         style="top: 9%; left: -300px; width: 284px; --dur: 150s; --d: -70s; opacity: 0.6;" loading="lazy" />
-
-    <!-- Jeep with name -->
-    <div class="citizen-wrap car-wrap" aria-hidden="true">
-      <div class="citizen-label">
-        <span class="citizen-name">阿傑</span>
-        <span class="citizen-badge citizen-badge--pass">通勤中</span>
-      </div>
-      <span class="citizen-online"></span>
-      <div class="sprite-actor car-jeep"></div>
-    </div>
-
+  <div class="city-wrap">
+    <div class="city-layer city-l1"></div>
+    <div class="city-layer city-l2"></div>
+    <div class="city-layer city-l3"></div>
+    <canvas id="win-canvas"></canvas>
+    <div class="city-fade"></div>
   </div>
 
-  <div class="container">
-    <div class="hero-content">
-      <span class="hero-eyebrow reveal reveal--time"><span class="dot"></span>Lofi × 電量 × 像素小鎮 × 即時陪伴</span>
-      <h1 id="hero-title" class="reveal reveal--time delay-1">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <div class="hero-eyebrow" id="h-tag" data-zh="Lofi × 電量 × 像素小鎮 × 即時陪伴" data-en="Lofi × Energy × Pixel Town × Real Companions">Lofi &times; 電量 &times; 像素小鎮 &times; 即時陪伴</div>
+      <h1 class="hero-h" id="h-title">
+        <span data-zh="把專注<br/>變成可以<em>走進去</em>的<span class='rose'>小鎮</span>。" data-en="Turn Focus Into a<br/><em>Town</em> You Can <span class='rose'>Live In</span>.">
         把專注<br/>
-        變成可以<span class="accent">走進去</span>的<span class="accent-rose">小鎮</span>。
+        變成可以<em>走進去</em>的<span class="rose">小鎮</span>。</span>
       </h1>
-      <p class="hero-manifesto reveal reveal--time delay-2">我們不搞遊戲。只是讓你好好專注。</p>
-      <p class="hero-tag reveal reveal--time delay-3">
-        25 分鐘倒數、像素街道、真實正在專注的人。打開瀏覽器就能搬進來 ——
-        不用 App、不用信用卡、不用安裝。把孤獨的低電量時刻，
-        變成有屋頂、有鄰居、有月亮的地方。
+      <p class="hero-desc" id="h-desc"
+        data-zh="25 分鐘倒數、像素街道、真實正在專注的人。打開瀏覽器就能搬進來 —— 不用 App、不用信用卡、不用安裝。把孤獨的低電量時刻，變成有屋頂、有鄰居、有月亮的地方。"
+        data-en="25-minute timer, pixel streets, real people focusing right now. Open your browser and move in — no app, no credit card, no install. Turn lonely low-battery moments into a place with a roof, neighbours, and a moon.">
+        25 分鐘倒數、像素街道、真實正在專注的人。打開瀏覽器就能搬進來 —— 不用 App、不用信用卡、不用安裝。把孤獨的低電量時刻，變成有屋頂、有鄰居、有月亮的地方。
       </p>
-      <div class="hero-cta-row reveal reveal--time delay-4">
-        <span class="btn btn--lg btn--disabled" aria-disabled="true">Coming Soon</span>
-        <a href="https://www.youtube.com/@LowBatteryTown" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--lg">▶ 宣傳片</a>
+      <div class="hero-btns" id="h-btns">
+        <span class="btn-fill disabled" data-zh="Coming Soon" data-en="Coming Soon">Coming Soon</span>
+        <a href="https://youtu.be/BdvtgwLT0Jc?si=4LSwQ4vfRoG2rtKi" class="btn-line" target="_blank" rel="noopener noreferrer" data-zh="▶ 宣傳片" data-en="▶ Trailer">&#9654; 宣傳片</a>
       </div>
-      <div class="hero-meta reveal reveal--time delay-5" role="list">
-        <span class="meta-item" role="listitem">完全免費</span>
-        <span class="meta-item" role="listitem">30 秒註冊</span>
-        <span class="meta-item" role="listitem">瀏覽器即開即用</span>
+      <div class="hero-meta" id="h-meta">
+        <span data-zh="完全免費" data-en="Totally Free">完全免費</span>
+        <span data-zh="30 秒註冊" data-en="30-sec Sign-up">30 秒註冊</span>
+        <span data-zh="瀏覽器即開即用" data-en="Browser-Ready">瀏覽器即開即用</span>
       </div>
+      <div class="hero-live" id="h-live">
+        <div class="live-dot"></div>
+        <span data-zh="即將上線 · SOON" data-en="Coming Soon · SOON">即將上線&ensp;&middot;&ensp;SOON</span>
+      </div>
+    </div>
+
+    <div class="battery-side" id="battery-side">
+      <div class="bat-outer">
+        <div class="bat-tip"></div>
+        <div class="bat-body">
+          <div class="bat-fill"></div>
+          <div class="bat-grid">
+            <div class="bat-rule"></div><div class="bat-rule"></div>
+            <div class="bat-rule"></div><div class="bat-rule"></div>
+            <div class="bat-rule"></div>
+          </div>
+          <div class="bat-bolt">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L4.5 13.5H11L11 22L19.5 10.5H13L13 2Z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="bat-glow"></div>
+      </div>
+      <div class="bat-pct" id="bat-pct">23%</div>
+      <div class="bat-status">&#9889; CHARGING...</div>
     </div>
   </div>
 
+  <div class="online-strip" id="online-strip">
+    <div class="usr" style="--df:4.2s;--dd:0s">
+      <div class="usr-av">&#127769;<div class="usr-online"></div></div>
+      <div class="usr-name">Kai</div><div class="usr-st">focusing</div>
+    </div>
+    <div class="usr" style="--df:3.8s;--dd:-1.1s;margin-left:36px;margin-bottom:18px">
+      <div class="usr-av">&#9749;<div class="usr-online"></div></div>
+      <div class="usr-name">小雨</div><div class="usr-st">讀書中</div>
+    </div>
+    <div class="usr" style="--df:5.1s;--dd:-2.3s;margin-left:24px">
+      <div class="usr-av">&#9999;&#65039;<div class="usr-online"></div></div>
+      <div class="usr-name">Rin</div><div class="usr-st">creating</div>
+    </div>
+    <div class="usr" style="--df:4.6s;--dd:-0.7s;margin-left:42px;margin-bottom:10px">
+      <div class="usr-av">&#128218;<div class="usr-online"></div></div>
+      <div class="usr-name">曉芸</div><div class="usr-st">讀論文</div>
+    </div>
+    <div class="usr" style="--df:3.4s;--dd:-1.8s;margin-left:18px;margin-bottom:26px">
+      <div class="usr-av">&#127757;<div class="usr-online"></div></div>
+      <div class="usr-name">Simon</div><div class="usr-st">charging</div>
+    </div>
+  </div>
+
+  <div class="scroll-cue" id="scroll-cue">
+    <div class="scroll-cue-line"></div>
+    SCROLL
+  </div>
 </section>
 
-<!-- ╭─ 2 · Features ──────────────────────────────────────────╮ -->
-<section id="features" aria-labelledby="features-title">
-  <div class="container">
-    <div class="reveal">
-      <span class="section-tag">Features</span>
-      <h2 class="section-title" id="features-title">六件事，把專注變得不再像懲罰</h2>
-      <p class="section-sub">每一項都從「你會自己想打開」的角度設計 —— 不靠強制鎖機、不靠焦慮。</p>
-    </div>
-
-    <div class="feature-grid">
-      <article class="feature-card reveal--scale">
-        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg>
-        </div>
-        <h3>像素街景</h3>
-        <p>每一次專注都讓街上多一個行人。你會看見此刻有多少人正在和你一起努力，安靜地走動著。</p>
-      </article>
-
-      <article class="feature-card reveal--scale delay-1">
-        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-        </div>
-        <h3>充電鐘 × 配對</h3>
-        <p>25 / 5 / 50 / 10，自由切換。也可以和另一個正在充電的人配對，互相當對方的見證人。</p>
-      </article>
-
-      <article class="feature-card reveal--scale delay-2">
-        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h12"/></svg>
-        </div>
-        <h3>個人獨立專注空間</h3>
-        <p>每個鎮民都有自己的專屬角落。可以擺床、擺桌、貼月曆，打造最適合自己的充電環境。</p>
-      </article>
-
-      <article class="feature-card reveal">
-        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        </div>
-        <h3>背景音樂</h3>
-        <p>lofi、雨聲、咖啡店、深夜 jazz。內建多套無版權音樂，不打擾、不跳廣告、不會突然安靜。</p>
-      </article>
-
-      <article class="feature-card reveal delay-1">
-        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2M5 6h14l-1 14H6L5 6zM10 11v5M14 11v5"/></svg>
-        </div>
-        <h3>小鎮商店 <span class="badge-soon">即將開放</span></h3>
-        <p>充電換金幣，金幣換家具、布景、限定主題。沒有抽卡、沒有 pay-to-win，只是讓你有理由收集。</p>
-      </article>
-
-      <article class="feature-card reveal--scale delay-2">
-        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21h16M6 18V8m12 10V12M12 21V3"/></svg>
-        </div>
-        <h3>排行 & 成就</h3>
-        <p>每週、每月、總時數，三種排行。成就解鎖會在街上出現徽章，輕輕地，但每個鎮民都看得到。</p>
-      </article>
+<!-- MANIFESTO -->
+<section>
+  <div class="manifesto-wrap">
+    <div class="manifesto-num rv">01&ensp;&mdash;&ensp;MANIFESTO</div>
+    <div class="manifesto-content">
+      <div class="manifesto-text">
+        <h2 class="manifesto-q rv" id="manifesto-q">
+          有時候不是做不到。<br/>
+          只是很難，<em>一個人</em><br/>
+          維持專注。
+        </h2>
+        <p class="manifesto-body rv" id="manifesto-body">
+          Low Battery Town 不是為了提高效率而誕生的。它更像是在混亂裡，試著找回「能夠安靜做自己的事」的空間。不是逼你燃燒自己——而是讓你在快沒電的時候，還能找到一個願意陪你慢慢充電的地方。
+        </p>
+      </div>
+      <img src="assets/img-scene1.png" class="section-img manifesto-img rv" alt="Low Battery Town">
     </div>
   </div>
 </section>
 
-<!-- ╭─ 3 · Story ─────────────────────────────────────────────╮ -->
-<section id="story" aria-labelledby="story-title">
-  <div class="container">
-    <div class="reveal">
-      <span class="section-tag">我們的故事</span>
-      <h2 class="section-title" id="story-title">一個能讓人重新進入專注狀態的地方</h2>
-    </div>
+<div class="divider"></div>
 
-    <div class="story-layout">
-      <div class="story-pull reveal--left delay-1">
-        <p class="story-quote">「有時候不是做不到。<br/>只是很難<br/>一個人維持專注。」</p>
-        <p class="story-quote-source">— Simon · 2026</p>
+<!-- FEATURES -->
+<section id="features">
+  <div class="features-wrap">
+    <div class="sec-label rv" id="sec-features">02 &mdash; FEATURES</div>
+    <h2 class="sec-title rv" id="sec-features-title">六件事，把專注變得<em>不再像懲罰</em></h2>
+    <p class="sec-sub rv" id="sec-features-sub">每一項都從「你會自己想打開」的角度設計 —— 不靠強制鎖機、不靠焦慮。</p>
+    <div class="feat-grid" id="feat-grid">
+      <div class="feat rv">
+        <div class="feat-n">01</div>
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></div>
+        <div class="feat-t">像素街景</div>
+        <p class="feat-d">每一次專注都讓街上多一個行人。你會看見此刻有多少人正在和你一起努力，安靜地走動著。</p>
       </div>
-      <div class="story-body reveal--right delay-1">
+      <div class="feat rv d1">
+        <div class="feat-n">02</div>
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <div class="feat-t">充電鐘 &times; 配對</div>
+        <p class="feat-d">25 / 5 / 50 / 10，自由切換。也可以和另一個正在充電的人配對，互相當對方的見證人。</p>
+      </div>
+      <div class="feat rv d2">
+        <div class="feat-n">03</div>
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h12"/></svg></div>
+        <div class="feat-t">個人專注空間</div>
+        <p class="feat-d">每個鎮民都有自己的專屬角落。可以擺床、擺桌、貼月曆，打造最適合自己的充電環境。</p>
+      </div>
+      <div class="feat rv">
+        <div class="feat-n">04</div>
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <div class="feat-t">背景音樂</div>
+        <p class="feat-d">lofi、雨聲、咖啡店、深夜 jazz。內建多套無版權音樂，不打擾、不跳廣告、不會突然安靜。</p>
+      </div>
+      <div class="feat rv d1">
+        <div class="feat-n">05</div>
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M6 2l1.5 4h9L18 2M5 6h14l-1 14H6L5 6zM10 11v5M14 11v5"/></svg></div>
+        <div class="feat-t">小鎮商店<span class="badge-soon">SOON</span></div>
+        <p class="feat-d">充電換金幣，金幣換家具、布景、限定主題。沒有抽卡、沒有 pay-to-win，只是讓你有理由收集。</p>
+      </div>
+      <div class="feat rv d2">
+        <div class="feat-n">06</div>
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 21h16M6 18V8m12 10V12M12 21V3"/></svg></div>
+        <div class="feat-t">排行 &amp; 成就</div>
+        <p class="feat-d">每週、每月、總時數，三種排行。成就解鎖會在街上出現徽章，輕輕地，但每個鎮民都看得到。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="how-wrap">
+    <div class="sec-label rv" id="sec-how-label">03 &mdash; HOW IT WORKS</div>
+    <h2 class="sec-title rv" id="sec-how-title">三步<em>走進小鎮</em></h2>
+    <p class="sec-sub rv" id="sec-how-sub">不需要下載、不需要設定。從點開到第一次專注，平均 47 秒。</p>
+    <div class="flow-row" id="flow-row">
+      <div class="flow-node rv">
+        <div class="flow-num">01</div>
+        <div class="flow-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="flow-title">免費註冊</div>
+        <p class="flow-desc">Email + 密碼，30 秒搞定。立刻分配一個剛搬進來的角色，街上留下你的腳印。</p>
+        <div class="flow-tag">&#9201; 約 30 秒</div>
+      </div>
+      <div class="flow-arrow rv">&#9654;</div>
+      <div class="flow-node rv d1">
+        <div class="flow-num">02</div>
+        <div class="flow-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <div class="flow-title">選擇模式</div>
+        <p class="flow-desc">單人充電、配對共讀，或只是來感受街景。每次 25 分鐘，模式隨時切換。</p>
+        <div class="flow-tag">&#127925; 音樂自動開始</div>
+      </div>
+      <div class="flow-arrow rv d1">&#9654;</div>
+      <div class="flow-node rv d2">
+        <div class="flow-num">03</div>
+        <div class="flow-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <div class="flow-title">開始充電</div>
+        <p class="flow-desc">街上的鄰居各自努力，月亮慢慢移動。你也只需要做一件事——專注在當下。</p>
+        <div class="flow-tag">&#9889; 電量慢慢回來了</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- LIVE -->
+<section id="live">
+  <div class="live-wrap">
+    <div class="live-inner">
+      <div class="sec-label rv" id="sec-live-label">04 &mdash; LIVE SCENE</div>
+      <h2 class="sec-title rv" id="sec-live-title">此刻，小鎮裡正在<em>發生的事</em></h2>
+      <p class="sec-sub rv" id="sec-live-sub">你不會孤單——此刻有真實的人在這裡充電。你只是還沒走進來。</p>
+      <div class="live-stats">
+        <div class="rv">
+          <span class="stat-num" data-target="0">0</span>
+          <div class="stat-lbl" id="stat-lbl-0">人預約搶先體驗</div>
+        </div>
+        <div class="rv d1">
+          <span class="stat-num" data-target="6">0</span>
+          <div class="stat-lbl" id="stat-lbl-1">項核心功能完成</div>
+        </div>
+        <div class="rv d2">
+          <span class="stat-num" data-target="25">0</span>
+          <div class="stat-lbl" id="stat-lbl-2">分鐘充電鐘</div>
+        </div>
+      </div>
+      <div class="terminal rv">
+        <div class="term-bar">
+          <div class="term-dot" style="background:#ff5f57"></div>
+          <div class="term-dot" style="background:#ffbd2e"></div>
+          <div class="term-dot" style="background:#28c840"></div>
+          <div class="term-title">LIVE TOWN STATUS &mdash; lowbatterytown.com</div>
+        </div>
+        <div class="term-body" id="term-body">
+          <span class="tl t-dim">-- CONNECTED TO TOWN SERVER --</span>
+          <span class="tl">&nbsp;</span>
+          <span class="tl"><span class="t-warm">小雨</span> <span class="t-dim">joined &middot; study mode &middot; 18:42 remaining</span></span>
+          <span class="tl"><span class="t-warm">Kai</span> <span class="t-dim">paired with</span> <span class="t-teal">阿明</span> <span class="t-dim">&middot; focus mode activated</span></span>
+          <span class="tl"><span class="t-warm">曉芸</span> <span class="t-dim">completed session #7 &middot;</span> <span class="t-teal">+50 coins earned</span></span>
+          <span class="tl"><span class="t-rose">NEW</span> <span class="t-warm">Rin</span> <span class="t-dim">unlocked achievement: Night Owl</span></span>
+          <span class="tl t-dim">&nbsp;</span>
+          <span class="tl"><span class="t-teal">COMING SOON</span> <span class="t-dim">town opens soon &middot; beta signups open</span><span class="t-cursor"></span></span>
+        </div>
+      </div>
+      <div class="live-img-wrap rv">
+        <img src="assets/img-scene2.png" class="section-img live-img" alt="Low Battery Town Street Scene">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section id="story">
+  <div class="story-wrap">
+    <div class="sec-label rv" id="sec-story-label">05 &mdash; OUR STORY</div>
+    <h2 class="sec-title rv" id="sec-story-title">一個能讓人<em>重新進入</em>專注狀態的地方</h2>
+    <div class="story-grid">
+      <div class="rvl">
+        <blockquote class="story-q" id="story-quote">
+          「有時候不是做不到。<br/>只是很難<br/>一個人維持專注。」
+        </blockquote>
+        <p class="story-src">&mdash; Simon &middot; 2026</p>
+      </div>
+      <div class="story-body rvr" id="story-body">
         <p>Low Battery Town 不是為了提高效率而誕生的。它更像是在混亂裡，試著找回「能夠安靜做自己的事」的空間。</p>
         <p>我們每天都被太多東西拉走注意力——訊息、短影音、通知、社群、焦慮、孤獨感。很多人其實不是懶，只是長時間處在一種「低電量」的狀態。明明有想完成的事，想讀的書、想做的作品、想開始的人生，但一打開電腦，又被世界沖散。</p>
         <p>後來我發現，人真正需要的，未必是更多效率工具，而是一種<strong>「有人陪你一起專注」</strong>的感覺。不用一直聊天、不用社交、不用表現自己——只是知道，此時此刻，也有人正在努力。</p>
-        <p>於是 Low Battery Town 出現了。一座給低電量的人待的小鎮。你可以進入專注房間、播放 lofi、和陌生人一起讀書、工作、創作，或者只是安靜地把今天過完。沒有過度打擾，沒有社交壓力，只有一群正在慢慢把生活重新接回來的人。</p>
+        <p>於是 Low Battery Town 出現了。一座給低電量的人待的小鎮。你可以進入專注房間、播放 lofi、和陌生人一起讀書、工作、創作，或者只是安靜地把今天過完。</p>
       </div>
     </div>
-
-    <div class="story-scene-wrap reveal delay-2">
-      <div class="scene-img-wrap">
-        <img src="/assets/scenes/alley-walker.png"
-             alt="夜晚像素小鎮巷弄，霓虹燈下一個人獨自走著"
-             loading="lazy" style="max-height:420px;object-fit:cover;object-position:center center;" />
-      </div>
-      <div class="story-callout">
-        <div class="story-callout-icon" aria-hidden="true">⚡</div>
-        <div>
-          <p class="story-callout-title">Low Battery Town 不是逼你燃燒自己。</p>
-          <p class="story-callout-sub">而是讓你在快沒電的時候，還能找到一個願意陪你慢慢充電的地方。</p>
-        </div>
+    <div class="story-callout rv">
+      <div class="story-callout-icon">&#9889;</div>
+      <div>
+        <p class="story-callout-title" id="story-callout-title">Low Battery Town 不是逼你燃燒自己。</p>
+        <p class="story-callout-sub" id="story-callout-sub">而是讓你在快沒電的時候，還能找到一個願意陪你慢慢充電的地方。</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ╭─ 4 · How It Works ──────────────────────────────────────╮ -->
-<section id="how" aria-labelledby="how-title">
-  <div class="container">
-    <div class="reveal">
-      <span class="section-tag">How It Works</span>
-      <h2 class="section-title" id="how-title">三步走進小鎮</h2>
-      <p class="section-sub">不需要下載、不需要設定。從點開到第一次專注，平均 47 秒。</p>
-    </div>
+<div class="divider"></div>
 
-    <div class="flowchart">
-      <div class="flow-node reveal">
-        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="flow-num">01</div>
-        <div class="flow-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <h3>免費註冊</h3>
-        <p>Email + 密碼，30 秒搞定。立刻分配一個剛搬進來的角色，街上留下你的腳印。</p>
-        <div class="flow-tag">⏱ 約 30 秒</div>
-      </div>
-
-      <div class="flow-connector" aria-hidden="true">
-        <span class="connector-arrow">▶</span>
-      </div>
-
-      <div class="flow-node reveal delay-1">
-        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="flow-num">02</div>
-        <div class="flow-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-        </div>
-        <h3>選擇模式</h3>
-        <p>單人充電、配對共讀，或只是來感受街景。每次 25 分鐘，模式隨時切換。</p>
-        <div class="flow-tag">🎵 音樂自動開始</div>
-      </div>
-
-      <div class="flow-connector" aria-hidden="true">
-        <span class="connector-arrow">▶</span>
-      </div>
-
-      <div class="flow-node reveal delay-2">
-        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="flow-num">03</div>
-        <div class="flow-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        </div>
-        <h3>開始充電</h3>
-        <p>街上的鄰居各自努力，月亮慢慢移動。你也只需要做一件事——專注在當下。</p>
-        <div class="flow-tag">⚡ 電量慢慢回來了</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ╭─ 5 · Live Scene ────────────────────────────────────────╮ -->
-<section id="live" aria-labelledby="live-title">
-  <div class="container">
-    <div class="reveal">
-      <span class="section-tag">Live Scene</span>
-      <h2 class="section-title" id="live-title">此刻，小鎮裡正在發生的事</h2>
-      <p class="section-sub">你不會孤單——此刻有真實的人在這裡充電。你只是還沒走進來。</p>
-    </div>
-
-    <div class="live-scene-img reveal">
-      <div class="scene-img-wrap">
-        <img src="/assets/scenes/lbt-station.png"
-             alt="Low Battery Town 霓虹站牌，自動販賣機與深夜街道"
-             loading="lazy" style="max-height:300px;object-fit:cover;object-position:center 15%;" />
-      </div>
-    </div>
-
-    <div class="live-stats-bar reveal">
-      <div class="live-stat">
-        <span class="live-stat-num" data-counter data-target="247">247</span>
-        <span class="live-stat-label">人正在充電</span>
-      </div>
-      <span class="live-stat-sep" aria-hidden="true">·</span>
-      <div class="live-stat">
-        <span class="live-stat-num" data-counter data-target="83">83</span>
-        <span class="live-stat-label">個配對進行中</span>
-      </div>
-      <span class="live-stat-sep" aria-hidden="true">·</span>
-      <div class="live-stat">
-        <span class="live-stat-num" data-counter data-target="12451">12,451</span>
-        <span class="live-stat-label">充電鐘完成</span>
-      </div>
-    </div>
-
-    <div class="live-grid">
-      <div class="pomodoro-card reveal">
-        <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-        <div class="pomodoro-head">
-          <span class="live-dot">LIVE · 充電中</span>
-          <span>CHARGE · 25:00</span>
-        </div>
-        <div class="pomodoro-time" aria-live="polite">18:42<span class="caret"></span></div>
-        <div class="pomodoro-progress" aria-hidden="true">
-          <div class="progress-fill"></div>
-        </div>
-        <div class="music-bars" aria-label="音樂播放中">
-          <span class="music-bar" style="height: 24px;"></span>
-          <span class="music-bar" style="height: 18px;"></span>
-          <span class="music-bar" style="height: 28px;"></span>
-          <span class="music-bar" style="height: 22px;"></span>
-          <span class="music-bar" style="height: 30px;"></span>
-          <span class="music-bar" style="height: 16px;"></span>
-          <span class="music-bar" style="height: 26px;"></span>
-        </div>
-        <div class="pomodoro-foot">
-          <span>正在播放 — Late Night Café · lofi</span>
-          <span>配對對象 — 鎮民 #4729</span>
-        </div>
-        <div class="live-town-note">模擬畫面，實際使用時更安靜、也更溫暖。</div>
-      </div>
-
-      <div class="use-cases">
-        <article class="use-card reveal delay-1">
-          <div class="use-card-header">
-            <span class="use-avatar" aria-hidden="true">📚</span>
-            <div class="who">學生 · STUDENT</div>
-          </div>
-          <h4>「終於有理由打開那本書了」</h4>
-          <p>考試前的拖延，變成街上多了一個小人。街景不會嘲笑你，只是靜靜陪著你。</p>
-          <div class="use-time">今天已充電 3h 20m</div>
-        </article>
-        <article class="use-card reveal delay-2">
-          <div class="use-card-header">
-            <span class="use-avatar" aria-hidden="true">💻</span>
-            <div class="who">遠端工作者 · REMOTE</div>
-          </div>
-          <h4>「在家也有同事的感覺」</h4>
-          <p>不用視訊、不用 Slack。打開頁面就有人陪，做完一輪泡杯咖啡，回來繼續。</p>
-          <div class="use-time">連續第 14 天上線</div>
-        </article>
-        <article class="use-card reveal delay-3">
-          <div class="use-card-header">
-            <span class="use-avatar" aria-hidden="true">✍️</span>
-            <div class="who">創作者 · CREATIVE</div>
-          </div>
-          <h4>「動筆前的儀式感」</h4>
-          <p>選個音樂、按下開始——比起立刻面對空白稿，這 47 秒的儀式讓事情容易太多。</p>
-          <div class="use-time">本週完成 24 個充電鐘</div>
-        </article>
-      </div>
-    </div>
-
-    <div class="live-join-cta reveal delay-2">
-      <a href="https://lowbatterytown.com" class="btn btn--lg">▸ 加入正在充電的人</a>
-      <span class="live-join-note">完全免費 · 瀏覽器即開即用 · 30 秒搬進來</span>
-    </div>
-  </div>
-</section>
-
-<!-- ╭─ 5 · Team ───────────────────────────────────────────────╮ -->
-<section id="team" aria-labelledby="team-title">
-  <div class="container">
-    <div class="reveal">
-      <span class="section-tag">The Team</span>
-      <h2 class="section-title section-title--neon" id="team-title" tabindex="0">在台北的角落蓋這座鎮的人</h2>
-      <p class="section-sub">小鎮還小，但每一磚每一瓦都是認真蓋的。</p>
-    </div>
-
+<!-- TEAM -->
+<section id="team">
+  <div class="team-wrap">
+    <div class="sec-label rv" id="sec-team-label">06 &mdash; THE TEAM</div>
+    <h2 class="sec-title rv" id="sec-team-title">在台北的角落<em>蓋這座鎮</em>的人</h2>
+    <p class="sec-sub rv" id="sec-team-sub">小鎮還小，但每一磚每一瓦都是認真蓋的。</p>
     <div class="team-grid">
-      <article class="team-card reveal">
-        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="team-avatar" aria-hidden="true">🏗️</div>
+      <div class="team-card rv">
+        <img src="assets/simon.png" alt="Simon" class="team-avatar team-avatar-img">
         <div class="team-role">Founder · Product</div>
         <h3 class="team-name">Simon</h3>
-        <p class="team-bio">相信真正讓人持續前進的，不只是效率，而是有人陪你一起存在。因此開始打造一系列圍繞「吃、喝、玩、樂與陪伴感」的產品。<br/><br/>產品一：Low Battery Town ——一座獻給低電量世代的數位小鎮，讓人能在陪伴感裡安心專注、慢慢充電。</p>
-      </article>
-
-      <article class="team-card team-card--open reveal delay-1">
-        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
-        <div class="team-avatar team-avatar--open" aria-hidden="true">✦</div>
+        <p class="team-bio" id="team-simon-bio">相信真正讓人持續前進的，不只是效率，而是有人陪你一起存在。因此開始打造一系列圍繞「吃、喝、玩、樂與陪伴感」的產品。<br/><br/>產品一：Low Battery Town ——一座獻給低電量世代的數位小鎮，讓人能在陪伴感裡安心專注、慢慢充電。</p>
+      </div>
+      <div class="team-card team-card--open rv d1">
+        <span class="team-avatar">&#10022;</span>
         <div class="team-role">待增加夥伴</div>
         <h3 class="team-name">是你嗎？</h3>
-        <p class="team-bio">我們在找對這件事有感覺的人——不限角色，可以是設計、工程、社群、或是你有其他想法。</p>
-        <a href="#feedback" class="team-join-btn">✉ 寫信給我們</a>
-      </article>
+        <p class="team-bio" id="team-open-bio">我們在找對這件事有感覺的人——不限角色，可以是設計、工程、社群、或是你有其他想法。</p>
+        <a href="#beta" class="team-join-btn" id="team-join-btn">&#9993; 寫信給我們</a>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ╭─ 8 · FAQ + Contact + Footer ────────────────────────────╮ -->
-<section id="faq" aria-labelledby="faq-title">
-  <div class="container" style="max-width: 880px;">
-    <div class="reveal">
-      <span class="section-tag">FAQ</span>
-      <h2 class="section-title" id="faq-title">想問的</h2>
-      <p class="section-sub">沒看到答案？用下方表單問我們，會親自回覆。</p>
-    </div>
+<div class="divider"></div>
 
-    <div class="faq-list reveal delay-1">
+<!-- FAQ -->
+<section id="faq">
+  <div class="faq-wrap">
+    <div class="sec-label rv" id="sec-faq-label">07 &mdash; FAQ</div>
+    <h2 class="sec-title rv" id="sec-faq-title">想問的</h2>
+    <p class="sec-sub rv" id="sec-faq-sub">沒看到答案？用下方表單問我們，會親自回覆。</p>
+    <div class="faq-list rv" id="faq-list">
       <details class="faq-item">
         <summary>完全免費嗎？</summary>
         <div class="faq-a">是的。所有核心功能 —— 街景、專注、配對、房間、商店、音樂、訪客 —— 都完全免費。未來推出的 FOCUS+ 訂閱只解鎖進階主題與限定道具，不會影響基本體驗。</div>
@@ -486,90 +1204,526 @@
   </div>
 </section>
 
-<section id="feedback" aria-labelledby="feedback-title">
-  <div class="container" style="max-width: 1100px;">
-
-    <div class="beta-scene-img reveal">
-      <div class="scene-img-wrap">
-        <img src="/assets/scenes/rooftop-neon.png"
-             alt="Low Battery Town 霓虹招牌，在城市屋頂閃爍著粉藍光芒"
-             loading="lazy" style="max-height:280px;object-fit:cover;object-position:center 35%;" />
-      </div>
+<!-- BETA + FEEDBACK -->
+<section id="beta">
+  <div class="beta-wrap">
+    <div class="preview-img-wrap rv">
+      <img src="assets/img-app.jpg" class="section-img preview-img" alt="Low Battery Town — App Preview">
     </div>
-
-    <div class="feedback-two-col">
-
-      <!-- 左側：Beta 報名 -->
-      <div class="beta-panel reveal">
-        <div class="corner-deco tl"></div><div class="corner-deco br"></div>
+    <div class="beta-inner">
+      <div class="beta-panel rv">
         <div class="beta-badge">BETA</div>
-        <h3 class="beta-title">搶先體驗小鎮</h3>
-        <p class="beta-desc">小鎮還在蓋，但第一批鎮民已經在等了。填寫測試報名，有新功能上線你會是第一個知道的。</p>
-        <ul class="beta-perks">
+        <h3 class="beta-title" id="beta-title">搶先體驗小鎮</h3>
+        <p class="beta-desc" id="beta-desc">小鎮還在蓋，但第一批鎮民已經在等了。填寫測試報名，有新功能上線你會是第一個知道的。</p>
+        <ul class="beta-perks" id="beta-perks">
           <li>優先進入 Beta 測試</li>
           <li>功能開放前搶先體驗</li>
           <li>回饋直接影響產品方向</li>
         </ul>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSd3aojnaxROpPTwR7zYojOg9cs1_x2gAqqlIOTHSLgINwBGPA/viewform?usp=dialog"
-           target="_blank" rel="noopener noreferrer" class="btn beta-cta">
-          ▸ 我要報名測試
+        <a id="beta-signup-link"
+           href="https://forms.gle/LhDu3xHmXfvEDDsz7"
+           data-zh-href="https://forms.gle/LhDu3xHmXfvEDDsz7"
+           data-en-href="https://forms.gle/joXbrLLwtFFgTZ5v6"
+           target="_blank" rel="noopener noreferrer"
+           class="btn-fill" style="display:inline-block;font-size:14px;padding:13px 32px">
+          &#9658; 我要報名測試
         </a>
       </div>
 
-    <div class="feedback-panel reveal delay-1">
-      <div class="corner-deco tl"></div><div class="corner-deco tr"></div>
-      <div class="corner-deco bl"></div><div class="corner-deco br"></div>
-      <h3 id="feedback-title">✦ 意見回饋</h3>
-      <p>許願、回報問題、單純打個招呼都歡迎。如果你留下聯絡 Email，我們會親自回覆（1–2 工作日內）。</p>
-
-      <form class="feedback-form" id="feedback-form" novalidate>
-        <input type="hidden" name="_subject" value="[Low Battery Town] 意見回饋" />
-        <input type="hidden" name="_captcha" value="false" />
-        <div>
-          <label>類別</label>
-          <div class="feedback-categories" id="feedback-categories" role="radiogroup" aria-label="意見類別">
-            <button type="button" class="feedback-cat-btn active" data-cat="建議">建議</button>
-            <button type="button" class="feedback-cat-btn" data-cat="問題回報">問題回報</button>
-            <button type="button" class="feedback-cat-btn" data-cat="鼓勵">鼓勵</button>
-            <button type="button" class="feedback-cat-btn" data-cat="其他">其他</button>
+      <div class="feedback-panel rv d1">
+        <h3 id="feedback-title">&#10022; 意見回饋</h3>
+        <p id="feedback-desc">許願、回報問題、單純打個招呼都歡迎。如果你留下聯絡 Email，我們會親自回覆（1–2 工作日內）。</p>
+        <form class="feedback-form" id="feedback-form" novalidate>
+          <div>
+            <label>類別</label>
+            <div class="feedback-cats" id="feedback-cats">
+              <button type="button" class="feedback-cat active" data-cat="建議">建議</button>
+              <button type="button" class="feedback-cat" data-cat="問題回報">問題回報</button>
+              <button type="button" class="feedback-cat" data-cat="鼓勵">鼓勵</button>
+              <button type="button" class="feedback-cat" data-cat="其他">其他</button>
+            </div>
           </div>
+          <div>
+            <label for="feedback-body">內容</label>
+            <textarea id="feedback-body" name="message" maxlength="4000" required placeholder="想說的話..."></textarea>
+          </div>
+          <div>
+            <label for="feedback-contact">聯絡 Email（選填）</label>
+            <input type="email" id="feedback-contact" name="email" placeholder="留下 email 我們才能回覆你" />
+          </div>
+          <div class="feedback-submit-row">
+            <div class="feedback-status" id="feedback-status"></div>
+            <button type="submit" class="btn-fill" style="font-size:14px;padding:13px 32px">&#9658; 送出</button>
+          </div>
+        </form>
+        <div class="feedback-success" id="feedback-success" style="display:none">
+          <div class="ico">&#10022;</div>
+          <h4>收到了！</h4>
+          <p>謝謝你的回饋。如果你留了 email，我們會在 1–2 個工作天內回覆。</p>
         </div>
-        <div>
-          <label for="feedback-body">內容</label>
-          <textarea id="feedback-body" name="message" maxlength="4000" required placeholder="想說的話..."></textarea>
-        </div>
-        <div>
-          <label for="feedback-contact">聯絡 Email（選填）</label>
-          <input type="email" id="feedback-contact" name="email" placeholder="留下 email 我們才能回覆你（選填）" />
-        </div>
-        <div class="feedback-submit-row">
-          <div class="feedback-status" id="feedback-status" role="status" aria-live="polite"></div>
-          <button type="submit" class="btn" id="feedback-submit">▸ 送出</button>
-        </div>
-      </form>
-
-      <div class="feedback-success" id="feedback-success" hidden>
-        <div class="ico">✦</div>
-        <h4>收到了！</h4>
-        <p>謝謝你的回饋。如果你留了 email，我們會在 1–2 個工作天內回覆。</p>
       </div>
     </div>
-
-    </div><!-- end feedback-two-col -->
   </div>
 </section>
 
-<footer class="site-footer">
-  <div class="footer-links">
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-wrap">
+    <div class="cta-inner">
+      <h2 class="cta-h breathe rv" id="cta-title">準備好<em>搬進來</em>了嗎？</h2>
+      <p class="cta-sub rv" id="cta-sub">完全免費。30 秒註冊。瀏覽器即開即用。不需要下載任何東西。</p>
+      <div class="rv">
+        <span class="btn-fill disabled" style="font-size:18px;padding:16px 52px;display:inline-block">Coming Soon &#9658;</span>
+        <p class="cta-note" id="cta-note">目前開放 Beta 測試申請 &middot; 歡迎預先登記</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-brand">LOW BATTERY TOWN</div>
+  <div class="foot-links">
     <a href="/legal/terms.html">使用條款</a>
     <a href="/legal/privacy.html">隱私政策</a>
-    <a href="/legal/refund.html">退款政策</a>
-    <a href="#feedback">聯絡我們</a>
+    <a href="#beta">聯絡我們</a>
   </div>
-  <div>© 2026 Low Battery Town · Made with ☕ &amp; 🌙 in Taipei</div>
-  <div class="footer-status">All systems operational</div>
+  <div>&copy; 2026 Low Battery Town &middot; Made with &#9749; &amp; &#127769; in Taipei</div>
 </footer>
 
-<script src="/scripts/main.js" defer></script>
+<script src="/scripts/gsap.min.js"></script>
+<script src="/scripts/ScrollTrigger.min.js"></script>
+<script>
+// ── THEME TOGGLE ──
+function toggleTheme() {
+  const light = document.body.classList.toggle('light');
+  document.getElementById('theme-btn').textContent = light ? '\u263D' : '\u2600';
+  localStorage.setItem('lbt-theme', light ? 'light' : 'dark');
+}
+(function initTheme() {
+  const saved = localStorage.getItem('lbt-theme');
+  if (saved === 'light') {
+    document.body.classList.add('light');
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.textContent = '\u263D';
+  }
+})();
+
+// ── LANGUAGE TOGGLE ──
+var CURRENT_LANG = 'zh';
+var I18N = {
+  zh: {
+    'manifesto-q': '有時候不是做不到。<br/>只是很難，<em>一個人</em><br/>維持專注。',
+    'manifesto-body': 'Low Battery Town 不是為了提高效率而誕生的。它更像是在混亂裡，試著找回「能夠安靜做自己的事」的空間。不是逼你燃燒自己——而是讓你在快沒電的時候，還能找到一個願意陪你慢慢充電的地方。',
+    'sec-features': '02 &mdash; FEATURES',
+    'sec-features-title': '六件事，把專注變得<em>不再像懲罰</em>',
+    'sec-features-sub': '每一項都從「你會自己想打開」的角度設計 —— 不靠強制鎖機、不靠焦慮。',
+    'feat-grid': '<div class="feat rv"><div class="feat-n">01</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></div><div class="feat-t">像素街景</div><p class="feat-d">每一次專注都讓街上多一個行人。你會看見此刻有多少人正在和你一起努力，安靜地走動著。</p></div><div class="feat rv d1"><div class="feat-n">02</div><div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div class="feat-t">充電鐘 &times; 配對</div><p class="feat-d">25 / 5 / 50 / 10，自由切換。也可以和另一個正在充電的人配對，互相當對方的見證人。</p></div><div class="feat rv d2"><div class="feat-n">03</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h12"/></svg></div><div class="feat-t">個人專注空間</div><p class="feat-d">每個鎮民都有自己的專屬角落。可以擺床、擺桌、貼月曆，打造最適合自己的充電環境。</p></div><div class="feat rv"><div class="feat-n">04</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div><div class="feat-t">背景音樂</div><p class="feat-d">lofi、雨聲、咖啡店、深夜 jazz。內建多套無版權音樂，不打擾、不跳廣告、不會突然安靜。</p></div><div class="feat rv d1"><div class="feat-n">05</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M6 2l1.5 4h9L18 2M5 6h14l-1 14H6L5 6zM10 11v5M14 11v5"/></svg></div><div class="feat-t">小鎮商店<span class="badge-soon">SOON</span></div><p class="feat-d">充電換金幣，金幣換家具、布景、限定主題。沒有抽卡、沒有 pay-to-win，只是讓你有理由收集。</p></div><div class="feat rv d2"><div class="feat-n">06</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 21h16M6 18V8m12 10V12M12 21V3"/></svg></div><div class="feat-t">排行 &amp; 成就</div><p class="feat-d">每週、每月、總時數，三種排行。成就解鎖會在街上出現徽章，輕輕地，但每個鎮民都看得到。</p></div>',
+    'sec-how-label': '03 &mdash; HOW IT WORKS',
+    'sec-how-title': '三步<em>走進小鎮</em>',
+    'sec-how-sub': '不需要下載、不需要設定。從點開到第一次專注，平均 47 秒。',
+    'flow-row': '<div class="flow-node rv"><div class="flow-num">01</div><div class="flow-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="flow-title">免費註冊</div><p class="flow-desc">Email + 密碼，30 秒搞定。立刻分配一個剛搬進來的角色，街上留下你的腳印。</p><div class="flow-tag">&#9201; 約 30 秒</div></div><div class="flow-arrow rv">&#9654;</div><div class="flow-node rv d1"><div class="flow-num">02</div><div class="flow-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div class="flow-title">選擇模式</div><p class="flow-desc">單人充電、配對共讀，或只是來感受街景。每次 25 分鐘，模式隨時切換。</p><div class="flow-tag">&#127925; 音樂自動開始</div></div><div class="flow-arrow rv d1">&#9654;</div><div class="flow-node rv d2"><div class="flow-num">03</div><div class="flow-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="flow-title">開始充電</div><p class="flow-desc">街上的鄰居各自努力，月亮慢慢移動。你也只需要做一件事——專注在當下。</p><div class="flow-tag">&#9889; 電量慢慢回來了</div></div>',
+    'sec-live-label': '04 &mdash; LIVE SCENE',
+    'sec-live-title': '此刻，小鎮裡正在<em>發生的事</em>',
+    'sec-live-sub': '你不會孤單——此刻有真實的人在這裡充電。你只是還沒走進來。',
+    'stat-lbl-0': '人預約搶先體驗',
+    'stat-lbl-1': '項核心功能完成',
+    'stat-lbl-2': '分鐘充電鐘',
+    'sec-story-label': '05 &mdash; OUR STORY',
+    'sec-story-title': '一個能讓人<em>重新進入</em>專注狀態的地方',
+    'story-quote': '「有時候不是做不到。<br/>只是很難<br/>一個人維持專注。」',
+    'story-body': '<p>Low Battery Town 不是為了提高效率而誕生的。它更像是在混亂裡，試著找回「能夠安靜做自己的事」的空間。</p><p>我們每天都被太多東西拉走注意力——訊息、短影音、通知、社群、焦慮、孤獨感。很多人其實不是懶，只是長時間處在一種「低電量」的狀態。明明有想完成的事，想讀的書、想做的作品、想開始的人生，但一打開電腦，又被世界沖散。</p><p>後來我發現，人真正需要的，未必是更多效率工具，而是一種<strong>「有人陪你一起專注」</strong>的感覺。不用一直聊天、不用社交、不用表現自己——只是知道，此時此刻，也有人正在努力。</p><p>於是 Low Battery Town 出現了。一座給低電量的人待的小鎮。你可以進入專注房間、播放 lofi、和陌生人一起讀書、工作、創作，或者只是安靜地把今天過完。</p>',
+    'story-callout-title': 'Low Battery Town 不是逼你燃燒自己。',
+    'story-callout-sub': '而是讓你在快沒電的時候，還能找到一個願意陪你慢慢充電的地方。',
+    'sec-team-label': '06 &mdash; THE TEAM',
+    'sec-team-title': '在台北的角落<em>蓋這座鎮</em>的人',
+    'sec-team-sub': '小鎮還小，但每一磚每一瓦都是認真蓋的。',
+    'team-simon-bio': '相信真正讓人持續前進的，不只是效率，而是有人陪你一起存在。因此開始打造一系列圍繞「吃、喝、玩、樂與陪伴感」的產品。<br/><br/>產品一：Low Battery Town ——一座獻給低電量世代的數位小鎮，讓人能在陪伴感裡安心專注、慢慢充電。',
+    'team-open-bio': '我們在找對這件事有感覺的人——不限角色，可以是設計、工程、社群、或是你有其他想法。',
+    'team-join-btn': '&#9993; 寫信給我們',
+    'faq-list': '<details class="faq-item"><summary>完全免費嗎？</summary><div class="faq-a">是的。所有核心功能 —— 街景、專注、配對、房間、商店、音樂、訪客 —— 都完全免費。未來推出的 FOCUS+ 訂閱只解鎖進階主題與限定道具，不會影響基本體驗。</div></details><details class="faq-item"><summary>手機可以用嗎？</summary><div class="faq-a">支援桌面瀏覽器（Chrome / Safari / Firefox），手機網頁版可用但體驗以桌面為主。原生 App 不在短期計畫內。</div></details><details class="faq-item"><summary>訪客可以亂搞我的房間嗎？</summary><div class="faq-a">不行。訪客只能「看」和「聽」 —— 無法移動裝飾、無法控制音樂、無法說話打擾。屋主擁有所有控制權。</div></details><details class="faq-item"><summary>我的資料安全嗎？</summary><div class="faq-a">Email + 密碼註冊，密碼採 bcrypt 雜湊儲存（非明文）。所有 API 流量 HTTPS 加密。完整隱私政策見頁尾連結。</div></details><details class="faq-item"><summary>我可以上傳自己的音樂嗎？</summary><div class="faq-a">初版只能從平台音樂庫挑選（lofi、爵士、雨聲等 royalty-free 曲目）。自上傳功能在規劃中，會處理版權後再開放。</div></details><details class="faq-item"><summary>充電鐘是什麼？和普通番茄鐘有什麼不同？</summary><div class="faq-a">充電鐘是我們對番茄鐘的詮釋——不只是倒數計時，而是把每一段專注想成「替自己充電」的過程。時間結構一樣（25 分鐘專注 + 5 分鐘休息），但畫面、氛圍和設計都圍繞「能量回升」而非「任務完成」的感受。</div></details><details class="faq-item"><summary>配對功能怎麼使用？需要認識對方嗎？</summary><div class="faq-a">不需要認識。系統會根據你目前的充電模式，自動配對一位也在充電的鎮民。你們會共享同一個充電計時器，但不需要說話、不需要開鏡頭，就是安靜地一起充電。配對過程完全自願，可以隨時選擇單人模式。</div></details><details class="faq-item"><summary>小鎮商店什麼時候開放？</summary><div class="faq-a">小鎮商店目前正在開發中，預計在近期版本開放。屆時你累積的金幣（充電時長換取）就能在商店兌換家具、布景和限定道具。我們不會在開放前清除任何已累積的金幣。</div></details><details class="faq-item"><summary>金幣怎麼賺？累積速度快嗎？</summary><div class="faq-a">每完成一個充電鐘（25 分鐘）就會獲得金幣獎勵。連續充電、配對成功等行為也有額外獎勵。設計原則是「正常使用就能慢慢收集」，不需要每天瘋狂刷時數。</div></details><details class="faq-item"><summary>可以邀請朋友一起充電嗎？</summary><div class="faq-a">可以。你可以把自己的個人專注空間連結分享給朋友，他們進入後可以以訪客身分陪你充電——看著你的計時器一起倒數，但不會干擾你的空間設置。專屬配對邀請功能也在規劃中。</div></details><details class="faq-item"><summary>如果中途離開或關掉視窗，充電鐘會怎樣？</summary><div class="faq-a">充電中的計時狀態會保留在伺服器端。如果你短暫關閉視窗再回來，計時器仍在繼續。如果離開超過一定時間，系統會自動結算並記錄已完成的時長。</div></details><details class="faq-item"><summary>需要一直盯著螢幕嗎？</summary><div class="faq-a">不需要。你可以把 Low Battery Town 開在背景，讓音樂和計時靜靜運作，偶爾瞥一眼就好。它的設計目的是「陪伴」而非「監視」——你不需要對著畫面才算在充電。</div></details>',
+    'beta-title': '搶先體驗小鎮',
+    'beta-desc': '小鎮還在蓋，但第一批鎮民已經在等了。填寫測試報名，有新功能上線你會是第一個知道的。',
+    'beta-perks': '<li>優先進入 Beta 測試</li><li>功能開放前搶先體驗</li><li>回饋直接影響產品方向</li>',
+    'feedback-title': '&#10022; 意見回饋',
+    'feedback-desc': '許願、回報問題、單純打個招呼都歡迎。如果你留下聯絡 Email，我們會親自回覆（1–2 工作日內）。',
+    'cta-title': '準備好<em>搬進來</em>了嗎？',
+    'cta-sub': '完全免費。30 秒註冊。瀏覽器即開即用。不需要下載任何東西。',
+    'cta-note': '目前開放 Beta 測試申請 &middot; 歡迎預先登記'
+  },
+  en: {
+    'manifesto-q': 'Sometimes it\'s not that you can\'t.<br/>It\'s just hard to stay focused<br/><em>on your own</em>.',
+    'manifesto-body': 'Low Battery Town wasn\'t built to make you more productive. It\'s more like finding a quiet space in all the noise — somewhere to just do your thing. Not to push yourself harder, but to find a place that\'ll sit with you while you slowly recharge.',
+    'sec-features': '02 &mdash; FEATURES',
+    'sec-features-title': 'Six things that make focus <em>feel less like punishment</em>',
+    'sec-features-sub': 'Every feature is designed to make you want to open it — no forced lockdowns, no guilt.',
+    'feat-grid': '<div class="feat rv"><div class="feat-n">01</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></div><div class="feat-t">Pixel Streets</div><p class="feat-d">Every focus session adds a pedestrian to the street. See how many people are quietly working alongside you right now.</p></div><div class="feat rv d1"><div class="feat-n">02</div><div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div class="feat-t">Charge Timer &times; Pairing</div><p class="feat-d">25 / 5 / 50 / 10 — switch freely. Or pair with another charging citizen and be each other\'s silent witness.</p></div><div class="feat rv d2"><div class="feat-n">03</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h12"/></svg></div><div class="feat-t">Personal Focus Space</div><p class="feat-d">Every citizen gets their own corner. Add a bed, a desk, a calendar — build the perfect charging environment for you.</p></div><div class="feat rv"><div class="feat-n">04</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div><div class="feat-t">Background Music</div><p class="feat-d">Lofi, rain, café ambience, late-night jazz. Royalty-free tracks built in — no interruptions, no ads, no sudden silence.</p></div><div class="feat rv d1"><div class="feat-n">05</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M6 2l1.5 4h9L18 2M5 6h14l-1 14H6L5 6zM10 11v5M14 11v5"/></svg></div><div class="feat-t">Town Shop<span class="badge-soon">SOON</span></div><p class="feat-d">Convert focus time to coins, coins to furniture and themes. No loot boxes, no pay-to-win — just a reason to keep collecting.</p></div><div class="feat rv d2"><div class="feat-n">06</div><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 21h16M6 18V8m12 10V12M12 21V3"/></svg></div><div class="feat-t">Leaderboards &amp; Achievements</div><p class="feat-d">Weekly, monthly, all-time — three boards. Unlocked achievements show up as badges on the street, quietly visible to all.</p></div>',
+    'sec-how-label': '03 &mdash; HOW IT WORKS',
+    'sec-how-title': 'Three steps to <em>move in</em>',
+    'sec-how-sub': 'No download, no setup. Average time from opening to first focus session: 47 seconds.',
+    'flow-row': '<div class="flow-node rv"><div class="flow-num">01</div><div class="flow-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="flow-title">Sign Up Free</div><p class="flow-desc">Email + password, done in 30 seconds. You\'ll be assigned a freshly-moved-in character and leave your footprint on the street.</p><div class="flow-tag">&#9201; ~30 seconds</div></div><div class="flow-arrow rv">&#9654;</div><div class="flow-node rv d1"><div class="flow-num">02</div><div class="flow-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div class="flow-title">Choose Your Mode</div><p class="flow-desc">Solo charge, paired co-focus, or just soak in the streets. 25 minutes at a time, switch modes whenever.</p><div class="flow-tag">&#127925; Music starts automatically</div></div><div class="flow-arrow rv d1">&#9654;</div><div class="flow-node rv d2"><div class="flow-num">03</div><div class="flow-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="flow-title">Start Charging</div><p class="flow-desc">Neighbours are quietly working, the moon slowly moves. You only need to do one thing — stay present.</p><div class="flow-tag">&#9889; Energy slowly returns</div></div>',
+    'sec-live-label': '04 &mdash; LIVE SCENE',
+    'sec-live-title': 'Right now, this is what\'s <em>happening in town</em>',
+    'sec-live-sub': "You won't be alone — real people are charging here right now. You just haven't moved in yet.",
+    'stat-lbl-0': 'beta signups',
+    'stat-lbl-1': 'core features done',
+    'stat-lbl-2': 'min charge timer',
+    'sec-story-label': '05 &mdash; OUR STORY',
+    'sec-story-title': 'A place that helps you <em>find focus again</em>',
+    'story-quote': '"Sometimes it\'s not that you can\'t.<br/>It\'s just hard<br/>to focus alone."',
+    'story-body': '<p>Low Battery Town wasn\'t born to improve your efficiency. It\'s more like searching for a quiet corner in all the chaos — a space where you can just do your thing.</p><p>Every day we\'re pulled in too many directions — messages, short videos, notifications, social media, anxiety, loneliness. A lot of people aren\'t lazy. They\'re just running on low for a long time. There are things they want to finish, books to read, work to create, a life to start — but the moment they open their laptop, the world scatters them.</p><p>What I realised is that what people actually need isn\'t more productivity tools. It\'s the feeling that <strong>someone is focusing alongside you</strong>. No need to chat, no need to socialise, no need to perform — just the knowledge that right now, someone else is also trying.</p><p>That\'s how Low Battery Town came to be. A town for people running on empty. Come into a focus room, play some lofi, study alongside a stranger, work, create — or just quietly make it through the day.</p>',
+    'story-callout-title': 'Low Battery Town isn\'t here to push you harder.',
+    'story-callout-sub': 'It\'s here so that when you\'re almost out of charge, you can still find a place that\'ll sit with you while you slowly power back up.',
+    'sec-team-label': '06 &mdash; THE TEAM',
+    'sec-team-title': 'The people <em>building this town</em> from a corner of Taipei',
+    'sec-team-sub': 'The town is small, but every brick is placed with care.',
+    'team-simon-bio': 'Believes that what truly keeps people moving forward isn\'t just efficiency — it\'s the presence of someone alongside you. Building a series of products centred on companionship and everyday joy.<br/><br/>Product one: Low Battery Town — a digital town for the low-battery generation, where you can focus with peace of mind and recharge at your own pace.',
+    'team-open-bio': 'Looking for someone who feels something about this — any role: design, engineering, community, or whatever you\'re thinking.',
+    'team-join-btn': '&#9993; Write to us',
+    'faq-list': '<details class="faq-item"><summary>Is it completely free?</summary><div class="faq-a">Yes. All core features — streets, focus timer, pairing, rooms, shop, music, visitors — are completely free. A future FOCUS+ subscription will unlock advanced themes and limited items, but it will never affect the core experience.</div></details><details class="faq-item"><summary>Does it work on mobile?</summary><div class="faq-a">Desktop browsers are supported (Chrome / Safari / Firefox). The mobile web version works, but the experience is optimised for desktop. A native app is not in the near-term plan.</div></details><details class="faq-item"><summary>Can visitors mess up my room?</summary><div class="faq-a">No. Visitors can only "watch" and "listen" — they can\'t move decorations, control music, or interrupt you. The host has full control.</div></details><details class="faq-item"><summary>Is my data safe?</summary><div class="faq-a">Email + password registration, with passwords stored as bcrypt hashes (never plaintext). All API traffic is HTTPS encrypted. See the footer for the full privacy policy.</div></details><details class="faq-item"><summary>Can I upload my own music?</summary><div class="faq-a">The first version only allows selecting from the in-app library (lofi, jazz, rain sounds, royalty-free tracks). Self-upload is planned and will launch once licensing is handled.</div></details><details class="faq-item"><summary>What\'s a Charge Timer? How is it different from a regular Pomodoro?</summary><div class="faq-a">The Charge Timer is our take on the Pomodoro — not just a countdown, but framing each focus block as "recharging yourself". Same time structure (25 min focus + 5 min break), but the visuals and design are built around energy rising rather than tasks completed.</div></details><details class="faq-item"><summary>How does pairing work? Do I need to know the other person?</summary><div class="faq-a">No prior connection needed. The system automatically matches you with another citizen currently charging in the same mode. You share a timer, but there\'s no need to talk or turn on cameras — just quietly charging together. Pairing is always optional; solo mode is one tap away.</div></details><details class="faq-item"><summary>When does the Town Shop open?</summary><div class="faq-a">The shop is currently in development and will launch in an upcoming version. Coins you earn from focus sessions will be redeemable for furniture, scenes, and limited items. We will not clear any coins you\'ve already earned before launch.</div></details><details class="faq-item"><summary>How do I earn coins? Is it slow?</summary><div class="faq-a">You earn coins for every completed Charge Timer (25 min). Streak bonuses and successful pairings give extra rewards. The design goal is "collect naturally through normal use" — no need to grind hours every day.</div></details><details class="faq-item"><summary>Can I invite friends to focus together?</summary><div class="faq-a">Yes. Share your personal focus space link with a friend — they\'ll join as a visitor and count down with you silently, without disrupting your setup. Dedicated invite-to-pair is also in the roadmap.</div></details><details class="faq-item"><summary>What happens if I close the window mid-session?</summary><div class="faq-a">Your timer state is kept server-side. If you briefly close and reopen, the timer is still running. If you\'re gone too long, the system settles the session and records the time completed.</div></details><details class="faq-item"><summary>Do I need to stare at the screen the whole time?</summary><div class="faq-a">Not at all. Keep Low Battery Town in the background and let the music and timer run quietly — a quick glance now and then is enough. It\'s designed for companionship, not surveillance. You\'re charging whether or not you\'re looking at the screen.</div></details>',
+    'beta-title': 'Get Early Access',
+    'beta-desc': 'The town is still being built, but the first citizens are already waiting. Sign up to hear first whenever something new launches.',
+    'beta-perks': '<li>Priority access to Beta testing</li><li>Try features before public launch</li><li>Your feedback shapes the product</li>',
+    'feedback-title': '&#10022; Send Feedback',
+    'feedback-desc': 'Wish lists, bug reports, or just saying hi — all welcome. Leave your email and we\'ll reply personally (within 1–2 business days).',
+    'cta-title': 'Ready to <em>move in</em>?',
+    'cta-sub': 'Completely free. 30-second signup. Works in your browser. No download needed.',
+    'cta-note': 'Beta sign-ups open now &middot; Reserve your spot'
+  }
+};
+
+function applyLang(lang) {
+  CURRENT_LANG = lang;
+  // data-zh / data-en simple text swaps
+  document.querySelectorAll('[data-zh][data-en]').forEach(function(el) {
+    var val = el.dataset[lang];
+    if (!val) return;
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      el.placeholder = val;
+    } else if (el.tagName === 'A' || el.tagName === 'SPAN' || el.tagName === 'BUTTON') {
+      el.innerHTML = val;
+    } else {
+      el.innerHTML = val;
+    }
+  });
+  // i18n keyed elements
+  var map = I18N[lang];
+  Object.keys(map).forEach(function(key) {
+    var el = document.getElementById(key);
+    if (el) {
+      el.innerHTML = map[key];
+      // Injected HTML may contain .rv elements — make them visible immediately
+      el.querySelectorAll('.rv,.rvl,.rvr').forEach(function(c) { c.classList.add('in-view'); });
+    }
+  });
+  // lang button active state
+  document.getElementById('lang-zh').classList.toggle('active', lang === 'zh');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  // Update beta signup link by language
+  var betaLink = document.getElementById('beta-signup-link');
+  if (betaLink) betaLink.href = betaLink.getAttribute('data-' + lang + '-href') || betaLink.href;
+  localStorage.setItem('lbt-lang', lang);
+}
+
+function setLang(lang) { applyLang(lang); }
+
+(function initLang() {
+  var saved = localStorage.getItem('lbt-lang');
+  if (saved === 'en') applyLang('en');
+})();
+
+// ── MUSIC TOGGLE ──
+var bgmPlaying = false;
+var bgmEl = document.getElementById('bgm');
+bgmEl.volume = 0.35;
+function toggleMusic() {
+  var btn = document.getElementById('music-btn');
+  if (bgmPlaying) {
+    bgmEl.pause();
+    bgmPlaying = false;
+    btn.textContent = '\u266A';
+    btn.style.opacity = '0.5';
+  } else {
+    bgmEl.play().then(function() {
+      bgmPlaying = true;
+      btn.textContent = '\u266B';
+      btn.style.opacity = '1';
+    }).catch(function() {});
+  }
+}
+// Autoplay attempt on first user interaction
+var autoplayDone = false;
+function tryAutoplay() {
+  if (autoplayDone) return;
+  autoplayDone = true;
+  bgmEl.play().then(function() {
+    bgmPlaying = true;
+    var btn = document.getElementById('music-btn');
+    btn.textContent = '\u266B';
+    btn.style.opacity = '1';
+  }).catch(function() {});
+}
+document.addEventListener('click', tryAutoplay, { once: true });
+document.addEventListener('keydown', tryAutoplay, { once: true });
+
+(function () {
+  'use strict';
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Page transition
+  gsap.to('#transition', {
+    opacity: 0, duration: 1.4, ease: 'power2.out',
+    onComplete() { document.getElementById('transition').style.display = 'none'; heroIn(); }
+  });
+
+  // Custom cursor
+  const cur = document.getElementById('cur');
+  const ring = document.getElementById('cur-ring');
+  const glow = document.getElementById('cur-glow');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+    glow.style.left = mx + 'px'; glow.style.top = my + 'px';
+  });
+  (function trackRing() {
+    rx += (mx - rx) * 0.13; ry += (my - ry) * 0.13;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(trackRing);
+  })();
+  document.querySelectorAll('a, button, .feat, .faq-item summary').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cur.style.width = '20px'; cur.style.height = '20px'; cur.style.opacity = '.6';
+      ring.style.width = '56px'; ring.style.height = '56px';
+      ring.style.borderColor = 'rgba(233,167,110,0.7)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cur.style.width = '10px'; cur.style.height = '10px'; cur.style.opacity = '1';
+      ring.style.width = '36px'; ring.style.height = '36px';
+      ring.style.borderColor = 'rgba(233,167,110,0.4)';
+    });
+  });
+
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 60); }, { passive: true });
+
+  // Stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 140; i++) {
+    const s = document.createElement('div');
+    const sz = Math.random() < 0.75 ? 1 : 1.5;
+    Object.assign(s.style, {
+      position: 'absolute', width: sz + 'px', height: sz + 'px', borderRadius: '50%',
+      background: `rgba(232,227,216,${0.25 + Math.random() * 0.55})`,
+      left: Math.random() * 100 + '%', top: Math.random() * 55 + '%',
+      animation: `glow-pulse ${2 + Math.random() * 4}s ease-in-out infinite`,
+      animationDelay: Math.random() * 5 + 's'
+    });
+    starsEl.appendChild(s);
+  }
+
+  // Particles
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const PCOLS = ['rgba(233,167,110,','rgba(224,124,138,','rgba(82,205,196,','rgba(139,124,248,'];
+  class P {
+    reset() {
+      this.x = Math.random() * W; this.y = H + 8;
+      this.vy = -(0.15 + Math.random() * 0.45); this.vx = (Math.random() - 0.5) * 0.25;
+      this.r = 0.8 + Math.random() * 1.8; this.a = 0;
+      this.ma = 0.15 + Math.random() * 0.35;
+      this.c = PCOLS[Math.floor(Math.random() * PCOLS.length)];
+      this.life = 0; this.ml = 180 + Math.random() * 280;
+    }
+    constructor() { this.reset(); this.y = Math.random() * H; this.life = Math.random() * this.ml | 0; }
+    step() {
+      this.x += this.vx; this.y += this.vy; this.life++;
+      const t = this.life / this.ml;
+      this.a = t < 0.2 ? (t / 0.2) * this.ma : t > 0.75 ? ((1 - t) / 0.25) * this.ma : this.ma;
+      if (this.life > this.ml || this.y < -8) this.reset();
+    }
+    draw() {
+      ctx.save(); ctx.globalAlpha = this.a;
+      ctx.shadowBlur = 8; ctx.shadowColor = this.c + '0.5)';
+      ctx.fillStyle = this.c + this.a + ')';
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
+  }
+  const pts = Array.from({ length: 90 }, () => new P());
+  (function tick() { ctx.clearRect(0, 0, W, H); pts.forEach(p => { p.step(); p.draw(); }); requestAnimationFrame(tick); })();
+
+  // Hero entrance
+  function heroIn() {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.to('#h-tag',        { opacity: 1, y: 0, duration: .8  }, .15)
+      .to('#h-title',      { opacity: 1, y: 0, duration: 1   }, .40)
+      .to('#h-desc',       { opacity: 1, y: 0, duration: .8  }, .70)
+      .to('#h-btns',       { opacity: 1, y: 0, duration: .7  }, .95)
+      .to('#h-meta',       { opacity: 1, duration: .6        }, 1.15)
+      .to('#h-live',       { opacity: 1, duration: .6        }, 1.35)
+      .to('#battery-side', { opacity: 1, duration: 1.2       }, .35)
+      .to('#online-strip', { opacity: 1, duration: 1         }, 1.4)
+      .to('#scroll-cue',   { opacity: 1, duration: .6        }, 1.9);
+  }
+
+  // Battery counter
+  let pct = 12;
+  const pctEl = document.getElementById('bat-pct');
+  setInterval(() => { pct = pct >= 82 ? 12 : pct + 1; pctEl.textContent = pct + '%'; }, 65);
+
+  // Scroll reveals
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } });
+  }, { threshold: 0.05, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('.rv,.rvl,.rvr').forEach(el => obs.observe(el));
+  // Immediately reveal elements already in viewport on first load
+  requestAnimationFrame(function() {
+    document.querySelectorAll('.rv,.rvl,.rvr').forEach(function(el) {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('in-view');
+    });
+  });
+
+  // Parallax
+  gsap.to('.hero-copy', { y: -55, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('.city-l1', { y: 18, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('.city-l2', { y: 10, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  // Glowing window canvas
+  (function initWinGlow() {
+    var wc = document.getElementById('win-canvas');
+    if (!wc) return;
+    var wctx = wc.getContext('2d');
+    var windows = [
+      {x:0.062,y:0.52,w:0.014,h:0.055,c:'rgba(233,167,110,',b:1.8},
+      {x:0.092,y:0.44,w:0.014,h:0.055,c:'rgba(82,205,196,',b:2.1},
+      {x:0.141,y:0.36,w:0.016,h:0.06,c:'rgba(233,167,110,',b:1.5},
+      {x:0.168,y:0.36,w:0.016,h:0.06,c:'rgba(233,167,110,',b:2.4},
+      {x:0.285,y:0.27,w:0.018,h:0.065,c:'rgba(233,167,110,',b:1.7},
+      {x:0.315,y:0.27,w:0.018,h:0.065,c:'rgba(224,124,138,',b:2.0},
+      {x:0.285,y:0.37,w:0.018,h:0.065,c:'rgba(82,205,196,',b:1.3},
+      {x:0.315,y:0.37,w:0.018,h:0.065,c:'rgba(233,167,110,',b:2.2},
+      {x:0.505,y:0.29,w:0.018,h:0.065,c:'rgba(233,167,110,',b:1.6},
+      {x:0.535,y:0.29,w:0.018,h:0.065,c:'rgba(233,167,110,',b:2.3},
+      {x:0.505,y:0.40,w:0.018,h:0.065,c:'rgba(82,205,196,',b:1.9},
+      {x:0.535,y:0.40,w:0.018,h:0.065,c:'rgba(224,124,138,',b:1.4},
+      {x:0.706,y:0.31,w:0.016,h:0.06,c:'rgba(233,167,110,',b:2.1},
+      {x:0.734,y:0.31,w:0.016,h:0.06,c:'rgba(82,205,196,',b:1.5},
+      {x:0.706,y:0.42,w:0.016,h:0.06,c:'rgba(233,167,110,',b:1.8},
+      {x:0.870,y:0.33,w:0.016,h:0.06,c:'rgba(233,167,110,',b:2.0},
+      {x:0.896,y:0.33,w:0.016,h:0.06,c:'rgba(224,124,138,',b:1.6},
+    ];
+    windows.forEach(function(w) { w.phase = Math.random() * Math.PI * 2; w.speed = 0.3 + Math.random() * 0.5; });
+    var WW, WH;
+    function resizeWin() { WW = wc.width = wc.offsetWidth; WH = wc.height = wc.offsetHeight; }
+    resizeWin();
+    window.addEventListener('resize', resizeWin);
+    var t0 = performance.now();
+    function drawWin(now) {
+      wctx.clearRect(0, 0, WW, WH);
+      var t = (now - t0) / 1000;
+      windows.forEach(function(w) {
+        var alpha = 0.22 + 0.18 * Math.sin(t * w.speed + w.phase);
+        var gx = w.x * WW, gy = w.y * WH, gw = w.w * WW, gh = w.h * WH;
+        // glow
+        var grad = wctx.createRadialGradient(gx+gw/2, gy+gh/2, 0, gx+gw/2, gy+gh/2, gw*w.b);
+        grad.addColorStop(0, w.c + (alpha*1.4).toFixed(3) + ')');
+        grad.addColorStop(1, w.c + '0)');
+        wctx.fillStyle = grad;
+        wctx.fillRect(gx - gw*w.b, gy - gh*w.b, gw*(1+2*w.b), gh*(1+2*w.b));
+        // core
+        wctx.fillStyle = w.c + Math.min(alpha*2.2, 0.85).toFixed(3) + ')';
+        wctx.fillRect(gx, gy, gw, gh);
+      });
+      requestAnimationFrame(drawWin);
+    }
+    requestAnimationFrame(drawWin);
+  })();
+
+  // Stat counters
+  const statObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.querySelectorAll('[data-target]').forEach(el => {
+        const end = parseInt(el.dataset.target, 10);
+        const dur = 1800, t0 = performance.now();
+        const fmt = n => n >= 1000 ? n.toLocaleString() : String(n);
+        (function run(now) {
+          const p = Math.min((now - t0) / dur, 1);
+          el.textContent = fmt(Math.round((1 - Math.pow(1 - p, 3)) * end));
+          if (p < 1) requestAnimationFrame(run);
+        })(performance.now());
+      });
+      statObs.unobserve(e.target);
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.live-stats').forEach(el => statObs.observe(el));
+
+  // Terminal feed
+  const termBody = document.getElementById('term-body');
+  [
+    { delay: 3200,  html: '<span class="t-warm">老王</span> <span class="t-dim">joined &middot; thesis mode &middot; 50:00</span>' },
+    { delay: 6800,  html: '<span class="t-rose">NEW</span> <span class="t-warm">Rin</span> <span class="t-dim">reached 10-day streak &middot;</span> <span class="t-teal">badge unlocked</span>' },
+    { delay: 10500, html: '<span class="t-warm">Simon</span> <span class="t-dim">started charging &middot; paired with</span> <span class="t-teal">曉芸</span>' },
+  ].forEach(({ delay, html }) => {
+    setTimeout(() => {
+      const ln = document.createElement('span');
+      ln.className = 'tl'; ln.style.opacity = '0'; ln.innerHTML = html;
+      termBody.insertBefore(ln, termBody.lastElementChild);
+      gsap.to(ln, { opacity: 1, duration: .5, ease: 'power2.out' });
+    }, delay);
+  });
+
+  // Feedback category toggle
+  document.querySelectorAll('.feedback-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.feedback-cat').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Feedback form
+  const form = document.getElementById('feedback-form');
+  const statusEl = document.getElementById('feedback-status');
+  const successEl = document.getElementById('feedback-success');
+  if (form) {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const msg = document.getElementById('feedback-body').value.trim();
+      if (!msg) { statusEl.textContent = '請填寫內容'; return; }
+      const cat = (document.querySelector('.feedback-cat.active') || {}).dataset?.cat || '建議';
+      const email = document.getElementById('feedback-contact').value.trim();
+      statusEl.textContent = '傳送中...';
+      try {
+        const _ep = ['focustown1314', 'gmail.com'].join('\u0040');
+        const body = '【類別】' + cat + '\n\n【內容】\n' + msg + '\n\n【聯絡 Email】' + (email || '未填寫');
+        const mailto = 'mailto:' + _ep
+          + '?subject=' + encodeURIComponent('[LBT 意見回饋] ' + cat)
+          + '&body=' + encodeURIComponent(body);
+        window.location.href = mailto;
+        form.style.display = 'none';
+        successEl.style.display = 'block';
+      } catch(err) { statusEl.textContent = '請直接寄信至 focustown1314 [at] gmail.com'; }
+    });
+  }
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+})();
+</script>
 </body>
 </html>
