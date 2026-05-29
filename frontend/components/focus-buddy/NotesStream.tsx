@@ -6,14 +6,6 @@ import { useTranslations } from "next-intl";
 import { notesApi, type NoteWithShare } from "@/lib/api/endpoints";
 
 const AUTOSAVE_DEBOUNCE_MS = 1000;
-const DEFAULT_TEMPLATE = `# 共同筆記 · 寫作番茄場
-( 兩人都可以編輯 )
-
-## 約定
-- 25 min 寫，5 min 休息對唸
-- 不開鏡頭只開麥
-- 完成就互按 ✦
-`;
 
 interface NotesStreamProps {
   matchId: string;
@@ -91,7 +83,7 @@ export function NotesStream({ matchId }: NotesStreamProps) {
           setBody(e.target.value);
           scheduleSave(e.target.value);
         }}
-        placeholder={DEFAULT_TEMPLATE}
+        placeholder={t("placeholderTemplate")}
         style={{
           flex: 1,
           background: "rgba(7,4,26,0.5)",

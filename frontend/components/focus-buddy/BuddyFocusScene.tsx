@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
 import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { StarField } from "@/components/pixel/StarField";
@@ -40,6 +42,7 @@ export function BuddyFocusScene({
   partnerKey,
   partnerName = "Aria",
 }: BuddyFocusSceneProps) {
+  const t = useTranslations("focus.buddy.statusMini");
   const user = useAuthStore((s) => s.user);
   const meAvatar = characterKeyToAvatar(user?.character_key);
   const buddyAvatar = characterKeyToAvatar(partnerKey ?? "kai");
@@ -104,11 +107,11 @@ export function BuddyFocusScene({
           />
           <SharedTimer matchId={matchId} />
           <StatusMini
-            meProfile={{ name: meName, avatar: meAvatar, task: "寫 PRD" }}
+            meProfile={{ name: meName, avatar: meAvatar, task: t("demoMeTask") }}
             buddyProfile={{
               name: partnerName,
               avatar: buddyAvatar,
-              task: "寫小說第七章",
+              task: t("demoBuddyTask"),
             }}
           />
           <SharedAgenda matchId={matchId} />

@@ -26,6 +26,7 @@ function ResetPasswordInner() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const t = useTranslations("auth.reset");
+  const tv = useTranslations("auth.validation");
 
   if (!token) {
     return (
@@ -71,7 +72,7 @@ function ResetPasswordInner() {
       const fieldErrors: FormErrors = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path[0] as keyof ResetPasswordInput;
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+        if (key && !fieldErrors[key]) fieldErrors[key] = tv(issue.message);
       }
       setErrors(fieldErrors);
       return;

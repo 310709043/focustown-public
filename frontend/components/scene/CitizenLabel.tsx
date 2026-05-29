@@ -91,7 +91,7 @@ export function CitizenLabel({
       {prefix ? `${prefix} ` : null}
       {displayName}
       <span style={{ color: status.color, marginLeft: 4 }}>
-        · {status.label}
+        · {t(`statuses.${status.code}`)}
       </span>
       {activity ? (
         <span style={{ color: "var(--a3)", marginLeft: 4 }}>

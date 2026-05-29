@@ -146,7 +146,13 @@
       "addPlaceholder": "Add a task, press Enter…",
       "addCta": "Add",
       "editAria": "Edit task",
-      "deleteAria": "Delete task"
+      "deleteAria": "Delete task",
+      "seed": {
+        "t1": "Draft chapter three",
+        "t2": "Reply to 3 emails",
+        "t3": "Organize references",
+        "t4": "10-minute stretch"
+      }
     },
     "floatingPlayer": {
       "header": "NOW PLAYING",
@@ -193,7 +199,8 @@
       "roomLine": "ROOM #{code} · {minutes} min"
     },
     "headerCard": {
-      "sameTagLabel": "SAME TAG"
+      "sameTagLabel": "SAME TAG",
+      "demoTagWriting": "#writing"
     },
     "sharedTimer": {
       "headerFocus": "SHARED FOCUS · #{num}",
@@ -209,7 +216,9 @@
       "cooperationHint": "Both of you press start to begin · leaving early may interrupt your streak"
     },
     "statusMini": {
-      "header": "STATUS"
+      "header": "STATUS",
+      "demoMeTask": "Writing a PRD",
+      "demoBuddyTask": "Writing novel chapter 7"
     },
     "agenda": {
       "header": "SHARED AGENDA",
@@ -250,6 +259,7 @@
     },
     "notes": {
       "defaultTitle": "Shared notes",
+      "placeholderTemplate": "# Shared notes · Writing pomodoro\n( Both of you can edit )\n\n## Ground rules\n- Write 25 min, recap together for 5 min\n- Mics on, cameras off\n- Tap ✦ for each other when done\n",
       "partnerEditing": "Buddy is editing line {line}",
       "autoSaved": "Auto-saved · synced",
       "autoSavedIdle": "Not yet edited"

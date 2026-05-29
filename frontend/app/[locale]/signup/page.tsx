@@ -38,6 +38,7 @@ function SignUpForm() {
   const t = useTranslations("auth.signup");
   const tSplash = useTranslations("auth.splash");
   const tErr = useTranslations("common.errors");
+  const tv = useTranslations("auth.validation");
   const errorText =
     error === AUTH_ERROR_NETWORK_FAILURE || error === AUTH_ERROR_UNKNOWN
       ? tErr(error)
@@ -55,7 +56,7 @@ function SignUpForm() {
       const fieldErrors: FormErrors = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path[0] as keyof SignUpInput;
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+        if (key && !fieldErrors[key]) fieldErrors[key] = tv(issue.message);
       }
       setErrors(fieldErrors);
       return;

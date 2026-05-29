@@ -262,6 +262,14 @@
   },
   "scene": {
     "youSuffix": "you",
+    "statuses": {
+      "focus": "Focusing",
+      "break": "Short break",
+      "deep": "Deep work",
+      "read": "Reading",
+      "create": "Creating",
+      "afk": "Away"
+    },
     "billboardEmptyLine1": "No completed sessions yet",
     "billboardEmptyLine2": "Be the first to focus ✦",
     "broadcastTitle": "TOWN BROADCAST",

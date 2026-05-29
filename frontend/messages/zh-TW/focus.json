@@ -146,7 +146,13 @@
       "addPlaceholder": "新增任務，按 Enter…",
       "addCta": "新增",
       "editAria": "編輯任務",
-      "deleteAria": "刪除任務"
+      "deleteAria": "刪除任務",
+      "seed": {
+        "t1": "完成第三章草稿",
+        "t2": "回覆 3 封信",
+        "t3": "整理參考資料",
+        "t4": "10 分鐘伸展"
+      }
     },
     "floatingPlayer": {
       "header": "NOW PLAYING",
@@ -193,7 +199,8 @@
       "roomLine": "ROOM #{code} · {minutes} min"
     },
     "headerCard": {
-      "sameTagLabel": "SAME TAG"
+      "sameTagLabel": "SAME TAG",
+      "demoTagWriting": "#寫作"
     },
     "sharedTimer": {
       "headerFocus": "SHARED FOCUS · #{num}",
@@ -209,7 +216,9 @@
       "cooperationHint": "兩人都按下開始才會計時 · 中途離開可能影響本次連續紀錄"
     },
     "statusMini": {
-      "header": "即時狀態"
+      "header": "即時狀態",
+      "demoMeTask": "寫 PRD",
+      "demoBuddyTask": "寫小說第七章"
     },
     "agenda": {
       "header": "共同行程",
@@ -250,6 +259,7 @@
     },
     "notes": {
       "defaultTitle": "共同筆記",
+      "placeholderTemplate": "# 共同筆記 · 寫作番茄場\n( 兩人都可以編輯 )\n\n## 約定\n- 25 min 寫，5 min 休息對唸\n- 不開鏡頭只開麥\n- 完成就互按 ✦\n",
       "partnerEditing": "夥伴正在編輯第 {line} 行",
       "autoSaved": "自動儲存 · 已同步",
       "autoSavedIdle": "尚未編輯"

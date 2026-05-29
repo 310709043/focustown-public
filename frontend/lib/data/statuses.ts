@@ -1,7 +1,11 @@
 /**
- * 6 NPC / user statuses. Each status is a (emoji + Chinese label + colour) tuple.
+ * 6 NPC / user statuses. Each status is a (code + emoji + colour) tuple.
  * Used by Pedestrians + CarsLane to render the head-bubble; later swappable
  * with real presence data from a WebSocket subscription.
+ *
+ * The human-readable label is NOT stored here — it is resolved at render
+ * time from the `town.scene.statuses.{code}` next-intl namespace so the
+ * bubble follows the active locale instead of leaking the seed's Chinese.
  */
 
 export type StatusCode = "focus" | "break" | "deep" | "read" | "create" | "afk";
@@ -9,17 +13,16 @@ export type StatusCode = "focus" | "break" | "deep" | "read" | "create" | "afk";
 export type Status = {
   code: StatusCode;
   emoji: string;
-  label: string;
   color: string;
 };
 
 export const STATUSES: Status[] = [
-  { code: "focus",  emoji: "🍅", label: "專注中",  color: "var(--teal)" },
-  { code: "break",  emoji: "☕", label: "短休息",  color: "var(--amber)" },
-  { code: "deep",   emoji: "🔮", label: "深度",    color: "var(--a1)" },
-  { code: "read",   emoji: "📚", label: "讀書中",  color: "var(--pink)" },
-  { code: "create", emoji: "🎨", label: "創作中",  color: "#fb923c" },
-  { code: "afk",    emoji: "🚶", label: "離開中",  color: "#94a3b8" },
+  { code: "focus",  emoji: "🍅", color: "var(--teal)" },
+  { code: "break",  emoji: "☕", color: "var(--amber)" },
+  { code: "deep",   emoji: "🔮", color: "var(--a1)" },
+  { code: "read",   emoji: "📚", color: "var(--pink)" },
+  { code: "create", emoji: "🎨", color: "#fb923c" },
+  { code: "afk",    emoji: "🚶", color: "#94a3b8" },
 ];
 
 export function statusByCode(code: StatusCode): Status {

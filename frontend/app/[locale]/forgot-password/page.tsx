@@ -16,13 +16,15 @@ export default function ForgotPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const t = useTranslations("auth.forgot");
+  const tv = useTranslations("auth.validation");
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     const parsed = forgotPasswordSchema.safeParse({ email });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? t("invalidEmail"));
+      const code = parsed.error.issues[0]?.message;
+      setError(code ? tv(code) : t("invalidEmail"));
       return;
     }
     setSubmitting(true);

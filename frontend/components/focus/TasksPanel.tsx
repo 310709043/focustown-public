@@ -11,13 +11,6 @@ interface Task {
   done: boolean;
 }
 
-const SEED: ReadonlyArray<Task> = [
-  { id: "t1", label: "完成第三章草稿", done: false },
-  { id: "t2", label: "回覆 3 封信", done: true },
-  { id: "t3", label: "整理參考資料", done: false },
-  { id: "t4", label: "10 分鐘伸展", done: false },
-];
-
 /**
  * Solo-room tasks list. The today's-goal strip (formerly inside
  * SessionInsight) now lives in this panel's header per the QA round-1
@@ -26,7 +19,12 @@ const SEED: ReadonlyArray<Task> = [
  */
 export function TasksPanel() {
   const t = useTranslations("focus.solo.tasksPanel");
-  const [tasks, setTasks] = useState<Task[]>([...SEED]);
+  const [tasks, setTasks] = useState<Task[]>(() => [
+    { id: "t1", label: t("seed.t1"), done: false },
+    { id: "t2", label: t("seed.t2"), done: true },
+    { id: "t3", label: t("seed.t3"), done: false },
+    { id: "t4", label: t("seed.t4"), done: false },
+  ]);
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");

@@ -262,6 +262,14 @@
   },
   "scene": {
     "youSuffix": "您",
+    "statuses": {
+      "focus": "專注中",
+      "break": "短休息",
+      "deep": "深度",
+      "read": "讀書中",
+      "create": "創作中",
+      "afk": "離開中"
+    },
     "billboardEmptyLine1": "還沒有完成記錄",
     "billboardEmptyLine2": "第一個專注的就是您 ✦",
     "broadcastTitle": "鎮民廣播 · TOWN BROADCAST",

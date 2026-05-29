@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import type { AvatarDef } from "@/lib/pixel/sprites/avatars";
 
@@ -17,7 +19,7 @@ interface BuddyCardProps {
   /** Tomato count + minutes — defaults to per-side seed when omitted. */
   tomatoes?: number;
   minutes?: number;
-  /** Tags rendered as `<Pill>` chips. Reference shows `#寫作`, `#lofi`. */
+  /** Tags rendered as `<Pill>` chips. Defaults to a localized demo pair. */
   tags?: ReadonlyArray<string>;
 }
 
@@ -31,8 +33,10 @@ export function BuddyCard({
   side,
   tomatoes,
   minutes,
-  tags = ["#寫作", "#lofi"],
+  tags,
 }: BuddyCardProps) {
+  const t = useTranslations("focus.buddy.headerCard");
+  const resolvedTags = tags ?? [t("demoTagWriting"), "#lofi"];
   const isMe = side === "me";
   const color = isMe ? "var(--accent)" : "var(--accent-2)";
   const defaultTomatoes = isMe ? 9 : 11;
@@ -87,7 +91,7 @@ export function BuddyCard({
         {profile.avatar.name} · LV.{profile.level}
       </div>
       <div style={{ display: "flex", gap: 4, marginTop: 2 }}>
-        {tags.map((tag) => (
+        {resolvedTags.map((tag) => (
           <Pill key={tag}>{tag}</Pill>
         ))}
       </div>
