@@ -87,7 +87,7 @@ if [[ -z "$RHP_ID" || "$RHP_ID" == "None" ]]; then
     },
     "ContentSecurityPolicy": {
       "Override": true,
-      "ContentSecurityPolicy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://lowbatterytown.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://lowbatterytown.com"
+      "ContentSecurityPolicy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://lowbatterytown.com https://dev.lowbatterytown.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://lowbatterytown.com"
     }
   },
   "CustomHeadersConfig": {

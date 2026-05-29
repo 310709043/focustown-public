@@ -155,8 +155,12 @@ aws cloudfront create-invalidation \
 Security headers (CSP, X-Frame-Options, HSTS, Permissions-Policy) are
 served by CloudFront's response-headers policy, not by per-file rules.
 See `create-distribution.sh` for the policy definition. The CSP's
-`connect-src` whitelists `https://lowbatterytown.com` so the feedback
-form's `fetch()` is allowed.
+`connect-src` whitelists `https://lowbatterytown.com` (prod) and
+`https://dev.lowbatterytown.com` (temporary bridge until prod backend
+exists) so the feedback form's `fetch()` is allowed; `style-src` /
+`font-src` whitelist Google Fonts. Updating the live policy requires
+`scripts/update-landing-csp.sh` (CloudFront response-headers policies are
+not file-synced like the bucket).
 
 ## Cost (estimate, low-traffic launch)
 

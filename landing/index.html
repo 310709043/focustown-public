@@ -1253,9 +1253,9 @@
           </div>
         </form>
         <div class="feedback-success" id="feedback-success" style="display:none">
-          <div class="ico">&#10022;</div>
-          <h4>收到了！</h4>
-          <p>謝謝你的回饋。如果你留了 email，我們會在 1–2 個工作天內回覆。</p>
+          <div class="ico">&#9993;</div>
+          <h4>正在開啟郵件…</h4>
+          <p>我們已幫你把回饋填好，請在跳出的郵件視窗按下「寄出」即可送達。若沒有自動開啟，請確認裝置已設定郵件軟體。</p>
         </div>
       </div>
     </div>
@@ -1683,49 +1683,28 @@ document.addEventListener('keydown', tryAutoplay, { once: true });
     });
   });
 
-  // Feedback form → backend (POST /api/v1/feedback): stores the
-  // submission in Postgres and fires an admin email via SES. Override
-  // the endpoint with window.__FEEDBACK_API__ to test against a local
-  // or dev backend. Payload matches FeedbackSubmitRequest.
-  const FEEDBACK_API = window.__FEEDBACK_API__ || 'https://lowbatterytown.com/api/v1/feedback';
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Feedback form
   const form = document.getElementById('feedback-form');
   const statusEl = document.getElementById('feedback-status');
   const successEl = document.getElementById('feedback-success');
   if (form) {
-    const submitBtn = form.querySelector('button[type="submit"]');
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (submitBtn && submitBtn.disabled) return;
       const msg = document.getElementById('feedback-body').value.trim();
       if (!msg) { statusEl.textContent = '請填寫內容'; return; }
-      if (msg.length > 4000) { statusEl.textContent = '內容過長（上限 4000 字）'; return; }
       const cat = (document.querySelector('.feedback-cat.active') || {}).dataset?.cat || '建議';
       const email = document.getElementById('feedback-contact').value.trim();
-      if (email && !EMAIL_RE.test(email)) { statusEl.textContent = '請輸入有效的 Email，或留空。'; return; }
-      // Locale is required by the backend (2–8 chars); derive from <html lang>.
-      const locale = (document.documentElement.lang || 'zh').slice(0, 2);
-      const payload = { category: cat, body: msg, locale, app_version: 'landing', context: { source: 'landing-page' } };
-      if (email) payload.contact_email = email;
-      statusEl.textContent = '傳送中...';
-      if (submitBtn) submitBtn.disabled = true;
+      statusEl.textContent = '正在開啟郵件…';
       try {
-        const res = await fetch(FEEDBACK_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-          statusEl.textContent = '送出失敗，請稍後再試。';
-          if (submitBtn) submitBtn.disabled = false;
-          return;
-        }
+        const _ep = ['focustown1314', 'gmail.com'].join('\u0040');
+        const body = '【類別】' + cat + '\n\n【內容】\n' + msg + '\n\n【聯絡 Email】' + (email || '未填寫');
+        const mailto = 'mailto:' + _ep
+          + '?subject=' + encodeURIComponent('[LBT 意見回饋] ' + cat)
+          + '&body=' + encodeURIComponent(body);
+        window.location.href = mailto;
         form.style.display = 'none';
         successEl.style.display = 'block';
-      } catch (err) {
-        statusEl.textContent = '網路錯誤，請稍後再試。';
-        if (submitBtn) submitBtn.disabled = false;
-      }
+      } catch(err) { statusEl.textContent = '請直接寄信至 focustown1314 [at] gmail.com'; }
     });
   }
 
