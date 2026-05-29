@@ -50,6 +50,7 @@ jobs:
           AWS_APP_ACCESS_KEY_ID: ${{ secrets.AWS_APP_ACCESS_KEY_ID }}
           AWS_APP_SECRET_ACCESS_KEY: ${{ secrets.AWS_APP_SECRET_ACCESS_KEY }}
           SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL }}
+          ADMIN_FEEDBACK_EMAIL: ${{ vars.ADMIN_FEEDBACK_EMAIL }}
           S3_BUCKET: ${{ vars.S3_BUCKET }}
           TERMS_CURRENT_VERSION: ${{ vars.TERMS_CURRENT_VERSION }}
         run: |

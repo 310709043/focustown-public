@@ -40,6 +40,19 @@ services:
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TTL_MIN=${JWT_ACCESS_TTL_MIN:-30}
       - JWT_REFRESH_TTL_DAYS=${JWT_REFRESH_TTL_DAYS:-14}
+      # Notifier / SES. Defaults keep dev on the log notifier (no email
+      # sent). To test real delivery locally, set NOTIFIER_BACKEND=ses plus
+      # SES_FROM_EMAIL, ADMIN_FEEDBACK_EMAIL and AWS creds in .env — the
+      # container has no ~/.aws, so boto3 reads these env vars directly.
+      - NOTIFIER_BACKEND=${NOTIFIER_BACKEND:-log}
+      - SES_FROM_EMAIL=${SES_FROM_EMAIL:-}
+      - SES_ENDPOINT_URL=${SES_ENDPOINT_URL:-}
+      - ADMIN_FEEDBACK_EMAIL=${ADMIN_FEEDBACK_EMAIL:-}
+      - ADMIN_USER_IDS=${ADMIN_USER_IDS:-}
+      - AWS_REGION=${AWS_REGION:-ap-northeast-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-}
     depends_on:
       postgres:
         condition: service_healthy

@@ -168,7 +168,8 @@
       "doneCta": "好",
       "successHeading": "已收到，謝謝你",
       "successBody": "我們會把每一則訊息看完。再見囉！",
-      "failureGeneric": "送出失敗，請稍後再試。"
+      "failureGeneric": "送出失敗，請稍後再試。",
+      "tooLongError": "內容過長（上限 4000 字），請精簡後再送出。"
     },
     "support": {
       "title": "技術支援 / SUPPORT",

@@ -168,7 +168,8 @@
       "doneCta": "Done",
       "successHeading": "Got it — thank you",
       "successBody": "We read every message. Catch you later!",
-      "failureGeneric": "Could not send right now. Please try again later."
+      "failureGeneric": "Could not send right now. Please try again later.",
+      "tooLongError": "Message is too long (max 4000 characters). Please shorten it."
     },
     "support": {
       "title": "SUPPORT",

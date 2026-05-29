@@ -10,6 +10,13 @@ const CATEGORIES: FeedbackCategory[] = ["bug", "suggestion", "praise", "other"];
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "dev";
 
+// Mirror the backend's FeedbackSubmitRequest limits (schemas.py): the
+// composed `[subject] body` string maps to the `body` field, capped at
+// 4000 chars. Cap the subject too so the headline can't eat the whole
+// budget. Enforcing here avoids a silent 422 the user can't act on.
+const BODY_MAX = 4000;
+const SUBJECT_MAX = 120;
+
 type Submitted =
   | { kind: "idle" }
   | { kind: "submitting" }
@@ -37,10 +44,14 @@ export function FeedbackView({ onClose }: FeedbackViewProps) {
       setState({ kind: "err", msg: t("emptyError") });
       return;
     }
-    setState({ kind: "submitting" });
     const composed = subject.trim()
       ? `[${subject.trim()}] ${body.trim()}`
       : body.trim();
+    if (composed.length > BODY_MAX) {
+      setState({ kind: "err", msg: t("tooLongError") });
+      return;
+    }
+    setState({ kind: "submitting" });
     try {
       await feedbackApi.submit({
         category,
@@ -169,6 +180,7 @@ export function FeedbackView({ onClose }: FeedbackViewProps) {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder={t("subjectPlaceholder")}
+            maxLength={SUBJECT_MAX}
             className="pixel-panel font-body"
             style={{
               padding: "8px 10px",
@@ -187,6 +199,7 @@ export function FeedbackView({ onClose }: FeedbackViewProps) {
             onChange={(e) => setBody(e.target.value)}
             placeholder={t("bodyPlaceholder")}
             rows={5}
+            maxLength={BODY_MAX}
             className="pixel-panel font-body"
             style={{
               padding: "10px",
@@ -198,6 +211,14 @@ export function FeedbackView({ onClose }: FeedbackViewProps) {
               resize: "vertical",
             }}
           />
+          <div
+            className="text-[10px] tabular-nums self-end"
+            style={{
+              color: body.length >= BODY_MAX ? "var(--coral)" : "var(--ink-mute)",
+            }}
+          >
+            {body.length} / {BODY_MAX}
+          </div>
 
           <label className="text-[10px] text-muted tracking-wide">
             {t("contactLabel")}

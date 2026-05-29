@@ -18,6 +18,13 @@ const CATEGORIES: FeedbackCategory[] = ["bug", "suggestion", "praise", "other"];
 const APP_VERSION =
   process.env.NEXT_PUBLIC_APP_VERSION ?? "dev";
 
+// Mirror the backend's FeedbackSubmitRequest limits (schemas.py): the
+// composed `[subject] body` string maps to the `body` field, capped at
+// 4000 chars. Enforce here so the user sees a clear message instead of a
+// silent 422.
+const BODY_MAX = 4000;
+const SUBJECT_MAX = 120;
+
 /**
  * Feedback modal — compact form (category radio + subject + body +
  * optional contact email). Submits to /api/v1/feedback. The subject is
@@ -57,10 +64,14 @@ export function FeedbackModal({
       setState({ kind: "err", msg: t("emptyError") });
       return;
     }
-    setState({ kind: "submitting" });
     const composed = subject.trim()
       ? `[${subject.trim()}] ${body.trim()}`
       : body.trim();
+    if (composed.length > BODY_MAX) {
+      setState({ kind: "err", msg: t("tooLongError") });
+      return;
+    }
+    setState({ kind: "submitting" });
     try {
       await feedbackApi.submit({
         category,
@@ -148,6 +159,7 @@ export function FeedbackModal({
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder={t("subjectPlaceholder")}
+            maxLength={SUBJECT_MAX}
             className="pixel-panel font-body"
             style={{
               padding: "8px 10px",
@@ -166,6 +178,7 @@ export function FeedbackModal({
             onChange={(e) => setBody(e.target.value)}
             placeholder={t("bodyPlaceholder")}
             rows={5}
+            maxLength={BODY_MAX}
             className="pixel-panel font-body"
             style={{
               padding: "10px",
@@ -177,6 +190,14 @@ export function FeedbackModal({
               resize: "vertical",
             }}
           />
+          <div
+            className="text-[10px] tabular-nums self-end"
+            style={{
+              color: body.length >= BODY_MAX ? "var(--coral)" : "var(--ink-mute)",
+            }}
+          >
+            {body.length} / {BODY_MAX}
+          </div>
 
           <label className="text-[10px] text-muted tracking-wide">
             {t("contactLabel")}
