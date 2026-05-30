@@ -117,6 +117,19 @@ RRRRRRRRRR.
   palette: { R: "#dc2626", G: "#15803d", W: "#fca5a5" },
 };
 
+/* Battery — replaces the tomato in the pomodoro progress strip and timer header. */
+export const BATTERY: SpriteDef = {
+  sprite: `
+BBBBBBBBBB..
+B........BBB
+B.GGGGGG.BBB
+B.GGGGGG.BBB
+B........BBB
+BBBBBBBBBB..
+`,
+  palette: { B: "#94a3b8", G: "#4ade80" },
+};
+
 /* Trophy — achievements modal icon. */
 export const TROPHY: SpriteDef = {
   sprite: `
