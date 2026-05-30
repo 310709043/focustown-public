@@ -33,13 +33,11 @@ export function Logo({ scale = 1, glow = true, className }: Props) {
         height: "auto",
         maxWidth: "100%",
         aspectRatio: `${ASPECT}`,
-        // Single soft halo. The previous double drop-shadow stacked a
-        // 6px peach + 12px rose blur which, at HUD scale (≤ 60 px
-        // tall), bled across the pixel art and smeared the wordmark
-        // into an indecipherable blob. One short glow keeps the warm
-        // atmosphere without eroding readability.
+        // screen blend mode removes the black background of the PNG,
+        // leaving only the coloured pixel art visible against the dark bg.
+        mixBlendMode: "screen",
         filter: glow
-          ? "drop-shadow(0 0 4px rgba(233,167,110,0.45))"
+          ? "drop-shadow(0 0 6px rgba(233,167,110,0.5))"
           : "none",
       }}
     />
