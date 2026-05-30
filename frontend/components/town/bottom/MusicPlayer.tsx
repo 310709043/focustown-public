@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { ConnectedShared } from "@/components/audio/ConnectedShared";
 import { DisconnectedPersonal } from "@/components/audio/DisconnectedPersonal";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { Link } from "@/i18n/routing";
 import { NOTE } from "@/lib/pixel/sprites/props";
 import {
   personalRadioApi,
@@ -39,7 +38,6 @@ import { EQViz } from "./EQViz";
  */
 export function MusicPlayer() {
   const t = useTranslations("town.bottom.musicPlayer");
-  const tNav = useTranslations("town.nav");
   // Pure controller — every state lives in the global audio store, the
   // single <audio> element lives in <GlobalAudioMount/> in the locale
   // layout. We never touch the DOM here.
@@ -53,7 +51,6 @@ export function MusicPlayer() {
   const toggleMute = useAudioStore((s) => s.toggleMute);
   const unlock = useAudioStore((s) => s.unlock);
   const next = useAudioStore((s) => s.next);
-  const prev = useAudioStore((s) => s.prev);
 
   const stationCity = useStationStore((s) => s.city);
   const hydrateCity = useStationStore((s) => s.hydrateCity);
@@ -161,20 +158,10 @@ export function MusicPlayer() {
       <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
         <button
           type="button"
-          aria-label={t("prevAria")}
-          data-testid="music-prev"
-          className="pixel-btn"
-          style={{ padding: "4px 6px", fontSize: 10 }}
-          onClick={prev}
-        >
-          ◀◀
-        </button>
-        <button
-          type="button"
           aria-label={muted ? t("unmuteAria") : t("muteAria")}
           data-testid="music-mute"
           className="pixel-btn primary"
-          style={{ padding: "4px 8px", fontSize: 10 }}
+          style={{ flex: 1, padding: "4px 8px", fontSize: 10 }}
           onClick={onMuteClick}
         >
           {muted ? "🔇" : "🔊"}
@@ -189,27 +176,6 @@ export function MusicPlayer() {
         >
           ▶▶
         </button>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <Link
-          href="/town/library"
-          data-testid="music-library-link"
-          className="font-silkscreen"
-          style={{
-            marginLeft: "auto",
-            fontSize: 9,
-            padding: "2px 8px",
-            border: "1px solid var(--panel-stroke)",
-            color: "var(--accent-1)",
-            background: "transparent",
-            letterSpacing: "0.1em",
-            textDecoration: "none",
-            cursor: "pointer",
-          }}
-        >
-          {tNav("library")}
-        </Link>
       </div>
 
       {/* The <audio> element + onEnded handler live in

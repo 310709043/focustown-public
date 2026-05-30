@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { PixelDigits } from "@/components/pixel/PixelDigits";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { TOMATO } from "@/lib/pixel/sprites/props";
+import { BATTERY } from "@/lib/pixel/sprites/props";
 import { useTimer } from "@/lib/hooks/useTimer";
 import {
   PREF_FOCUS_DURATION_MINUTES,
@@ -132,7 +132,7 @@ export function FocusTimer() {
             letterSpacing: "0.2em",
           }}
         >
-          <PixelSprite sprite={TOMATO.sprite} palette={TOMATO.palette} scale={1.4} />
+          <PixelSprite sprite={BATTERY.sprite} palette={BATTERY.palette} scale={1.4} />
           <span>
             {mode === "focus"
               ? t("modeFocus", { num: tomatoCount + 1 })

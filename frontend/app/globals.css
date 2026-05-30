@@ -357,6 +357,11 @@ body {
   93%, 99%      { opacity: 0.2; }
 }
 
+@keyframes batteryPulse {
+  0%, 100% { filter: drop-shadow(0 0 1px rgba(34, 197, 94, 0.35)); }
+  50%       { filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.9)); }
+}
+
 @keyframes flicker {
   0%, 100%      { opacity: 1; }
   93.5%         { opacity: 0.92; }
