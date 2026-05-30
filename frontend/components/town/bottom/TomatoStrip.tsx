@@ -1,37 +1,36 @@
 "use client";
 
-import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { BATTERY } from "@/lib/pixel/sprites/props";
-
-const DIM_PALETTE = { B: "#1e2a35", G: "#1a2e1a" } as const;
-
 interface BatteryStripProps {
-  /** Number of "lit" batteries — indices < count get the full palette + pulse. */
+  /** Number of "lit" batteries — indices < count glow green. */
   count: number;
-  /** Total chips in the strip (default 8 per reference). */
+  /** Total chips in the strip (default 8). */
   max?: number;
-  /** Sprite scale; 1.4 for solo BigTimer / 1.3 for town BottomHUD. */
+  /** Scale multiplier — affects chip size. Default 1. */
   scale?: number;
-  /** Inter-chip gap. */
+  /** Inter-chip gap in px. */
   gap?: number;
 }
 
 /**
- * Horizontal strip of `max` battery chips. The first `count` use the full
- * `BATTERY` palette with a charging-pulse animation; the rest use a dim
- * palette so the strip reads as "progress today vs the daily goal" at a glance.
+ * Horizontal strip of CSS battery chips.
  *
- * Shared primitive — consumed by:
- *  - Page 4 `BigTimer` (scale 1.4, max 8)
- *  - C1 `FocusTimer` (bottom HUD variant, scale 1.3, max 8)
- *  - Phase E `SharedTimer` (scale 1.3, max 8)
+ * Each chip is a small rectangle (body + terminal nub) rendered in CSS.
+ * Active chips glow green with a pulse animation; inactive chips are a
+ * barely-visible dark outline so the strip reads as "progress today".
+ *
+ * Shared primitive consumed by BigTimer, FocusTimer, SharedTimer.
  */
 export function BatteryStrip({
   count,
   max = 8,
-  scale = 1.4,
-  gap = 4,
+  scale = 1,
+  gap = 3,
 }: BatteryStripProps) {
+  const w = Math.round(14 * scale);
+  const h = Math.round(8 * scale);
+  const nubW = Math.round(2 * scale);
+  const nubH = Math.round(4 * scale);
+
   return (
     <div
       data-testid="battery-strip"
@@ -42,19 +41,35 @@ export function BatteryStrip({
         return (
           <div
             key={i}
-            style={
-              active
-                ? {
-                    animation: "batteryPulse 1.8s ease-in-out infinite",
-                    animationDelay: `${i * 0.12}s`,
-                  }
-                : undefined
-            }
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              animation: active
+                ? `batteryPulse 1.8s ease-in-out infinite`
+                : undefined,
+              animationDelay: active ? `${i * 0.14}s` : undefined,
+            }}
           >
-            <PixelSprite
-              sprite={BATTERY.sprite}
-              palette={active ? BATTERY.palette : DIM_PALETTE}
-              scale={scale}
+            {/* Battery body */}
+            <div
+              style={{
+                width: w,
+                height: h,
+                border: `1px solid ${active ? "#4ade80" : "#1e3025"}`,
+                background: active
+                  ? "linear-gradient(135deg, rgba(74,222,128,0.45) 0%, rgba(34,197,94,0.25) 100%)"
+                  : "rgba(255,255,255,0.03)",
+                boxSizing: "border-box",
+              }}
+            />
+            {/* Terminal nub */}
+            <div
+              style={{
+                width: nubW,
+                height: nubH,
+                background: active ? "#4ade80" : "#1e3025",
+                flexShrink: 0,
+              }}
             />
           </div>
         );

@@ -4,8 +4,6 @@ import { useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 import { PixelDigits } from "@/components/pixel/PixelDigits";
-import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { BATTERY } from "@/lib/pixel/sprites/props";
 import { useTimer } from "@/lib/hooks/useTimer";
 import {
   PREF_FOCUS_DURATION_MINUTES,
@@ -132,7 +130,11 @@ export function FocusTimer() {
             letterSpacing: "0.2em",
           }}
         >
-          <PixelSprite sprite={BATTERY.sprite} palette={BATTERY.palette} scale={1.4} />
+          {/* CSS battery icon — clearer than pixel sprite at small sizes */}
+          <span style={{ display: "inline-flex", alignItems: "center" }}>
+            <span style={{ width: 14, height: 8, border: "1px solid var(--accent)", background: "rgba(74,222,128,0.3)", display: "inline-block", boxSizing: "border-box" }} />
+            <span style={{ width: 2, height: 4, background: "var(--accent)", display: "inline-block" }} />
+          </span>
           <span>
             {mode === "focus"
               ? t("modeFocus", { num: tomatoCount + 1 })
