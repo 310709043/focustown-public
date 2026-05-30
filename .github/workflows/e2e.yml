@@ -93,6 +93,7 @@ jobs:
           PLAYWRIGHT_REAL_STACK: "1"
           PLAYWRIGHT_BASE_URL: "http://localhost:3000"
           PLAYWRIGHT_API_BASE_URL: "http://localhost:8000"
+          PLAYWRIGHT_NO_SERVER: "1"
         run: |
           pnpm playwright test e2e/match-to-room-full-flow.spec.ts \
             --reporter=line,html
