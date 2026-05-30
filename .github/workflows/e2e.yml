@@ -78,6 +78,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
 
+      - name: Fix node_modules ownership (docker compose runs as root)
+        run: sudo chown -R "$USER:$USER" frontend/node_modules || true
+
       - name: Install Playwright + browsers
         working-directory: frontend
         run: |
