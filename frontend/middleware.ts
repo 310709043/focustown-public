@@ -90,9 +90,10 @@ function buildCsp(nonce: string): string {
     // would let an injected script open a WebSocket to attacker-controlled
     // hosts and exfiltrate chat/tokens. The legitimate WS target is already
     // included via apiOriginWs (derived from NEXT_PUBLIC_API_BASE_URL).
-    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs}`,
-    // App spawns no Web Workers and no PWA manifest; lock those vectors.
-    "worker-src 'self'",
+    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} https://cdn.jsdelivr.net https://storage.googleapis.com`,
+    // MediaPipe WASM needs wasm-unsafe-eval; worker-src blob: for its threads.
+    `script-src ${scriptSrc} 'wasm-unsafe-eval'`,
+    "worker-src 'self' blob:",
     "manifest-src 'self'",
     "frame-src 'none'",
     "frame-ancestors 'none'",
@@ -165,6 +166,10 @@ export function middleware(request: NextRequest) {
 
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("x-csp-nonce", nonce);
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(self), microphone=(), geolocation=(), interest-cohort=()",
+  );
   return response;
 }
 
