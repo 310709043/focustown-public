@@ -2,6 +2,7 @@
 
 import { BackdropLayer } from "@/components/focus/ambient/BackdropLayer";
 import { BigTimer } from "@/components/focus/BigTimer";
+import { CatSupervisor } from "@/components/focus/CatSupervisor";
 import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
 import { FocusTopBar } from "@/components/focus/FocusTopBar";
 import { SessionInsight } from "@/components/focus/SessionInsight";
@@ -122,6 +123,7 @@ export function SoloFocusScene() {
           <BigTimer partnerId={null} />
           <TasksPanel />
           <SessionInsight />
+          <CatSupervisor />
         </div>
       </div>
 
