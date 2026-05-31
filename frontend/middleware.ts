@@ -81,7 +81,9 @@ function buildCsp(nonce: string): string {
 
   const directives = [
     "default-src 'self'",
-    `script-src ${scriptSrc}`,
+    // MediaPipe WASM needs wasm-unsafe-eval. CSP ignores duplicate directives
+    // (only the first wins), so this must be the single script-src entry.
+    `script-src ${scriptSrc} 'wasm-unsafe-eval'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     `media-src 'self' ${mediaOrigins} blob:`,
@@ -91,8 +93,7 @@ function buildCsp(nonce: string): string {
     // hosts and exfiltrate chat/tokens. The legitimate WS target is already
     // included via apiOriginWs (derived from NEXT_PUBLIC_API_BASE_URL).
     `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} https://cdn.jsdelivr.net https://storage.googleapis.com`,
-    // MediaPipe WASM needs wasm-unsafe-eval; worker-src blob: for its threads.
-    `script-src ${scriptSrc} 'wasm-unsafe-eval'`,
+    // MediaPipe worker threads need blob: URLs.
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     "frame-src 'none'",
