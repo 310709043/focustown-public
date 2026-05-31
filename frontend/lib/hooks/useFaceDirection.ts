@@ -106,10 +106,7 @@ export function useFaceDirection(): UseFaceDirectionResult {
 
     let stream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: 320, height: 240 },
-        audio: false,
-      });
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "NotAllowedError") {
         setCamState("denied");
@@ -152,7 +149,6 @@ export function useFaceDirection(): UseFaceDirectionResult {
           baseOptions: {
             modelAssetPath:
               "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
-            delegate: "GPU",
           },
           runningMode: "VIDEO",
           minDetectionConfidence: 0.5,
