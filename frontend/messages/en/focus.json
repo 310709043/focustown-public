@@ -264,5 +264,19 @@
       "autoSaved": "Auto-saved · synced",
       "autoSavedIdle": "Not yet edited"
     }
+  },
+  "catSupervisor": {
+    "title": "CAT SUPERVISOR",
+    "enableCta": "Enable",
+    "disableCta": "Disable",
+    "enableAria": "Enable cat supervisor (requires webcam)",
+    "disableAria": "Disable cat supervisor",
+    "statusIdle": "Off",
+    "statusRequesting": "Requesting...",
+    "statusLoading": "Loading...",
+    "statusActive": "Watching you",
+    "statusDenied": "Camera denied",
+    "statusUnsupported": "Not supported",
+    "privacy": "Video stays on your device"
   }
 }

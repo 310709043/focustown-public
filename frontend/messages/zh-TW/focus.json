@@ -264,5 +264,19 @@
       "autoSaved": "自動儲存 · 已同步",
       "autoSavedIdle": "尚未編輯"
     }
+  },
+  "catSupervisor": {
+    "title": "貓咪監督員",
+    "enableCta": "開啟",
+    "disableCta": "關閉",
+    "enableAria": "開啟貓咪監督員（需要鏡頭權限）",
+    "disableAria": "關閉貓咪監督員",
+    "statusIdle": "未啟動",
+    "statusRequesting": "請求權限中...",
+    "statusLoading": "載入中...",
+    "statusActive": "盯著你呢",
+    "statusDenied": "鏡頭已拒絕",
+    "statusUnsupported": "不支援",
+    "privacy": "影像僅在本機處理"
   }
 }
