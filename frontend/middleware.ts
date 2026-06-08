@@ -75,9 +75,11 @@ function buildCsp(nonce: string): string {
   // — the nonce source would suppress `'unsafe-inline'` per CSP spec and break
   // every prerendered route). See the file header for the full rationale.
   // Dev keeps the nonce so any dynamic page can opt-in via headers().
+  // cdn.jsdelivr.net is needed for MediaPipe's FilesetResolver which injects
+  // <script> tags pointing to the WASM loader at that CDN origin.
   const scriptSrc = isProd
-    ? `'self' 'unsafe-inline'`
-    : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline'`;
+    ? `'self' 'unsafe-inline' https://cdn.jsdelivr.net`
+    : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net`;
 
   const directives = [
     "default-src 'self'",
