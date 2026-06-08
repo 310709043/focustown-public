@@ -111,6 +111,7 @@ export function useFaceDirection(): UseFaceDirectionResult {
       if (err instanceof Error && err.name === "NotAllowedError") {
         setCamState("denied");
       } else {
+        console.error("[CatSupervisor] getUserMedia failed:", err);
         setCamState("unsupported");
       }
       enabledRef.current = false;
@@ -156,7 +157,8 @@ export function useFaceDirection(): UseFaceDirectionResult {
         // Cast through unknown to our local detection interface.
         detectorRef.current = detector as unknown as typeof detectorRef.current;
       }
-    } catch {
+    } catch (err: unknown) {
+      console.error("[CatSupervisor] MediaPipe load failed:", err);
       setCamState("unsupported");
       enabledRef.current = false;
       stream.getTracks().forEach((t) => t.stop());
