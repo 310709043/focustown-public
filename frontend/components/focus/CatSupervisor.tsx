@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { PixelCat } from "@/components/focus/PixelCat";
 import { useCatMood } from "@/lib/hooks/useCatMood";
-import type { CatMood } from "@/lib/hooks/useCatMood";
+import type { CatMood, SupervisionStats } from "@/lib/hooks/useCatMood";
 import { useFaceDirection } from "@/lib/hooks/useFaceDirection";
 
 const SMALL_SIZE = 80;
@@ -81,6 +81,110 @@ function SpeechBubble({ text, size = "small" }: { text: string; size?: "small" |
   );
 }
 
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function scoreColor(score: number): string {
+  if (score >= 80) return "var(--accent)";
+  if (score >= 50) return "#facc15";
+  return "#f87171";
+}
+
+function StatsPanel({
+  stats,
+  nudgeCount,
+  t,
+}: {
+  stats: SupervisionStats;
+  nudgeCount: number;
+  t: ReturnType<typeof import("next-intl").useTranslations>;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 5,
+        padding: "6px 0",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      {/* Focus score bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span
+          className="font-silkscreen"
+          style={{ fontSize: 7, color: "var(--ink-dim)", width: 46, flexShrink: 0 }}
+        >
+          {t("statsFocus")}
+        </span>
+        <div
+          style={{
+            flex: 1,
+            height: 4,
+            background: "rgba(255,255,255,0.08)",
+            borderRadius: 2,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${stats.focusScore}%`,
+              background: scoreColor(stats.focusScore),
+              borderRadius: 2,
+              transition: "width 1s linear, background 0.5s",
+            }}
+          />
+        </div>
+        <span
+          className="font-silkscreen"
+          style={{
+            fontSize: 8,
+            color: scoreColor(stats.focusScore),
+            width: 24,
+            textAlign: "right",
+            flexShrink: 0,
+          }}
+        >
+          {stats.focusScore}%
+        </span>
+      </div>
+
+      {/* Stats grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "3px 8px",
+        }}
+      >
+        <StatItem label={t("statsSession")} value={formatTime(stats.sessionSeconds)} />
+        <StatItem label={t("statsFocused")} value={formatTime(stats.focusedSeconds)} color="var(--accent)" />
+        <StatItem label={t("statsDistracted")} value={formatTime(stats.distractedSeconds)} color="#facc15" />
+        <StatItem label={t("statsDistractions")} value={String(stats.distractionCount)} color={stats.distractionCount > 5 ? "#f87171" : "var(--ink-dim)"} />
+        <StatItem label={t("statsBestStreak")} value={formatTime(stats.longestStreak)} color="var(--accent)" />
+        <StatItem label={t("statsNudges")} value={String(nudgeCount)} color={nudgeCount >= 3 ? "#f87171" : "var(--ink-dim)"} />
+      </div>
+    </div>
+  );
+}
+
+function StatItem({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span className="font-silkscreen" style={{ fontSize: 6, color: "var(--ink-dim)", letterSpacing: "0.05em" }}>
+        {label}
+      </span>
+      <span className="font-silkscreen" style={{ fontSize: 7, color: color ?? "var(--ink-mute)" }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
 /**
  * The supervision cat.
  *
@@ -95,7 +199,7 @@ export function CatSupervisor() {
   const t = useTranslations("focus.catSupervisor");
   const { camState, direction, videoRef, enable, disable } =
     useFaceDirection();
-  const { mood, isSupervising, speechKey, focusStreak, nudgeCount, dismiss } =
+  const { mood, isSupervising, speechKey, focusStreak, nudgeCount, stats, dismiss } =
     useCatMood(direction, camState);
 
   const isActive = camState === "active";
@@ -230,20 +334,8 @@ export function CatSupervisor() {
           </div>
         )}
 
-        {/* Nudge counter — shows how many times the cat has popped out */}
-        {nudgeCount > 0 && (
-          <div
-            className="font-silkscreen"
-            style={{
-              fontSize: 7,
-              color: nudgeCount >= 3 ? "#f87171" : "var(--ink-dim)",
-              textAlign: "center",
-              letterSpacing: "0.1em",
-            }}
-          >
-            {t("nudgeCount", { count: nudgeCount })}
-          </div>
-        )}
+        {/* Live stats panel */}
+        {stats.sessionSeconds > 0 && <StatsPanel stats={stats} nudgeCount={nudgeCount} t={t} />}
 
         {/* Controls */}
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>

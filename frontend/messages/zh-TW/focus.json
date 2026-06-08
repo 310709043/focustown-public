@@ -292,6 +292,13 @@
     "bubbleWatching": "我在看著你！",
     "bubbleWelcomeBack": "歡迎回來～繼續加油！",
     "bubbleSleep": "Zzz...",
-    "nudgeCount": "已提醒 {count} 次"
+    "nudgeCount": "已提醒 {count} 次",
+    "statsFocus": "專注度",
+    "statsSession": "監督時間",
+    "statsFocused": "專注",
+    "statsDistracted": "分心",
+    "statsDistractions": "分心次數",
+    "statsBestStreak": "最長專注",
+    "statsNudges": "提醒次數"
   }
 }

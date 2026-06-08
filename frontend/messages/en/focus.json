@@ -292,6 +292,13 @@
     "bubbleWatching": "I'm watching you!",
     "bubbleWelcomeBack": "Welcome back~ Keep it up!",
     "bubbleSleep": "Zzz...",
-    "nudgeCount": "Nudged {count}x"
+    "nudgeCount": "Nudged {count}x",
+    "statsFocus": "FOCUS",
+    "statsSession": "SESSION",
+    "statsFocused": "FOCUSED",
+    "statsDistracted": "DISTRACTED",
+    "statsDistractions": "DISTRACTIONS",
+    "statsBestStreak": "BEST STREAK",
+    "statsNudges": "NUDGES"
   }
 }

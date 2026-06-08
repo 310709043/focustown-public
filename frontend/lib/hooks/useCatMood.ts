@@ -6,17 +6,36 @@ import type { CamState, FaceDirection } from "./useFaceDirection";
 
 export type CatMood = "idle" | "happy" | "watching" | "suspicious" | "angry" | "sleeping";
 
+/** Accumulated session analytics — updated every second while active. */
+export interface SupervisionStats {
+  /** Total seconds the cam has been active this session. */
+  sessionSeconds: number;
+  /** Total seconds the user was focused (looking at screen). */
+  focusedSeconds: number;
+  /** Total seconds the user was distracted (looking away). */
+  distractedSeconds: number;
+  /** Number of distraction episodes (each time mood escalates past watching). */
+  distractionCount: number;
+  /** Longest unbroken focus streak in seconds. */
+  longestStreak: number;
+  /** Focus quality 0-100 (focusedSeconds / sessionSeconds * 100). */
+  focusScore: number;
+  /** Timeline of mood events for the session. */
+  timeline: ReadonlyArray<TimelineEvent>;
+}
+
+export interface TimelineEvent {
+  ts: number; // seconds since session start
+  mood: CatMood;
+}
+
 export interface UseCatMoodResult {
   mood: CatMood;
-  /** Cat has popped out of the panel to scold the user. */
   isSupervising: boolean;
-  /** Current speech bubble key (i18n), or null if silent. */
   speechKey: string | null;
-  /** How many consecutive seconds the user has been focused. */
   focusStreak: number;
-  /** How many times the cat has popped out this session. */
   nudgeCount: number;
-  /** Dismiss the supervise overlay (cat retreats). */
+  stats: SupervisionStats;
   dismiss: () => void;
 }
 
@@ -56,45 +75,37 @@ function pickRandom<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * Synthesise a short cat-like chirp via Web Audio API.
- * Runs entirely in-browser with no audio file dependency.
- */
 function playMeow(): void {
   try {
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-
     osc.type = "sine";
-    // Rising-then-falling pitch mimics a short meow.
     osc.frequency.setValueAtTime(600, ctx.currentTime);
     osc.frequency.linearRampToValueAtTime(900, ctx.currentTime + 0.08);
     osc.frequency.linearRampToValueAtTime(500, ctx.currentTime + 0.2);
-
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25);
-
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.25);
-
-    // Clean up after playback.
     osc.onended = () => void ctx.close();
   } catch {
-    // AudioContext not available — fail silently.
+    // AudioContext not available.
   }
 }
 
-/**
- * Derives the cat's mood and supervise state from face direction + cam state.
- *
- * Mood ladder (while looking away):
- *   watching → suspicious (3s, panel-only) → angry (8s, pop-out) → sleeping (30s)
- *
- * Looking back at any point resets to happy + auto-dismisses overlay.
- */
+const EMPTY_STATS: SupervisionStats = {
+  sessionSeconds: 0,
+  focusedSeconds: 0,
+  distractedSeconds: 0,
+  distractionCount: 0,
+  longestStreak: 0,
+  focusScore: 0,
+  timeline: [],
+};
+
 export function useCatMood(
   direction: FaceDirection,
   camState: CamState,
@@ -104,12 +115,25 @@ export function useCatMood(
   const [speechKey, setSpeechKey] = useState<string | null>(null);
   const [focusStreak, setFocusStreak] = useState(0);
   const [nudgeCount, setNudgeCount] = useState(0);
+  const [stats, setStats] = useState<SupervisionStats>(EMPTY_STATS);
 
   const awaySecondsRef = useRef(0);
   const focusSecondsRef = useRef(0);
   const lastHappyBubbleRef = useRef(0);
   const speechTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevMoodRef = useRef<CatMood>("idle");
+
+  // Accumulated stats refs (mutated every tick, flushed to state periodically).
+  const sessionSecondsRef = useRef(0);
+  const focusedSecondsRef = useRef(0);
+  const distractedSecondsRef = useRef(0);
+  const distractionCountRef = useRef(0);
+  const longestStreakRef = useRef(0);
+  const timelineRef = useRef<TimelineEvent[]>([]);
+  const inDistractionRef = useRef(false);
+  const lastRecordedMoodRef = useRef<CatMood>("idle");
+  // Flush counter — update React state every N ticks to avoid re-render spam.
+  const flushCounterRef = useRef(0);
 
   const showSpeech = useCallback((key: string, durationMs = 3000) => {
     if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
@@ -132,20 +156,53 @@ export function useCatMood(
       awaySecondsRef.current = 0;
       focusSecondsRef.current = 0;
       setFocusStreak(0);
+      // Don't reset stats — keep them visible after disabling so user can review.
       return;
     }
 
+    // Reset stats on fresh activation.
+    sessionSecondsRef.current = 0;
+    focusedSecondsRef.current = 0;
+    distractedSecondsRef.current = 0;
+    distractionCountRef.current = 0;
+    longestStreakRef.current = 0;
+    timelineRef.current = [];
+    inDistractionRef.current = false;
+    lastRecordedMoodRef.current = "watching";
+    flushCounterRef.current = 0;
+    setStats(EMPTY_STATS);
+    setNudgeCount(0);
+
     const id = setInterval(() => {
       const isFocused = FOCUSED_DIRECTIONS.has(direction);
+      sessionSecondsRef.current += 1;
 
+      // --- Stats accumulation ---
+      if (isFocused) {
+        focusedSecondsRef.current += 1;
+        if (inDistractionRef.current) {
+          inDistractionRef.current = false;
+        }
+      } else {
+        distractedSecondsRef.current += 1;
+        if (!inDistractionRef.current) {
+          inDistractionRef.current = true;
+          distractionCountRef.current += 1;
+        }
+      }
+
+      // Track longest streak.
+      if (focusSecondsRef.current + (isFocused ? 1 : 0) > longestStreakRef.current && isFocused) {
+        longestStreakRef.current = focusSecondsRef.current + 1;
+      }
+
+      // --- Mood logic (unchanged) ---
       if (isFocused) {
         awaySecondsRef.current = 0;
         focusSecondsRef.current += 1;
         setFocusStreak(focusSecondsRef.current);
 
         const prev = prevMoodRef.current;
-
-        // Just came back from being away — show relief + auto-dismiss overlay.
         if (prev === "angry" || prev === "suspicious" || prev === "sleeping") {
           setIsSupervising(false);
           showSpeech("bubbleWelcomeBack", 3000);
@@ -154,7 +211,6 @@ export function useCatMood(
         setMood("happy");
         prevMoodRef.current = "happy";
 
-        // Periodic encouraging bubbles.
         if (
           focusSecondsRef.current - lastHappyBubbleRef.current >=
           HAPPY_BUBBLE_INTERVAL
@@ -177,7 +233,6 @@ export function useCatMood(
           }
           prevMoodRef.current = "sleeping";
         } else if (away >= ANGRY_AFTER) {
-          // Pop-out: cat runs to centre of screen.
           if (prevMoodRef.current !== "angry") {
             setNudgeCount((n) => n + 1);
             showSpeech(pickRandom(ANGRY_SPEECH_KEYS), 4000);
@@ -187,7 +242,6 @@ export function useCatMood(
           setIsSupervising(true);
           prevMoodRef.current = "angry";
         } else if (away >= SUSPICIOUS_AFTER) {
-          // Panel-only warning: tilt + speech bubble.
           if (prevMoodRef.current !== "suspicious") {
             showSpeech(pickRandom(SUSPICIOUS_SPEECH_KEYS), 2500);
           }
@@ -198,12 +252,37 @@ export function useCatMood(
           prevMoodRef.current = "watching";
         }
       }
+
+      // --- Timeline recording (only on mood transitions) ---
+      const currentMood = prevMoodRef.current;
+      if (currentMood !== lastRecordedMoodRef.current) {
+        timelineRef.current = [
+          ...timelineRef.current,
+          { ts: sessionSecondsRef.current, mood: currentMood },
+        ];
+        lastRecordedMoodRef.current = currentMood;
+      }
+
+      // --- Flush stats to React state every 3 ticks ---
+      flushCounterRef.current += 1;
+      if (flushCounterRef.current >= 3) {
+        flushCounterRef.current = 0;
+        const total = sessionSecondsRef.current;
+        setStats({
+          sessionSeconds: total,
+          focusedSeconds: focusedSecondsRef.current,
+          distractedSeconds: distractedSecondsRef.current,
+          distractionCount: distractionCountRef.current,
+          longestStreak: longestStreakRef.current,
+          focusScore: total > 0 ? Math.round((focusedSecondsRef.current / total) * 100) : 0,
+          timeline: [...timelineRef.current],
+        });
+      }
     }, 1000);
 
     return () => clearInterval(id);
   }, [camState, direction, showSpeech]);
 
-  // Cleanup speech timeout on unmount.
   useEffect(
     () => () => {
       if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
@@ -211,5 +290,5 @@ export function useCatMood(
     [],
   );
 
-  return { mood, isSupervising, speechKey, focusStreak, nudgeCount, dismiss };
+  return { mood, isSupervising, speechKey, focusStreak, nudgeCount, stats, dismiss };
 }
