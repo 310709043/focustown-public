@@ -24,6 +24,8 @@ export type CamState =
 export interface UseFaceDirectionResult {
   camState: CamState;
   direction: FaceDirection;
+  /** Whether a face was detected in the most recent detection frame. */
+  faceDetected: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
   enable: () => Promise<void>;
   disable: () => void;
@@ -69,6 +71,7 @@ const DETECT_INTERVAL_MS = 200;
 export function useFaceDirection(): UseFaceDirectionResult {
   const [camState, setCamState] = useState<CamState>("idle");
   const [direction, setDirection] = useState<FaceDirection>("front");
+  const [faceDetected, setFaceDetected] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -188,7 +191,9 @@ export function useFaceDirection(): UseFaceDirectionResult {
         lastDetectRef.current = now;
         try {
           const result = detector.detectForVideo(vid, now);
-          if (result.detections.length > 0) {
+          const detected = result.detections.length > 0;
+          setFaceDetected(detected);
+          if (detected) {
             const bbox = result.detections[0].boundingBox;
             const cx = (bbox.originX + bbox.width / 2) / vid.videoWidth;
             const cy = (bbox.originY + bbox.height / 2) / vid.videoHeight;
@@ -208,5 +213,5 @@ export function useFaceDirection(): UseFaceDirectionResult {
   // Cleanup on unmount.
   useEffect(() => () => disable(), [disable]);
 
-  return { camState, direction, videoRef, enable, disable };
+  return { camState, direction, faceDetected, videoRef, enable, disable };
 }

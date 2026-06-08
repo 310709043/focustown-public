@@ -4,13 +4,12 @@ import { useTranslations } from "next-intl";
 
 import { PixelCat } from "@/components/focus/PixelCat";
 import { useCatMood } from "@/lib/hooks/useCatMood";
-import type { CatMood, SupervisionStats } from "@/lib/hooks/useCatMood";
+import type { CatMood } from "@/lib/hooks/useCatMood";
 import { useFaceDirection } from "@/lib/hooks/useFaceDirection";
 
 const SMALL_SIZE = 80;
 const BIG_SIZE = 200;
 
-/** CSS class for the cat wrapper per mood. Defined in globals.css. */
 const MOOD_ANIM_CLASS: Record<CatMood, string> = {
   idle: "",
   watching: "",
@@ -20,7 +19,6 @@ const MOOD_ANIM_CLASS: Record<CatMood, string> = {
   sleeping: "cat-sleep",
 };
 
-/** Dot colour per mood. */
 const MOOD_DOT: Record<CatMood, string> = {
   idle: "var(--ink-mute)",
   watching: "var(--accent-2)",
@@ -30,7 +28,6 @@ const MOOD_DOT: Record<CatMood, string> = {
   sleeping: "var(--ink-dim)",
 };
 
-/** Overlay border glow colour per nudge intensity. */
 function overlayGlow(nudgeCount: number): string {
   if (nudgeCount >= 3) return "rgba(248,113,113,0.5)";
   if (nudgeCount >= 2) return "rgba(250,204,21,0.4)";
@@ -55,15 +52,12 @@ function SpeechBubble({ text, size = "small" }: { text: string; size?: "small" |
         whiteSpace: "nowrap",
         pointerEvents: "none",
         zIndex: 10,
-        boxShadow: isLarge
-          ? "0 4px 16px rgba(0,0,0,0.35)"
-          : "0 2px 8px rgba(0,0,0,0.25)",
+        boxShadow: isLarge ? "0 4px 16px rgba(0,0,0,0.35)" : "0 2px 8px rgba(0,0,0,0.25)",
         letterSpacing: isLarge ? "0.08em" : "0.05em",
         marginBottom: isLarge ? 12 : undefined,
       }}
     >
       {text}
-      {/* Bubble tail */}
       <div
         style={{
           position: "absolute",
@@ -81,126 +75,21 @@ function SpeechBubble({ text, size = "small" }: { text: string; size?: "small" |
   );
 }
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-function scoreColor(score: number): string {
-  if (score >= 80) return "var(--accent)";
-  if (score >= 50) return "#facc15";
-  return "#f87171";
-}
-
-function StatsPanel({
-  stats,
-  nudgeCount,
-  t,
-}: {
-  stats: SupervisionStats;
-  nudgeCount: number;
-  t: ReturnType<typeof import("next-intl").useTranslations>;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 5,
-        padding: "6px 0",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-      }}
-    >
-      {/* Focus score bar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <span
-          className="font-silkscreen"
-          style={{ fontSize: 7, color: "var(--ink-dim)", width: 46, flexShrink: 0 }}
-        >
-          {t("statsFocus")}
-        </span>
-        <div
-          style={{
-            flex: 1,
-            height: 4,
-            background: "rgba(255,255,255,0.08)",
-            borderRadius: 2,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: `${stats.focusScore}%`,
-              background: scoreColor(stats.focusScore),
-              borderRadius: 2,
-              transition: "width 1s linear, background 0.5s",
-            }}
-          />
-        </div>
-        <span
-          className="font-silkscreen"
-          style={{
-            fontSize: 8,
-            color: scoreColor(stats.focusScore),
-            width: 24,
-            textAlign: "right",
-            flexShrink: 0,
-          }}
-        >
-          {stats.focusScore}%
-        </span>
-      </div>
-
-      {/* Stats grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "3px 8px",
-        }}
-      >
-        <StatItem label={t("statsSession")} value={formatTime(stats.sessionSeconds)} />
-        <StatItem label={t("statsFocused")} value={formatTime(stats.focusedSeconds)} color="var(--accent)" />
-        <StatItem label={t("statsDistracted")} value={formatTime(stats.distractedSeconds)} color="#facc15" />
-        <StatItem label={t("statsDistractions")} value={String(stats.distractionCount)} color={stats.distractionCount > 5 ? "#f87171" : "var(--ink-dim)"} />
-        <StatItem label={t("statsBestStreak")} value={formatTime(stats.longestStreak)} color="var(--accent)" />
-        <StatItem label={t("statsNudges")} value={String(nudgeCount)} color={nudgeCount >= 3 ? "#f87171" : "var(--ink-dim)"} />
-      </div>
-    </div>
-  );
-}
-
-function StatItem({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <span className="font-silkscreen" style={{ fontSize: 6, color: "var(--ink-dim)", letterSpacing: "0.05em" }}>
-        {label}
-      </span>
-      <span className="font-silkscreen" style={{ fontSize: 7, color: color ?? "var(--ink-mute)" }}>
-        {value}
-      </span>
-    </div>
-  );
-}
-
 /**
- * The supervision cat.
+ * Supervision cat.
  *
- * Behaviour ladder:
- *   idle → watching (breathe) → happy (bounce + encouragement)
- *   → suspicious (tilt + panel warning) → angry (POP OUT big overlay + meow)
- *   → sleeping (fade away, zzZ)
+ * Distraction trigger: window loses focus / tab hidden (user switched away).
+ * Presence detection:  MediaPipe face detection — sleeping when no face 20s.
  *
- * Looking back at the screen at any point auto-dismisses the overlay.
+ * Mood ladder (while window is hidden):
+ *   watching → suspicious (5s, panel) → angry (12s, big overlay + meow)
+ * Return to focus → auto-dismiss overlay + welcome back bubble.
  */
 export function CatSupervisor() {
   const t = useTranslations("focus.catSupervisor");
-  const { camState, direction, videoRef, enable, disable } =
-    useFaceDirection();
-  const { mood, isSupervising, speechKey, focusStreak, nudgeCount, stats, dismiss } =
-    useCatMood(direction, camState);
+  const { camState, faceDetected, videoRef, enable, disable } = useFaceDirection();
+  const { mood, isSupervising, speechKey, focusStreak, nudgeCount, dismiss } =
+    useCatMood(faceDetected, camState);
 
   const isActive = camState === "active";
   const isBusy = camState === "requesting" || camState === "loading";
@@ -218,64 +107,38 @@ export function CatSupervisor() {
 
   return (
     <>
-      {/* ---- Small panel in right rail ---- */}
+      {/* ---- Panel in right rail ---- */}
       <div
         data-testid="cat-supervisor"
         className="pixel-panel"
-        style={{
-          padding: 12,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
+        style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}
       >
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span
             className="font-silkscreen"
-            style={{
-              fontSize: 9,
-              color: "var(--accent-2)",
-              letterSpacing: "0.2em",
-            }}
+            style={{ fontSize: 9, color: "var(--accent-2)", letterSpacing: "0.2em" }}
           >
             {t("title")}
           </span>
-          <div
-            style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
-          >
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
             <span
               style={{
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: isActive
-                  ? MOOD_DOT[mood]
-                  : (MOOD_DOT[camState as CatMood] ?? "var(--ink-mute)"),
-                boxShadow:
-                  mood === "happy" ? "0 0 5px var(--accent)" : "none",
+                background: isActive ? MOOD_DOT[mood] : "var(--ink-mute)",
+                boxShadow: mood === "happy" ? "0 0 5px var(--accent)" : "none",
                 transition: "background 0.3s",
               }}
             />
-            <span
-              className="font-silkscreen"
-              style={{
-                fontSize: 8,
-                color: "var(--ink-mute)",
-              }}
-            >
+            <span className="font-silkscreen" style={{ fontSize: 8, color: "var(--ink-mute)" }}>
               {statusText[camState] ?? ""}
             </span>
           </div>
         </div>
 
-        {/* Cat (small, in-panel) — hidden when supervising overlay is active */}
+        {/* Cat */}
         <div
           style={{
             position: "relative",
@@ -288,22 +151,14 @@ export function CatSupervisor() {
           }}
         >
           {bubbleText && !isSupervising && <SpeechBubble text={bubbleText} />}
-
           <div className={isActive && !isSupervising ? MOOD_ANIM_CLASS[mood] : ""}>
             <PixelCat mood={isActive ? mood : "idle"} size={SMALL_SIZE} />
           </div>
         </div>
 
-        {/* Focus streak indicator */}
+        {/* Focus streak bar */}
         {isActive && focusStreak > 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "2px 0",
-            }}
-          >
+          <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "2px 0" }}>
             <div
               style={{
                 flex: 1,
@@ -317,40 +172,42 @@ export function CatSupervisor() {
                 style={{
                   height: "100%",
                   width: `${Math.min((focusStreak / 300) * 100, 100)}%`,
-                  background:
-                    "linear-gradient(90deg, var(--accent-2), var(--accent))",
+                  background: "linear-gradient(90deg, var(--accent-2), var(--accent))",
                   borderRadius: 2,
                   transition: "width 1s linear",
                 }}
               />
             </div>
-            <span
-              className="font-silkscreen"
-              style={{ fontSize: 7, color: "var(--ink-dim)" }}
-            >
-              {Math.floor(focusStreak / 60)}:
-              {String(focusStreak % 60).padStart(2, "0")}
+            <span className="font-silkscreen" style={{ fontSize: 7, color: "var(--ink-dim)" }}>
+              {Math.floor(focusStreak / 60)}:{String(focusStreak % 60).padStart(2, "0")}
             </span>
           </div>
         )}
 
-        {/* Live stats panel */}
-        {stats.sessionSeconds > 0 && <StatsPanel stats={stats} nudgeCount={nudgeCount} t={t} />}
+        {/* Nudge count */}
+        {nudgeCount > 0 && (
+          <div
+            className="font-silkscreen"
+            style={{
+              fontSize: 7,
+              color: nudgeCount >= 3 ? "#f87171" : "var(--ink-dim)",
+              textAlign: "center",
+              letterSpacing: "0.1em",
+            }}
+          >
+            {t("nudgeCount", { count: nudgeCount })}
+          </div>
+        )}
 
         {/* Controls */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 6 }}>
           {isActive ? (
             <button
               type="button"
               data-testid="cat-supervisor-disable"
               className="pixel-btn"
               aria-label={t("disableAria")}
-              style={{
-                flex: 1,
-                padding: "4px 8px",
-                fontSize: 9,
-                letterSpacing: "0.18em",
-              }}
+              style={{ flex: 1, padding: "4px 8px", fontSize: 9, letterSpacing: "0.18em" }}
               onClick={disable}
             >
               {t("disableCta")}
@@ -376,37 +233,25 @@ export function CatSupervisor() {
           )}
         </div>
 
-        {/* Privacy notice */}
+        {/* Privacy */}
         <div
           className="font-silkscreen"
-          style={{
-            fontSize: 7,
-            color: "var(--ink-dim)",
-            letterSpacing: "0.08em",
-            textAlign: "center",
-          }}
+          style={{ fontSize: 7, color: "var(--ink-dim)", letterSpacing: "0.08em", textAlign: "center" }}
         >
           {t("privacy")}
         </div>
 
-        {/* Hidden video for face detection */}
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           ref={videoRef}
           aria-hidden
           playsInline
           muted
-          style={{
-            position: "absolute",
-            width: 1,
-            height: 1,
-            opacity: 0,
-            pointerEvents: "none",
-          }}
+          style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
         />
       </div>
 
-      {/* ---- Supervise overlay: cat pops out big ---- */}
+      {/* ---- Big overlay when supervising ---- */}
       {isSupervising && (
         <div
           data-testid="cat-supervisor-overlay"
@@ -419,41 +264,24 @@ export function CatSupervisor() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            background:
-              "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.78) 100%)",
+            background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.78) 100%)",
             cursor: "pointer",
             boxShadow: `inset 0 0 120px ${overlayGlow(nudgeCount)}`,
           }}
           onClick={dismiss}
-          onKeyDown={(e) => {
-            if (e.key === "Escape" || e.key === "Enter") dismiss();
-          }}
+          onKeyDown={(e) => { if (e.key === "Escape" || e.key === "Enter") dismiss(); }}
           role="button"
           tabIndex={0}
           aria-label={t("dismissAria")}
         >
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             {bubbleText && <SpeechBubble text={bubbleText} size="large" />}
-
             <div className={`cat-pop-in ${MOOD_ANIM_CLASS[mood]}`}>
               <PixelCat mood={mood} size={BIG_SIZE} />
             </div>
-
             <span
               className="font-silkscreen"
-              style={{
-                marginTop: 14,
-                fontSize: 10,
-                color: "rgba(255,255,255,0.45)",
-                letterSpacing: "0.15em",
-              }}
+              style={{ marginTop: 14, fontSize: 10, color: "rgba(255,255,255,0.45)", letterSpacing: "0.15em" }}
             >
               {t("clickToDismiss")}
             </span>
