@@ -1,34 +1,23 @@
 "use client";
 
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 
+import { PixelCat } from "@/components/focus/PixelCat";
 import { useCatMood } from "@/lib/hooks/useCatMood";
 import type { CatMood } from "@/lib/hooks/useCatMood";
 import { useFaceDirection } from "@/lib/hooks/useFaceDirection";
 
-const CAT_SRC = "/cat/base.png";
 const SMALL_SIZE = 80;
-const BIG_SIZE = 220;
+const BIG_SIZE = 200;
 
-/** CSS class for the cat image per mood. Defined in globals.css. */
+/** CSS class for the cat wrapper per mood. Defined in globals.css. */
 const MOOD_ANIM_CLASS: Record<CatMood, string> = {
-  idle: "",
-  watching: "cat-breathe",
-  happy: "cat-bounce",
-  suspicious: "cat-tilt",
-  angry: "cat-shake",
-  sleeping: "cat-sleep",
-};
-
-/** Mood indicator emoji shown next to the cat in the panel. */
-const MOOD_EMOJI: Record<CatMood, string> = {
   idle: "",
   watching: "",
   happy: "",
-  suspicious: "?",
-  angry: "!!",
-  sleeping: "zzZ",
+  suspicious: "cat-tilt",
+  angry: "cat-shake",
+  sleeping: "cat-sleep",
 };
 
 /** Dot colour per mood. */
@@ -122,7 +111,6 @@ export function CatSupervisor() {
   };
 
   const bubbleText = speechKey ? t(speechKey) : null;
-  const moodEmoji = MOOD_EMOJI[mood];
 
   return (
     <>
@@ -197,48 +185,9 @@ export function CatSupervisor() {
         >
           {bubbleText && !isSupervising && <SpeechBubble text={bubbleText} />}
 
-          <Image
-            src={CAT_SRC}
-            alt=""
-            aria-hidden
-            width={SMALL_SIZE}
-            height={SMALL_SIZE}
-            className={isActive && !isSupervising ? MOOD_ANIM_CLASS[mood] : ""}
-            style={{
-              imageRendering: "pixelated",
-              objectFit: "contain",
-              transition: "transform 0.3s ease, filter 0.3s ease",
-              filter:
-                mood === "angry" && !isSupervising
-                  ? "drop-shadow(0 0 8px rgba(248,113,113,0.5))"
-                  : mood === "suspicious"
-                    ? "drop-shadow(0 0 6px rgba(250,204,21,0.4))"
-                    : "none",
-            }}
-            unoptimized
-          />
-
-          {/* Mood indicator — pixel-font text overlaid on the cat area */}
-          {isActive && moodEmoji && (
-            <span
-              className="font-silkscreen cat-mood-indicator"
-              style={{
-                position: "absolute",
-                top: 2,
-                right: 8,
-                fontSize: 12,
-                color:
-                  mood === "angry"
-                    ? "#f87171"
-                    : mood === "suspicious"
-                      ? "#facc15"
-                      : "var(--ink-dim)",
-                pointerEvents: "none",
-              }}
-            >
-              {moodEmoji}
-            </span>
-          )}
+          <div className={isActive && !isSupervising ? MOOD_ANIM_CLASS[mood] : ""}>
+            <PixelCat mood={isActive ? mood : "idle"} size={SMALL_SIZE} />
+          </div>
         </div>
 
         {/* Focus streak indicator */}
@@ -401,20 +350,9 @@ export function CatSupervisor() {
           >
             {bubbleText && <SpeechBubble text={bubbleText} size="large" />}
 
-            <Image
-              src={CAT_SRC}
-              alt=""
-              aria-hidden
-              width={BIG_SIZE}
-              height={BIG_SIZE}
-              className={`cat-pop-in ${MOOD_ANIM_CLASS[mood]}`}
-              style={{
-                imageRendering: "pixelated",
-                objectFit: "contain",
-                filter: `drop-shadow(0 0 24px ${overlayGlow(nudgeCount)})`,
-              }}
-              unoptimized
-            />
+            <div className={`cat-pop-in ${MOOD_ANIM_CLASS[mood]}`}>
+              <PixelCat mood={mood} size={BIG_SIZE} />
+            </div>
 
             <span
               className="font-silkscreen"

@@ -1313,3 +1313,40 @@ body {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(1.15); }
 }
+
+/* Eye blink — periodically squash eyes to a line. */
+.cat-eye-blink {
+  animation: eyeBlink 4s ease-in-out infinite;
+}
+@keyframes eyeBlink {
+  0%, 42%, 48%, 100% { transform: scaleY(1); }
+  45% { transform: scaleY(0.1); }
+}
+
+/* Tail animations. */
+.cat-tail-idle {
+  animation: tailIdle 3s ease-in-out infinite;
+}
+.cat-tail-wag {
+  animation: tailWag 0.5s ease-in-out infinite alternate;
+}
+.cat-tail-stiff {
+  transform: rotate(-20deg) scaleY(1.15);
+}
+@keyframes tailIdle {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
+}
+@keyframes tailWag {
+  0% { transform: rotate(-15deg); }
+  100% { transform: rotate(20deg); }
+}
+
+/* Sleeping zzZ float upwards. */
+.cat-zzz {
+  animation: zzzFloat 2.5s ease-in-out infinite;
+}
+@keyframes zzzFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(-6px); opacity: 0.3; }
+}
