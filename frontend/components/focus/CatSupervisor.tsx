@@ -1,278 +1,435 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { type FaceDirection, useFaceDirection } from "@/lib/hooks/useFaceDirection";
+import { useCatMood } from "@/lib/hooks/useCatMood";
+import type { CatMood } from "@/lib/hooks/useCatMood";
+import { useFaceDirection } from "@/lib/hooks/useFaceDirection";
 
-/** Maps each direction to its sprite filename under /public/cat/. */
-const CAT_IMAGE: Record<FaceDirection, string> = {
-  front:        "/cat/front.png",
-  left:         "/cat/left.png",
-  right:        "/cat/right.png",
-  up:           "/cat/up.png",
-  down:         "/cat/down.png",
-  "upper-left":  "/cat/upper-left.png",
-  "upper-right": "/cat/upper-right.png",
-  "lower-left":  "/cat/lower-left.png",
-  "lower-right": "/cat/lower-right.png",
+const CAT_SRC = "/cat/base.png";
+const SMALL_SIZE = 80;
+const BIG_SIZE = 220;
+
+/** CSS class for the cat image per mood. Defined in globals.css. */
+const MOOD_ANIM_CLASS: Record<CatMood, string> = {
+  idle: "",
+  watching: "cat-breathe",
+  happy: "cat-bounce",
+  suspicious: "cat-tilt",
+  angry: "cat-shake",
+  sleeping: "cat-sleep",
 };
 
-const CAT_SIZE = 96; // px — compact enough for the right rail
+/** Mood indicator emoji shown next to the cat in the panel. */
+const MOOD_EMOJI: Record<CatMood, string> = {
+  idle: "",
+  watching: "",
+  happy: "",
+  suspicious: "?",
+  angry: "!!",
+  sleeping: "zzZ",
+};
 
-/**
- * CSS pixel-art cat placeholder — shown when the real sprite files have not
- * been added to /public/cat/ yet. Eight squares arranged as a face.
- */
-function CatPlaceholder({ direction }: { direction: FaceDirection }) {
-  // Eye offset hints at the current gaze direction.
-  const eyeOffset: Record<FaceDirection, { x: number; y: number }> = {
-    front:        { x: 0, y: 0 },
-    left:         { x: -3, y: 0 },
-    right:        { x: 3, y: 0 },
-    up:           { x: 0, y: -3 },
-    down:         { x: 0, y: 3 },
-    "upper-left":  { x: -2, y: -2 },
-    "upper-right": { x: 2, y: -2 },
-    "lower-left":  { x: -2, y: 2 },
-    "lower-right": { x: 2, y: 2 },
-  };
-  const { x, y } = eyeOffset[direction];
+/** Dot colour per mood. */
+const MOOD_DOT: Record<CatMood, string> = {
+  idle: "var(--ink-mute)",
+  watching: "var(--accent-2)",
+  happy: "var(--accent)",
+  suspicious: "#facc15",
+  angry: "#f87171",
+  sleeping: "var(--ink-dim)",
+};
 
+/** Overlay border glow colour per nudge intensity. */
+function overlayGlow(nudgeCount: number): string {
+  if (nudgeCount >= 3) return "rgba(248,113,113,0.5)";
+  if (nudgeCount >= 2) return "rgba(250,204,21,0.4)";
+  return "rgba(168,85,247,0.3)";
+}
+
+function SpeechBubble({ text, size = "small" }: { text: string; size?: "small" | "large" }) {
+  const isLarge = size === "large";
   return (
     <div
-      aria-hidden
+      className="cat-speech-bubble font-silkscreen"
       style={{
-        width: CAT_SIZE,
-        height: CAT_SIZE,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
+        position: isLarge ? "relative" : "absolute",
+        top: isLarge ? undefined : -8,
+        left: isLarge ? undefined : "50%",
+        transform: isLarge ? undefined : "translateX(-50%) translateY(-100%)",
+        background: "rgba(255,255,255,0.95)",
+        color: "#1a1a2e",
+        padding: isLarge ? "8px 16px" : "5px 10px",
+        borderRadius: isLarge ? 8 : 6,
+        fontSize: isLarge ? 16 : 10,
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+        zIndex: 10,
+        boxShadow: isLarge
+          ? "0 4px 16px rgba(0,0,0,0.35)"
+          : "0 2px 8px rgba(0,0,0,0.25)",
+        letterSpacing: isLarge ? "0.08em" : "0.05em",
+        marginBottom: isLarge ? 12 : undefined,
       }}
     >
-      {/* Face outline */}
+      {text}
+      {/* Bubble tail */}
       <div
         style={{
-          width: 56,
-          height: 52,
-          border: "2px solid var(--accent-2)",
-          borderRadius: "40% 40% 35% 35%",
-          position: "relative",
-          background: "rgba(168,85,247,0.08)",
-          boxShadow: "0 0 8px rgba(168,85,247,0.25)",
-        }}
-      >
-        {/* Ears */}
-        <div style={{ position: "absolute", top: -12, left: 5, width: 0, height: 0,
-          borderLeft: "7px solid transparent", borderRight: "7px solid transparent",
-          borderBottom: "12px solid var(--accent-2)" }} />
-        <div style={{ position: "absolute", top: -12, right: 5, width: 0, height: 0,
-          borderLeft: "7px solid transparent", borderRight: "7px solid transparent",
-          borderBottom: "12px solid var(--accent-2)" }} />
-
-        {/* Eyes */}
-        <div style={{
           position: "absolute",
-          left: 10 + x,
-          top: 16 + y,
-          width: 7,
-          height: 7,
-          background: "var(--accent-2)",
-          borderRadius: "50%",
-          boxShadow: "0 0 4px var(--accent-2)",
-          transition: "left 0.15s ease, top 0.15s ease",
-        }} />
-        <div style={{
-          position: "absolute",
-          right: 10 - x,
-          top: 16 + y,
-          width: 7,
-          height: 7,
-          background: "var(--accent-2)",
-          borderRadius: "50%",
-          boxShadow: "0 0 4px var(--accent-2)",
-          transition: "right 0.15s ease, top 0.15s ease",
-        }} />
-
-        {/* Nose */}
-        <div style={{
-          position: "absolute",
+          bottom: isLarge ? -6 : -5,
           left: "50%",
-          top: 28,
           transform: "translateX(-50%)",
-          width: 5,
-          height: 4,
-          background: "var(--accent-3)",
-          borderRadius: "50%",
-        }} />
-      </div>
+          width: 0,
+          height: 0,
+          borderLeft: `${isLarge ? 8 : 6}px solid transparent`,
+          borderRight: `${isLarge ? 8 : 6}px solid transparent`,
+          borderTop: `${isLarge ? 8 : 6}px solid rgba(255,255,255,0.95)`,
+        }}
+      />
     </div>
   );
 }
 
 /**
- * Supervision cat for the solo focus page.
+ * The supervision cat.
  *
- * User-opt-in: the webcam is NOT activated until the user explicitly clicks
- * "Enable". Camera permission is requested only at that point.
+ * Behaviour ladder:
+ *   idle → watching (breathe) → happy (bounce + encouragement)
+ *   → suspicious (tilt + panel warning) → angry (POP OUT big overlay + meow)
+ *   → sleeping (fade away, zzZ)
  *
- * All video processing is local — frames are analysed by MediaPipe WASM in
- * the browser and never sent to any server.
- *
- * Sprite images go in /public/cat/{direction}.png — see CAT_IMAGE map above.
- * Until those files are added, the CSS placeholder cat is shown instead.
+ * Looking back at the screen at any point auto-dismisses the overlay.
  */
 export function CatSupervisor() {
   const t = useTranslations("focus.catSupervisor");
-  const { camState, direction, videoRef, enable, disable } = useFaceDirection();
-  const [imgError, setImgError] = useState(false);
+  const { camState, direction, videoRef, enable, disable } =
+    useFaceDirection();
+  const { mood, isSupervising, speechKey, focusStreak, nudgeCount, dismiss } =
+    useCatMood(direction, camState);
 
   const isActive = camState === "active";
   const isBusy = camState === "requesting" || camState === "loading";
 
-  // Reset error flag when direction changes so a different sprite can try loading.
-  const handleImgError = () => setImgError(true);
-  const handleImgLoad = () => setImgError(false);
-
   const statusText: Record<string, string> = {
-    idle:        t("statusIdle"),
-    requesting:  t("statusRequesting"),
-    loading:     t("statusLoading"),
-    active:      t("statusActive"),
-    denied:      t("statusDenied"),
+    idle: t("statusIdle"),
+    requesting: t("statusRequesting"),
+    loading: t("statusLoading"),
+    active: t("statusActive"),
+    denied: t("statusDenied"),
     unsupported: t("statusUnsupported"),
   };
 
-  const statusColor: Record<string, string> = {
-    idle:        "var(--ink-mute)",
-    requesting:  "var(--accent-2)",
-    loading:     "var(--accent-2)",
-    active:      "var(--accent)",
-    denied:      "#f87171",
-    unsupported: "#f87171",
-  };
+  const bubbleText = speechKey ? t(speechKey) : null;
+  const moodEmoji = MOOD_EMOJI[mood];
 
   return (
-    <div
-      data-testid="cat-supervisor"
-      className="pixel-panel"
-      style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}
-    >
-      {/* Header row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span
-          className="font-silkscreen"
-          style={{ fontSize: 9, color: "var(--accent-2)", letterSpacing: "0.2em" }}
-        >
-          {t("title")}
-        </span>
+    <>
+      {/* ---- Small panel in right rail ---- */}
+      <div
+        data-testid="cat-supervisor"
+        className="pixel-panel"
+        style={{
+          padding: 12,
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        {/* Header */}
         <div
           style={{
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            gap: 5,
+            justifyContent: "space-between",
           }}
         >
           <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: statusColor[camState] ?? "var(--ink-mute)",
-              boxShadow: isActive ? "0 0 5px var(--accent)" : "none",
-            }}
-          />
-          <span
             className="font-silkscreen"
-            style={{ fontSize: 8, color: statusColor[camState] ?? "var(--ink-mute)" }}
+            style={{
+              fontSize: 9,
+              color: "var(--accent-2)",
+              letterSpacing: "0.2em",
+            }}
           >
-            {statusText[camState] ?? ""}
+            {t("title")}
           </span>
+          <div
+            style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: isActive
+                  ? MOOD_DOT[mood]
+                  : (MOOD_DOT[camState as CatMood] ?? "var(--ink-mute)"),
+                boxShadow:
+                  mood === "happy" ? "0 0 5px var(--accent)" : "none",
+                transition: "background 0.3s",
+              }}
+            />
+            <span
+              className="font-silkscreen"
+              style={{
+                fontSize: 8,
+                color: "var(--ink-mute)",
+              }}
+            >
+              {statusText[camState] ?? ""}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* Cat display */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: CAT_SIZE,
-          opacity: isActive ? 1 : 0.45,
-          transition: "opacity 0.4s ease",
-        }}
-      >
-        {!imgError ? (
+        {/* Cat (small, in-panel) — hidden when supervising overlay is active */}
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: SMALL_SIZE,
+            opacity: isSupervising ? 0.15 : isActive ? 1 : 0.4,
+            transition: "opacity 0.4s ease",
+          }}
+        >
+          {bubbleText && !isSupervising && <SpeechBubble text={bubbleText} />}
+
           <Image
-            key={direction}
-            src={CAT_IMAGE[direction]}
+            src={CAT_SRC}
             alt=""
             aria-hidden
-            width={CAT_SIZE}
-            height={CAT_SIZE}
-            style={{ imageRendering: "pixelated", objectFit: "contain" }}
-            onError={handleImgError}
-            onLoad={handleImgLoad}
+            width={SMALL_SIZE}
+            height={SMALL_SIZE}
+            className={isActive && !isSupervising ? MOOD_ANIM_CLASS[mood] : ""}
+            style={{
+              imageRendering: "pixelated",
+              objectFit: "contain",
+              transition: "transform 0.3s ease, filter 0.3s ease",
+              filter:
+                mood === "angry" && !isSupervising
+                  ? "drop-shadow(0 0 8px rgba(248,113,113,0.5))"
+                  : mood === "suspicious"
+                    ? "drop-shadow(0 0 6px rgba(250,204,21,0.4))"
+                    : "none",
+            }}
             unoptimized
           />
-        ) : (
-          <CatPlaceholder direction={isActive ? direction : "front"} />
-        )}
-      </div>
 
-      {/* Controls */}
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-        {isActive ? (
-          <button
-            type="button"
-            data-testid="cat-supervisor-disable"
-            className="pixel-btn"
-            aria-label={t("disableAria")}
-            style={{ flex: 1, padding: "4px 8px", fontSize: 9, letterSpacing: "0.18em" }}
-            onClick={disable}
-          >
-            {t("disableCta")}
-          </button>
-        ) : (
-          <button
-            type="button"
-            data-testid="cat-supervisor-enable"
-            className="pixel-btn primary"
-            aria-label={t("enableAria")}
-            disabled={isBusy}
+          {/* Mood indicator — pixel-font text overlaid on the cat area */}
+          {isActive && moodEmoji && (
+            <span
+              className="font-silkscreen cat-mood-indicator"
+              style={{
+                position: "absolute",
+                top: 2,
+                right: 8,
+                fontSize: 12,
+                color:
+                  mood === "angry"
+                    ? "#f87171"
+                    : mood === "suspicious"
+                      ? "#facc15"
+                      : "var(--ink-dim)",
+                pointerEvents: "none",
+              }}
+            >
+              {moodEmoji}
+            </span>
+          )}
+        </div>
+
+        {/* Focus streak indicator */}
+        {isActive && focusStreak > 0 && (
+          <div
             style={{
-              flex: 1,
-              padding: "4px 8px",
-              fontSize: 9,
-              letterSpacing: "0.18em",
-              opacity: isBusy ? 0.6 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "2px 0",
             }}
-            onClick={() => void enable()}
           >
-            {isBusy ? "..." : t("enableCta")}
-          </button>
+            <div
+              style={{
+                flex: 1,
+                height: 3,
+                background: "rgba(255,255,255,0.08)",
+                borderRadius: 2,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.min((focusStreak / 300) * 100, 100)}%`,
+                  background:
+                    "linear-gradient(90deg, var(--accent-2), var(--accent))",
+                  borderRadius: 2,
+                  transition: "width 1s linear",
+                }}
+              />
+            </div>
+            <span
+              className="font-silkscreen"
+              style={{ fontSize: 7, color: "var(--ink-dim)" }}
+            >
+              {Math.floor(focusStreak / 60)}:
+              {String(focusStreak % 60).padStart(2, "0")}
+            </span>
+          </div>
         )}
+
+        {/* Nudge counter — shows how many times the cat has popped out */}
+        {nudgeCount > 0 && (
+          <div
+            className="font-silkscreen"
+            style={{
+              fontSize: 7,
+              color: nudgeCount >= 3 ? "#f87171" : "var(--ink-dim)",
+              textAlign: "center",
+              letterSpacing: "0.1em",
+            }}
+          >
+            {t("nudgeCount", { count: nudgeCount })}
+          </div>
+        )}
+
+        {/* Controls */}
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          {isActive ? (
+            <button
+              type="button"
+              data-testid="cat-supervisor-disable"
+              className="pixel-btn"
+              aria-label={t("disableAria")}
+              style={{
+                flex: 1,
+                padding: "4px 8px",
+                fontSize: 9,
+                letterSpacing: "0.18em",
+              }}
+              onClick={disable}
+            >
+              {t("disableCta")}
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-testid="cat-supervisor-enable"
+              className="pixel-btn primary"
+              aria-label={t("enableAria")}
+              disabled={isBusy}
+              style={{
+                flex: 1,
+                padding: "4px 8px",
+                fontSize: 9,
+                letterSpacing: "0.18em",
+                opacity: isBusy ? 0.6 : 1,
+              }}
+              onClick={() => void enable()}
+            >
+              {isBusy ? "..." : t("enableCta")}
+            </button>
+          )}
+        </div>
+
+        {/* Privacy notice */}
+        <div
+          className="font-silkscreen"
+          style={{
+            fontSize: 7,
+            color: "var(--ink-dim)",
+            letterSpacing: "0.08em",
+            textAlign: "center",
+          }}
+        >
+          {t("privacy")}
+        </div>
+
+        {/* Hidden video for face detection */}
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+        <video
+          ref={videoRef}
+          aria-hidden
+          playsInline
+          muted
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            opacity: 0,
+            pointerEvents: "none",
+          }}
+        />
       </div>
 
-      {/* Privacy notice */}
-      <div
-        className="font-silkscreen"
-        style={{ fontSize: 7, color: "var(--ink-dim)", letterSpacing: "0.08em", textAlign: "center" }}
-      >
-        {t("privacy")}
-      </div>
+      {/* ---- Supervise overlay: cat pops out big ---- */}
+      {isSupervising && (
+        <div
+          data-testid="cat-supervisor-overlay"
+          className="cat-overlay-enter"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background:
+              "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.78) 100%)",
+            cursor: "pointer",
+            boxShadow: `inset 0 0 120px ${overlayGlow(nudgeCount)}`,
+          }}
+          onClick={dismiss}
+          onKeyDown={(e) => {
+            if (e.key === "Escape" || e.key === "Enter") dismiss();
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={t("dismissAria")}
+        >
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            {bubbleText && <SpeechBubble text={bubbleText} size="large" />}
 
-      {/* Hidden video element — purely for face detection; never displayed */}
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video
-        ref={videoRef}
-        aria-hidden
-        playsInline
-        muted
-        style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
-      />
-    </div>
+            <Image
+              src={CAT_SRC}
+              alt=""
+              aria-hidden
+              width={BIG_SIZE}
+              height={BIG_SIZE}
+              className={`cat-pop-in ${MOOD_ANIM_CLASS[mood]}`}
+              style={{
+                imageRendering: "pixelated",
+                objectFit: "contain",
+                filter: `drop-shadow(0 0 24px ${overlayGlow(nudgeCount)})`,
+              }}
+              unoptimized
+            />
+
+            <span
+              className="font-silkscreen"
+              style={{
+                marginTop: 14,
+                fontSize: 10,
+                color: "rgba(255,255,255,0.45)",
+                letterSpacing: "0.15em",
+              }}
+            >
+              {t("clickToDismiss")}
+            </span>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

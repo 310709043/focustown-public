@@ -1235,3 +1235,81 @@ body {
   .town-top-hud-inner { padding: 18px 36px; }
   .bottom-hud-inner   { padding: 28px 36px; gap: 20px; }
 }
+
+/* ══════════════════════════════════════
+   Cat Supervisor animations
+   ══════════════════════════════════════ */
+.cat-breathe {
+  animation: catBreathe 3s ease-in-out infinite;
+}
+.cat-bounce {
+  animation: catBounce 1.6s ease-in-out infinite;
+}
+.cat-tilt {
+  animation: catTilt 0.8s ease-in-out infinite alternate;
+}
+.cat-shake {
+  animation: catShake 0.3s ease-in-out infinite;
+}
+.cat-sleep {
+  opacity: 0.5;
+  animation: catSleep 4s ease-in-out infinite;
+}
+
+/* Pop-in: the cat bursts from 0 to full size when supervising. */
+.cat-pop-in {
+  animation: catPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Full-screen overlay fade-in. */
+.cat-overlay-enter {
+  animation: overlayFadeIn 0.3s ease-out forwards;
+}
+
+/* Speech bubble entrance. */
+.cat-speech-bubble {
+  animation: bubblePop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes catBreathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.04); }
+}
+@keyframes catBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes catTilt {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(5deg); }
+}
+@keyframes catShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+@keyframes catSleep {
+  0%, 100% { transform: rotate(-3deg) scale(0.95); opacity: 0.45; }
+  50% { transform: rotate(-3deg) scale(0.98); opacity: 0.55; }
+}
+@keyframes catPopIn {
+  0% { transform: scale(0.1) translateY(100px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes overlayFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes bubblePop {
+  0% { transform: translateX(-50%) translateY(-100%) scale(0.5); opacity: 0; }
+  100% { transform: translateX(-50%) translateY(-100%) scale(1); opacity: 1; }
+}
+
+/* Mood text indicator (?, !!, zzZ) pulse. */
+.cat-mood-indicator {
+  animation: moodPulse 1.2s ease-in-out infinite;
+}
+@keyframes moodPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}

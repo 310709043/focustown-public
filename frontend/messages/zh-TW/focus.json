@@ -271,12 +271,27 @@
     "disableCta": "關閉",
     "enableAria": "開啟貓咪監督員（需要鏡頭權限）",
     "disableAria": "關閉貓咪監督員",
+    "dismissAria": "關閉監督畫面",
     "statusIdle": "未啟動",
     "statusRequesting": "請求權限中...",
     "statusLoading": "載入中...",
     "statusActive": "盯著你呢",
     "statusDenied": "鏡頭已拒絕",
     "statusUnsupported": "不支援",
-    "privacy": "影像僅在本機處理"
+    "privacy": "影像僅在本機處理",
+    "clickToDismiss": "點擊任意處關閉",
+    "bubbleGreat": "超棒！繼續保持！",
+    "bubbleKeepGoing": "加油加油～",
+    "bubbleNice": "很專注呢！",
+    "bubbleFocused": "就是這樣！",
+    "bubbleHmm": "嗯...？",
+    "bubbleHey": "喂！看這裡！",
+    "bubbleWhere": "你在看哪裡？",
+    "bubbleComeBack": "回來專心！！",
+    "bubbleFocus": "不要分心喔！",
+    "bubbleWatching": "我在看著你！",
+    "bubbleWelcomeBack": "歡迎回來～繼續加油！",
+    "bubbleSleep": "Zzz...",
+    "nudgeCount": "已提醒 {count} 次"
   }
 }

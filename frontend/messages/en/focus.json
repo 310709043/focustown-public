@@ -271,12 +271,27 @@
     "disableCta": "Disable",
     "enableAria": "Enable cat supervisor (requires webcam)",
     "disableAria": "Disable cat supervisor",
+    "dismissAria": "Dismiss supervision overlay",
     "statusIdle": "Off",
     "statusRequesting": "Requesting...",
     "statusLoading": "Loading...",
     "statusActive": "Watching you",
     "statusDenied": "Camera denied",
     "statusUnsupported": "Not supported",
-    "privacy": "Video stays on your device"
+    "privacy": "Video stays on your device",
+    "clickToDismiss": "Click anywhere to dismiss",
+    "bubbleGreat": "Great job! Keep going!",
+    "bubbleKeepGoing": "You got this~",
+    "bubbleNice": "So focused!",
+    "bubbleFocused": "That's it!",
+    "bubbleHmm": "Hmm...?",
+    "bubbleHey": "Hey! Over here!",
+    "bubbleWhere": "Where are you looking?",
+    "bubbleComeBack": "Come back and focus!!",
+    "bubbleFocus": "Don't get distracted!",
+    "bubbleWatching": "I'm watching you!",
+    "bubbleWelcomeBack": "Welcome back~ Keep it up!",
+    "bubbleSleep": "Zzz...",
+    "nudgeCount": "Nudged {count}x"
   }
 }
