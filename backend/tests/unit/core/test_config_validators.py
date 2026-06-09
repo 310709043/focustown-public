@@ -163,6 +163,38 @@ def test_production_missing_broadcast_proxy_base_url_raises():
         _prod_lite_settings(broadcast_proxy_base_url="")
 
 
+# === 'disabled' placeholder normalisation ===================================
+
+def test_disabled_placeholder_normalised_to_empty_string():
+    # Operators set env vars to 'disabled' as a placeholder when the
+    # corresponding infrastructure is not yet provisioned. Each field in
+    # _normalize_disabled_placeholder must map 'disabled' → ''.
+    s = Settings(  # type: ignore[call-arg]
+        s3_access_key="disabled",
+        s3_secret_key="disabled",
+        s3_endpoint_url="disabled",
+        audio_proxy_base_url="disabled",
+        audio_proxy_secret="disabled",
+        broadcast_proxy_base_url="disabled",
+        broadcast_proxy_secret="disabled",
+        ses_from_email="disabled",
+        admin_feedback_email="disabled",
+        admin_user_ids="disabled",
+    )
+    assert s.s3_access_key == ""
+    assert s.s3_secret_key == ""
+    assert s.s3_endpoint_url == ""
+    assert s.audio_proxy_base_url == ""
+    assert s.audio_proxy_secret == ""
+    assert s.broadcast_proxy_base_url == ""
+    assert s.broadcast_proxy_secret == ""
+    assert s.ses_from_email == ""
+    assert s.admin_feedback_email == ""
+    assert s.admin_user_ids == ""
+    # admin_user_id_set must be empty, not contain the string 'disabled'
+    assert s.admin_user_id_set == set()
+
+
 # === Non-prod environments are inert =======================================
 
 def test_development_defaults_do_not_trigger_production_validator():

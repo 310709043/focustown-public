@@ -35,6 +35,15 @@ def test_make_email_sender_ses_returns_ses_notifier():
     assert isinstance(sender, SESNotifier)
 
 
+def test_make_email_sender_ses_without_from_email_falls_back_to_log():
+    # When NOTIFIER_BACKEND=ses but SES_FROM_EMAIL is empty (dev/staging
+    # without SES credentials, or 'disabled' placeholder normalised to ''),
+    # the factory must not raise RuntimeError — it falls back to LogNotifier
+    # so password-reset and feedback endpoints don't 500.
+    s = _settings(notifier_backend="ses", ses_from_email="", aws_region="ap-northeast-1")
+    assert isinstance(make_email_sender(s), LogNotifier)
+
+
 def test_make_email_sender_unknown_backend_raises():
     s = _settings(notifier_backend="log")
     object.__setattr__(s, "notifier_backend", "smtp")  # type: ignore[arg-type]

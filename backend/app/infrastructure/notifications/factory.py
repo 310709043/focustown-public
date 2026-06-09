@@ -22,6 +22,14 @@ def make_email_sender(settings: Settings) -> IEmailSender:
     if backend == "log":
         return LogNotifier()
     if backend == "ses":
+        # Guard: if ses_from_email is empty (e.g. staging without SES
+        # credentials, or 'disabled' placeholder normalised to ''), fall
+        # back to LogNotifier rather than crashing every request that uses
+        # NotifierDep.  Production is protected by _validate_ses_from_email
+        # (boot-time ValueError) so this branch is only reachable in dev /
+        # staging.
+        if not settings.ses_from_email:
+            return LogNotifier()
         # Lazy import so the boto3 import path is only walked when SES is
         # actually selected. Keeps cold-start cheap for the local_jwt /
         # log fallback that dev and CI use.
