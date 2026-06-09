@@ -393,11 +393,24 @@ export function GlobalAudioMount() {
       }
       if (s.tracks.length > 1) s.next();
     } else if (src.kind === "personal") {
-      // Disconnected personal playlist: a single bad track shouldn't
-      // poison the playhead. The shared station playlist is
-      // server-authoritative and unlikely to 404 simultaneously, so
-      // the burst-window guard isn't needed here.
+      // Disconnected personal playlist: apply the same burst-window
+      // guard as the audio-store path. Without it, if every track
+      // URL is expired/broken the player rapidly cycles through the
+      // entire playlist in a tight loop.
       const s = useStationStore.getState();
+      if (!tid) return;
+      const now2 = performance.now();
+      if (now2 - errorBudget.current.lastAt > 800) {
+        errorBudget.current.failed.clear();
+      }
+      errorBudget.current.lastAt = now2;
+      errorBudget.current.failed.add(tid);
+      if (errorBudget.current.failed.size >= s.personalPlaylist.length) {
+        console.warn("[audio] personal all-tracks failed; switching to local fallback");
+        s.setPersonalPlaylist(LOCAL_FALLBACK_TRACKS);
+        errorBudget.current.failed.clear();
+        return;
+      }
       if (s.personalPlaylist.length > 1) s.nextPersonal();
     } else if (src.kind === "station") {
       // Normally we lean on the next station.cursor event (≤5s worker
