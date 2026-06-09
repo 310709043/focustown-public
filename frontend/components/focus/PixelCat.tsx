@@ -35,9 +35,17 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
     : mood === "idle" || mood === "watching" ? "cat-breathe"
     : "";
 
+  // Tilt lives in an outer wrapper so CSS keyframe animations on the
+  // inner div never overwrite the rotate transform.
   return (
     <div
       aria-hidden
+      style={{
+        transform: `rotate(${tiltDeg}deg)`,
+        transition: "transform 0.12s ease",
+      }}
+    >
+    <div
       className={moodClass}
       style={{
         width: px(80),
@@ -46,8 +54,6 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        transform: tiltDeg !== 0 ? `rotate(${tiltDeg}deg)` : undefined,
-        transition: "transform 0.12s ease",
       }}
     >
       {/* Tail */}
@@ -285,11 +291,16 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
         </div>
       )}
     </div>
+    </div>
   );
 }
 
 function Eyes({ mood, s, faceData }: { mood: CatMood; s: number; faceData?: FaceData | null }) {
   const px = (n: number) => `${n * s}px`;
+  // Shared pupil offset for all moods that have visible pupils.
+  const pupilOffX = faceData ? (faceData.cx - 0.5) * 3 : 0;
+  const pupilOffY = faceData ? (faceData.cy - 0.5) * 2.5 : 0;
+  const pupilTranslate = `translate(${px(pupilOffX)}, ${px(pupilOffY)})`;
 
   // Sleeping: horizontal lines
   if (mood === "sleeping") {
@@ -376,6 +387,8 @@ function Eyes({ mood, s, faceData }: { mood: CatMood; s: number; faceData?: Face
               height: px(2.5),
               background: "#1a1a2e",
               borderRadius: "50%",
+              transform: pupilTranslate,
+              transition: "transform 0.1s ease",
             }}
           />
         </div>
@@ -400,6 +413,8 @@ function Eyes({ mood, s, faceData }: { mood: CatMood; s: number; faceData?: Face
               height: px(2),
               background: "#1a1a2e",
               borderRadius: "50%",
+              transform: pupilTranslate,
+              transition: "transform 0.1s ease",
             }}
           />
         </div>
@@ -427,11 +442,13 @@ function Eyes({ mood, s, faceData }: { mood: CatMood; s: number; faceData?: Face
             style={{
               position: "absolute",
               top: px(1),
-              left: px(3),
+              left: px(2),
               width: px(3),
               height: px(3),
               background: "#1a1a2e",
               borderRadius: "50%",
+              transform: pupilTranslate,
+              transition: "transform 0.1s ease",
             }}
           />
         </div>
@@ -451,11 +468,13 @@ function Eyes({ mood, s, faceData }: { mood: CatMood; s: number; faceData?: Face
             style={{
               position: "absolute",
               top: px(1),
-              right: px(3),
+              left: px(2),
               width: px(3),
               height: px(3),
               background: "#1a1a2e",
               borderRadius: "50%",
+              transform: pupilTranslate,
+              transition: "transform 0.1s ease",
             }}
           />
         </div>
@@ -470,9 +489,6 @@ function Eyes({ mood, s, faceData }: { mood: CatMood; s: number; faceData?: Face
   const isFar = !!faceData && faceData.proximity < 0.15;
   const eyeSize = isClose ? 9 : isFar ? 5.5 : 7;
   const pupilSize = isClose ? 4.5 : isFar ? 2 : 3;
-  // Pupil offset tracks the user's face centre (±1.5 base-px range)
-  const pupilOffX = faceData ? (faceData.cx - 0.5) * 3 : 0;
-  const pupilOffY = faceData ? (faceData.cy - 0.5) * 2.5 : 0;
   const pupilCenter = (eyeSize - pupilSize) / 2;
   const glowSize = isClose ? px(8) : px(4);
   const glowAlpha = isClose ? 0.6 : 0.35;
