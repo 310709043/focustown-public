@@ -87,7 +87,7 @@ function SpeechBubble({ text, size = "small" }: { text: string; size?: "small" |
  */
 export function CatSupervisor() {
   const t = useTranslations("focus.catSupervisor");
-  const { camState, faceDetected, videoRef, enable, disable } = useFaceDirection();
+  const { camState, faceDetected, faceData, videoRef, enable, disable } = useFaceDirection();
   const { mood, isSupervising, speechKey, focusStreak, nudgeCount, dismiss } =
     useCatMood(faceDetected, camState);
 
@@ -152,7 +152,7 @@ export function CatSupervisor() {
         >
           {bubbleText && !isSupervising && <SpeechBubble text={bubbleText} />}
           <div className={isActive && !isSupervising ? MOOD_ANIM_CLASS[mood] : ""}>
-            <PixelCat mood={isActive ? mood : "idle"} size={SMALL_SIZE} />
+            <PixelCat mood={isActive ? mood : "idle"} size={SMALL_SIZE} faceData={isActive ? faceData : null} />
           </div>
         </div>
 
@@ -277,7 +277,7 @@ export function CatSupervisor() {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             {bubbleText && <SpeechBubble text={bubbleText} size="large" />}
             <div className={`cat-pop-in ${MOOD_ANIM_CLASS[mood]}`}>
-              <PixelCat mood={mood} size={BIG_SIZE} />
+              <PixelCat mood={mood} size={BIG_SIZE} faceData={faceData} />
             </div>
             <span
               className="font-silkscreen"

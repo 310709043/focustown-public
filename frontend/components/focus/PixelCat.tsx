@@ -1,10 +1,13 @@
 "use client";
 
 import type { CatMood } from "@/lib/hooks/useCatMood";
+import type { FaceData } from "@/lib/hooks/useFaceDirection";
 
 interface PixelCatProps {
   mood: CatMood;
   size?: number;
+  /** Live face pose — drives pupil tracking, head tilt, proximity reactions. */
+  faceData?: FaceData | null;
 }
 
 /**
@@ -20,14 +23,22 @@ interface PixelCatProps {
  *   angry        — sharp eyes, eyebrows, puffed body, tail stiff
  *   sleeping     — closed eyes (- -), zzZ, slow breathing
  */
-export function PixelCat({ mood, size = 80 }: PixelCatProps) {
+export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
   const s = size / 80; // scale factor relative to base 80px
   const px = (n: number) => `${n * s}px`;
+
+  // Mirror the user's head tilt at 40% magnitude so the cat mimics them subtly.
+  const tiltDeg = faceData ? faceData.tiltDeg * 0.4 : 0;
+
+  const moodClass =
+    mood === "happy" ? "cat-bounce"
+    : mood === "idle" || mood === "watching" ? "cat-breathe"
+    : "";
 
   return (
     <div
       aria-hidden
-      className={mood === "happy" ? "cat-bounce" : mood === "idle" || mood === "watching" ? "cat-breathe" : ""}
+      className={moodClass}
       style={{
         width: px(80),
         height: px(80),
@@ -35,6 +46,8 @@ export function PixelCat({ mood, size = 80 }: PixelCatProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        transform: tiltDeg !== 0 ? `rotate(${tiltDeg}deg)` : undefined,
+        transition: "transform 0.12s ease",
       }}
     >
       {/* Tail */}
@@ -173,7 +186,7 @@ export function PixelCat({ mood, size = 80 }: PixelCatProps) {
         )}
 
         {/* Eyes */}
-        <Eyes mood={mood} s={s} />
+        <Eyes mood={mood} s={s} faceData={faceData} />
 
         {/* Blush marks (happy) */}
         {mood === "happy" && (
@@ -275,7 +288,7 @@ export function PixelCat({ mood, size = 80 }: PixelCatProps) {
   );
 }
 
-function Eyes({ mood, s }: { mood: CatMood; s: number }) {
+function Eyes({ mood, s, faceData }: { mood: CatMood; s: number; faceData?: FaceData | null }) {
   const px = (n: number) => `${n * s}px`;
 
   // Sleeping: horizontal lines
@@ -450,34 +463,49 @@ function Eyes({ mood, s }: { mood: CatMood; s: number }) {
     );
   }
 
-  // Default (idle, watching): round eyes with blink animation
+  // Default (idle, watching): round eyes with pupil tracking + proximity reactions
+  // Proximity > 0.55 → wide eyes (cat startled by closeness)
+  // Proximity < 0.15 → smaller squint (user far away)
+  const isClose = !!faceData && faceData.proximity > 0.55;
+  const isFar = !!faceData && faceData.proximity < 0.15;
+  const eyeSize = isClose ? 9 : isFar ? 5.5 : 7;
+  const pupilSize = isClose ? 4.5 : isFar ? 2 : 3;
+  // Pupil offset tracks the user's face centre (±1.5 base-px range)
+  const pupilOffX = faceData ? (faceData.cx - 0.5) * 3 : 0;
+  const pupilOffY = faceData ? (faceData.cy - 0.5) * 2.5 : 0;
+  const pupilCenter = (eyeSize - pupilSize) / 2;
+  const glowSize = isClose ? px(8) : px(4);
+  const glowAlpha = isClose ? 0.6 : 0.35;
+
   return (
     <>
       <div
         className="cat-eye-blink"
         style={{
           position: "absolute",
-          top: px(13),
-          left: px(8),
-          width: px(7),
-          height: px(7),
+          top: px(13 - (eyeSize - 7) / 2),
+          left: px(8 - (eyeSize - 7) / 2),
+          width: px(eyeSize),
+          height: px(eyeSize),
           background: "var(--a3)",
           borderRadius: "50%",
-          boxShadow: `0 0 ${px(4)} rgba(201,138,163,0.35)`,
+          transition: "width 0.2s, height 0.2s, top 0.2s, left 0.2s",
+          boxShadow: `0 0 ${glowSize} rgba(201,138,163,${glowAlpha})`,
         }}
       >
         <div
           style={{
             position: "absolute",
-            top: px(2),
-            left: px(2),
-            width: px(3),
-            height: px(3),
+            top: px(pupilCenter),
+            left: px(pupilCenter),
+            width: px(pupilSize),
+            height: px(pupilSize),
             background: "#1a1a2e",
             borderRadius: "50%",
+            transform: `translate(${px(pupilOffX)}, ${px(pupilOffY)})`,
+            transition: "transform 0.1s ease, width 0.2s, height 0.2s",
           }}
         />
-        {/* Eye highlight */}
         <div
           style={{
             position: "absolute",
@@ -494,24 +522,27 @@ function Eyes({ mood, s }: { mood: CatMood; s: number }) {
         className="cat-eye-blink"
         style={{
           position: "absolute",
-          top: px(13),
-          right: px(8),
-          width: px(7),
-          height: px(7),
+          top: px(13 - (eyeSize - 7) / 2),
+          right: px(8 - (eyeSize - 7) / 2),
+          width: px(eyeSize),
+          height: px(eyeSize),
           background: "var(--a3)",
           borderRadius: "50%",
-          boxShadow: `0 0 ${px(4)} rgba(201,138,163,0.35)`,
+          transition: "width 0.2s, height 0.2s, top 0.2s, right 0.2s",
+          boxShadow: `0 0 ${glowSize} rgba(201,138,163,${glowAlpha})`,
         }}
       >
         <div
           style={{
             position: "absolute",
-            top: px(2),
-            left: px(2),
-            width: px(3),
-            height: px(3),
+            top: px(pupilCenter),
+            left: px(pupilCenter),
+            width: px(pupilSize),
+            height: px(pupilSize),
             background: "#1a1a2e",
             borderRadius: "50%",
+            transform: `translate(${px(pupilOffX)}, ${px(pupilOffY)})`,
+            transition: "transform 0.1s ease, width 0.2s, height 0.2s",
           }}
         />
         <div
