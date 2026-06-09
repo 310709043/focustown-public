@@ -145,7 +145,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # ``/api/v1/tracks/{id}/play-token`` returned 404. Production
     # catalog is operator-driven via ``scripts/import-r2-manifest.py``
     # so we keep this hook out of prod.
-    if settings.app_env != "production":
+    #
+    # Guard: only seed when storage can actually serve the files.
+    # With local storage the seed-track MP3s ship in the Docker image;
+    # with S3/R2 we need real credentials (s3_access_key non-empty after
+    # _normalize_disabled_placeholder strips the 'disabled' placeholder).
+    # Seeding 51 rows that can never be streamed causes the frontend to
+    # cycle through every track (~8 s of silence) before the local-fallback
+    # kicks in — skip it entirely when the storage isn't ready.
+    _storage_can_serve = settings.storage_backend == "local" or bool(
+        settings.s3_access_key
+    )
+    if settings.app_env != "production" and _storage_can_serve:
         try:
             entries = load_r2_manifest_entries(_R2_MANIFESTS_DIR)
             async with factory() as session:
@@ -159,6 +170,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             )
         except Exception:
             log.exception("r2_track_catalog_sync_failed")
+    elif settings.app_env != "production":
+        # Storage not ready: prune any official rows left from a previous
+        # deploy that had R2 connected. Pass empty entries so the sync
+        # function removes all official rows → playlist returns empty →
+        # frontend immediately falls back to its built-in local tracks.
+        try:
+            async with factory() as session:
+                result = await import_r2_track_catalog(session, ids, [])
+                await session.commit()
+            log.info(
+                "r2_track_catalog_pruned",
+                reason="storage_not_configured",
+                pruned=result["pruned"],
+            )
+        except Exception:
+            log.exception("r2_track_catalog_prune_failed")
 
     # Music streaming on AWS: the /api/v1/tracks/{id}/stream endpoint 302s
     # to a presigned S3 URL, and HTML5 <audio> follows redirects under CORS.

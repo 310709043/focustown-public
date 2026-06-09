@@ -202,6 +202,31 @@ class Settings(BaseSettings):
                 continue
         return nets
 
+    @field_validator(
+        "s3_endpoint_url",
+        "s3_access_key",
+        "s3_secret_key",
+        "audio_proxy_base_url",
+        "audio_proxy_secret",
+        "broadcast_proxy_base_url",
+        "broadcast_proxy_secret",
+        mode="before",
+    )
+    @classmethod
+    def _normalize_disabled_placeholder(cls, v: object) -> object:
+        """Treat the literal string 'disabled' as an empty/unset value.
+
+        The deploy script validates that these env vars are non-empty so it
+        can pass them as Docker build-args and container env vars. Operators
+        set them to 'disabled' as a placeholder when the corresponding
+        infrastructure (R2, Cloudflare Worker) is not yet provisioned.
+        Normalising here keeps every consumer (AudioTokenService, S3Storage,
+        …) free of 'disabled'-string checks.
+        """
+        if v == "disabled":
+            return ""
+        return v
+
     @field_validator("reset_url_base")
     @classmethod
     def _validate_reset_url(cls, v: str, info: ValidationInfo) -> str:

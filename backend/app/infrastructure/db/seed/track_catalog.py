@@ -75,9 +75,27 @@ async def import_r2_track_catalog(
     Caller is responsible for loading ``entries`` (see
     ``load_r2_manifest_entries``) and committing the session; this
     function only issues SQL through ``db``.
+
+    Passing an empty ``entries`` list is valid: pruning still runs, which
+    removes all existing official rows. This is the correct behaviour when
+    storage is not configured — the frontend will fall back to its local
+    static tracks instead of cycling through 404s.
     """
+    desired_keys = {e["key"] for e in entries}
+
+    existing_rows = (
+        await db.execute(select(TrackORM).where(TrackORM.is_official.is_(True)))
+    ).scalars().all()
+    existing_keys = {r.file_key for r in existing_rows}
+
+    pruned = 0
+    for row in existing_rows:
+        if row.file_key not in desired_keys:
+            await db.delete(row)
+            pruned += 1
+
     if not entries:
-        return {"inserted": 0, "pruned": 0, "total": 0}
+        return {"inserted": 0, "pruned": pruned, "total": 0}
 
     # System user owns the catalog — created on first run, reused after.
     system_user = (
@@ -93,24 +111,6 @@ async def import_r2_track_catalog(
         )
         db.add(system_user)
         await db.flush()
-
-    desired_keys = {e["key"] for e in entries}
-    # Prune scope = every is_official row whose file_key is not in the
-    # current manifest set. Using is_official (not owner) catches stale
-    # rows seeded by an earlier system user — observed on 2026-05-21
-    # where a prior deploy left 5 ghost rows owned by a different UUID
-    # for the same email after a re-deploy, so owner-scoped pruning
-    # silently kept them attached to dead file_keys.
-    existing_rows = (
-        await db.execute(select(TrackORM).where(TrackORM.is_official.is_(True)))
-    ).scalars().all()
-    existing_keys = {r.file_key for r in existing_rows}
-
-    pruned = 0
-    for row in existing_rows:
-        if row.file_key not in desired_keys:
-            await db.delete(row)
-            pruned += 1
 
     inserted = 0
     for entry in entries:
