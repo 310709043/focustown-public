@@ -59,6 +59,12 @@ const apiOriginWs = apiOriginHttp.replace(/^http/, "ws");
 // clips from a Cloudflare Worker fronting a *private* R2 bucket; allow
 // that Worker origin (NEXT_PUBLIC_BROADCAST_PROXY_BASE_URL) too when
 // configured so the <video> in Billboard.tsx is not blocked by CSP.
+// Filter helper: accept only http(s) origins so a 'disabled' placeholder
+// baked in by deploy-dev.sh is silently dropped rather than appearing in
+// the CSP header as an invalid source expression.
+const _isHttpOrigin = (s: string) =>
+  s.startsWith("http://") || s.startsWith("https://");
+
 const broadcastProxyHost = (
   process.env.NEXT_PUBLIC_BROADCAST_PROXY_BASE_URL ?? ""
 ).trim();
@@ -66,9 +72,11 @@ const mediaOrigins = [
   ...(process.env.NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS ?? apiOriginHttp)
     .split(",")
     .map((s) => s.trim())
-    .filter(Boolean),
-  ...(broadcastProxyHost ? [broadcastProxyHost] : []),
-].join(" ");
+    .filter(_isHttpOrigin),
+  ...(broadcastProxyHost && _isHttpOrigin(broadcastProxyHost)
+    ? [broadcastProxyHost]
+    : []),
+].join(" ") || apiOriginHttp;
 
 function buildCsp(nonce: string): string {
   // Prod uses `'self' 'unsafe-inline'` (NOT `'self' 'nonce-...' 'unsafe-inline'`

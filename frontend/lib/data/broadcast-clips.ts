@@ -49,9 +49,13 @@ export const BROADCAST_CLIP_IDS: ReadonlyArray<BroadcastClipId> = [
  * fallback (no token fetch, no CSP noise).
  */
 export function broadcastProxyHost(): string {
-  return (process.env.NEXT_PUBLIC_BROADCAST_PROXY_BASE_URL ?? "")
+  const raw = (process.env.NEXT_PUBLIC_BROADCAST_PROXY_BASE_URL ?? "")
     .trim()
     .replace(/\/+$/, "");
+  // Reject placeholder values (e.g. "disabled") baked in by deploy-dev.sh
+  // when R2 / the Cloudflare Worker is not yet provisioned. A valid host
+  // must start with http:// or https://; anything else means "not configured".
+  return raw.startsWith("http://") || raw.startsWith("https://") ? raw : "";
 }
 
 export function isBroadcastConfigured(): boolean {
