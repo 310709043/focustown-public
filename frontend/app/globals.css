@@ -1008,9 +1008,11 @@ body {
 }
 .town-top-hud-inner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+  row-gap: 4px;
   /* Right padding reserves a lane for the fixed LocaleSwitcher
      (`top-3 right-3` in [locale]/layout.tsx) so the right cluster
      (NavButtons + MiniClock + CoinBadge) cannot creep underneath it.
@@ -1038,30 +1040,16 @@ body {
   flex-shrink: 1;
   overflow: hidden;
 }
+.town-top-hud-cluster.is-center {
+  justify-content: center;
+  min-width: 280px;
+}
 .town-top-hud-cluster.is-right { gap: 8px; }
 .town-top-hud-nav-group {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
-}
-
-/* Medium: LEFT + RIGHT stay on row 1 but the centre pill drops to row 2
-   so it doesn't cramp the weather badge or clock/coin. */
-@container town-top-hud (max-width: 960px) {
-  .town-top-hud-inner {
-    flex-wrap: wrap;
-    row-gap: 4px;
-  }
-  .town-top-hud-cluster.is-center {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
-  .town-top-hud-cluster.is-right {
-    order: 2;
-    margin-left: auto;
-  }
 }
 
 @container town-top-hud (max-width: 720px) {
