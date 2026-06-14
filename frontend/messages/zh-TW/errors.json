@@ -26,6 +26,13 @@
   "request_failed": "請求發生問題，請再試一次。",
   "refresh_failed": "您的登入已過期，請重新登入。",
   "malformed_error_body": "發生未預期的狀況，請稍後再試一次。",
+  "load_failed": "載入失敗，請稍後再試一次。",
+  "fetch_failed": "無法取得資料，請稍後再試一次。",
+  "play_failed": "播放失敗，請再試一次。",
+  "playlist_failed": "播放清單操作失敗，請再試一次。",
+  "join_failed": "加入房間失敗，請再試一次。",
+  "leave_failed": "離開房間失敗，請再試一次。",
+  "start_failed": "開始專注失敗，請再試一次。",
   "generic": {
     "network": "您目前似乎沒有連線，請確認網路後再試一次。",
     "server": "伺服器暫時無法回應，請稍後再試一次。",

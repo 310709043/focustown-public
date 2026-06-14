@@ -26,6 +26,13 @@
   "request_failed": "Something went wrong with the request. Please try again.",
   "refresh_failed": "Your session has ended. Please sign in again.",
   "malformed_error_body": "Something unexpected happened. Please try again in a little while.",
+  "load_failed": "Failed to load. Please try again later.",
+  "fetch_failed": "Could not fetch data. Please try again later.",
+  "play_failed": "Playback failed. Please try again.",
+  "playlist_failed": "Playlist update failed. Please try again.",
+  "join_failed": "Could not join the room. Please try again.",
+  "leave_failed": "Could not leave the room. Please try again.",
+  "start_failed": "Could not start the session. Please try again.",
   "generic": {
     "network": "You seem to be offline. Please check your connection and try again.",
     "server": "Our server is not responding right now. Please try again in a moment.",

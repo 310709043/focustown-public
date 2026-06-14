@@ -9,6 +9,7 @@ import {
   selectCurrentTrack,
   useAudioStore,
 } from "@/lib/state/audioStore";
+import { pushInfoToast } from "@/lib/state/toastStore";
 import {
   scopeKey,
   selectActivePlaylistIds,
@@ -398,6 +399,7 @@ export function GlobalAudioMount() {
       eb.failed.add(tid);
       if (eb.failed.size >= s.tracks.length) {
         console.warn("[audio] all tracks failed; switching to local fallback");
+        pushInfoToast("Switched to offline music");
         useAudioStore.setState({ tracks: LOCAL_FALLBACK_TRACKS, index: 0 });
         eb.failed.clear();
         return;
