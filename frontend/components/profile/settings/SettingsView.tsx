@@ -222,7 +222,7 @@ export function SettingsView({ onClose }: SettingsViewProps) {
           >
             {[2, 4, 6, 8].map((n) => (
               <option key={n} value={n}>
-                {n} 🍅
+                {n} 🔋
               </option>
             ))}
           </select>

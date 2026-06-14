@@ -177,7 +177,7 @@ function FriendRow({ friend }: { friend: FocusingNowItem }) {
           className="font-silkscreen"
           style={{ fontSize: 8, color: "var(--accent-3)", letterSpacing: "0.1em" }}
         >
-          🍅 {minutes}m
+          🔋 {minutes}m
         </span>
       </div>
       <button

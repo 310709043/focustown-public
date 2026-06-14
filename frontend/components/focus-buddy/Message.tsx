@@ -44,11 +44,14 @@ export function MessageView({
         style={{
           alignSelf: "center",
           fontSize: 9,
-          color: "var(--ink-dim)",
+          color: "var(--dim)",
           letterSpacing: "0.15em",
-          padding: "4px 10px",
-          background: "rgba(0,0,0,0.3)",
-          border: "1px dashed var(--panel-stroke)",
+          padding: "5px 14px",
+          background: "rgba(12, 16, 32, 0.6)",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--r)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
         }}
       >
         {msg.text}
@@ -58,14 +61,14 @@ export function MessageView({
   const isMe = msg.who === "me";
   const avatar = isMe ? meAvatar : buddyAvatar;
   const name = isMe ? meName : buddyName;
-  const color = isMe ? "var(--accent)" : "var(--accent-2)";
+  const color = isMe ? "var(--a1)" : "var(--accent-2)";
   return (
     <div
       data-testid={`chat-msg-${msg.kind}`}
       style={{
         display: "flex",
         flexDirection: isMe ? "row-reverse" : "row",
-        gap: 8,
+        gap: 10,
         alignItems: "flex-start",
       }}
     >
@@ -76,7 +79,7 @@ export function MessageView({
           display: "flex",
           flexDirection: "column",
           alignItems: isMe ? "flex-end" : "flex-start",
-          gap: 2,
+          gap: 3,
         }}
       >
         <div
@@ -86,35 +89,38 @@ export function MessageView({
             gap: 6,
             alignItems: "center",
             fontSize: 9,
-            color: "var(--ink-mute)",
+            color: "var(--dim)",
           }}
         >
           <span style={{ color }}>{name}</span>
-          <span>·</span>
+          <span style={{ opacity: 0.4 }}>·</span>
           <span>{msg.time}</span>
           {msg.kind === "note" ? (
-            <span style={{ color: "var(--accent-3)" }}>{noteLabel}</span>
+            <span style={{ color: "var(--accent-3)", opacity: 0.8 }}>{noteLabel}</span>
           ) : null}
         </div>
         <div
           style={{
-            padding: msg.kind === "note" ? "8px 12px" : "6px 10px",
+            padding: msg.kind === "note" ? "10px 14px" : "8px 12px",
             background:
               msg.kind === "note"
-                ? "rgba(34,211,238,0.08)"
+                ? "rgba(145, 168, 196, 0.08)"
                 : isMe
-                  ? "rgba(183,148,246,0.12)"
-                  : "rgba(236,72,153,0.1)",
+                  ? "linear-gradient(135deg, rgba(233, 167, 110, 0.12) 0%, rgba(233, 167, 110, 0.06) 100%)"
+                  : "rgba(12, 16, 32, 0.5)",
             border: `1px solid ${
-              msg.kind === "note" ? "var(--accent-3)" : `${color}`
-            }55`,
+              msg.kind === "note" ? "var(--a4-soft)" : `${color}30`
+            }`,
+            borderRadius: "var(--r)",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
             fontFamily:
               msg.kind === "note"
                 ? 'var(--font-vt323), "Noto Sans TC", monospace'
                 : '"Noto Sans TC", sans-serif',
-            fontSize: msg.kind === "note" ? 15 : 12,
-            lineHeight: 1.5,
-            color: "var(--ink)",
+            fontSize: msg.kind === "note" ? 15 : 13,
+            lineHeight: 1.6,
+            color: "var(--text)",
             whiteSpace: "pre-wrap",
           }}
         >

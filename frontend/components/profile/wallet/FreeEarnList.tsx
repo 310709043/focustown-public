@@ -9,7 +9,7 @@ interface EarnRow {
 }
 
 const EARN_ROWS: EarnRow[] = [
-  { key: "pomodoro", icon: "🍅", amount: 5 },
+  { key: "pomodoro", icon: "🔋", amount: 5 },
   { key: "deepNight", icon: "🌙", amount: 10 },
   { key: "groupFocus", icon: "♟", amount: 15 },
   { key: "streak", icon: "🔥", amount: 50 },

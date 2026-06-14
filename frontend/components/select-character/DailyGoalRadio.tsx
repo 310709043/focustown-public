@@ -10,7 +10,7 @@ interface DailyGoalRadioProps {
 }
 
 /**
- * Four-button radio for daily focus-session goal (2/4/6/8 🍅). The
+ * Four-button radio for daily focus-session goal (2/4/6/8 🔋). The
  * subtitle line computes the equivalent minutes inline so the user
  * can sanity-check what each preset translates to.
  */
@@ -39,7 +39,7 @@ export function DailyGoalRadio({ value, onChange }: DailyGoalRadioProps) {
               fontSize: 11,
             }}
           >
-            {n} 🍅
+            {n} 🔋
           </button>
         ))}
       </div>

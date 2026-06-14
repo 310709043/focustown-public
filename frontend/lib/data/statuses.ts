@@ -17,7 +17,7 @@ export type Status = {
 };
 
 export const STATUSES: Status[] = [
-  { code: "focus",  emoji: "🍅", color: "var(--teal)" },
+  { code: "focus",  emoji: "🔋", color: "var(--teal)" },
   { code: "break",  emoji: "☕", color: "var(--amber)" },
   { code: "deep",   emoji: "🔮", color: "var(--a1)" },
   { code: "read",   emoji: "📚", color: "var(--pink)" },

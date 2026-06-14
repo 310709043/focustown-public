@@ -90,7 +90,7 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         {/* Header */}
         <div className="hud-panel-header">
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span aria-hidden style={{ fontSize: 16, lineHeight: 1 }}>🍅</span>
+            <span aria-hidden style={{ fontSize: 16, lineHeight: 1 }}>🔋</span>
             <span
               className="font-silkscreen"
               style={{

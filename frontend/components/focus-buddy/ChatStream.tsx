@@ -147,14 +147,20 @@ export function ChatStream({
 
   const modeBtnStyle = (active: boolean) =>
     ({
-      padding: "4px 10px",
+      padding: "5px 12px",
       fontSize: 10,
       fontFamily: "var(--font-silkscreen), monospace",
-      background: active ? "var(--accent)" : "rgba(0,0,0,0.4)",
-      color: active ? "#0a0524" : "var(--ink-mute)",
-      border: `1px solid ${active ? "var(--accent)" : "var(--panel-stroke)"}`,
+      background: active
+        ? "linear-gradient(180deg, rgba(233, 167, 110, 0.2) 0%, rgba(233, 167, 110, 0.1) 100%)"
+        : "rgba(0, 0, 0, 0.3)",
+      color: active ? "var(--a1)" : "var(--dim)",
+      border: `1px solid ${active ? "var(--a1-soft)" : "var(--border)"}`,
+      borderRadius: "var(--r)",
       letterSpacing: "0.1em",
       cursor: "pointer",
+      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+      backdropFilter: "blur(4px)",
+      WebkitBackdropFilter: "blur(4px)",
     }) as const;
 
   return (
@@ -165,11 +171,12 @@ export function ChatStream({
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: 14,
+          padding: "16px 14px",
           display: "flex",
           flexDirection: "column",
-          gap: 10,
-          background: "rgba(7,4,26,0.3)",
+          gap: 12,
+          background: "rgba(12, 16, 32, 0.4)",
+          borderRadius: "var(--r2) var(--r2) 0 0",
         }}
       >
         {messages.map((m) => (
@@ -186,15 +193,18 @@ export function ChatStream({
       </div>
       <div
         style={{
-          borderTop: "1px solid var(--panel-stroke)",
-          padding: 10,
+          borderTop: "1px solid var(--glass-border)",
+          padding: "12px 14px",
           display: "flex",
           flexDirection: "column",
-          gap: 6,
-          background: "rgba(7,4,26,0.6)",
+          gap: 8,
+          background: "rgba(12, 16, 32, 0.7)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          borderRadius: "0 0 var(--r2) var(--r2)",
         }}
       >
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           <button
             type="button"
             data-testid="chat-mode-chat"
@@ -212,7 +222,7 @@ export function ChatStream({
             ✎ {t("modeNote")}
           </button>
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           <input
             data-testid="chat-input"
             className="pixel-input"
@@ -225,14 +235,14 @@ export function ChatStream({
                 void send();
               }
             }}
-            style={{ flex: 1, fontSize: 12 }}
+            style={{ flex: 1, fontSize: 13, borderRadius: "var(--r)" }}
           />
           <button
             type="button"
             data-testid="chat-send"
             onClick={() => void send()}
             className="pixel-btn primary"
-            style={{ padding: "0 18px" }}
+            style={{ padding: "0 20px", borderRadius: "var(--r)" }}
           >
             →
           </button>

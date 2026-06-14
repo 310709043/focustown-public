@@ -105,7 +105,7 @@ export function BuddyCard({
           color: "var(--ink-mute)",
         }}
       >
-        <span>🍅 {tomatoes ?? defaultTomatoes}</span>
+        <span>🔋 {tomatoes ?? defaultTomatoes}</span>
         <span>·</span>
         <span>⏱ {minutes ?? defaultMinutes}min</span>
       </div>
