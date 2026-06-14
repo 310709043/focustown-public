@@ -33,7 +33,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       if (mode === "login") {
         await login(email, password);
       } else {
-        await register(email, password, displayName || email.split("@")[0]);
+        const autoEmail = `${displayName.toLowerCase().replace(/\s+/g, "")}@lbt.local`;
+        await register(autoEmail, password, displayName);
       }
       onLogin();
     } catch (err) {
@@ -65,21 +66,23 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </div>
         )}
 
-        {mode === "register" && (
+        {mode === "register" ? (
           <input
             type="text"
             placeholder="Display Name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
+            required
+          />
+        ) : (
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
         )}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
         <input
           type="password"
           placeholder="Password"
