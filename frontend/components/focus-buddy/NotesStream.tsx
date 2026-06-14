@@ -34,10 +34,8 @@ export function NotesStream({ matchId }: NotesStreamProps) {
     let cancelled = false;
     (async () => {
       try {
-        const page = await notesApi.list({ matchId });
-        const shared = page.items.find(
-          (n: NoteWithShare) => n.shared_in_match_id === matchId,
-        );
+        const page = await notesApi.list({ matchId, sharedOnly: true });
+        const shared = page.items[0];
         if (!cancelled && shared) {
           setNoteId(shared.id);
           setBody(shared.body ?? "");

@@ -30,15 +30,18 @@ class FakeNoteRepo(INoteRepo):
         user_id: str,
         *,
         include_shared_in_match_id: str | None = None,
+        shared_only: bool = False,
         cursor: str | None = None,
         limit: int = 50,
     ) -> list[NoteRecord]:
         out: list[NoteRecord] = []
         for r in self.rows.values():
-            if r.user_id == user_id:
+            if shared_only and include_shared_in_match_id is not None:
+                if r.shared_in_match_id == include_shared_in_match_id:
+                    out.append(r)
+            elif r.user_id == user_id:
                 out.append(r)
-                continue
-            if (
+            elif (
                 include_shared_in_match_id is not None
                 and r.shared_in_match_id == include_shared_in_match_id
             ):
@@ -169,6 +172,26 @@ async def test_list_with_match_id_includes_partner_shared_notes() -> None:
     out = await svc.list_for_user(user_id="alice", match_id="m-1")
 
     assert {n.id for n in out} == {"n-bob"}
+
+
+@pytest.mark.asyncio
+async def test_list_shared_only_excludes_own_notes() -> None:
+    svc, repo, matches = _service()
+    _seed_match(matches, match_id="m-1", a="alice", b="bob")
+    await repo.create(note_id="n-mine", user_id="alice", title="Mine", body="")
+    await repo.create(
+        note_id="n-bob",
+        user_id="bob",
+        title="Bob",
+        body="",
+        shared_in_match_id="m-1",
+    )
+
+    out = await svc.list_for_user(
+        user_id="alice", match_id="m-1", shared_only=True,
+    )
+
+    assert [n.id for n in out] == ["n-bob"]
 
 
 @pytest.mark.asyncio

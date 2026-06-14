@@ -25,6 +25,7 @@ class INoteRepo(Protocol):
         user_id: str,
         *,
         include_shared_in_match_id: str | None = None,
+        shared_only: bool = False,
         cursor: str | None = None,
         limit: int = 50,
     ) -> list[NoteRecord]:

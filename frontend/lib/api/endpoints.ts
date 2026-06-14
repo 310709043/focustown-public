@@ -403,10 +403,11 @@ export const feedbackApi = {
 };
 
 export const notesApi = {
-  list(opts: { matchId?: string } = {}) {
-    const qs = opts.matchId
-      ? `?match_id=${encodeURIComponent(opts.matchId)}`
-      : "";
+  list(opts: { matchId?: string; sharedOnly?: boolean } = {}) {
+    const params = new URLSearchParams();
+    if (opts.matchId) params.set("match_id", opts.matchId);
+    if (opts.sharedOnly) params.set("shared_only", "true");
+    const qs = params.toString() ? `?${params.toString()}` : "";
     return apiFetch<Page<NoteWithShare>>(`/api/v1/notes${qs}`, { method: "GET" });
   },
   create(input: { title?: string; body?: string; shared_in_match_id?: string | null }) {

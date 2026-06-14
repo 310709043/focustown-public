@@ -43,14 +43,18 @@ async def list_notes(
     db: DbDep,
     ids: IdGenDep,
     match_id: str | None = Query(None, max_length=36),
+    shared_only: bool = Query(False),
     cursor: str | None = Query(None, max_length=256),
     limit: int = Query(50, ge=1, le=100),
 ) -> Page[NoteResponse]:
     """Owner's notes. If ``match_id`` is given and the user is a
-    member of that match, also include notes shared into the match."""
+    member of that match, also include notes shared into the match.
+    If ``shared_only`` is true, return only the shared notes
+    (not the caller's own notes)."""
     svc = _service(db, ids)
     rows = await svc.list_for_user(
-        user_id=user_id, match_id=match_id, cursor=cursor, limit=limit
+        user_id=user_id, match_id=match_id, shared_only=shared_only,
+        cursor=cursor, limit=limit,
     )
     return build_page(
         rows,

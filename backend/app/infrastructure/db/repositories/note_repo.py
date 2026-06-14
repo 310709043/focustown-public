@@ -32,10 +32,16 @@ class SqlNoteRepo(INoteRepo):
         user_id: str,
         *,
         include_shared_in_match_id: str | None = None,
+        shared_only: bool = False,
         cursor: str | None = None,
         limit: int = 50,
     ) -> list[NoteRecord]:
-        if include_shared_in_match_id is None:
+        if shared_only and include_shared_in_match_id is not None:
+            # Only notes shared into this match (from either partner).
+            stmt = select(NoteORM).where(
+                NoteORM.shared_in_match_id == include_shared_in_match_id,
+            )
+        elif include_shared_in_match_id is None:
             stmt = select(NoteORM).where(NoteORM.user_id == user_id)
         else:
             # Own notes + any note shared into this match (including
