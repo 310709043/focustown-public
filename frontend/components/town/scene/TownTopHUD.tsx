@@ -74,7 +74,7 @@ const SCENE_TEMP: Record<SceneName, number> = {
  *
  * Three clusters separated by `space-between`:
  *  • LEFT: LBT logo + v1.4.0 + scene/weather/temp + ONLINE N
- *  • CENTER: `UserStatusPill` (avatar, name, LV, focusing status, tomato strip)
+ *  • CENTER: `UserStatusPill` (avatar, name, LV, focusing status, battery strip)
  *  • RIGHT: ACHV / SHOP / FRDS nav + my-room + clock + T-coin
  *
  * Click handlers wire roomApi.getMine and leaderboard nav; sign-out lives
@@ -140,11 +140,9 @@ export function TownTopHUD({
            City-Mode immersive keeps the LOGO + weather chip anchored; the
            version chip + ONLINE chip collapse upward so the sky breathes. */}
       <div className="town-top-hud-cluster is-left">
-        {/* `flex-shrink: 0` prevents the 712×284 wordmark from being
-            crushed by the pills next to it (the squashed-blob bug
-            visible in image.png). Scale 1.3 keeps the "Low Battery
-            Town" text legible at HUD size. */}
-        <div style={{ flexShrink: 0, lineHeight: 0 }}>
+        {/* Logo shrinks on narrow viewports to prevent overflow.
+            Min-width: 0 allows flex-shrink to work properly. */}
+        <div style={{ flexShrink: 1, minWidth: 0, lineHeight: 0 }}>
           <Logo scale={1.3} />
         </div>
         <div

@@ -28,7 +28,7 @@ interface SharedTimerProps {
 export function SharedTimer({ matchId }: SharedTimerProps) {
   useTimer();
   const t = useTranslations("focus.buddy.sharedTimer");
-  const { mode, remaining, durationSeconds, running, tomatoCount, start, pause, reset } =
+  const { mode, remaining, durationSeconds, running, batteryCount, start, pause, reset } =
     useTimerStore();
 
   const total = Math.max(1, durationSeconds);
@@ -57,9 +57,9 @@ export function SharedTimer({ matchId }: SharedTimerProps) {
             letterSpacing: "0.25em",
           }}
         >
-          ● {mode === "focus" ? t("headerFocus", { num: tomatoCount + 1 }) : t("headerBreak")}
+          ● {mode === "focus" ? t("headerFocus", { num: batteryCount + 1 }) : t("headerBreak")}
         </span>
-        <BatteryStrip count={tomatoCount} max={8} scale={1.3} gap={3} />
+        <BatteryStrip count={batteryCount} max={8} scale={1.3} gap={3} />
       </div>
 
       <div

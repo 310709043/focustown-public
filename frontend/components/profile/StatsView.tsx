@@ -102,7 +102,7 @@ export function StatsView({ onClose }: StatsViewProps) {
       </header>
 
       <KpiRow
-        totalTomatoes={stats.kpis.totalTomatoes}
+        totalBatteries={stats.kpis.totalBatteries}
         allTimeFocusHours={stats.kpis.allTimeFocusHours}
         streakDays={stats.kpis.streakDays}
         weeklyRank={stats.kpis.weeklyRank}

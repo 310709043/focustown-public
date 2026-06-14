@@ -5,14 +5,14 @@ import { useTranslations } from "next-intl";
 import { KpiCard } from "./KpiCard";
 
 interface KpiRowProps {
-  totalTomatoes: number;
+  totalBatteries: number;
   allTimeFocusHours: number;
   streakDays: number;
   weeklyRank: number;
 }
 
 export function KpiRow({
-  totalTomatoes,
+  totalBatteries,
   allTimeFocusHours,
   streakDays,
   weeklyRank,
@@ -28,7 +28,7 @@ export function KpiRow({
         gap: 12,
       }}
     >
-      <KpiCard accent="tomato" value={String(totalTomatoes)} label={t("tomatoes")} />
+      <KpiCard accent="battery" value={String(totalBatteries)} label={t("tomatoes")} />
       <KpiCard
         accent="focus"
         value={t("valueWithUnitHours", { value: allTimeFocusHours })}

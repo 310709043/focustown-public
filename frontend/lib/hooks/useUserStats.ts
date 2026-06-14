@@ -19,7 +19,7 @@ import type { Achievement, User } from "@/lib/api/types.gen";
  */
 export interface UserStats {
   kpis: {
-    totalTomatoes: number;
+    totalBatteries: number;
     allTimeFocusHours: number;
     streakDays: number;
     weeklyRank: number;
@@ -87,7 +87,7 @@ export function useUserStats(user: Pick<User, "id"> | null): UserStats {
 
   return {
     kpis: {
-      totalTomatoes: stats.total_tomatoes,
+      totalBatteries: stats.total_tomatoes,
       allTimeFocusHours: stats.all_time_focus_hours,
       streakDays: stats.streak_days,
       weeklyRank: stats.weekly_rank,

@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { sessionsApi } from "../api/endpoints";
 import type { FocusSession, FocusSessionMode } from "../api/types.gen";
+import { pushErrorToast } from "./toastStore";
 
 interface TimerState {
   mode: FocusSessionMode;
@@ -11,7 +12,7 @@ interface TimerState {
   running: boolean;
   starting: boolean;
   session: FocusSession | null;
-  tomatoCount: number;
+  batteryCount: number;
   completionError: boolean;
   setMode: (m: FocusSessionMode, seconds: number) => void;
   start: (taskLabel?: string, partnerId?: string | null) => Promise<void>;
@@ -35,7 +36,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   running: false,
   starting: false,
   session: null,
-  tomatoCount: 0,
+  batteryCount: 0,
   completionError: false,
 
   setMode(m, seconds) {
@@ -54,6 +55,8 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         partner_user_id: partnerId ?? null,
       });
       set({ session, running: true, remaining: session.remaining_seconds });
+    } catch (err) {
+      pushErrorToast(err instanceof Error ? err.message : "Failed to start session");
     } finally {
       set({ starting: false });
     }
@@ -79,14 +82,14 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   },
 
   async complete() {
-    const { session, tomatoCount, mode } = get();
+    const { session, batteryCount, mode } = get();
     if (!session) return;
     try {
       await sessionsApi.complete(session.id);
       set({
         session: null,
         completionError: false,
-        tomatoCount: mode === "focus" ? Math.min(4, tomatoCount + 1) : tomatoCount,
+        batteryCount: mode === "focus" ? Math.min(4, batteryCount + 1) : batteryCount,
       });
     } catch {
       // Keep session so user can retry; surface the error in UI.

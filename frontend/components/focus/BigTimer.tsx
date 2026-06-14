@@ -16,7 +16,7 @@ interface BigTimerProps {
 }
 
 /**
- * Solo-room timer card. Header (● DEEP FOCUS / BREAK + 8 tomato strip),
+ * Solo-room timer card. Header (● DEEP FOCUS / BREAK + 8 battery strip),
  * huge `PixelDigits` countdown, progress bar, two control buttons
  * (reset / play-pause), and a 3-stat footer. Skip / fast-forward was
  * dropped 2026-05-20 — the timer must only pause and restart, never
@@ -33,7 +33,7 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
     durationSeconds,
     running,
     starting,
-    tomatoCount,
+    batteryCount,
     start,
     pause,
     reset,
@@ -55,7 +55,7 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
     >
       <CornerDeco />
 
-      {/* Header — mode label + 8 tomato strip. */}
+      {/* Header — mode label + 8 battery strip. */}
       <div
         style={{
           display: "flex",
@@ -73,7 +73,7 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
         >
           ● {mode === "focus" ? t("headerFocus") : t("headerBreak")}
         </div>
-        <BatteryStrip count={tomatoCount} max={8} scale={1.4} />
+        <BatteryStrip count={batteryCount} max={8} scale={1.4} />
       </div>
 
       {/* Big timer */}

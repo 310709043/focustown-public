@@ -5,13 +5,13 @@
  * stuck on LV 4 / 4/8 🔋 / 22 min regardless of the signed-in user.
  *
  * Worth testing:
- *  - Level + tomato totals reflect what `useUserStats` returns
+ *  - Level + battery totals reflect what `useUserStats` returns
  *    (sourced from `/users/me/stats`).
  *  - Idle vs focusing branch flips based on `useTimerStore.running`
  *    + `mode === "focus"`.
  *  - Minutes label reads from `timerStore.remaining`, not a fixed 22.
- *  - Tomato strip never shrinks below the visual cap of 8 cells, and
- *    a power user with 12 tomatoes shows 12 in the trailing counter.
+ *  - Battery strip never shrinks below the visual cap of 8 cells, and
+ *    a power user with 12 batteries shows 12 in the trailing counter.
  *
  * NOT worth testing:
  *  - Avatar sprite — visual; covered by Playwright pixel checks.
@@ -31,12 +31,12 @@ vi.mock("@/lib/hooks/useUserStats", () => ({
 }));
 
 function statsFixture(overrides: Partial<{
-  totalTomatoes: number;
+  totalBatteries: number;
   level: number;
 }> = {}) {
   return {
     kpis: {
-      totalTomatoes: overrides.totalTomatoes ?? 0,
+      totalBatteries: overrides.totalBatteries ?? 0,
       allTimeFocusHours: 0,
       streakDays: 0,
       weeklyRank: 0,
@@ -64,7 +64,7 @@ beforeEach(() => {
     running: false,
     starting: false,
     session: null,
-    tomatoCount: 0,
+    batteryCount: 0,
   });
   useUserStatsMock.mockReturnValue(statsFixture());
 });
@@ -73,9 +73,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-test("level + tomato count come from useUserStats, not a hardcoded LV.4", () => {
+test("level + battery count come from useUserStats, not a hardcoded LV.4", () => {
   useUserStatsMock.mockReturnValue(
-    statsFixture({ totalTomatoes: 3, level: 7 }),
+    statsFixture({ totalBatteries: 3, level: 7 }),
   );
 
   render(<UserStatusPill />);
@@ -83,7 +83,7 @@ test("level + tomato count come from useUserStats, not a hardcoded LV.4", () => 
   expect(screen.getByTestId("user-status-pill-level")).toHaveTextContent(
     '"level":7',
   );
-  expect(screen.getByTestId("user-status-pill-tomatoes")).toHaveTextContent(
+  expect(screen.getByTestId("user-status-pill-batteries")).toHaveTextContent(
     "3",
   );
 });
@@ -100,7 +100,7 @@ test("idle status shows the 'idle' branch with no minutes pill", () => {
 
 test("focusing status shows focusing branch + live minute remaining", () => {
   useUserStatsMock.mockReturnValue(
-    statsFixture({ totalTomatoes: 4, level: 3 }),
+    statsFixture({ totalBatteries: 4, level: 3 }),
   );
   useTimerStore.setState({
     mode: "focus",
@@ -109,7 +109,7 @@ test("focusing status shows focusing branch + live minute remaining", () => {
     running: true,
     starting: false,
     session: null,
-    tomatoCount: 4,
+    batteryCount: 4,
   });
 
   render(<UserStatusPill />);
@@ -117,8 +117,8 @@ test("focusing status shows focusing branch + live minute remaining", () => {
   expect(screen.getByTestId("user-status-pill-status")).toHaveTextContent(
     "focusing",
   );
-  // count = tomatoesToday + 1 (the in-progress one) — confirms we pull
-  // tomato base from useUserStats, not a stale prop.
+  // count = batteriesToday + 1 (the in-progress one) — confirms we pull
+  // battery base from useUserStats, not a stale prop.
   expect(screen.getByTestId("user-status-pill-status")).toHaveTextContent(
     '"count":5',
   );
@@ -137,7 +137,7 @@ test("break/long modes don't trigger the focusing copy even while running", () =
     running: true,
     starting: false,
     session: null,
-    tomatoCount: 0,
+    batteryCount: 0,
   });
 
   render(<UserStatusPill />);

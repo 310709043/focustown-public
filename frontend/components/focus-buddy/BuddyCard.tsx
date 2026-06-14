@@ -16,8 +16,8 @@ interface BuddyCardProps {
   };
   /** `me` = purple accent glow + accent text; `buddy` = pink accent-2. */
   side: "me" | "buddy";
-  /** Tomato count + minutes — defaults to per-side seed when omitted. */
-  tomatoes?: number;
+  /** Battery count + minutes — defaults to per-side seed when omitted. */
+  batteries?: number;
   minutes?: number;
   /** Tags rendered as `<Pill>` chips. Defaults to a localized demo pair. */
   tags?: ReadonlyArray<string>;
@@ -25,13 +25,13 @@ interface BuddyCardProps {
 
 /**
  * One half of `<BuddyHeaderCard>` — pixel sprite with side-colored glow,
- * green presence dot, name + role/level, 2 task pills, tomato + minutes
+ * green presence dot, name + role/level, 2 task pills, battery + minutes
  * stats. Reference: screen-buddy.jsx:L230-L252.
  */
 export function BuddyCard({
   profile,
   side,
-  tomatoes,
+  batteries,
   minutes,
   tags,
 }: BuddyCardProps) {
@@ -39,7 +39,7 @@ export function BuddyCard({
   const resolvedTags = tags ?? [t("demoTagWriting"), "#lofi"];
   const isMe = side === "me";
   const color = isMe ? "var(--accent)" : "var(--accent-2)";
-  const defaultTomatoes = isMe ? 9 : 11;
+  const defaultBatteries = isMe ? 9 : 11;
   const defaultMinutes = isMe ? 142 : 275;
   return (
     <div
@@ -105,7 +105,7 @@ export function BuddyCard({
           color: "var(--ink-mute)",
         }}
       >
-        <span>🔋 {tomatoes ?? defaultTomatoes}</span>
+        <span>🔋 {batteries ?? defaultBatteries}</span>
         <span>·</span>
         <span>⏱ {minutes ?? defaultMinutes}min</span>
       </div>

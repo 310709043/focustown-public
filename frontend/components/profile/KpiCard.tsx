@@ -6,7 +6,7 @@ import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { BATTERY, TROPHY } from "@/lib/pixel/sprites/props";
 import type { Palette } from "@/lib/pixel/sprite";
 
-export type KpiAccent = "tomato" | "focus" | "streak" | "rank";
+export type KpiAccent = "battery" | "focus" | "streak" | "rank";
 
 interface KpiCardProps {
   accent: KpiAccent;
@@ -58,7 +58,7 @@ P.....P...
 const CLOCK_PALETTE: Palette = { P: "#f472b6", C: "#22d3ee", A: "#a78bfa" };
 
 const ACCENTS: Record<KpiAccent, AccentSpec> = {
-  tomato: {
+  battery: {
     border: "#fb7185",
     glow: "0 0 16px rgba(251,113,133,0.45)",
     valueColor: "#fcd34d",

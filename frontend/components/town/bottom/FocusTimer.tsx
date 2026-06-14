@@ -37,7 +37,7 @@ export function FocusTimer() {
     durationSeconds,
     running,
     starting,
-    tomatoCount,
+    batteryCount,
     session,
     completionError,
     start,
@@ -115,7 +115,7 @@ export function FocusTimer() {
           </span>
           <span>
             {mode === "focus"
-              ? t("modeFocus", { num: tomatoCount + 1 })
+              ? t("modeFocus", { num: batteryCount + 1 })
               : t("modeBreak")}
           </span>
         </div>
@@ -123,7 +123,7 @@ export function FocusTimer() {
           className="font-silkscreen"
           style={{ fontSize: 10, color: "var(--ink-mute)" }}
         >
-          {t("progressLabel", { count: tomatoCount, total: 8 })}
+          {t("progressLabel", { count: batteryCount, total: 8 })}
         </span>
       </div>
 

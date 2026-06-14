@@ -28,7 +28,7 @@ export function ImmersiveCountdown() {
   const mode = useTimerStore((s) => s.mode);
   const remaining = useTimerStore((s) => s.remaining);
   const durationSeconds = useTimerStore((s) => s.durationSeconds);
-  const tomatoCount = useTimerStore((s) => s.tomatoCount);
+  const batteryCount = useTimerStore((s) => s.batteryCount);
   const pause = useTimerStore((s) => s.pause);
 
   const total = Math.max(1, durationSeconds);
@@ -39,7 +39,7 @@ export function ImmersiveCountdown() {
   const modeLabel =
     mode === "focus" ? t("modeLabel") : t("modeLabelBreak");
   const suffix =
-    mode === "focus" ? t("pomodoroSuffix", { num: tomatoCount + 1 }) : "";
+    mode === "focus" ? t("pomodoroSuffix", { num: batteryCount + 1 }) : "";
 
   return (
     <div
@@ -123,13 +123,14 @@ export function ImmersiveCountdown() {
         className="font-silkscreen"
         style={{
           marginTop: 4,
-          padding: "4px 10px",
+          padding: "8px 16px",
           background: "transparent",
           border: "none",
           color: "var(--ink-mute)",
-          fontSize: 10,
+          fontSize: 12,
           letterSpacing: "0.24em",
           cursor: "pointer",
+          minHeight: 44,
           opacity: visible ? 0.75 : 0,
           transition: reduceMotion
             ? "none"

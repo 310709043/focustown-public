@@ -6,7 +6,7 @@
  * - tick() decrements remaining while running
  * - tick() is a no-op when paused
  * - tick() at remaining=1 flips to 0 and stops, then calls complete()
- * - tomatoCount increments (capped at 4) on focus completion
+ * - batteryCount increments (capped at 4) on focus completion
  *
  * NOT worth testing:
  * - The interval-id wiring; tests drive tick() directly so we don't depend
@@ -31,7 +31,7 @@ beforeEach(() => {
     remaining: 1500,
     running: false,
     session: null,
-    tomatoCount: 0,
+    batteryCount: 0,
   });
 });
 
@@ -73,27 +73,27 @@ test("tick at remaining=1 zeroes out and stops", async () => {
   expect(useTimerStore.getState().running).toBe(false);
 });
 
-test("focus completion bumps tomatoCount (capped at 4)", async () => {
+test("focus completion bumps batteryCount (capped at 4)", async () => {
   useTimerStore.setState({
     mode: "focus",
-    tomatoCount: 3,
+    batteryCount: 3,
     session: makeFocusSession(),
   });
   await useTimerStore.getState().complete();
-  expect(useTimerStore.getState().tomatoCount).toBe(4);
+  expect(useTimerStore.getState().batteryCount).toBe(4);
 
   // Already at cap — does not exceed 4.
   useTimerStore.setState({ session: makeFocusSession() });
   await useTimerStore.getState().complete();
-  expect(useTimerStore.getState().tomatoCount).toBe(4);
+  expect(useTimerStore.getState().batteryCount).toBe(4);
 });
 
-test("non-focus completion does NOT bump tomatoCount", async () => {
+test("non-focus completion does NOT bump batteryCount", async () => {
   useTimerStore.setState({
     mode: "short",
-    tomatoCount: 2,
+    batteryCount: 2,
     session: makeFocusSession({ mode: "short" }),
   });
   await useTimerStore.getState().complete();
-  expect(useTimerStore.getState().tomatoCount).toBe(2);
+  expect(useTimerStore.getState().batteryCount).toBe(2);
 });

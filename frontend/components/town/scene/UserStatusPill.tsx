@@ -15,17 +15,17 @@ interface UserStatusPillProps {
   onClick?: () => void;
 }
 
-const TOMATO_STRIP_LEN = 8;
+const BATTERY_STRIP_LEN = 8;
 
 /**
  * The center pill of the town top HUD: avatar tile (with the user's
  * pixel sprite + online green dot) + name + LV badge + status line +
- * tomato chip strip.
+ * battery chip strip.
  *
- * All numbers are live: tomato count + level from `/users/me/stats`,
+ * All numbers are live: battery count + level from `/users/me/stats`,
  * focus state from the local timer store. The 8-cell strip caps the
  * visual width — overflow past 8 is conveyed by the trailing `N/M`
- * counter so a power user with 23 tomatoes today still sees the real
+ * counter so a power user with 23 batteries today still sees the real
  * total in text. Nothing is hardcoded.
  */
 export function UserStatusPill({ onClick }: UserStatusPillProps) {
@@ -37,10 +37,10 @@ export function UserStatusPill({ onClick }: UserStatusPillProps) {
   const t = useTranslations("town.statusPill");
   const avatar = characterKeyToAvatar(user?.character_key);
 
-  const totalTomatoes = stats.kpis.totalTomatoes;
-  const stripLen = Math.max(TOMATO_STRIP_LEN, totalTomatoes);
-  const filled = Math.min(stripLen, totalTomatoes);
-  const tomatoes = Array.from({ length: stripLen });
+  const totalBatteries = stats.kpis.totalBatteries;
+  const stripLen = Math.max(BATTERY_STRIP_LEN, totalBatteries);
+  const filled = Math.min(stripLen, totalBatteries);
+  const batteries = Array.from({ length: stripLen });
   const minutesRemaining = Math.max(0, Math.ceil(timerRemaining / 60));
   return (
     <button
@@ -155,7 +155,7 @@ export function UserStatusPill({ onClick }: UserStatusPillProps) {
             style={{ color: "var(--accent-2)", letterSpacing: "0.15em" }}
           >
             {timerRunning && timerMode === "focus"
-              ? t("focusing", { count: totalTomatoes + 1 })
+              ? t("focusing", { count: totalBatteries + 1 })
               : t("idle")}
           </span>
           {timerRunning ? (
@@ -180,7 +180,7 @@ export function UserStatusPill({ onClick }: UserStatusPillProps) {
           alignItems: "center",
         }}
       >
-        {tomatoes.map((_, i) => (
+        {batteries.map((_, i) => (
           <PixelSprite
             key={i}
             sprite={BATTERY.sprite}
@@ -191,10 +191,10 @@ export function UserStatusPill({ onClick }: UserStatusPillProps) {
           />
         ))}
         <span
-          data-testid="user-status-pill-tomatoes"
+          data-testid="user-status-pill-batteries"
           style={{ fontSize: 10, color: "var(--ink-dim)", marginLeft: 4 }}
         >
-          {totalTomatoes}
+          {totalBatteries}
         </span>
       </div>
     </button>
