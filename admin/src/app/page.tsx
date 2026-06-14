@@ -3,107 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   adminFetch,
-  clearTokens,
-  isLoggedIn,
-  login,
-  register,
   type AdminFeedbackItem,
   type AdminFeedbackList,
   type AdminUserList,
   type OverviewStats,
 } from "@/lib/api";
-
-/* ══════════════════════════════════════
-   Login Screen
-   ══════════════════════════════════════ */
-
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [displayName, setDisplayName] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      if (mode === "login") {
-        await login(displayName, password);
-      } else {
-        const autoEmail = `${displayName.toLowerCase().replace(/\s+/g, "")}@lowbatterytown.com`;
-        await register(autoEmail, password, displayName);
-      }
-      onLogin();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : mode === "login" ? "Login failed" : "Registration failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-      <form
-        onSubmit={(e) => void handleSubmit(e)}
-        className="panel"
-        style={{ padding: 32, width: 360, display: "flex", flexDirection: "column", gap: 16 }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 8 }}>
-          <div style={{ fontSize: 18, color: "var(--accent)", letterSpacing: "0.15em" }}>
-            LBT ADMIN
-          </div>
-          <div style={{ fontSize: 11, color: "var(--ink-dim)", marginTop: 4 }}>
-            Low Battery Town Dashboard
-          </div>
-        </div>
-
-        {error && (
-          <div style={{ padding: "8px 12px", fontSize: 12, color: "var(--red)", background: "var(--red-bg)", border: "1px solid var(--red-border)", borderRadius: 3 }}>
-            {error}
-          </div>
-        )}
-
-        <input
-          type="text"
-          placeholder="Display Name"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" className="btn active" disabled={loading} style={{ padding: "10px 16px" }}>
-          {loading ? "..." : mode === "login" ? "LOGIN" : "REGISTER"}
-        </button>
-
-        <div style={{ textAlign: "center", fontSize: 12, color: "var(--ink-dim)" }}>
-          {mode === "login" ? (
-            <>
-              還沒有帳號？{" "}
-              <button type="button" onClick={() => { setMode("register"); setError(""); }} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", textDecoration: "underline" }}>
-                註冊
-              </button>
-            </>
-          ) : (
-            <>
-              已有帳號？{" "}
-              <button type="button" onClick={() => { setMode("login"); setError(""); }} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", textDecoration: "underline" }}>
-                登入
-              </button>
-            </>
-          )}
-        </div>
-      </form>
-    </div>
-  );
-}
 
 /* ══════════════════════════════════════
    Stat Card
@@ -217,11 +121,6 @@ function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    clearTokens();
-    window.location.reload();
-  };
-
   const tabs: { key: Tab; label: string }[] = [
     { key: "overview", label: "總覽" },
     { key: "users", label: "用戶管理" },
@@ -236,7 +135,7 @@ function Dashboard() {
           <span style={{ fontSize: 20, color: "var(--accent)", letterSpacing: "0.12em" }}>LBT ADMIN</span>
           <span style={{ fontSize: 11, color: "var(--ink-dim)" }}>Low Battery Town</span>
         </div>
-        <button type="button" className="btn" onClick={handleLogout} style={{ fontSize: 11 }}>登出</button>
+
       </div>
 
       {/* Error */}
