@@ -78,5 +78,3 @@ export function BatteryStrip({
   );
 }
 
-/** @deprecated Use BatteryStrip */
-export { BatteryStrip as TomatoStrip };

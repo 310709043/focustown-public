@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { PixelDigits } from "@/components/pixel/PixelDigits";
-import { TomatoStrip } from "@/components/town/bottom/TomatoStrip";
+import { BatteryStrip } from "@/components/town/bottom/BatteryStrip";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useTimer } from "@/lib/hooks/useTimer";
 import { useUserStats } from "@/lib/hooks/useUserStats";
@@ -73,7 +73,7 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
         >
           ● {mode === "focus" ? t("headerFocus") : t("headerBreak")}
         </div>
-        <TomatoStrip count={tomatoCount} max={8} scale={1.4} />
+        <BatteryStrip count={tomatoCount} max={8} scale={1.4} />
       </div>
 
       {/* Big timer */}

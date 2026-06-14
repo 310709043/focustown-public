@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { PixelDigits } from "@/components/pixel/PixelDigits";
-import { TomatoStrip } from "@/components/town/bottom/TomatoStrip";
+import { BatteryStrip } from "@/components/town/bottom/BatteryStrip";
 import { useTimer } from "@/lib/hooks/useTimer";
 import { useTimerStore } from "@/lib/state/timerStore";
 
@@ -18,7 +18,7 @@ interface SharedTimerProps {
  *    (vs solo room's accent purple), to signal "shared session".
  *  - 10 px progress bar with `linear-gradient(90deg, var(--accent), var(--accent-2))`
  *    fill + `var(--neon-glow-pink)` — gradient bar = "two users contributing".
- *  - Reuses `<TomatoStrip>` from Phase C1 (scale 1.3 to match reference).
+ *  - Reuses `<BatteryStrip>` from Phase C1 (scale 1.3 to match reference).
  *
  * Cooperation hint at the bottom is the reference's plain text rendered
  * via i18n: 兩人都按下開始才會計時 · 中途離開 -10 T 幣
@@ -59,7 +59,7 @@ export function SharedTimer({ matchId }: SharedTimerProps) {
         >
           ● {mode === "focus" ? t("headerFocus", { num: tomatoCount + 1 }) : t("headerBreak")}
         </span>
-        <TomatoStrip count={tomatoCount} max={8} scale={1.3} gap={3} />
+        <BatteryStrip count={tomatoCount} max={8} scale={1.3} gap={3} />
       </div>
 
       <div
