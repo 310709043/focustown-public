@@ -7,31 +7,38 @@
    exposed to Tailwind's fontFamily tokens via tailwind.config.ts. */
 
 :root {
-  /* Era B refined palette — 2026-05-20 rebrand to LowBatteryTown.
-     Pre-rebrand (Era A) used --a1=#a78bfa purple + --a2=#c4b5fd lavender +
-     --pink=#f472b6 + --amber=#fcd34d for a neon-night theme. Era B drops
-     all neon for a single warm-peach + dusty-rose + slate direction. See
-     docs/qa/canonical-reference-index.md § 0 for the vocabulary lock. */
-  --bg: #0f1426;            /* deep indigo, was #030111 */
+  /* Era B+ refined palette — enhanced for higher visual quality.
+     Warm-peach + dusty-rose + slate direction with refined glass effects. */
+  --bg: #0c1020;            /* deeper indigo for richer contrast */
+  --bg-subtle: #111830;     /* subtle layer for depth */
   --a1: #e9a76e;            /* warm peach, primary accent */
+  --a1-soft: #e9a76eaa;     /* peach with transparency */
   --a2: #f4d289;            /* warm cream-yellow */
+  --a2-soft: #f4d28999;     /* cream with transparency */
   --a3: #c98aa3;            /* dusty rose, secondary accent */
+  --a3-soft: #c98aa388;     /* rose with transparency */
   --a4: #91a8c4;            /* slate blue, tertiary accent */
-  --teal: #a8c4a0;          /* muted sage (was #34d399 neon mint) */
+  --a4-soft: #91a8c488;     /* slate with transparency */
+  --teal: #a8c4a0;          /* muted sage */
   --amber: #f4d289;         /* cream-yellow */
   --pink: #c98aa3;          /* dusty rose */
-  --coral: #e9a76e;         /* peach (was salmon coral) */
+  --coral: #e9a76e;         /* peach */
   --blue: #91a8c4;          /* slate */
   --green: #a8c4a0;         /* muted sage */
-  --text: #f4ecd8;          /* warm cream, was #e2d9f3 cool lavender */
+  --text: #f4ecd8;          /* warm cream */
+  --text-bright: #fff8f0;   /* brighter for emphasis */
   --muted: #b8b4cc;
   --dim: #6b6788;
-  --card: rgba(15, 20, 38, 0.55);
-  --glass: rgba(22, 32, 60, 0.7);
-  --border: rgba(184, 180, 204, 0.18);
-  --border2: rgba(184, 180, 204, 0.32);
+  --card: rgba(12, 16, 32, 0.65);
+  --card-hover: rgba(18, 24, 48, 0.75);
+  --glass: rgba(16, 24, 48, 0.75);
+  --glass-strong: rgba(20, 30, 56, 0.85);
+  --border: rgba(184, 180, 204, 0.12);
+  --border2: rgba(184, 180, 204, 0.25);
+  --border-accent: rgba(233, 167, 110, 0.2);
   --r: 6px;
   --r2: 10px;
+  --r3: 14px;
 
   /* Ground stack — single source of truth for city底部 layering.
      Road element sits at BottomHUD top (--bottom-hud-h), 120px tall:
@@ -57,19 +64,17 @@
   --t-2xl: 48px;
   --t-3xl: 86px;
 
-  /* Direction tokens — Era B has a single calm direction, no neon. The
-     dusk/rain :root[data-direction=...] rules below are kept as empty
-     no-ops so DirectionSync writes don't surprise anything; their values
-     no longer differ from this default. The names retain "neon-glow*"
-     for code-path compatibility — the actual values are calm now. */
+  /* Direction tokens — enhanced for visual quality */
   --dir-ink-mute:           #b8b4cc;
   --dir-ink-dim:            #6b6788;
-  --dir-panel-stroke:       rgba(184, 180, 204, 0.18);
-  --dir-panel-stroke-strong:rgba(184, 180, 204, 0.32);
-  --dir-button-fill:        rgba(233, 167, 110, 0.08);
-  --dir-accent-glow:        0 0 6px rgba(233, 167, 110, 0.4);
-  --dir-accent-glow-pink:   0 0 6px rgba(201, 138, 163, 0.45);
-  --dir-accent-glow-cyan:   0 0 6px rgba(145, 168, 196, 0.45);
+  --dir-panel-stroke:       rgba(184, 180, 204, 0.1);
+  --dir-panel-stroke-strong:rgba(184, 180, 204, 0.2);
+  --dir-button-fill:        rgba(233, 167, 110, 0.06);
+  --dir-accent-glow:        0 0 8px rgba(233, 167, 110, 0.35), 0 0 20px rgba(233, 167, 110, 0.15);
+  --dir-accent-glow-pink:   0 0 8px rgba(201, 138, 163, 0.4), 0 0 20px rgba(201, 138, 163, 0.15);
+  --dir-accent-glow-cyan:   0 0 8px rgba(145, 168, 196, 0.4), 0 0 20px rgba(145, 168, 196, 0.15);
+  --dir-glow-soft:          0 0 30px rgba(233, 167, 110, 0.08);
+  --dir-glow-medium:        0 0 40px rgba(233, 167, 110, 0.12), 0 0 80px rgba(201, 138, 163, 0.06);
 
   /* Immersive-app readability ladder. The pixel-font tokens above stay
      intentionally small for marquee ✦ headers; these semantic tokens are
@@ -100,34 +105,24 @@
      the layout. */
   --font-size-metric: clamp(32px, 5vw, 56px);
 
-  /* ── Reference-design token aliases ──────────────────────────────
-     The original `reference/` design uses a different naming scheme
-     (`--accent`, `--sky-top`, `--ink-mute`, …). Aliasing here lets
-     ported components reuse reference styles verbatim while staying
-     on the Current palette below. Do NOT redefine in component CSS. */
-  --bg-0:                #0f1426;
-  --bg-1:                #16203c;
-  --bg-2:                #1f2a4d;
-  --sky-top:             #15203d;
-  --sky-mid:             #2a3a64;
-  --sky-low:             #4d5e88;
+  /* ── Reference-design token aliases (enhanced) ─────────────────── */
+  --bg-0:                #0c1020;
+  --bg-1:                #111830;
+  --bg-2:                #1a2440;
+  --sky-top:             #111830;
+  --sky-mid:             #1f2d52;
+  --sky-low:             #3a4d78;
   --ink:                 var(--text);
   --ink-mute:            var(--dir-ink-mute);
   --ink-dim:             var(--dir-ink-dim);
   --accent:              var(--a1);
-  --accent-2:            #a78bfa;  /* Era A purple — reverted 2026-05-20 per
-                                       user request: CTA stroke / glow needs
-                                       to read as the "primary action" highlight
-                                       and the dusty rose blended into the
-                                       warm-peach palette too quietly. The rest
-                                       of Era B (warm peach `--a1`, slate
-                                       `--accent-3`, cream `--accent-4`) stays.*/
-  --accent-3:            #91a8c4;  /* slate blue (was cyan #22d3ee) */
+  --accent-2:            #a78bfa;
+  --accent-3:            #91a8c4;
   --accent-4:            var(--amber);
-  --window-warm:         #f4d289;  /* cream-yellow (was #fcd34d) */
-  --window-cool:         #91a8c4;  /* slate (was cyan #67e8f9) */
-  --window-pink:         #c98aa3;  /* rose (was fuchsia #f0abfc) */
-  --window-mint:         #a8c4a0;  /* sage (was neon mint #6ee7b7) */
+  --window-warm:         #f4d289;
+  --window-cool:         #91a8c4;
+  --window-pink:         #c98aa3;
+  --window-mint:         #a8c4a0;
   --panel-bg:            var(--card);
   --panel-stroke:        var(--dir-panel-stroke);
   --panel-stroke-strong: var(--dir-panel-stroke-strong);
@@ -135,6 +130,11 @@
   --neon-glow:           var(--dir-accent-glow);
   --neon-glow-pink:      var(--dir-accent-glow-pink);
   --neon-glow-cyan:      var(--dir-accent-glow-cyan);
+  /* Enhanced glass morphism tokens */
+  --glass-blur:          12px;
+  --glass-blur-strong:   20px;
+  --glass-border:        rgba(255, 255, 255, 0.08);
+  --glass-highlight:     rgba(255, 255, 255, 0.04);
 }
 
 /* Era B has one direction. The dusk/rain rules are kept as empty no-ops
@@ -185,7 +185,7 @@ body {
   }
 }
 
-/* CRT, vignette, grain overlays (global) */
+/* CRT, vignette, grain overlays (enhanced cinematic quality) */
 .crt-overlay {
   position: fixed;
   inset: 0;
@@ -195,10 +195,11 @@ body {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 0, 0, 0.07) 2px,
-    rgba(0, 0, 0, 0.07) 4px
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
   );
   mix-blend-mode: multiply;
+  opacity: 0.8;
 }
 .vignette-overlay {
   position: fixed;
@@ -207,8 +208,8 @@ body {
   z-index: 9997;
   background: radial-gradient(
     ellipse at center,
-    transparent 45%,
-    rgba(0, 0, 0, 0.55) 100%
+    transparent 50%,
+    rgba(0, 0, 0, 0.4) 100%
   );
 }
 .grain-overlay {
@@ -216,8 +217,8 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 9996;
-  opacity: 0.06;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
 }
 
 ::-webkit-scrollbar {
@@ -228,7 +229,7 @@ body {
    V2 Pixel UI primitives
    ════════════════════════════════════════ */
 
-/* Pixel button: thick border + offset shadow + active translate */
+/* Pixel button: refined with layered depth and smooth transitions */
 .pixel-btn {
   position: relative;
   display: inline-flex;
@@ -236,63 +237,67 @@ body {
   justify-content: center;
   font-family: var(--font-press-start-2p), monospace;
   letter-spacing: 1px;
-  background: var(--card);
+  background: linear-gradient(180deg, var(--card-hover) 0%, var(--card) 100%);
   color: var(--a2);
-  border: 2px solid var(--a1);
+  border: 1px solid var(--a1-soft);
   border-radius: var(--r);
   box-shadow:
-    inset 0 -3px 0 0 rgba(0, 0, 0, 0.35),
-    0 3px 0 0 var(--a4),
-    0 0 14px rgba(167, 139, 250, 0.25);
-  transition: transform 0.12s ease, box-shadow 0.18s ease, color 0.12s ease;
+    inset 0 1px 0 0 var(--glass-highlight),
+    inset 0 -3px 0 0 rgba(0, 0, 0, 0.3),
+    0 2px 0 0 var(--a4),
+    0 0 12px rgba(233, 167, 110, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  text-shadow: 0 0 8px var(--a1);
+  text-shadow: 0 0 6px var(--a1-soft);
 }
 .pixel-btn:hover {
-  color: #fff;
+  color: var(--text-bright);
+  border-color: var(--a1);
   box-shadow:
-    inset 0 -3px 0 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 0 var(--glass-highlight),
+    inset 0 -3px 0 0 rgba(0, 0, 0, 0.3),
     0 3px 0 0 var(--a4),
-    0 0 28px rgba(167, 139, 250, 0.6);
+    0 0 20px rgba(233, 167, 110, 0.3),
+    0 0 40px rgba(233, 167, 110, 0.1);
   transform: translateY(-1px);
 }
 .pixel-btn:active {
-  transform: translateY(2px);
+  transform: translateY(1px);
   box-shadow:
-    inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 0 rgba(0, 0, 0, 0.2),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.3),
     0 1px 0 0 var(--a4),
-    0 0 14px rgba(167, 139, 250, 0.4);
+    0 0 12px rgba(233, 167, 110, 0.2);
 }
 .pixel-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
+  filter: saturate(0.5);
 }
 
-/* Primary variant: --accent-2 stroke + ink + glow. Used for the
-   reference's most-important CTAs (signin/signup submit, select-character
-   daily-goal toggle and "Enter Town", solo focus play/pause + tasks add).
-   --accent-2 is Era A purple (#a78bfa) so CTAs read as the primary action. */
+/* Primary variant: enhanced CTA with purple glow */
 .pixel-btn.primary {
   border-color: var(--accent-2);
   color: var(--accent-2);
-  text-shadow: 0 0 8px var(--accent-2);
+  text-shadow: 0 0 6px rgba(167, 139, 250, 0.5);
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.1) 0%, var(--card) 100%);
 }
 .pixel-btn.primary:hover {
   color: #fff;
-  /* Glow tuned to --accent-2 (now #a78bfa Era A purple). The hardcoded
-     `rgba(236, 72, 153, …)` magenta these used to use was stale from
-     the original Era A neon palette and never updated when Era B
-     landed; fixed here in the same surgical revert. */
+  border-color: #c4b5fd;
   box-shadow:
-    inset 0 -3px 0 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 0 var(--glass-highlight),
+    inset 0 -3px 0 0 rgba(0, 0, 0, 0.3),
     0 3px 0 0 var(--a4),
-    0 0 28px rgba(167, 139, 250, 0.6);
+    0 0 20px rgba(167, 139, 250, 0.4),
+    0 0 40px rgba(167, 139, 250, 0.15);
 }
 .pixel-btn.primary:active {
   box-shadow:
-    inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 0 rgba(0, 0, 0, 0.2),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.3),
     0 1px 0 0 var(--a4),
-    0 0 14px rgba(167, 139, 250, 0.4);
+    0 0 12px rgba(167, 139, 250, 0.3);
 }
 
 .pixel-edge {
@@ -300,45 +305,40 @@ body {
   box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Pixel panel: chunky double-stroke shell used by every chrome surface
-   (weather badge, clock, bottom HUD, shop card, leaderboard, modals).
-   The outer 2px solid bg ring + 3px stroke gives the "pixel cut-out"
-   look without losing the dark backdrop bleed-through. */
+/* Pixel panel: refined glass-morphism shell with enhanced depth.
+   Layered shadows + subtle border highlights create premium feel. */
 .pixel-panel {
-  background: var(--card);
-  border: 1px solid var(--dir-panel-stroke);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
   box-shadow:
-    0 0 0 2px var(--bg),
-    0 0 0 3px var(--dir-panel-stroke),
-    0 12px 30px rgba(0, 0, 0, 0.6);
-  border-radius: 2px;
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 0 0 1px var(--dir-panel-stroke),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+  border-radius: var(--r2);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
-/* Pixel input: matches form fields across login, signup, character
-   select, chat, notes. Focus glow follows the active direction. */
+/* Pixel input: refined with better focus states */
 .pixel-input {
-  background: rgba(0, 0, 0, 0.65);
-  border: 1px solid var(--dir-panel-stroke-strong);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border);
   color: var(--text);
   padding: 10px 14px;
-  /* Noto Sans TC first so lowercase Latin + CJK both render with real
-   * glyphs. Silkscreen only ships uppercase + numeric, so users typing
-   * `user@example.com` were seeing `.notdef` boxes and giving up. The
-   * pixel-frame aesthetic comes from the border + placeholder + focus
-   * glow, not the input value font. Decorative labels keep Silkscreen
-   * via `.font-silkscreen`. */
   font-family: var(--font-noto-sans-tc), var(--font-silkscreen), monospace;
   font-size: var(--t-sm);
   outline: none;
   width: 100%;
-  border-radius: 2px;
-  transition: border-color 0.12s ease, box-shadow 0.18s ease;
+  border-radius: var(--r);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .pixel-input:focus {
   border-color: var(--a1);
   box-shadow: var(--dir-accent-glow);
+  background: rgba(0, 0, 0, 0.6);
 }
-.pixel-input::placeholder { color: var(--dir-ink-dim); }
+.pixel-input::placeholder { color: var(--dim); }
 
 /* English-only label utility: tight pixel monospace with widened tracking.
    Reach for this on chips, badges, tags, and English-only headers. */
@@ -377,17 +377,19 @@ body {
 @keyframes bigPulse {
   0%, 100% {
     box-shadow:
-      inset 0 -3px 0 0 rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 0 var(--glass-highlight),
+      inset 0 -3px 0 0 rgba(0, 0, 0, 0.3),
       0 4px 0 0 var(--a4),
-      0 0 24px rgba(167, 139, 250, 0.45),
-      0 0 60px rgba(124, 58, 237, 0.25);
+      0 0 20px rgba(233, 167, 110, 0.2),
+      0 0 50px rgba(201, 138, 163, 0.1);
   }
   50% {
     box-shadow:
-      inset 0 -3px 0 0 rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 0 var(--glass-highlight),
+      inset 0 -3px 0 0 rgba(0, 0, 0, 0.3),
       0 4px 0 0 var(--a4),
-      0 0 48px rgba(196, 181, 253, 0.7),
-      0 0 110px rgba(124, 58, 237, 0.55);
+      0 0 30px rgba(233, 167, 110, 0.35),
+      0 0 80px rgba(201, 138, 163, 0.18);
   }
 }
 
@@ -408,7 +410,8 @@ body {
 }
 
 @keyframes statusBubblePop {
-  0%   { transform: translateY(4px) scale(0.85); opacity: 0; }
+  0%   { transform: translateY(6px) scale(0.9); opacity: 0; }
+  60%  { transform: translateY(-2px) scale(1.02); opacity: 1; }
   100% { transform: translateY(0)   scale(1);    opacity: 1; }
 }
 
@@ -450,8 +453,18 @@ body {
 }
 
 @keyframes moonP {
-  0%, 100% { box-shadow: 0 0 28px rgba(252, 211, 77, 0.4), 0 0 80px rgba(252, 211, 77, 0.1); }
-  50%      { box-shadow: 0 0 50px rgba(252, 211, 77, 0.6), 0 0 140px rgba(252, 211, 77, 0.2); }
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(244, 210, 137, 0.3),
+      0 0 60px rgba(244, 210, 137, 0.15),
+      0 0 100px rgba(233, 167, 110, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(244, 210, 137, 0.45),
+      0 0 80px rgba(244, 210, 137, 0.2),
+      0 0 140px rgba(233, 167, 110, 0.12);
+  }
 }
 
 /* Pixel-aesthetic range slider (used by /select-character age field) */
@@ -512,19 +525,29 @@ body {
     0 0 0 2px var(--a2);
 }
 
-/* Presence (Phase 1): new user materializes on the street with a subtle
-   over-shoot. Pairs with React mount — applied once via `animate-userPop`. */
+/* Presence: new user materializes with refined overshoot */
 @keyframes userPop {
-  0%   { transform: translateY(4px) scale(0.7); opacity: 0;   filter: brightness(2.4); }
-  60%  { transform: translateY(-1px) scale(1.08); opacity: 1; filter: brightness(1.6); }
+  0%   { transform: translateY(6px) scale(0.85); opacity: 0;   filter: brightness(2); }
+  50%  { transform: translateY(-2px) scale(1.05); opacity: 1; filter: brightness(1.4); }
   100% { transform: translateY(0) scale(1);     opacity: 1;   filter: brightness(1);   }
 }
 
-/* The current user's amber halo — readable across the bustle so you always
-   know which pedestrian is you. Pulse runs forever, slowly. */
+/* The current user's amber halo — refined multi-layer glow */
 @keyframes selfHalo {
-  0%, 100% { box-shadow: 0 0 0 1px var(--amber), 0 0 6px rgba(252, 211, 77, 0.55), 0 0 12px rgba(252, 211, 77, 0.25); }
-  50%      { box-shadow: 0 0 0 1px var(--amber), 0 0 10px rgba(252, 211, 77, 0.85), 0 0 22px rgba(252, 211, 77, 0.45); }
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px var(--amber),
+      0 0 6px rgba(244, 210, 137, 0.4),
+      0 0 16px rgba(244, 210, 137, 0.2),
+      0 0 32px rgba(233, 167, 110, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px var(--amber),
+      0 0 10px rgba(244, 210, 137, 0.6),
+      0 0 24px rgba(244, 210, 137, 0.3),
+      0 0 48px rgba(233, 167, 110, 0.15);
+  }
 }
 
 /* Purchase confirmation — one-shot amber burst on the buy button. The card
@@ -619,15 +642,18 @@ body {
   72%           { opacity: 1; }
 }
 
-/* Neon FOCUSTOWN flicker — drop-shadow pulse with brief dropouts. */
+/* Neon flicker — refined with multi-layer glow */
 @keyframes neonFlicker {
   0%, 18%, 22%, 25%, 53%, 57%, 100% {
-    filter: drop-shadow(0 0 8px var(--accent-2)) drop-shadow(0 0 14px var(--accent));
+    filter:
+      drop-shadow(0 0 4px var(--accent-2))
+      drop-shadow(0 0 12px rgba(167, 139, 250, 0.3))
+      drop-shadow(0 0 24px rgba(167, 139, 250, 0.15));
     opacity: 1;
   }
   20%, 24%, 55% {
     filter: none;
-    opacity: 0.85;
+    opacity: 0.9;
   }
 }
 
@@ -655,20 +681,23 @@ body {
    SkyWindow CRT broadcast + Citizen ID card share these primitives.
    See lib/data/broadcast.ts + components/profile/CitizenIdCard.tsx. */
 
-/* CRT TV screen wrapper — used by SkyWindow to host either a sponsor
-   card or a YouTube iframe inside the same scanline/vignette
-   treatment so modern picture reads pixel-native. */
+/* CRT TV screen wrapper — enhanced with better glow effects */
 .tv-screen {
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   transition: filter 120ms ease;
+  border-radius: var(--r);
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    0 0 20px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(145, 168, 196, 0.05);
 }
 .tv-screen iframe {
   width: 100%;
   height: 100%;
   border: 0;
-  filter: saturate(1.15) contrast(1.05);
+  filter: saturate(1.1) contrast(1.02) brightness(0.98);
   display: block;
 }
 .tv-scanlines {
@@ -677,10 +706,11 @@ body {
   pointer-events: none;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.18) 0 1px,
+    rgba(0, 0, 0, 0.12) 0 1px,
     transparent 1px 3px
   );
   mix-blend-mode: multiply;
+  opacity: 0.9;
 }
 .tv-vignette {
   position: absolute;
@@ -688,33 +718,34 @@ body {
   pointer-events: none;
   background: radial-gradient(
     ellipse at center,
-    transparent 55%,
-    rgba(10, 5, 36, 0.6) 100%
+    transparent 60%,
+    rgba(8, 4, 28, 0.5) 100%
   );
-  box-shadow: inset 0 0 0 1px var(--accent);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 @keyframes scanDrift {
   to { background-position: 0 4px; }
 }
 .animate-scanDrift { animation: scanDrift 40s linear infinite; }
 
-/* Citizen ID card — segmented XP bar + ticker animation.
-   Card body styling is inline on the component so callers can tune
-   per-page; only the reusable cell + tick primitives live here. */
+/* Citizen ID card — enhanced XP bar with glow effects */
 .id-card { position: relative; padding: 28px; }
 .xp-bar  {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
-  gap: 2px;
+  gap: 3px;
 }
 .xp-cell {
   height: 10px;
-  background: var(--panel-stroke);
-  transition: background 200ms ease, box-shadow 200ms ease;
+  background: var(--border);
+  border-radius: 1px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .xp-cell.on {
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--accent-2);
+  background: linear-gradient(180deg, var(--a2) 0%, var(--a1) 100%);
+  box-shadow:
+    0 0 4px rgba(233, 167, 110, 0.4),
+    0 0 8px rgba(233, 167, 110, 0.2);
 }
 @keyframes pixelTicker {
   to { background-position: -12px 0; }
@@ -817,10 +848,10 @@ body {
   user-select: none;
   -webkit-user-drag: none;
   will-change: transform, opacity;
-  animation: sceneCloudBreath 9s ease-in-out infinite;
+  animation: sceneCloudBreath 12s ease-in-out infinite;
 }
 @keyframes sceneCloudBreath {
-  0%, 100% { opacity: 0.78; }
+  0%, 100% { opacity: 0.85; }
   50%      { opacity: 1.0;  }
 }
 @keyframes sceneBackdropFadeIn {
@@ -874,8 +905,7 @@ body {
 .hscroll-snap::-webkit-scrollbar { display: none; }
 .hscroll-snap > * { scroll-snap-align: start; flex-shrink: 0; }
 
-/* Bottom-sheet base — slides up from viewport bottom on narrow widths;
-   reverts to inline panel on >= md via the parent's container query. */
+/* Bottom-sheet base — enhanced with glass morphism */
 .bottom-sheet {
   position: fixed;
   left: 0;
@@ -883,8 +913,12 @@ body {
   bottom: 0;
   z-index: 14;
   transform: translateY(100%);
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 350ms cubic-bezier(0.32, 0.72, 0, 1);
   padding-bottom: env(safe-area-inset-bottom);
+  background: var(--glass-strong);
+  border-top: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
 }
 .bottom-sheet[data-open="true"] { transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) {
@@ -905,7 +939,9 @@ body {
 .town-top-hud-root {
   container-type: inline-size;
   container-name: town-top-hud;
-  background: linear-gradient(180deg, rgba(7,4,26,0.85) 0%, rgba(7,4,26,0) 100%);
+  background: linear-gradient(180deg, rgba(12, 16, 32, 0.9) 0%, rgba(12, 16, 32, 0.6) 60%, rgba(12, 16, 32, 0) 100%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 .town-top-hud-inner {
   display: flex;
@@ -994,54 +1030,43 @@ body {
 }
 
 /* ──────────────────────────────────────
-   LocaleSwitcher — pixel-arcade segmented toggle.
-   Lives in the global `[locale]/layout.tsx` top-right slot at z-40 so
-   it always paints above the TownTopHUD (z-20) and other chrome.
-   Visual vocab mirrors `.pixel-panel`: bevelled dark card, hairline
-   stroke, double box-shadow for the inset frame feel. Active segment
-   lights up warm peach (`--a1`); inactive stays dim and brightens on
-   hover. The leading "▮" pip is purely decorative — keeps the active
-   label from shifting horizontally between locales of different glyph
-   width (e.g. "繁中" vs "EN").
+   LocaleSwitcher — refined glass-morphism toggle
    ────────────────────────────────────── */
 .locale-switcher {
   display: inline-flex;
   align-items: stretch;
-  background: var(--card);
-  border: 1px solid var(--panel-stroke);
-  border-radius: 2px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
   box-shadow:
-    0 0 0 2px var(--bg),
-    0 0 0 3px var(--panel-stroke),
-    0 6px 18px rgba(0, 0, 0, 0.55);
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 4px 16px rgba(0, 0, 0, 0.4);
   padding: 0;
   font-family: var(--font-silkscreen), var(--font-press-start-2p), monospace;
   letter-spacing: 0.18em;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 .locale-switcher__btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 10px;
+  padding: 6px 12px;
   font-size: 11px;
   line-height: 1;
-  color: var(--ink-mute);
+  color: var(--dim);
   text-transform: uppercase;
   background: transparent;
   border: 0;
   cursor: pointer;
-  transition:
-    color 140ms ease,
-    background 140ms ease,
-    text-shadow 180ms ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .locale-switcher__btn + .locale-switcher__btn {
-  border-left: 1px solid var(--panel-stroke);
+  border-left: 1px solid var(--border);
 }
 .locale-switcher__btn:hover {
   color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
 }
 .locale-switcher__btn:focus-visible {
   outline: 1px dashed var(--a1);
@@ -1050,7 +1075,7 @@ body {
 .locale-switcher__btn[data-active] {
   color: var(--a1);
   background: rgba(233, 167, 110, 0.08);
-  text-shadow: 0 0 6px rgba(233, 167, 110, 0.55);
+  text-shadow: 0 0 8px rgba(233, 167, 110, 0.5);
 }
 .locale-switcher__pip {
   display: inline-block;
@@ -1068,28 +1093,34 @@ body {
 }
 
 /* ──────────────────────────────────────
-   HUD panel primitives — shared layout for FocusTimer, MatchPanel,
-   MusicPlayer inside the BottomHUD. Provides consistent spacing,
-   font sizing, and control row alignment across all three panels.
+   HUD panel primitives — enhanced with glass morphism
    ────────────────────────────────────── */
 .hud-panel {
-  padding: 10px 12px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r2);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 .hud-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
 }
 .hud-panel-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: auto;
+  padding-top: 6px;
 }
 
 /* ──────────────────────────────────────
@@ -1105,6 +1136,9 @@ body {
 .bottom-hud-root {
   container-type: inline-size;
   container-name: bottom-hud;
+  background: linear-gradient(0deg, rgba(12, 16, 32, 0.95) 0%, rgba(12, 16, 32, 0.7) 70%, rgba(12, 16, 32, 0) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 .bottom-hud-inner {
   display: grid;
