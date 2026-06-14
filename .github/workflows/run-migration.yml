@@ -1,0 +1,50 @@
+name: Run Alembic Migration (dev)
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'Alembic command to run'
+        required: true
+        default: 'upgrade head'
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Run migration via ECS exec
+        run: |
+          # Get the running task ARN
+          TASK_ARN=$(aws ecs list-tasks \
+            --cluster lowbatterytown-dev \
+            --service-name lowbatterytown-dev \
+            --query 'taskArns[0]' \
+            --output text)
+
+          if [ "$TASK_ARN" = "None" ] || [ -z "$TASK_ARN" ]; then
+            echo "No running task found"
+            exit 1
+          fi
+
+          echo "Running migration on task: $TASK_ARN"
+
+          aws ecs execute-command \
+            --cluster lowbatterytown-dev \
+            --task "$TASK_ARN" \
+            --container backend \
+            --command "alembic" \
+            --interactive
