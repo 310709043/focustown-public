@@ -6,6 +6,7 @@ import {
   clearTokens,
   isLoggedIn,
   login,
+  register,
   type AdminFeedbackItem,
   type AdminFeedbackList,
   type AdminUserList,
@@ -17,8 +18,10 @@ import {
    ══════════════════════════════════════ */
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -27,10 +30,14 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     setLoading(true);
     setError("");
     try {
-      await login(email, password);
+      if (mode === "login") {
+        await login(email, password);
+      } else {
+        await register(email, password, displayName || email.split("@")[0]);
+      }
       onLogin();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : mode === "login" ? "Login failed" : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -58,6 +65,14 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </div>
         )}
 
+        {mode === "register" && (
+          <input
+            type="text"
+            placeholder="Display Name"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+        )}
         <input
           type="email"
           placeholder="Email"
@@ -73,8 +88,26 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           required
         />
         <button type="submit" className="btn active" disabled={loading} style={{ padding: "10px 16px" }}>
-          {loading ? "..." : "LOGIN"}
+          {loading ? "..." : mode === "login" ? "LOGIN" : "REGISTER"}
         </button>
+
+        <div style={{ textAlign: "center", fontSize: 12, color: "var(--ink-dim)" }}>
+          {mode === "login" ? (
+            <>
+              還沒有帳號？{" "}
+              <button type="button" onClick={() => { setMode("register"); setError(""); }} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", textDecoration: "underline" }}>
+                註冊
+              </button>
+            </>
+          ) : (
+            <>
+              已有帳號？{" "}
+              <button type="button" onClick={() => { setMode("login"); setError(""); }} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", textDecoration: "underline" }}>
+                登入
+              </button>
+            </>
+          )}
+        </div>
       </form>
     </div>
   );

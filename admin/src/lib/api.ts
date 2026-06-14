@@ -38,6 +38,27 @@ export async function login(email: string, password: string): Promise<void> {
   saveTokens(tokens);
 }
 
+export async function register(email: string, password: string, displayName: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/v1/auth/signup`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      email,
+      password,
+      display_name: displayName,
+      terms_accepted: true,
+      terms_version: "1.0",
+      marketing_opt_in: false,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error?.message ?? "Registration failed");
+  }
+  const tokens = (await res.json()) as Tokens;
+  saveTokens(tokens);
+}
+
 export async function adminFetch<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const tokens = loadTokens();
   if (!tokens) throw new Error("Not authenticated");
