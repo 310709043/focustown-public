@@ -18,6 +18,7 @@ import { useRealtimeSessionCompleted } from "@/lib/ws/useRealtimeSessionComplete
 import { useMatchStore } from "@/lib/state/matchStore";
 import { useStationStore } from "@/lib/state/stationStore";
 import { useRouter } from "@/i18n/routing";
+import { useAuthGuard } from "@/lib/hooks/useAuthGuard";
 
 import { SceneBackdrop } from "@/components/scene/SceneBackdrop";
 import { Pedestrians } from "@/components/scene/Pedestrians";
@@ -77,6 +78,7 @@ import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 200);
 
 export default function TownPage() {
+  const { ready } = useAuthGuard();
   const { user, hydrate } = useAuthStore();
   const router = useRouter();
   const advanceScene = useSceneStore((s) => s.advance);
@@ -277,6 +279,16 @@ export default function TownPage() {
   const immersive = useImmersiveFocus();
   const { topRevealed, bottomRevealed, topHandlers, bottomHandlers } =
     useHudReveal();
+
+  if (!ready) {
+    return (
+      <main className="absolute inset-0 flex items-center justify-center bg-[var(--bg)]">
+        <span className="font-silkscreen text-[var(--ink-dim)] animate-pulse">
+          LOADING...
+        </span>
+      </main>
+    );
+  }
 
   return (
     <FrameTicker>

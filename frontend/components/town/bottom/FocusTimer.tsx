@@ -53,10 +53,12 @@ export function FocusTimer() {
     starting,
     tomatoCount,
     session,
+    completionError,
     start,
     pause,
     reset,
     setMode,
+    retryComplete,
   } = useTimerStore();
   const scene = useSceneStore((s) => s.current);
   const advanceScene = useSceneStore((s) => s.advance);
@@ -204,6 +206,26 @@ export function FocusTimer() {
           }}
         />
       </div>
+
+      {completionError ? (
+        <button
+          type="button"
+          className="font-silkscreen"
+          style={{
+            fontSize: 9,
+            color: "#fca5a5",
+            background: "rgba(220,38,38,0.15)",
+            border: "1px solid rgba(248,113,113,0.4)",
+            padding: "4px 10px",
+            cursor: "pointer",
+            textAlign: "center",
+            width: "100%",
+          }}
+          onClick={() => void retryComplete()}
+        >
+          {t("completionFailed")}
+        </button>
+      ) : null}
 
       <div style={{ display: "flex", gap: 6, justifyContent: "center", alignItems: "center" }}>
         <button

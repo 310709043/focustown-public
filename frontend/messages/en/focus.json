@@ -51,7 +51,9 @@
     "notFoundTitle": "This room is no longer available",
     "notFoundSubtitle": "It may have ended or you may not be a member.",
     "endedTitle": "This room has ended",
-    "endedSubtitle": "Head back to town to start a new focus session."
+    "endedSubtitle": "Head back to town to start a new focus session.",
+    "errorTitle": "Could not load this room",
+    "errorSubtitle": "The network may be temporarily unstable. Please try again later."
   },
   "pairingHeader": {
     "you": "You"

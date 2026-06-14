@@ -34,6 +34,7 @@ function SignUpForm() {
     marketingOptIn: false,
   });
   const [confirmPw, setConfirmPw] = useState("");
+  const [confirmPwError, setConfirmPwError] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const t = useTranslations("auth.signup");
   const tSplash = useTranslations("auth.splash");
@@ -59,6 +60,10 @@ function SignUpForm() {
         if (key && !fieldErrors[key]) fieldErrors[key] = tv(issue.message);
       }
       setErrors(fieldErrors);
+      return;
+    }
+    if (confirmPw !== form.password) {
+      setConfirmPwError(tv("passwordMismatch"));
       return;
     }
     try {
@@ -165,9 +170,13 @@ function SignUpForm() {
           <PasswordInput
             placeholder={t("confirmPasswordPlaceholder")}
             value={confirmPw}
-            onChange={(e) => setConfirmPw(e.target.value)}
+            onChange={(e) => {
+              setConfirmPw(e.target.value);
+              if (confirmPwError) setConfirmPwError("");
+            }}
             autoComplete="new-password"
           />
+          {confirmPwError ? <ErrorLine>{confirmPwError}</ErrorLine> : null}
         </div>
       </div>
 

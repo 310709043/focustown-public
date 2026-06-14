@@ -55,6 +55,7 @@
     "confirmCta": "✦ Enter Low Battery Town ▶",
     "savingCta": "Saving…",
     "toastPickFirst": "Please pick a character first.",
+    "toastSaveFailed": "Save failed. Please try again.",
     "toastComingSoon": "Coming soon ✦",
     "fieldDisplayName": "Display name",
     "displayNamePlaceholder": "How would you like to be called?",

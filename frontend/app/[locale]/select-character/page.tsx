@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { sanitizeReturnTo } from "@/lib/routing/safeReturnTo";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useAuthGuard } from "@/lib/hooks/useAuthGuard";
 import { userApi } from "@/lib/api/endpoints";
 import { AVATARS } from "@/lib/pixel/sprites/avatars";
 import { avatarIdToCharacterKey } from "@/lib/data/character-mapping";
@@ -54,6 +55,7 @@ function useTransientToast() {
  *  • `useAuthStore.hydrate` after save, then `router.push("/town")`.
  */
 function SelectCharacterInner() {
+  const { ready } = useAuthGuard();
   const router = useRouter();
   const search = useSearchParams();
   const returnTo = sanitizeReturnTo(search.get("returnTo"));
@@ -102,10 +104,22 @@ function SelectCharacterInner() {
       });
       await hydrate();
       router.push(returnTo ?? "/town");
+    } catch {
+      show(t("toastSaveFailed"));
     } finally {
       setSaving(false);
     }
   };
+
+  if (!ready) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg)]">
+        <span className="font-silkscreen text-[var(--ink-dim)] animate-pulse">
+          LOADING...
+        </span>
+      </div>
+    );
+  }
 
   return (
     <SelectCharacterScene step={2} totalSteps={3}>

@@ -12,12 +12,14 @@ interface TimerState {
   starting: boolean;
   session: FocusSession | null;
   tomatoCount: number;
+  completionError: boolean;
   setMode: (m: FocusSessionMode, seconds: number) => void;
   start: (taskLabel?: string, partnerId?: string | null) => Promise<void>;
   tick: () => void;
   pause: () => void;
   reset: () => void;
   complete: () => Promise<void>;
+  retryComplete: () => Promise<void>;
 }
 
 const DEFAULTS: Record<FocusSessionMode, number> = {
@@ -34,6 +36,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   starting: false,
   session: null,
   tomatoCount: 0,
+  completionError: false,
 
   setMode(m, seconds) {
     set({ mode: m, durationSeconds: seconds, remaining: seconds, running: false });
@@ -82,11 +85,17 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       await sessionsApi.complete(session.id);
       set({
         session: null,
+        completionError: false,
         tomatoCount: mode === "focus" ? Math.min(4, tomatoCount + 1) : tomatoCount,
       });
     } catch {
-      // Keep session so user can retry; just stop the timer.
-      set({ running: false });
+      // Keep session so user can retry; surface the error in UI.
+      set({ running: false, completionError: true });
     }
+  },
+
+  async retryComplete() {
+    set({ completionError: false });
+    await get().complete();
   },
 }));

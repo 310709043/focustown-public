@@ -55,6 +55,7 @@
     "confirmCta": "✦ 進入小鎮 ▶",
     "savingCta": "儲存中…",
     "toastPickFirst": "請先選一個角色",
+    "toastSaveFailed": "儲存失敗，請再試一次",
     "toastComingSoon": "敬請期待 ✦",
     "fieldDisplayName": "顯示名稱",
     "displayNamePlaceholder": "請輸入您希望被稱呼的名字",

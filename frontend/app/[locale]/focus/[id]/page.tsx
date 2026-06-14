@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useAuthGuard } from "@/lib/hooks/useAuthGuard";
 import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
 import { useMatchStore } from "@/lib/state/matchStore";
 import { useTimerStore } from "@/lib/state/timerStore";
@@ -108,6 +109,7 @@ function Stars() {
 const ROOM_ENDED_NAV_DELAY_MS = 3_000;
 
 export default function FocusRoomPage() {
+  const { ready } = useAuthGuard();
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { user, hydrate } = useAuthStore();
@@ -290,6 +292,10 @@ export default function FocusRoomPage() {
     };
   }, [paired, user, id, acceptedMatch]);
 
+  if (!ready) {
+    return <RoomStatusOverlay title="LOADING..." />;
+  }
+
   // Solo branch: render the Page 4 SoloFocusScene.
   if (!paired) {
     return <SoloFocusScene />;
@@ -305,6 +311,14 @@ export default function FocusRoomPage() {
       <RoomStatusOverlay
         title={roomT("notFoundTitle")}
         subtitle={roomT("notFoundSubtitle")}
+      />
+    );
+  }
+  if (roomLoadStatus === "error") {
+    return (
+      <RoomStatusOverlay
+        title={roomT("errorTitle")}
+        subtitle={roomT("errorSubtitle")}
       />
     );
   }

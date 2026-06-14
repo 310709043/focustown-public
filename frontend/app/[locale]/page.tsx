@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/routing";
@@ -9,6 +9,7 @@ import {
   AUTH_ERROR_UNKNOWN,
   useAuthStore,
 } from "@/lib/state/authStore";
+import { tokenStore } from "@/lib/api/client";
 import { markAudioUnlocked } from "@/lib/audio/unlock";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { LoginScene } from "@/components/login/LoginScene";
@@ -23,10 +24,24 @@ import { BlinkDot } from "@/components/pixel/BlinkDot";
  */
 export default function SplashPage() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const { signIn, loading, error } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
+
+  // Redirect already-authenticated users straight to /town.
+  useEffect(() => {
+    if (user) {
+      router.replace("/town");
+      return;
+    }
+    const tokens = tokenStore.load();
+    if (tokens) {
+      void useAuthStore.getState().hydrate().then(() => {
+        if (useAuthStore.getState().user) router.replace("/town");
+      });
+    }
+  }, [user, router]);
   const t = useTranslations("auth.signin");
   const tSplash = useTranslations("auth.splash");
   const tErr = useTranslations("common.errors");
@@ -110,23 +125,12 @@ export default function SplashPage() {
             className="font-silkscreen"
             style={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
               marginTop: 6,
               fontSize: 9,
               color: "var(--ink-dim)",
             }}
           >
-            <label
-              style={{
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <PixelCheckbox checked={remember} onClick={() => setRemember(!remember)} />
-              <span>{tSplash("rememberMe")}</span>
-            </label>
             <Link
               href="/forgot-password"
               className="hover:text-accent-2"
@@ -228,42 +232,3 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PixelCheckbox({
-  checked,
-  onClick,
-}: {
-  checked: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <span
-      role="checkbox"
-      aria-checked={checked}
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === " " || e.key === "Enter") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-      style={{
-        width: 14,
-        height: 14,
-        border: "1px solid var(--panel-stroke-strong)",
-        background: checked ? "var(--accent)" : "rgba(0,0,0,0.4)",
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        flexShrink: 0,
-      }}
-    >
-      {checked ? (
-        <span style={{ color: "#0a0524", fontSize: 10, fontWeight: 700, lineHeight: 1 }}>
-          ✓
-        </span>
-      ) : null}
-    </span>
-  );
-}

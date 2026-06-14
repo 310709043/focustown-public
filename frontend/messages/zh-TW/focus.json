@@ -51,7 +51,9 @@
     "notFoundTitle": "找不到這個專注室",
     "notFoundSubtitle": "可能已經結束，或您不是這個專注室的成員。",
     "endedTitle": "這個專注室已結束",
-    "endedSubtitle": "回到城市開始下一次專注吧。"
+    "endedSubtitle": "回到城市開始下一次專注吧。",
+    "errorTitle": "無法載入專注室",
+    "errorSubtitle": "網路可能暫時不穩，請稍後再試。"
   },
   "pairingHeader": {
     "you": "您"

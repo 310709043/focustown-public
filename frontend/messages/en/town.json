@@ -26,7 +26,8 @@
       "sceneAria": "Cycle scene",
       "applyPreferenceCta": "Apply settings",
       "applyPreferenceAria": "Apply focus rhythm from settings",
-      "applyPreferenceTooltip": "Apply the {minutes}-minute focus rhythm from your settings"
+      "applyPreferenceTooltip": "Apply the {minutes}-minute focus rhythm from your settings",
+      "completionFailed": "Save failed. Tap to retry."
     },
     "matchPanel": {
       "header": "FIND BUDDY",

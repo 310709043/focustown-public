@@ -26,7 +26,8 @@
       "sceneAria": "切換場景",
       "applyPreferenceCta": "套用設定",
       "applyPreferenceAria": "套用設定中的專注節奏",
-      "applyPreferenceTooltip": "套用設定中的 {minutes} 分鐘專注節奏"
+      "applyPreferenceTooltip": "套用設定中的 {minutes} 分鐘專注節奏",
+      "completionFailed": "儲存失敗，點擊重試"
     },
     "matchPanel": {
       "header": "尋找夥伴",
