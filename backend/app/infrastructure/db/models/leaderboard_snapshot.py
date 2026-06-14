@@ -30,5 +30,5 @@ class LeaderboardSnapshotORM(Base, IdMixin, TimestampMixin):
         nullable=False,
         index=True,
     )
-    completed_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    total_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
     rank: Mapped[int] = mapped_column(Integer, nullable=False)

@@ -16,7 +16,7 @@ from app.domain.repositories.user_repo import IUserReader
 @dataclass(slots=True)
 class LeaderboardEntry:
     user: User
-    completed_count: int
+    total_seconds: int
 
 
 class LeaderboardService:
@@ -31,7 +31,7 @@ class LeaderboardService:
         self._users = users
         self._clock = clock
 
-    async def today(self, *, limit: int = 10) -> list[LeaderboardEntry]:
+    async def today(self, *, limit: int = 20) -> list[LeaderboardEntry]:
         day_start = self._day_start(self._clock.now())
         rows = await self._sessions.daily_leaderboard(day_start=day_start, limit=limit)
         if not rows:
@@ -41,8 +41,8 @@ class LeaderboardService:
         user_ids = [user_id for user_id, _ in rows]
         users_by_id = {u.id: u for u in await self._users.get_many_by_ids(user_ids)}
         return [
-            LeaderboardEntry(user=users_by_id[user_id], completed_count=count)
-            for user_id, count in rows
+            LeaderboardEntry(user=users_by_id[user_id], total_seconds=seconds)
+            for user_id, seconds in rows
             if user_id in users_by_id
         ]
 
@@ -66,9 +66,9 @@ class LeaderboardService:
             LeaderboardSnapshotRecord(
                 snapshot_date=start.date(),
                 user_id=user_id,
-                completed_count=count,
+                total_seconds=seconds,
                 rank=idx + 1,
             )
-            for idx, (user_id, count) in enumerate(rows)
+            for idx, (user_id, seconds) in enumerate(rows)
         ]
         return await snapshots.upsert_day(snapshot_date=start.date(), entries=records)

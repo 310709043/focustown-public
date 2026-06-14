@@ -249,7 +249,7 @@ function RankBoard() {
     };
   }, []);
 
-  const display = rows.slice(0, 5);
+  const display = rows.slice(0, 20);
   const tEmpty = useTranslations("town.leaderboard");
 
   if (loading) {
@@ -371,7 +371,7 @@ function RankBoard() {
                   letterSpacing: "0.1em",
                 }}
               >
-                {r.completed_count * 25}
+                {Math.round(r.total_seconds / 60)}
                 min · {avatar.name}
               </span>
             </div>
@@ -399,7 +399,7 @@ function RankBoard() {
                 justifyContent: "flex-end",
               }}
             >
-              {r.completed_count}
+              {r.total_seconds}
               <PixelSprite
                 sprite={BATTERY.sprite}
                 palette={BATTERY.palette}

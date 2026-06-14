@@ -112,7 +112,7 @@ export function LeaderboardSection({
                 className="font-silkscreen"
                 style={{ fontSize: 11, color: "var(--amber)", flexShrink: 0 }}
               >
-                {l.completed_count} {t("leaderCountSuffix")}
+                {l.total_seconds} {t("leaderCountSuffix")}
               </span>
             </li>
           ))}

@@ -9,7 +9,7 @@ from typing import Protocol
 class LeaderboardSnapshotRecord:
     snapshot_date: date
     user_id: str
-    completed_count: int
+    total_seconds: int
     rank: int
 
 

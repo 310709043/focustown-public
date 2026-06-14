@@ -25,7 +25,7 @@ async def today(
     limiter: RateLimiterDep,
     client_ip: ClientIpDep,
 ) -> list[LeaderboardEntryResponse]:
-    # Public endpoint; full top-10 query touches every active session today.
+    # Public endpoint; full top-20 query touches every active session today.
     # Cheap to scrape, expensive to serve — cap per-IP.
     decision = await limiter.hit(
         f"lb:ip:{client_ip or 'unknown'}",
@@ -37,13 +37,13 @@ async def today(
     svc = LeaderboardService(
         sessions=SqlFocusSessionRepo(db), users=SqlUserRepo(db), clock=clock
     )
-    entries = await svc.today(limit=10)
+    entries = await svc.today(limit=20)
     return [
         LeaderboardEntryResponse(
             user_id=e.user.id,
             display_name=e.user.public_name(),
             character_key=e.user.character_key,
-            completed_count=e.completed_count,
+            total_seconds=e.total_seconds,
         )
         for e in entries
     ]

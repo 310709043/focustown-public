@@ -83,7 +83,7 @@ class IFocusSessionRepo(Protocol):
     async def count_completed_today(self, *, user_id: str, day_start: datetime) -> int: ...
 
     async def daily_leaderboard(self, *, day_start: datetime, limit: int) -> list[tuple[str, int]]:
-        """Returns [(user_id, completed_count)] sorted desc."""
+        """Returns [(user_id, total_elapsed_seconds)] sorted desc."""
         ...
 
     async def user_totals(

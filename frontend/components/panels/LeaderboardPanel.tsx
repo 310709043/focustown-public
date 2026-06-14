@@ -64,7 +64,7 @@ export function LeaderboardPanel() {
               </div>
               <span className="flex-1 truncate">{r.display_name}</span>
               <span style={{ fontSize: 11, color: "var(--coral)" }}>
-                🔋 {r.completed_count}
+                🔋 {r.total_seconds}
               </span>
             </div>
           );

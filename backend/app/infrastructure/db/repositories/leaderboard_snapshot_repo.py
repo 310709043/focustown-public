@@ -31,7 +31,7 @@ class SqlLeaderboardSnapshotRepo(ILeaderboardSnapshotRepo):
                 "id": self._ids.new_id(),
                 "snapshot_date": snapshot_date,
                 "user_id": e.user_id,
-                "completed_count": e.completed_count,
+                "total_seconds": e.total_seconds,
                 "rank": e.rank,
             }
             for e in entries

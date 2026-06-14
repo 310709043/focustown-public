@@ -1070,14 +1070,14 @@ class FakeFocusSessionRepo(IFocusSessionRepo):
     async def daily_leaderboard(
         self, *, day_start: datetime, limit: int
     ) -> list[tuple[str, int]]:
-        counts: dict[str, int] = defaultdict(int)
+        totals: dict[str, int] = defaultdict(int)
         for s in self.rows.values():
             if (
                 s.status is FocusSessionStatus.COMPLETED
                 and s.started_at >= day_start
             ):
-                counts[s.user_id] += 1
-        ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+                totals[s.user_id] += s.elapsed_seconds
+        ordered = sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))
         return ordered[:limit]
 
 

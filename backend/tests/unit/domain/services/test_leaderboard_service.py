@@ -99,8 +99,8 @@ async def test_today_counts_only_completed_in_current_day(
 
     result = await service.today()
 
-    alice_count = next(e.completed_count for e in result if e.user.id == "u-alice")
-    assert alice_count == 1
+    alice_seconds = next(e.total_seconds for e in result if e.user.id == "u-alice")
+    assert alice_seconds == 600
 
 
 @pytest.mark.asyncio

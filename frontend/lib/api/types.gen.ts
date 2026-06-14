@@ -80,7 +80,7 @@ export type LeaderboardEntry = {
   user_id: string;
   display_name: string;
   character_key: string | null;
-  completed_count: number;
+  total_seconds: number;
 };
 
 export type Achievement = {

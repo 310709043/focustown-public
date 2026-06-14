@@ -74,9 +74,9 @@ async def test_write_snapshot_for_yesterday_writes_ranked_rows() -> None:
     alice = snapshots.rows[(yesterday, "u-alice")]
     bob = snapshots.rows[(yesterday, "u-bob")]
     assert alice.rank == 1
-    assert alice.completed_count == 5
+    assert alice.total_seconds == 5
     assert bob.rank == 2
-    assert bob.completed_count == 3
+    assert bob.total_seconds == 3
 
 
 @pytest.mark.asyncio

@@ -121,7 +121,7 @@ export function Billboard() {
                     {r.display_name}
                   </span>
                   <span style={{ color, fontFamily: "var(--font-vt323), monospace", fontSize: 16 }}>
-                    {r.completed_count} 🔋
+                    {r.total_seconds} 🔋
                   </span>
                 </div>
               );

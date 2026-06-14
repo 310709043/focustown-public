@@ -197,17 +197,20 @@ class SqlFocusSessionRepo(IFocusSessionRepo):
         self, *, day_start: datetime, limit: int
     ) -> list[tuple[str, int]]:
         stmt = (
-            select(FocusSessionORM.user_id, func.count().label("c"))
+            select(
+                FocusSessionORM.user_id,
+                func.sum(FocusSessionORM.elapsed_seconds).label("total_seconds"),
+            )
             .where(
                 FocusSessionORM.status == FocusSessionStatus.COMPLETED.value,
                 FocusSessionORM.mode == FocusSessionMode.FOCUS.value,
                 FocusSessionORM.started_at >= day_start,
             )
             .group_by(FocusSessionORM.user_id)
-            .order_by(func.count().desc())
+            .order_by(func.sum(FocusSessionORM.elapsed_seconds).desc())
             .limit(limit)
         )
-        return [(uid, int(c)) for uid, c in (await self._s.execute(stmt)).all()]
+        return [(uid, int(s or 0)) for uid, s in (await self._s.execute(stmt)).all()]
 
     async def user_totals(
         self, *, user_id: str, week_start: datetime
