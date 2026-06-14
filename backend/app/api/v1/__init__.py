@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.achievements.router import router as achievements_router
+from app.api.v1.admin.router import router as admin_router
 from app.api.v1.auth.router import router as auth_router
 from app.api.v1.broadcast.router import router as broadcast_router
 from app.api.v1.equipment.router import router as equipment_router
@@ -54,4 +55,5 @@ router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
 router.include_router(broadcast_router, prefix="/broadcast", tags=["broadcast"])
 router.include_router(friends_router, prefix="/friends", tags=["friends"])
 router.include_router(preferences_router, prefix="/me/preferences", tags=["preferences"])
+router.include_router(admin_router, prefix="/admin", tags=["admin"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

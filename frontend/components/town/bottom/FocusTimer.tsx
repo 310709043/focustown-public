@@ -12,8 +12,6 @@ import {
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useSceneStore } from "@/lib/state/sceneStore";
 
-import { TomatoStrip } from "./TomatoStrip";
-
 /** Lower bound — settings UI clamps to 5 min already but we re-clamp here
  *  in case the stored value is stale or hand-edited. */
 const MIN_FOCUS_SECONDS = 5 * 60;
@@ -30,20 +28,6 @@ const SCENE_EMOJI: Record<string, string> = {
   storm: "⚡",
 };
 
-/**
- * Bottom-HUD FocusTimer variant — compact (vs Page 4 BigTimer's huge
- * solo-room scale). Header (TOMATO sprite + mode + tomato counter),
- * PixelDigits scale 4 countdown, 8 px progress bar, and a 5-button
- * row: reset / play-pause primary / skip + scene-cycle buttons.
- *
- * Wires:
- *   useTimerStore + useTimer — start / pause / reset / tick state
- *   useSceneStore.advance — clicking either scene-cycle button cycles
- *                            through the global scene order
- *
- * SRP — this component does only "timer + scene cycle". MatchPanel and
- * MusicPlayer live in their own files.
- */
 export function FocusTimer() {
   useTimer();
   const t = useTranslations("town.bottom.focusTimer");
@@ -65,10 +49,6 @@ export function FocusTimer() {
   const scene = useSceneStore((s) => s.current);
   const advanceScene = useSceneStore((s) => s.advance);
 
-  // Preference-driven focus rhythm — pull the user's stored focus
-  // duration so the timer reflects their settings instead of the
-  // hardcoded 25 min default. Subscriptions stay separate so unrelated
-  // preference patches don't churn the timer's render.
   const prefsHydrated = usePreferencesStore((s) => s.hydrated);
   const ensurePrefsHydrated = usePreferencesStore((s) => s.ensureHydrated);
   const prefFocusMinutes = usePreferencesStore((s) =>
@@ -83,9 +63,6 @@ export function FocusTimer() {
     void ensurePrefsHydrated();
   }, [ensurePrefsHydrated]);
 
-  // Auto-apply the stored focus rhythm whenever the timer is idle in
-  // focus mode and the current duration doesn't match the preference.
-  // Avoids interrupting an in-flight session or a break.
   useEffect(() => {
     if (!prefsHydrated) return;
     if (mode !== "focus") return;
@@ -106,8 +83,6 @@ export function FocusTimer() {
     setMode("focus", prefFocusSeconds);
   }, [setMode, prefFocusSeconds]);
 
-  // Re-applying preferences while the timer is running would mid-cycle
-  // jump the countdown; gate the manual button on idle state.
   const canApplyPreference =
     prefsHydrated && !running && !starting && !session;
 
@@ -119,22 +94,21 @@ export function FocusTimer() {
   return (
     <div
       data-testid="focus-timer-bottom"
-      className="pixel-panel"
-      style={{ padding: 12, display: "flex", flexDirection: "column", gap: 6 }}
+      className="pixel-panel hud-panel"
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      {/* Header row */}
+      <div className="hud-panel-header">
         <div
           className="font-silkscreen"
           style={{
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            fontSize: 10,
+            fontSize: 11,
             color: "var(--accent)",
-            letterSpacing: "0.2em",
+            letterSpacing: "0.18em",
           }}
         >
-          {/* CSS battery icon — clearer than pixel sprite at small sizes */}
           <span style={{ display: "inline-flex", alignItems: "center" }}>
             <span style={{ width: 14, height: 8, border: "1px solid var(--accent)", background: "rgba(74,222,128,0.3)", display: "inline-block", boxSizing: "border-box" }} />
             <span style={{ width: 2, height: 4, background: "var(--accent)", display: "inline-block" }} />
@@ -145,44 +119,16 @@ export function FocusTimer() {
               : t("modeBreak")}
           </span>
         </div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <button
-            type="button"
-            data-testid="focus-timer-apply-preference"
-            onClick={applyPreference}
-            disabled={!canApplyPreference}
-            aria-label={t("applyPreferenceAria")}
-            title={t("applyPreferenceTooltip", { minutes: prefFocusMinutes })}
-            className="font-silkscreen disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{
-              padding: "2px 8px",
-              fontSize: 9,
-              letterSpacing: "0.2em",
-              color: "var(--accent-2)",
-              background: "rgba(20,10,55,0.55)",
-              border: "1px solid var(--panel-stroke)",
-              cursor: "pointer",
-            }}
-          >
-            {t("applyPreferenceCta")}
-          </button>
-          <span
-            className="font-silkscreen"
-            style={{ fontSize: 9, color: "var(--ink-mute)" }}
-          >
-            {t("progressLabel", { count: tomatoCount, total: 8 })}
-          </span>
-        </div>
+        <span
+          className="font-silkscreen"
+          style={{ fontSize: 10, color: "var(--ink-mute)" }}
+        >
+          {t("progressLabel", { count: tomatoCount, total: 8 })}
+        </span>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "4px 0",
-        }}
-      >
+      {/* Timer digits */}
+      <div style={{ display: "flex", justifyContent: "center", padding: "6px 0" }}>
         <PixelDigits
           text={`${mins}:${secs}`}
           scale={4}
@@ -191,6 +137,7 @@ export function FocusTimer() {
         />
       </div>
 
+      {/* Progress bar */}
       <div
         role="progressbar"
         aria-valuenow={Math.round(pct)}
@@ -198,7 +145,7 @@ export function FocusTimer() {
         aria-valuemax={100}
         aria-label={t("startAria")}
         style={{
-          height: 8,
+          height: 6,
           background: "rgba(0,0,0,0.5)",
           border: "1px solid var(--panel-stroke)",
         }}
@@ -219,11 +166,11 @@ export function FocusTimer() {
           type="button"
           className="font-silkscreen"
           style={{
-            fontSize: 9,
+            fontSize: 10,
             color: "#fca5a5",
             background: "rgba(220,38,38,0.15)",
             border: "1px solid rgba(248,113,113,0.4)",
-            padding: "4px 10px",
+            padding: "6px 10px",
             cursor: "pointer",
             textAlign: "center",
             width: "100%",
@@ -234,13 +181,14 @@ export function FocusTimer() {
         </button>
       ) : null}
 
-      <div style={{ display: "flex", gap: 6, justifyContent: "center", alignItems: "center" }}>
+      {/* Controls */}
+      <div className="hud-panel-controls">
         <button
           type="button"
           aria-label={t("resetAria")}
           data-testid="bottom-timer-reset"
-          className="pixel-btn"
-          style={{ padding: "5px 8px", fontSize: 11 }}
+          className="pixel-btn touch:min-h-[44px]"
+          style={{ padding: "6px 10px", fontSize: 12 }}
           onClick={() => reset()}
         >
           ↺
@@ -249,32 +197,19 @@ export function FocusTimer() {
           type="button"
           aria-label={running ? t("pauseAria") : t("startAria")}
           data-testid="bottom-timer-toggle"
-          className="pixel-btn primary"
-          style={{ padding: "5px 14px", fontSize: 11, minWidth: 78 }}
+          className="pixel-btn primary touch:min-h-[44px]"
+          style={{ padding: "6px 16px", fontSize: 11, minWidth: 80, flex: 1 }}
           disabled={starting}
           onClick={() => (running ? pause() : void start())}
         >
           {starting ? "…" : running ? `⏸ ${t("pauseCta")}` : `▶ ${t("startCta")}`}
         </button>
-        {/* Skip / ⏭ button removed in goal-set round — let users cheese
-            their pomodoro streak with a tap was bad UX. Translation
-            keys `skipAria` / `skipCta` stay in JSON until the matching
-            BigTimer skip is also retired. */}
-        <span
-          aria-hidden
-          style={{
-            width: 1,
-            height: 18,
-            background: "var(--panel-stroke)",
-            margin: "0 2px",
-          }}
-        />
         <button
           type="button"
           aria-label={t("sceneAria")}
           data-testid="bottom-timer-scene"
-          className="pixel-btn"
-          style={{ padding: "4px 6px", fontSize: 12 }}
+          className="pixel-btn touch:min-h-[44px]"
+          style={{ padding: "6px 10px", fontSize: 13 }}
           onClick={() => advanceScene()}
         >
           {SCENE_EMOJI[scene] ?? "☀"}

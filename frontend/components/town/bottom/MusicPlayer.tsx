@@ -121,19 +121,19 @@ export function MusicPlayer() {
   return (
     <div
       data-testid="music-player"
-      className="pixel-panel"
-      style={{ padding: 12, display: "flex", flexDirection: "column", gap: 6 }}
+      className="pixel-panel hud-panel"
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      {/* Header row */}
+      <div className="hud-panel-header">
         <div
           className="font-silkscreen"
           style={{
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            fontSize: 10,
+            fontSize: 11,
             color: "var(--accent-3)",
-            letterSpacing: "0.2em",
+            letterSpacing: "0.18em",
           }}
         >
           <PixelSprite sprite={NOTE.sprite} palette={NOTE.palette} scale={1.4} />
@@ -142,12 +142,13 @@ export function MusicPlayer() {
         <EQViz playing={isPlaying} />
       </div>
 
+      {/* Track info */}
       <div className="font-silkscreen" style={{ fontSize: 12, color: "var(--ink)" }}>
         {currentTrack ? currentTrack.title : t("trackTitleFallback")}
       </div>
       <div
         className="font-silkscreen"
-        style={{ fontSize: 9, color: "var(--ink-mute)", letterSpacing: "0.1em" }}
+        style={{ fontSize: 10, color: "var(--ink-mute)", letterSpacing: "0.1em" }}
       >
         {t("trackSubLine", {
           index: tracks.length > 0 ? index + 1 : 1,
@@ -155,13 +156,14 @@ export function MusicPlayer() {
         })}
       </div>
 
-      <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
+      {/* Controls */}
+      <div className="hud-panel-controls">
         <button
           type="button"
           aria-label={muted ? t("unmuteAria") : t("muteAria")}
           data-testid="music-mute"
           className="pixel-btn primary touch:min-h-[44px]"
-          style={{ flex: 1, padding: "8px 10px", fontSize: 11 }}
+          style={{ flex: 1, padding: "6px 10px", fontSize: 11 }}
           onClick={onMuteClick}
         >
           {muted ? "🔇" : "🔊"}
@@ -171,16 +173,12 @@ export function MusicPlayer() {
           aria-label={t("nextAria")}
           data-testid="music-next"
           className="pixel-btn touch:min-h-[44px]"
-          style={{ padding: "8px 10px", fontSize: 11 }}
+          style={{ padding: "6px 10px", fontSize: 11 }}
           onClick={next}
         >
           ▶▶
         </button>
       </div>
-
-      {/* The <audio> element + onEnded handler live in
-          <GlobalAudioMount /> (mounted once in the locale layout). This
-          component is a pure controller — no DOM media node here. */}
     </div>
   );
 }

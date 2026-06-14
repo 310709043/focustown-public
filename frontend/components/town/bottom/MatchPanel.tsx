@@ -16,12 +16,10 @@ interface MatchPanelProps {
 }
 
 /**
- * Center cluster of the BottomHUD — two mode panels side-by-side.
+ * Center cluster of the BottomHUD — two mode cards side-by-side.
  *
- * The active panel is fully lit with its accent colour; the inactive
- * panel dims to 35% opacity and acts as a large click target to switch.
- * This keeps both options always visible (no hidden tabs) while clearly
- * communicating which mode is selected.
+ * The active card is fully lit with its accent colour; the inactive
+ * card dims to 35% opacity and acts as a large click target to switch.
  */
 export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
   const t = useTranslations("town.bottom.modes");
@@ -68,7 +66,7 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         pointerEvents: immersive ? "none" : "auto",
       }}
     >
-      {/* ── SOLO panel ── */}
+      {/* ── SOLO card ── */}
       <div
         data-testid="mode-card-solo"
         role="button"
@@ -77,14 +75,8 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         aria-label={t("solo.ctaAria")}
         onClick={() => isSolo ? router.push("/focus/solo") : setActiveMode("solo")}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (isSolo ? router.push("/focus/solo") : setActiveMode("solo"))}
-        className="pixel-panel"
+        className="pixel-panel hud-panel"
         style={{
-          position: "relative",
-          padding: "10px 12px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          minWidth: 0,
           cursor: "pointer",
           borderColor: "var(--accent-3)",
           boxShadow: isSolo
@@ -95,43 +87,25 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           userSelect: "none",
         }}
       >
-        {/* Mode label row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            aria-hidden
-            style={{ fontSize: 16, lineHeight: 1 }}
-          >
-            🍅
-          </span>
-          <span
-            className="font-silkscreen"
-            style={{
-              fontSize: 11,
-              color: "var(--accent-3)",
-              letterSpacing: "0.2em",
-              textShadow: isSolo ? "0 0 8px var(--accent-3)" : "none",
-              transition: modeTransition,
-            }}
-          >
-            {t("solo.title")}
-          </span>
+        {/* Header */}
+        <div className="hud-panel-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span aria-hidden style={{ fontSize: 16, lineHeight: 1 }}>🍅</span>
+            <span
+              className="font-silkscreen"
+              style={{
+                fontSize: 11,
+                color: "var(--accent-3)",
+                letterSpacing: "0.18em",
+                textShadow: isSolo ? "0 0 8px var(--accent-3)" : "none",
+              }}
+            >
+              {t("solo.title")}
+            </span>
+          </div>
         </div>
 
-        {/* Description */}
-        <div
-          className="font-silkscreen"
-          style={{
-            fontSize: 8,
-            color: "var(--ink-mute)",
-            letterSpacing: "0.06em",
-            lineHeight: 1.5,
-            flex: 1,
-          }}
-        >
-          {t("solo.desc")}
-        </div>
-
-        {/* Avatar */}
+        {/* Avatar row */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <PixelSprite
             sprite={avatar.sprite}
@@ -142,7 +116,7 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           <span
             className="font-silkscreen"
             style={{
-              fontSize: 7,
+              fontSize: 8,
               color: "var(--ink-dim)",
               letterSpacing: "0.15em",
               maxWidth: 60,
@@ -156,29 +130,32 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         </div>
 
         {/* CTA */}
-        <button
-          type="button"
-          data-testid="mode-card-solo-cta"
-          onClick={(e) => { e.stopPropagation(); router.push("/focus/solo"); }}
-          aria-label={t("solo.ctaAria")}
-          className="pixel-btn"
-          style={{
-            padding: "5px 8px",
-            fontSize: 10,
-            letterSpacing: "0.18em",
-            borderColor: "var(--accent-3)",
-            color: "var(--accent-3)",
-            opacity: isSolo ? 1 : 0,
-            pointerEvents: isSolo ? "auto" : "none",
-            transition: modeTransition,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {t("solo.cta")}
-        </button>
+        <div className="hud-panel-controls">
+          <button
+            type="button"
+            data-testid="mode-card-solo-cta"
+            onClick={(e) => { e.stopPropagation(); router.push("/focus/solo"); }}
+            aria-label={t("solo.ctaAria")}
+            className="pixel-btn touch:min-h-[44px]"
+            style={{
+              flex: 1,
+              padding: "6px 10px",
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              borderColor: "var(--accent-3)",
+              color: "var(--accent-3)",
+              opacity: isSolo ? 1 : 0,
+              pointerEvents: isSolo ? "auto" : "none",
+              transition: modeTransition,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {t("solo.cta")}
+          </button>
+        </div>
       </div>
 
-      {/* ── TOGETHER panel ── */}
+      {/* ── TOGETHER card ── */}
       <div
         data-testid="mode-card-together"
         role="button"
@@ -187,14 +164,8 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         aria-label={togetherAria}
         onClick={() => !isSolo ? onTogether() : setActiveMode("together")}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (!isSolo ? onTogether() : setActiveMode("together"))}
-        className="pixel-panel"
+        className="pixel-panel hud-panel"
         style={{
-          position: "relative",
-          padding: "10px 12px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          minWidth: 0,
           cursor: "pointer",
           borderColor: "var(--accent-2)",
           boxShadow: !isSolo
@@ -205,8 +176,8 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           userSelect: "none",
         }}
       >
-        {/* Mode label row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        {/* Header */}
+        <div className="hud-panel-header">
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span
               aria-hidden
@@ -216,7 +187,6 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
                 color: "var(--accent-2)",
                 lineHeight: 1,
                 textShadow: !isSolo ? "0 0 8px var(--accent-2)" : "none",
-                transition: modeTransition,
               }}
             >
               ✦
@@ -226,9 +196,8 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
               style={{
                 fontSize: 11,
                 color: "var(--accent-2)",
-                letterSpacing: "0.2em",
+                letterSpacing: "0.18em",
                 textShadow: !isSolo ? "0 0 8px var(--accent-2)" : "none",
-                transition: modeTransition,
               }}
             >
               {t("together.title")}
@@ -238,15 +207,13 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
             <span
               className="font-silkscreen"
               style={{
-                fontSize: 7,
+                fontSize: 8,
                 color: "var(--accent-2)",
                 letterSpacing: "0.12em",
                 opacity: 0.8,
-                maxWidth: "100%",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-                display: "block",
               }}
             >
               {t("together.matchedWith", { name: partnerAvatar.name ?? "buddy" })}
@@ -254,21 +221,7 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           )}
         </div>
 
-        {/* Description */}
-        <div
-          className="font-silkscreen"
-          style={{
-            fontSize: 8,
-            color: "var(--ink-mute)",
-            letterSpacing: "0.06em",
-            lineHeight: 1.5,
-            flex: 1,
-          }}
-        >
-          {t("together.desc")}
-        </div>
-
-        {/* Avatars */}
+        {/* Avatars row */}
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <PixelSprite
             sprite={avatar.sprite}
@@ -313,28 +266,31 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
         </div>
 
         {/* CTA */}
-        <button
-          type="button"
-          data-testid="mode-card-together-cta"
-          onClick={(e) => { e.stopPropagation(); onTogether(); }}
-          disabled={busy && !hasAccepted}
-          aria-label={togetherAria}
-          className="pixel-btn touch:min-h-[44px]"
-          style={{
-            padding: "8px 10px",
-            fontSize: 10,
-            letterSpacing: "0.18em",
-            borderColor: "var(--accent-2)",
-            color: "var(--accent-2)",
-            opacity: !isSolo ? (busy && !hasAccepted ? 0.4 : 1) : 0,
-            pointerEvents: !isSolo && !(busy && !hasAccepted) ? "auto" : "none",
-            cursor: busy && !hasAccepted ? "wait" : "pointer",
-            transition: modeTransition,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {togetherCta}
-        </button>
+        <div className="hud-panel-controls">
+          <button
+            type="button"
+            data-testid="mode-card-together-cta"
+            onClick={(e) => { e.stopPropagation(); onTogether(); }}
+            disabled={busy && !hasAccepted}
+            aria-label={togetherAria}
+            className="pixel-btn touch:min-h-[44px]"
+            style={{
+              flex: 1,
+              padding: "6px 10px",
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              borderColor: "var(--accent-2)",
+              color: "var(--accent-2)",
+              opacity: !isSolo ? (busy && !hasAccepted ? 0.4 : 1) : 0,
+              pointerEvents: !isSolo && !(busy && !hasAccepted) ? "auto" : "none",
+              cursor: busy && !hasAccepted ? "wait" : "pointer",
+              transition: modeTransition,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {togetherCta}
+          </button>
+        </div>
       </div>
     </div>
   );

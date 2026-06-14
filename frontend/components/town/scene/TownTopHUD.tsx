@@ -147,28 +147,6 @@ export function TownTopHUD({
         <div style={{ flexShrink: 0, lineHeight: 0 }}>
           <Logo scale={1.3} />
         </div>
-        <span
-          data-testid="top-hud-version"
-          className="font-silkscreen"
-          style={{
-            fontSize: 11,
-            color: "var(--ink-dim)",
-            letterSpacing: "0.2em",
-            ...collapsedStyle("-12px"),
-          }}
-        >
-          v1.4.0
-        </span>
-        <div
-          aria-hidden
-          style={{
-            width: 1,
-            height: 24,
-            background: "var(--panel-stroke)",
-            margin: "0 2px",
-            ...collapsedStyle("-12px"),
-          }}
-        />
         <div
           data-testid="weather-badge"
           data-scene={scene}
