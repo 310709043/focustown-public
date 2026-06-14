@@ -219,6 +219,7 @@ export function SkyWindow() {
 
 function RankBoard() {
   const [rows, setRows] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const locale = useLocale();
   const router = useRouter();
 
@@ -227,9 +228,12 @@ function RankBoard() {
     const load = async () => {
       try {
         const data = await leaderboardApi.today();
-        if (!cancelled) setRows(data);
+        if (!cancelled) {
+          setRows(data);
+          setLoading(false);
+        }
       } catch {
-        /* ignored — re-tries on the next interval tick */
+        if (!cancelled) setLoading(false);
       }
     };
     void load();
@@ -240,11 +244,29 @@ function RankBoard() {
     };
   }, []);
 
-  // No more demo fallback rows — real leaderboard data or an empty
-  // state. A fresh deployment with zero completed pomodoros must read
-  // honestly rather than show fabricated names.
   const display = rows.slice(0, 5);
   const tEmpty = useTranslations("town.leaderboard");
+
+  if (loading) {
+    return (
+      <div
+        data-testid="sky-window-rank"
+        style={{
+          padding: "24px 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          color: "var(--ink-dim)",
+          fontFamily: "var(--font-silkscreen), monospace",
+          letterSpacing: "0.2em",
+          fontSize: 11,
+        }}
+      >
+        LOADING…
+      </div>
+    );
+  }
 
   if (display.length === 0) {
     return (

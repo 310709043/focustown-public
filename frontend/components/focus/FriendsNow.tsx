@@ -183,7 +183,7 @@ function FriendRow({ friend }: { friend: FocusingNowItem }) {
       <button
         type="button"
         className="pixel-btn primary"
-        style={{ fontSize: 9, padding: "3px 6px" }}
+        style={{ fontSize: 11, padding: "6px 12px", minHeight: 44 }}
       >
         {t("joinCta")}
       </button>

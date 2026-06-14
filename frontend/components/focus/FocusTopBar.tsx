@@ -10,6 +10,7 @@ import { CoinBadge } from "@/components/town/CoinBadge";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
+import { useTimerStore } from "@/lib/state/timerStore";
 
 /** Solo focus top bar — back / LBT logo · SOLO ROOM subtitle / avatar
  *  pill / mini clock / T-coin balance. */
@@ -18,6 +19,9 @@ export function FocusTopBar() {
   const t = useTranslations("focus.solo.topBar");
   const user = useAuthStore((s) => s.user);
   const avatar = characterKeyToAvatar(user?.character_key);
+  const remaining = useTimerStore((s) => s.remaining);
+  const durationSeconds = useTimerStore((s) => s.durationSeconds);
+  const minutes = Math.ceil((remaining || durationSeconds) / 60);
 
   return (
     <header
@@ -82,7 +86,7 @@ export function FocusTopBar() {
               className="font-silkscreen"
               style={{ fontSize: 9, color: "var(--accent)", letterSpacing: "0.2em" }}
             >
-              {t("focusingLine", { minutes: 22 })}
+              {t("focusingLine", { minutes })}
             </span>
           </div>
         </div>

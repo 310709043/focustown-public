@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
@@ -311,6 +311,7 @@ export default function FocusRoomPage() {
       <RoomStatusOverlay
         title={roomT("notFoundTitle")}
         subtitle={roomT("notFoundSubtitle")}
+        showBackButton
       />
     );
   }
@@ -319,6 +320,7 @@ export default function FocusRoomPage() {
       <RoomStatusOverlay
         title={roomT("errorTitle")}
         subtitle={roomT("errorSubtitle")}
+        showBackButton
       />
     );
   }
@@ -389,10 +391,14 @@ export default function FocusRoomPage() {
 function RoomStatusOverlay({
   title,
   subtitle,
+  showBackButton,
 }: {
   title: string;
   subtitle?: string;
+  showBackButton?: boolean;
 }) {
+  const router = useRouter();
+  const locale = useLocale();
   return (
     <div
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-center px-6"
@@ -412,6 +418,16 @@ function RoomStatusOverlay({
           <p className="text-white/70 mt-3 text-sm leading-relaxed">
             {subtitle}
           </p>
+        ) : null}
+        {showBackButton ? (
+          <button
+            type="button"
+            onClick={() => router.push(`/${locale}/town`)}
+            className="pixel-btn primary mt-6"
+            style={{ fontSize: 11, padding: "8px 20px", minHeight: 44 }}
+          >
+            ← Back to Town
+          </button>
         ) : null}
       </div>
       <CitySilhouette />

@@ -192,7 +192,7 @@ export function ShopItemCard({
             onClick={() => onEquipToggle(item)}
             disabled={isLoading}
             className={isEquipped ? "pixel-btn" : "pixel-btn primary"}
-            style={{ fontSize: 9, padding: "5px 10px" }}
+            style={{ fontSize: 9, padding: "6px 12px", minHeight: 44 }}
             title={
               isEquipped
                 ? tItem("equipTooltipUnequip")
@@ -211,7 +211,7 @@ export function ShopItemCard({
             onClick={() => onBuy(item)}
             disabled={owned || isLoading || !tPrice || !canAfford}
             className="pixel-btn primary"
-            style={{ fontSize: 9, padding: "5px 10px" }}
+            style={{ fontSize: 9, padding: "6px 12px", minHeight: 44 }}
             title={
               owned
                 ? tItem("buyTooltipOwned")

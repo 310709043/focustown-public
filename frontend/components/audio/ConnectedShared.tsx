@@ -153,7 +153,8 @@ export function ConnectedShared({ scopeKind, listenerCount }: Props) {
           className="pixel-btn"
           style={{
             fontSize: 9,
-            padding: "4px 8px",
+            padding: "6px 10px",
+            minHeight: 44,
             letterSpacing: "0.18em",
             borderColor: "var(--accent-2)",
             color: "var(--accent-2)",
@@ -173,7 +174,8 @@ export function ConnectedShared({ scopeKind, listenerCount }: Props) {
           style={{
             alignSelf: "stretch",
             fontSize: 9,
-            padding: "4px 8px",
+            padding: "6px 10px",
+            minHeight: 44,
             border: "1px solid var(--accent-4)",
             color: "var(--accent-4)",
             background: "transparent",

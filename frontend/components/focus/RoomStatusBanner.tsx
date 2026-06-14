@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
 
 /**
@@ -11,11 +12,12 @@ import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
  * WS-fed store.
  */
 export function RoomStatusBanner() {
+  const t = useTranslations("focus.room.banner");
   const status = useFocusRoomStore((s) => s.status);
   const endedReason = useFocusRoomStore((s) => s.endedReason);
   const timer = useFocusRoomStore((s) => s.timer);
 
-  const message = describe(status, endedReason, timer.remainingSeconds);
+  const message = describe(status, endedReason, timer.remainingSeconds, t);
   return (
     <div
       data-testid="room-status-banner"
@@ -37,24 +39,25 @@ function describe(
   status: ReturnType<typeof useFocusRoomStore.getState>["status"],
   endedReason: string | null,
   remainingSeconds: number | null,
+  t: ReturnType<typeof useTranslations>,
 ): string {
   switch (status) {
     case null:
     case "open":
-      return "WAITING FOR PARTNER…";
+      return t("banner.waiting");
     case "both_joined":
-      return "PARTNER READY — PRESS START";
+      return t("banner.partnerReady");
     case "active": {
       if (remainingSeconds == null) {
-        return "FOCUS SESSION";
+        return t("banner.focusSession");
       }
       const minutes = Math.ceil(remainingSeconds / 60);
-      return `FOCUS SESSION — ${minutes} MIN REMAINING`;
+      return t("banner.focusSessionRemaining", { minutes });
     }
     case "ended":
-      if (endedReason === "completed") return "DONE! GREAT FOCUS.";
-      if (endedReason === "timeout") return "ROOM TIMED OUT";
-      if (endedReason === "both_left") return "BOTH LEFT — ROOM CLOSED";
-      return "ROOM CLOSED";
+      if (endedReason === "completed") return t("banner.done");
+      if (endedReason === "timeout") return t("banner.timedOut");
+      if (endedReason === "both_left") return t("banner.bothLeft");
+      return t("banner.roomClosed");
   }
 }

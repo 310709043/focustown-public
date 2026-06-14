@@ -88,6 +88,7 @@ export function SplashGate() {
         priority
         style={{
           width: 280,
+          maxWidth: "90vw",
           height: "auto",
           filter:
             "drop-shadow(0 0 12px var(--a1)) drop-shadow(0 0 28px var(--a3))",

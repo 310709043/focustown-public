@@ -53,7 +53,17 @@
     "endedTitle": "This room has ended",
     "endedSubtitle": "Head back to town to start a new focus session.",
     "errorTitle": "Could not load this room",
-    "errorSubtitle": "The network may be temporarily unstable. Please try again later."
+    "errorSubtitle": "The network may be temporarily unstable. Please try again later.",
+    "banner": {
+      "waiting": "WAITING FOR PARTNER…",
+      "partnerReady": "PARTNER READY — PRESS START",
+      "focusSession": "FOCUS SESSION",
+      "focusSessionRemaining": "FOCUS SESSION — {minutes} MIN REMAINING",
+      "done": "DONE! GREAT FOCUS.",
+      "timedOut": "ROOM TIMED OUT",
+      "bothLeft": "BOTH LEFT — ROOM CLOSED",
+      "roomClosed": "ROOM CLOSED"
+    }
   },
   "pairingHeader": {
     "you": "You"

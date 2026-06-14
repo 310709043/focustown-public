@@ -46,10 +46,11 @@ export function NavButton({
   const baseStyle = {
     background: "linear-gradient(180deg, rgba(16, 22, 40, 0.8) 0%, rgba(12, 16, 32, 0.8) 100%)",
     border: "1px solid var(--border)",
-    padding: "7px 12px",
+    padding: "10px 14px",
     display: "inline-flex",
     alignItems: "center",
     gap: 7,
+    minHeight: 44,
     fontSize: 11,
     color: "var(--dim)",
     letterSpacing: "0.15em",

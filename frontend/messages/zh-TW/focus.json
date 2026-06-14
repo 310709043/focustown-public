@@ -53,7 +53,17 @@
     "endedTitle": "這個專注室已結束",
     "endedSubtitle": "回到城市開始下一次專注吧。",
     "errorTitle": "無法載入專注室",
-    "errorSubtitle": "網路可能暫時不穩，請稍後再試。"
+    "errorSubtitle": "網路可能暫時不穩，請稍後再試。",
+    "banner": {
+      "waiting": "等待夥伴中…",
+      "partnerReady": "夥伴已就緒 — 按下開始",
+      "focusSession": "專注中",
+      "focusSessionRemaining": "專注中 — 剩餘 {minutes} 分鐘",
+      "done": "完成！專注得真棒。",
+      "timedOut": "專注室已逾時",
+      "bothLeft": "雙方已離開 — 專注室已關閉",
+      "roomClosed": "專注室已關閉"
+    }
   },
   "pairingHeader": {
     "you": "您"

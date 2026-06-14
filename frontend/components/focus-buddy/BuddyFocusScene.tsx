@@ -101,19 +101,11 @@ export function BuddyFocusScene({
           }}
         >
           <BuddyHeaderCard
-            meProfile={{ name: meName, avatar: meAvatar, level: 4 }}
-            buddyProfile={{ name: partnerName, avatar: buddyAvatar, level: 6 }}
-            sharedTag="#WRITING"
+            meProfile={{ name: meName, avatar: meAvatar, level: 1 }}
+            buddyProfile={{ name: partnerName, avatar: buddyAvatar, level: 1 }}
+            sharedTag="#FOCUS"
           />
           <SharedTimer matchId={matchId} />
-          <StatusMini
-            meProfile={{ name: meName, avatar: meAvatar, task: t("demoMeTask") }}
-            buddyProfile={{
-              name: partnerName,
-              avatar: buddyAvatar,
-              task: t("demoBuddyTask"),
-            }}
-          />
           <SharedAgenda matchId={matchId} />
           <RoomMusic />
         </div>

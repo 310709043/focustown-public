@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { sessionsApi } from "../api/endpoints";
 import type { FocusSession, FocusSessionMode } from "../api/types.gen";
-import { pushErrorToast } from "./toastStore";
+import { pushErrorToast, pushSuccessToast } from "./toastStore";
 
 interface TimerState {
   mode: FocusSessionMode;
@@ -86,11 +86,15 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (!session) return;
     try {
       await sessionsApi.complete(session.id);
+      const newCount = mode === "focus" ? Math.min(4, batteryCount + 1) : batteryCount;
       set({
         session: null,
         completionError: false,
-        batteryCount: mode === "focus" ? Math.min(4, batteryCount + 1) : batteryCount,
+        batteryCount: newCount,
       });
+      if (mode === "focus") {
+        pushSuccessToast("SESSION COMPLETE +1 🔋");
+      }
     } catch {
       // Keep session so user can retry; surface the error in UI.
       set({ running: false, completionError: true });

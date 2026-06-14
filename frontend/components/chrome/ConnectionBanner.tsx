@@ -34,7 +34,7 @@ export function ConnectionBanner() {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 70,
+        zIndex: 45,
         padding: "6px 16px",
         fontSize: 10,
         letterSpacing: "0.18em",

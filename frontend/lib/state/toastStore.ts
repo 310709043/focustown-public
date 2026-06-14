@@ -60,6 +60,10 @@ export function pushErrorToast(message: string): string {
   return useToastStore.getState().push({ kind: "error", message });
 }
 
+export function pushSuccessToast(message: string): string {
+  return useToastStore.getState().push({ kind: "success", message });
+}
+
 export function pushInfoToast(message: string): string {
   return useToastStore.getState().push({ kind: "info", message });
 }

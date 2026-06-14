@@ -135,8 +135,9 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
           onClick={prevPersonal}
           className="pixel-btn"
           style={{
-            padding: "4px 6px",
+            padding: "6px 10px",
             fontSize: 10,
+            minHeight: 44,
             opacity: disabled ? 0.4 : 1,
           }}
         >
@@ -150,8 +151,9 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
           onClick={onToggleMute}
           className="pixel-btn primary"
           style={{
-            padding: "4px 8px",
+            padding: "6px 10px",
             fontSize: 10,
+            minHeight: 44,
             opacity: disabled ? 0.4 : 1,
           }}
         >
@@ -165,8 +167,9 @@ export function DisconnectedPersonal({ scopeKind }: Props) {
           onClick={nextPersonal}
           className="pixel-btn"
           style={{
-            padding: "4px 6px",
+            padding: "6px 10px",
             fontSize: 10,
+            minHeight: 44,
             opacity: disabled ? 0.4 : 1,
           }}
         >
