@@ -53,6 +53,13 @@ class SqlUserRepo(IUserRepo):
             return None
         return UserCredentials(user=_to_domain(row), password_hash=row.password_hash)
 
+    async def get_credentials_by_display_name(self, display_name: str) -> UserCredentials | None:
+        stmt = select(UserORM).where(UserORM.display_name == display_name)
+        row = (await self._s.execute(stmt)).scalar_one_or_none()
+        if row is None:
+            return None
+        return UserCredentials(user=_to_domain(row), password_hash=row.password_hash)
+
     async def create(
         self,
         *,

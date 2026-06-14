@@ -24,11 +24,11 @@ export function isLoggedIn(): boolean {
   return loadTokens() !== null;
 }
 
-export async function login(email: string, password: string): Promise<void> {
+export async function login(displayName: string, password: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/v1/auth/signin`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ display_name: displayName, password }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

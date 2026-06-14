@@ -155,9 +155,13 @@ async def sign_in(
     limiter: RateLimiterDep,
     client_ip: ClientIpDep,
 ) -> AuthResponse:
+    if not payload.email and not payload.display_name:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="email or display_name required")
+    identity = payload.email or payload.display_name
     await _enforce_limit(
         limiter,
-        key=f"signin:email:{payload.email.lower()}",
+        key=f"signin:{identity.lower()}",
         limit=settings.auth_rl_signin_per_email_per_min,
         window_seconds=60,
     )
@@ -169,6 +173,7 @@ async def sign_in(
     )
     outcome = await _auth_service(db, auth, ids, clock).sign_in(
         email=payload.email,
+        display_name=payload.display_name,
         password=payload.password,
     )
     return _to_auth_response(outcome)

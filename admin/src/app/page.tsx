@@ -19,9 +19,8 @@ import {
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +30,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     setError("");
     try {
       if (mode === "login") {
-        await login(email, password);
+        await login(displayName, password);
       } else {
         const autoEmail = `${displayName.toLowerCase().replace(/\s+/g, "")}@lbt.local`;
         await register(autoEmail, password, displayName);
@@ -66,23 +65,13 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </div>
         )}
 
-        {mode === "register" ? (
-          <input
-            type="text"
-            placeholder="Display Name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            required
-          />
-        ) : (
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        )}
+        <input
+          type="text"
+          placeholder="Display Name"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          required
+        />
         <input
           type="password"
           placeholder="Password"

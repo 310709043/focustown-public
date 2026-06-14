@@ -141,8 +141,14 @@ class AuthService:
         )
         return AuthOutcome(user=user, tokens=tokens)
 
-    async def sign_in(self, *, email: str, password: str) -> AuthOutcome:
-        creds = await self._users.get_credentials_by_email(email)
+    async def sign_in(
+        self, *, email: str | None = None, display_name: str | None = None, password: str
+    ) -> AuthOutcome:
+        creds = None
+        if email:
+            creds = await self._users.get_credentials_by_email(email)
+        elif display_name:
+            creds = await self._users.get_credentials_by_display_name(display_name)
         if creds is None or not verify_password(password, creds.password_hash):
             raise AuthError("invalid_credentials")
         # Backfill character_key for legacy accounts that pre-date the
@@ -158,7 +164,7 @@ class AuthService:
             )
         tokens = await self._auth.issue_tokens(
             user_id=user.id,
-            credentials=AuthCredentials(email=email, password=password),
+            credentials=AuthCredentials(email=user.email, password=password),
         )
         return AuthOutcome(user=user, tokens=tokens)
 

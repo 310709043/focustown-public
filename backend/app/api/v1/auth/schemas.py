@@ -19,7 +19,8 @@ class SignUpRequest(BaseModel):
 
 
 class SignInRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr | None = None
+    display_name: str | None = None
     password: str = Field(min_length=8, max_length=128)
 
 
