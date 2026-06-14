@@ -44,20 +44,42 @@ export function NavButton({
   );
 
   const baseStyle = {
-    background: "rgba(7,4,26,0.75)",
-    border: "1px solid var(--panel-stroke)",
+    background: "linear-gradient(180deg, rgba(16, 22, 40, 0.8) 0%, rgba(12, 16, 32, 0.8) 100%)",
+    border: "1px solid var(--border)",
     padding: "7px 12px",
     display: "inline-flex",
     alignItems: "center",
     gap: 7,
     fontSize: 11,
-    color: "var(--ink-mute)",
+    color: "var(--dim)",
     letterSpacing: "0.15em",
     cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled ? 0.4 : 1,
-    transition: "all 0.12s steps(2)",
+    opacity: disabled ? 0.35 : 1,
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     textDecoration: "none",
+    borderRadius: "var(--r)",
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
   } as const;
+
+  const hoverHandlers = {
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+      if (disabled) return;
+      e.currentTarget.style.borderColor = "var(--a1-soft)";
+      e.currentTarget.style.color = "var(--text)";
+      e.currentTarget.style.background = "linear-gradient(180deg, rgba(233, 167, 110, 0.12) 0%, rgba(233, 167, 110, 0.06) 100%)";
+      e.currentTarget.style.boxShadow = "0 0 16px rgba(233, 167, 110, 0.15)";
+      e.currentTarget.style.transform = "translateY(-1px)";
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+      if (disabled) return;
+      e.currentTarget.style.borderColor = "var(--border)";
+      e.currentTarget.style.color = "var(--dim)";
+      e.currentTarget.style.background = "linear-gradient(180deg, rgba(16, 22, 40, 0.8) 0%, rgba(12, 16, 32, 0.8) 100%)";
+      e.currentTarget.style.boxShadow = "none";
+      e.currentTarget.style.transform = "none";
+    },
+  };
 
   if (href && !disabled) {
     return (
@@ -67,14 +89,7 @@ export function NavButton({
         title={title}
         className="font-silkscreen"
         style={baseStyle}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "var(--accent)";
-          e.currentTarget.style.color = "var(--ink)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "var(--panel-stroke)";
-          e.currentTarget.style.color = "var(--ink-mute)";
-        }}
+        {...hoverHandlers}
       >
         {inner}
       </a>
@@ -89,16 +104,7 @@ export function NavButton({
       data-testid={testId}
       className="font-silkscreen"
       style={baseStyle}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.borderColor = "var(--accent)";
-        e.currentTarget.style.color = "var(--ink)";
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.borderColor = "var(--panel-stroke)";
-        e.currentTarget.style.color = "var(--ink-mute)";
-      }}
+      {...hoverHandlers}
     >
       {inner}
     </button>
