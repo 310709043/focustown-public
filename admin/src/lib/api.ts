@@ -47,7 +47,7 @@ export async function register(email: string, password: string, displayName: str
       password,
       display_name: displayName,
       terms_accepted: true,
-      terms_version: "1.0",
+      terms_version: "2026-05-14",
       marketing_opt_in: false,
     }),
   });

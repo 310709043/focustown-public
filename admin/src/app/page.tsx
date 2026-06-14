@@ -32,7 +32,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       if (mode === "login") {
         await login(displayName, password);
       } else {
-        const autoEmail = `${displayName.toLowerCase().replace(/\s+/g, "")}@lbt.local`;
+        const autoEmail = `${displayName.toLowerCase().replace(/\s+/g, "")}@lowbatterytown.com`;
         await register(autoEmail, password, displayName);
       }
       onLogin();
