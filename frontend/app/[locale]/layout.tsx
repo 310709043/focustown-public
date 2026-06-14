@@ -8,6 +8,7 @@ import { GlobalAudioMount } from "@/components/audio/GlobalAudioMount";
 import { StationRealtimeBridge } from "@/components/audio/StationRealtimeBridge";
 import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { SplashGate } from "@/components/chrome/SplashGate";
+import { ConnectionBanner } from "@/components/chrome/ConnectionBanner";
 import { Toaster } from "@/components/chrome/Toaster";
 import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { routing, type Locale } from "@/i18n/routing";
@@ -93,6 +94,7 @@ export default async function LocaleLayout({
       <DirectionSync locale={locale} />
       <SplashGate />
       <Toaster />
+      <ConnectionBanner />
       {/* Single global <audio> element + store subscriber. Mounted once
           here so playback survives page navigation; every UI player
           surface (MusicPlayer, FloatingMusicPlayer, PersonalRadio) is

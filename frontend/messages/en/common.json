@@ -63,6 +63,9 @@
   "a11y": {
     "dismissAria": "Dismiss"
   },
+  "connection": {
+    "reconnecting": "◌ Reconnecting…"
+  },
   "errors": {
     "networkFailure": "Cannot reach the server. Make sure the backend is running.",
     "unknown": "Unknown error"

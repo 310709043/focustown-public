@@ -122,12 +122,32 @@ export type WsMessage =
 
 type Listener = (msg: WsMessage) => void;
 
+export type WsConnectionState = "idle" | "connecting" | "connected" | "reconnecting";
+type StateListener = (state: WsConnectionState) => void;
+
 export class RealtimeClient {
   private ws: WebSocket | null = null;
   private listeners = new Set<Listener>();
+  private stateListeners = new Set<StateListener>();
   private reconnectAttempts = 0;
   private intentionalClose = false;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private _state: WsConnectionState = "idle";
+
+  get state(): WsConnectionState {
+    return this._state;
+  }
+
+  private setState(next: WsConnectionState) {
+    if (this._state === next) return;
+    this._state = next;
+    for (const fn of this.stateListeners) fn(next);
+  }
+
+  onStateChange(fn: StateListener) {
+    this.stateListeners.add(fn);
+    return () => this.stateListeners.delete(fn);
+  }
 
   connect() {
     if (this.ws && this.ws.readyState <= 1) return;
@@ -138,6 +158,7 @@ export class RealtimeClient {
     const token = tokenStore.load()?.access_token;
     if (!token) return;
     this.intentionalClose = false;
+    this.setState(this.reconnectAttempts > 0 ? "reconnecting" : "connecting");
     // Send the JWT via Sec-WebSocket-Protocol so it never appears in the
     // URL (which proxies/ALBs log) — the backend pulls it from
     // websocket.scope.subprotocols and echoes the chosen one on accept().
@@ -145,6 +166,7 @@ export class RealtimeClient {
     const ws = new WebSocket(url, [`bearer.${token}`]);
     ws.onopen = () => {
       this.reconnectAttempts = 0;
+      this.setState("connected");
       // Pair with the close log so "still seeing [ws] close" reports can be
       // distinguished from "WS never opened" reports without DevTools dive.
       console.info("[ws] open");
@@ -196,6 +218,7 @@ export class RealtimeClient {
     }
     this.ws?.close();
     this.ws = null;
+    this.setState("idle");
   }
 
   send(payload: Record<string, unknown>) {
@@ -213,6 +236,7 @@ export class RealtimeClient {
     if (this.reconnectTimer !== null) {
       clearTimeout(this.reconnectTimer);
     }
+    this.setState("reconnecting");
     const delay = Math.min(30_000, 500 * 2 ** this.reconnectAttempts++);
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;

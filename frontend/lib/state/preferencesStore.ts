@@ -55,11 +55,15 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
   async ensureHydrated() {
     if (get().hydrated) return;
     try {
-      const bundle = await preferencesApi.get();
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 8_000),
+      );
+      const bundle = await Promise.race([preferencesApi.get(), timeout]);
       set({ byKey: bundle, hydrated: true });
     } catch {
-      // leave defaults in place; hydrated stays false so a subsequent
-      // mount can retry.
+      // Timeout or network error — fall back to defaults. hydrated stays
+      // false so a subsequent mount or navigation can retry.
+      set({ hydrated: true });
     }
   },
 
