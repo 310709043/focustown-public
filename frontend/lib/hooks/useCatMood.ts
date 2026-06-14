@@ -53,9 +53,17 @@ function pickRandom<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+let meowCtx: AudioContext | null = null;
+
 function playMeow(): void {
   try {
-    const ctx = new AudioContext();
+    if (!meowCtx || meowCtx.state === "closed") {
+      meowCtx = new AudioContext();
+    }
+    if (meowCtx.state === "suspended") {
+      void meowCtx.resume();
+    }
+    const ctx = meowCtx;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = "sine";
@@ -68,7 +76,6 @@ function playMeow(): void {
     gain.connect(ctx.destination);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.25);
-    osc.onended = () => void ctx.close();
   } catch {
     // AudioContext not available.
   }

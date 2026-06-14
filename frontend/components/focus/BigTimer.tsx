@@ -6,6 +6,8 @@ import { PixelDigits } from "@/components/pixel/PixelDigits";
 import { TomatoStrip } from "@/components/town/bottom/TomatoStrip";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { useTimer } from "@/lib/hooks/useTimer";
+import { useUserStats } from "@/lib/hooks/useUserStats";
+import { useAuthStore } from "@/lib/state/authStore";
 
 interface BigTimerProps {
   /** Solo passes null; buddy passes the partner user id. Forwarded to
@@ -37,6 +39,8 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
     reset,
   } = useTimerStore();
   const t = useTranslations("focus.solo.bigTimer");
+  const user = useAuthStore((s) => s.user);
+  const { kpis } = useUserStats(user);
 
   const total = Math.max(1, durationSeconds);
   const pct = (1 - remaining / total) * 100;
@@ -149,9 +153,9 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
           paddingTop: 12,
         }}
       >
-        <Stat label={t("statTodayLabel")} value="142 min" color="var(--accent)" />
-        <Stat label={t("statStreakLabel")} value={t("statStreakValue", { days: 22 })} color="var(--accent-2)" />
-        <Stat label={t("statRankLabel")} value="#7" color="var(--accent-3)" />
+        <Stat label={t("statTodayLabel")} value={`${kpis.allTimeFocusHours * 60 | 0} min`} color="var(--accent)" />
+        <Stat label={t("statStreakLabel")} value={t("statStreakValue", { days: kpis.streakDays })} color="var(--accent-2)" />
+        <Stat label={t("statRankLabel")} value={kpis.weeklyRank > 0 ? `#${kpis.weeklyRank}` : "—"} color="var(--accent-3)" />
       </div>
     </div>
   );

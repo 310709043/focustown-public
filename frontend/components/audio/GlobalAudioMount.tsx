@@ -171,10 +171,12 @@ export function GlobalAudioMount() {
   // the user actually hears something instead of watching the index flicker
   // through every dead presigned URL. Only applies to the audio-store
   // branch — station/personal have their own recovery paths.
-  const errorBudget = useRef<{ failed: Set<string>; lastAt: number }>({
-    failed: new Set(),
-    lastAt: 0,
-  });
+  // Keyed by source kind so switching sources resets the budget.
+  const errorBudget = useRef<{
+    kind: Source["kind"] | null;
+    failed: Set<string>;
+    lastAt: number;
+  }>({ kind: null, failed: new Set(), lastAt: 0 });
 
   // Sync audio unlock from sessionStorage on first mount.
   useEffect(() => {
@@ -372,6 +374,15 @@ export function GlobalAudioMount() {
     // burst-window guard below.
     if (tid && !tid.startsWith("local:")) invalidatePlayUrl(tid);
 
+    // Reset the error budget when switching source kinds so a burst of
+    // errors from the previous source doesn't falsely trigger local
+    // fallback for the new one.
+    const eb = errorBudget.current;
+    if (eb.kind !== src.kind) {
+      eb.kind = src.kind;
+      eb.failed.clear();
+    }
+
     if (src.kind === "audio-store") {
       // PR #90: per-burst failure tracking. When every track in the
       // current personal-radio playlist has 404'd inside an ~800ms
@@ -380,15 +391,15 @@ export function GlobalAudioMount() {
       const s = useAudioStore.getState();
       if (!tid) return;
       const now = performance.now();
-      if (now - errorBudget.current.lastAt > 800) {
-        errorBudget.current.failed.clear();
+      if (now - eb.lastAt > 800) {
+        eb.failed.clear();
       }
-      errorBudget.current.lastAt = now;
-      errorBudget.current.failed.add(tid);
-      if (errorBudget.current.failed.size >= s.tracks.length) {
+      eb.lastAt = now;
+      eb.failed.add(tid);
+      if (eb.failed.size >= s.tracks.length) {
         console.warn("[audio] all tracks failed; switching to local fallback");
         useAudioStore.setState({ tracks: LOCAL_FALLBACK_TRACKS, index: 0 });
-        errorBudget.current.failed.clear();
+        eb.failed.clear();
         return;
       }
       if (s.tracks.length > 1) s.next();
@@ -400,15 +411,15 @@ export function GlobalAudioMount() {
       const s = useStationStore.getState();
       if (!tid) return;
       const now2 = performance.now();
-      if (now2 - errorBudget.current.lastAt > 800) {
-        errorBudget.current.failed.clear();
+      if (now2 - eb.lastAt > 800) {
+        eb.failed.clear();
       }
-      errorBudget.current.lastAt = now2;
-      errorBudget.current.failed.add(tid);
-      if (errorBudget.current.failed.size >= s.personalPlaylist.length) {
+      eb.lastAt = now2;
+      eb.failed.add(tid);
+      if (eb.failed.size >= s.personalPlaylist.length) {
         console.warn("[audio] personal all-tracks failed; switching to local fallback");
         s.setPersonalPlaylist(LOCAL_FALLBACK_TRACKS);
-        errorBudget.current.failed.clear();
+        eb.failed.clear();
         return;
       }
       if (s.personalPlaylist.length > 1) s.nextPersonal();
@@ -425,12 +436,12 @@ export function GlobalAudioMount() {
       const playlistIds = selectActivePlaylistIds(useStationStore.getState());
       if (!tid || playlistIds.length === 0) return;
       const now = performance.now();
-      if (now - errorBudget.current.lastAt > 800) {
-        errorBudget.current.failed.clear();
+      if (now - eb.lastAt > 800) {
+        eb.failed.clear();
       }
-      errorBudget.current.lastAt = now;
-      errorBudget.current.failed.add(tid);
-      if (errorBudget.current.failed.size >= playlistIds.length) {
+      eb.lastAt = now;
+      eb.failed.add(tid);
+      if (eb.failed.size >= playlistIds.length) {
         console.warn(
           "[audio] station all-tracks failed; switching to local fallback",
         );
@@ -440,7 +451,7 @@ export function GlobalAudioMount() {
           isPlaying: true,
         });
         useStationStore.setState({ activeScope: null });
-        errorBudget.current.failed.clear();
+        eb.failed.clear();
       }
     }
   };

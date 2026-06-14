@@ -78,10 +78,15 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   async complete() {
     const { session, tomatoCount, mode } = get();
     if (!session) return;
-    await sessionsApi.complete(session.id);
-    set({
-      session: null,
-      tomatoCount: mode === "focus" ? Math.min(4, tomatoCount + 1) : tomatoCount,
-    });
+    try {
+      await sessionsApi.complete(session.id);
+      set({
+        session: null,
+        tomatoCount: mode === "focus" ? Math.min(4, tomatoCount + 1) : tomatoCount,
+      });
+    } catch {
+      // Keep session so user can retry; just stop the timer.
+      set({ running: false });
+    }
   },
 }));

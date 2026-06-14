@@ -127,9 +127,14 @@ export class RealtimeClient {
   private listeners = new Set<Listener>();
   private reconnectAttempts = 0;
   private intentionalClose = false;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   connect() {
     if (this.ws && this.ws.readyState <= 1) return;
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     const token = tokenStore.load()?.access_token;
     if (!token) return;
     this.intentionalClose = false;
@@ -185,6 +190,10 @@ export class RealtimeClient {
 
   disconnect() {
     this.intentionalClose = true;
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     this.ws?.close();
     this.ws = null;
   }
@@ -201,8 +210,14 @@ export class RealtimeClient {
   }
 
   private scheduleReconnect() {
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+    }
     const delay = Math.min(30_000, 500 * 2 ** this.reconnectAttempts++);
-    setTimeout(() => this.connect(), delay);
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connect();
+    }, delay);
   }
 
   private async refreshAndReconnect(): Promise<void> {
