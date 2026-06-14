@@ -160,8 +160,8 @@ export function MusicPlayer() {
           type="button"
           aria-label={muted ? t("unmuteAria") : t("muteAria")}
           data-testid="music-mute"
-          className="pixel-btn primary"
-          style={{ flex: 1, padding: "4px 8px", fontSize: 10 }}
+          className="pixel-btn primary touch:min-h-[44px]"
+          style={{ flex: 1, padding: "8px 10px", fontSize: 11 }}
           onClick={onMuteClick}
         >
           {muted ? "🔇" : "🔊"}
@@ -170,8 +170,8 @@ export function MusicPlayer() {
           type="button"
           aria-label={t("nextAria")}
           data-testid="music-next"
-          className="pixel-btn"
-          style={{ padding: "4px 6px", fontSize: 10 }}
+          className="pixel-btn touch:min-h-[44px]"
+          style={{ padding: "8px 10px", fontSize: 11 }}
           onClick={next}
         >
           ▶▶

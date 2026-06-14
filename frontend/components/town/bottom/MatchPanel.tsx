@@ -242,6 +242,11 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
                 color: "var(--accent-2)",
                 letterSpacing: "0.12em",
                 opacity: 0.8,
+                maxWidth: "100%",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                display: "block",
               }}
             >
               {t("together.matchedWith", { name: partnerAvatar.name ?? "buddy" })}
@@ -314,9 +319,9 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
           onClick={(e) => { e.stopPropagation(); onTogether(); }}
           disabled={busy && !hasAccepted}
           aria-label={togetherAria}
-          className="pixel-btn"
+          className="pixel-btn touch:min-h-[44px]"
           style={{
-            padding: "5px 8px",
+            padding: "8px 10px",
             fontSize: 10,
             letterSpacing: "0.18em",
             borderColor: "var(--accent-2)",

@@ -171,14 +171,14 @@ export function ModeStatusBar({
           data-testid="mode-status-bar-solo"
           onClick={() => router.push("/focus/solo")}
           aria-label={t("soloExitAria")}
-          className="font-silkscreen"
+          className="font-silkscreen touch:min-h-[44px]"
           style={{
             background: "transparent",
             border: "1px solid var(--accent-3)",
             color: "var(--accent-3)",
             fontSize: 10,
             letterSpacing: "0.18em",
-            padding: "4px 10px",
+            padding: "8px 12px",
             cursor: "pointer",
           }}
         >
@@ -189,14 +189,14 @@ export function ModeStatusBar({
           data-testid="mode-status-bar-together"
           onClick={onFindBuddy}
           aria-label={t("togetherExitAria")}
-          className="font-silkscreen"
+          className="font-silkscreen touch:min-h-[44px]"
           style={{
             background: "transparent",
             border: "1px solid var(--accent-2)",
             color: "var(--accent-2)",
             fontSize: 10,
             letterSpacing: "0.18em",
-            padding: "4px 10px",
+            padding: "8px 12px",
             cursor: "pointer",
             textShadow: "0 0 6px var(--accent-2)",
           }}

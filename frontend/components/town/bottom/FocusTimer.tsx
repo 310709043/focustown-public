@@ -20,8 +20,10 @@ const MIN_FOCUS_SECONDS = 5 * 60;
 
 const SCENE_EMOJI: Record<string, string> = {
   night: "🌙",
+  midnight: "🌑",
   dawn: "🌅",
   day: "☀",
+  cloudy: "☁",
   dusk: "🌆",
   rain: "☂",
   snow: "❄",
@@ -190,6 +192,11 @@ export function FocusTimer() {
       </div>
 
       <div
+        role="progressbar"
+        aria-valuenow={Math.round(pct)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={t("startAria")}
         style={{
           height: 8,
           background: "rgba(0,0,0,0.5)",

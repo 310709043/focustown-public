@@ -152,6 +152,10 @@
     --font-size-page-title: 26px;
     --font-size-hero:       40px;
   }
+  .select-char-grid {
+    grid-template-columns: 1fr !important;
+    overflow-y: auto !important;
+  }
 }
 
 html,

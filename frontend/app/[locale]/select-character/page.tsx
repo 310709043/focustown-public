@@ -124,9 +124,10 @@ function SelectCharacterInner() {
   return (
     <SelectCharacterScene step={2} totalSteps={3}>
       <div
+        className="select-char-grid"
         style={{
           display: "grid",
-          gridTemplateColumns: "380px 1fr",
+          gridTemplateColumns: "minmax(0, 380px) 1fr",
           gap: 18,
           padding: 18,
           height: "100%",
