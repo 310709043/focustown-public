@@ -435,15 +435,5 @@ function Dashboard() {
    ══════════════════════════════════════ */
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setAuthed(isLoggedIn());
-  }, []);
-
-  if (authed === null) return null; // SSR hydration guard
-
-  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
-
   return <Dashboard />;
 }
