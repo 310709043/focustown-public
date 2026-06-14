@@ -55,9 +55,9 @@ export function BatteryStrip({
               style={{
                 width: w,
                 height: h,
-                border: `1px solid ${active ? "#4ade80" : "#1e3025"}`,
+                border: `1px solid ${active ? "var(--green)" : "rgba(125, 211, 168, 0.15)"}`,
                 background: active
-                  ? "linear-gradient(135deg, rgba(74,222,128,0.45) 0%, rgba(34,197,94,0.25) 100%)"
+                  ? "linear-gradient(135deg, rgba(125, 211, 168, 0.4) 0%, rgba(125, 211, 168, 0.2) 100%)"
                   : "rgba(255,255,255,0.03)",
                 boxSizing: "border-box",
               }}
@@ -67,7 +67,7 @@ export function BatteryStrip({
               style={{
                 width: nubW,
                 height: nubH,
-                background: active ? "#4ade80" : "#1e3025",
+                background: active ? "var(--green)" : "rgba(125, 211, 168, 0.15)",
                 flexShrink: 0,
               }}
             />

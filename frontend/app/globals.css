@@ -7,28 +7,54 @@
    exposed to Tailwind's fontFamily tokens via tailwind.config.ts. */
 
 :root {
-  /* Era B+ refined palette — enhanced for higher visual quality.
-     Warm-peach + dusty-rose + slate direction with refined glass effects. */
-  --bg: #0c1020;            /* deeper indigo for richer contrast */
-  --bg-subtle: #111830;     /* subtle layer for depth */
-  --a1: #e9a76e;            /* warm peach, primary accent */
-  --a1-soft: #e9a76eaa;     /* peach with transparency */
-  --a2: #f4d289;            /* warm cream-yellow */
-  --a2-soft: #f4d28999;     /* cream with transparency */
-  --a3: #c98aa3;            /* dusty rose, secondary accent */
-  --a3-soft: #c98aa388;     /* rose with transparency */
-  --a4: #91a8c4;            /* slate blue, tertiary accent */
-  --a4-soft: #91a8c488;     /* slate with transparency */
-  --teal: #a8c4a0;          /* muted sage */
-  --amber: #f4d289;         /* cream-yellow */
-  --pink: #c98aa3;          /* dusty rose */
-  --coral: #e9a76e;         /* peach */
-  --blue: #91a8c4;          /* slate */
-  --green: #a8c4a0;         /* muted sage */
+  /* Era B+ unified palette — coordinated warm-peach + dusty-rose + slate.
+     All colors centralized here; components should use these tokens. */
+
+  /* ── Backgrounds ─────────────────────────────── */
+  --bg: #0c1020;            /* deep indigo base */
+  --bg-subtle: #111830;     /* subtle layer */
+  --bg-dark: #0a0e1a;       /* deepest dark for text-on-light */
+
+  /* ── Primary Accents (warm peach family) ─────── */
+  --a1: #e9a76e;            /* warm peach */
+  --a1-soft: #e9a76eaa;
+  --a1-bright: #f0b87a;     /* brighter peach for hover */
+  --coral: #e9a76e;         /* alias */
+
+  /* ── Secondary Accents (cream-yellow family) ─── */
+  --a2: #f4d289;            /* warm cream */
+  --a2-soft: #f4d28999;
+  --amber: #f4d289;         /* alias */
+  --yellow: #f4d289;        /* unified yellow */
+
+  /* ── Tertiary Accents (dusty rose family) ────── */
+  --a3: #c98aa3;            /* dusty rose */
+  --a3-soft: #c98aa388;
+  --pink: #c98aa3;          /* unified pink */
+
+  /* ── Quaternary Accents (slate blue family) ──── */
+  --a4: #91a8c4;            /* slate blue */
+  --a4-soft: #91a8c488;
+  --blue: #91a8c4;          /* alias */
+
+  /* ── Semantic Colors ─────────────────────────── */
+  --green: #7dd3a8;         /* success/online — unified mint */
+  --green-soft: #7dd3a880;
+  --red: #f87171;           /* error/danger — unified red */
+  --red-soft: #f8717180;
+  --purple: #a78bfa;        /* CTA/primary action — unified purple */
+  --purple-soft: #a78bfa80;
+  --teal: #7dd3a8;          /* alias to green */
+  --cyan: #67e8f9;          /* cyan for notes */
+
+  /* ── Text ────────────────────────────────────── */
   --text: #f4ecd8;          /* warm cream */
   --text-bright: #fff8f0;   /* brighter for emphasis */
+  --text-on-light: #0a0e1a; /* text on light backgrounds */
   --muted: #b8b4cc;
   --dim: #6b6788;
+
+  /* ── Surfaces ────────────────────────────────── */
   --card: rgba(12, 16, 32, 0.65);
   --card-hover: rgba(18, 24, 48, 0.75);
   --glass: rgba(16, 24, 48, 0.75);
@@ -105,32 +131,32 @@
      the layout. */
   --font-size-metric: clamp(32px, 5vw, 56px);
 
-  /* ── Reference-design token aliases (enhanced) ─────────────────── */
-  --bg-0:                #0c1020;
-  --bg-1:                #111830;
+  /* ── Reference-design token aliases (unified) ──────────────────── */
+  --bg-0:                var(--bg);
+  --bg-1:                var(--bg-subtle);
   --bg-2:                #1a2440;
-  --sky-top:             #111830;
+  --sky-top:             var(--bg-subtle);
   --sky-mid:             #1f2d52;
   --sky-low:             #3a4d78;
   --ink:                 var(--text);
-  --ink-mute:            var(--dir-ink-mute);
-  --ink-dim:             var(--dir-ink-dim);
+  --ink-mute:            var(--muted);
+  --ink-dim:             var(--dim);
   --accent:              var(--a1);
-  --accent-2:            #a78bfa;
-  --accent-3:            #91a8c4;
+  --accent-2:            var(--purple);
+  --accent-3:            var(--a4);
   --accent-4:            var(--amber);
-  --window-warm:         #f4d289;
-  --window-cool:         #91a8c4;
-  --window-pink:         #c98aa3;
-  --window-mint:         #a8c4a0;
+  --window-warm:         var(--yellow);
+  --window-cool:         var(--blue);
+  --window-pink:         var(--pink);
+  --window-mint:         var(--green);
   --panel-bg:            var(--card);
-  --panel-stroke:        var(--dir-panel-stroke);
-  --panel-stroke-strong: var(--dir-panel-stroke-strong);
+  --panel-stroke:        var(--border);
+  --panel-stroke-strong: var(--border2);
   --button-fill:         var(--dir-button-fill);
   --neon-glow:           var(--dir-accent-glow);
   --neon-glow-pink:      var(--dir-accent-glow-pink);
   --neon-glow-cyan:      var(--dir-accent-glow-cyan);
-  /* Enhanced glass morphism tokens */
+  /* Glass morphism tokens */
   --glass-blur:          12px;
   --glass-blur-strong:   20px;
   --glass-border:        rgba(255, 255, 255, 0.08);

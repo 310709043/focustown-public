@@ -99,7 +99,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
           boxShadow: `0 0 ${px(12)} rgba(201,138,163,0.2)`,
           marginBottom: px(8),
           transition: "border-color 0.3s",
-          borderColor: mood === "angry" ? "#f87171" : mood === "suspicious" ? "#facc15" : "var(--a3)",
+          borderColor: mood === "angry" ? "var(--red)" : mood === "suspicious" ? "var(--yellow)" : "var(--a3)",
         }}
       >
         {/* Left ear */}
@@ -112,7 +112,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
             height: 0,
             borderLeft: `${px(6)} solid transparent`,
             borderRight: `${px(6)} solid transparent`,
-            borderBottom: `${px(11)} solid ${mood === "angry" ? "#f87171" : "var(--a3)"}`,
+            borderBottom: `${px(11)} solid ${mood === "angry" ? "var(--red)" : "var(--a3)"}`,
             transition: "transform 0.3s, border-bottom-color 0.3s",
             transform: mood === "suspicious" ? "rotate(-15deg)" : "rotate(0)",
           }}
@@ -127,7 +127,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
             height: 0,
             borderLeft: `${px(6)} solid transparent`,
             borderRight: `${px(6)} solid transparent`,
-            borderBottom: `${px(11)} solid ${mood === "angry" ? "#f87171" : "var(--a3)"}`,
+            borderBottom: `${px(11)} solid ${mood === "angry" ? "var(--red)" : "var(--a3)"}`,
             transition: "border-bottom-color 0.3s",
           }}
         />
@@ -141,7 +141,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
             height: 0,
             borderLeft: `${px(3)} solid transparent`,
             borderRight: `${px(3)} solid transparent`,
-            borderBottom: `${px(6)} solid ${mood === "angry" ? "rgba(248,113,113,0.4)" : "rgba(233,167,110,0.3)"}`,
+            borderBottom: `${px(6)} solid ${mood === "angry" ? "var(--red-soft)" : "rgba(233,167,110,0.3)"}`,
             transition: "transform 0.3s",
             transform: mood === "suspicious" ? "rotate(-15deg)" : "rotate(0)",
           }}
@@ -155,7 +155,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
             height: 0,
             borderLeft: `${px(3)} solid transparent`,
             borderRight: `${px(3)} solid transparent`,
-            borderBottom: `${px(6)} solid ${mood === "angry" ? "rgba(248,113,113,0.4)" : "rgba(233,167,110,0.3)"}`,
+            borderBottom: `${px(6)} solid ${mood === "angry" ? "var(--red-soft)" : "rgba(233,167,110,0.3)"}`,
           }}
         />
 
@@ -169,7 +169,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
                 left: px(6),
                 width: px(10),
                 height: px(2.5),
-                background: "#f87171",
+                background: "var(--red)",
                 borderRadius: px(1),
                 transform: "rotate(15deg)",
                 transformOrigin: "right center",
@@ -182,7 +182,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
                 right: px(6),
                 width: px(10),
                 height: px(2.5),
-                background: "#f87171",
+                background: "var(--red)",
                 borderRadius: px(1),
                 transform: "rotate(-15deg)",
                 transformOrigin: "left center",
@@ -232,7 +232,7 @@ export function PixelCat({ mood, size = 80, faceData }: PixelCatProps) {
             width: px(4),
             height: px(3),
             borderRadius: "50%",
-            background: mood === "angry" ? "#f87171" : "var(--a1)",
+            background: mood === "angry" ? "var(--red)" : "var(--a1)",
             transition: "background 0.3s",
           }}
         />
