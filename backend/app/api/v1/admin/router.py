@@ -13,7 +13,7 @@ from app.api.v1.admin.schemas import (
     FeedbackStatusUpdate,
     OverviewStats,
 )
-from app.core.deps import AdminUserId, DbDep
+from app.core.deps import DbDep
 from app.core.exceptions import NotFoundError
 from app.infrastructure.db.models.feedback import FeedbackSubmissionORM
 from app.infrastructure.db.models.focus_session import FocusSessionORM
@@ -28,7 +28,6 @@ router = APIRouter()
 
 @router.get("/overview", response_model=OverviewStats)
 async def get_overview(
-    _admin: AdminUserId,
     db: DbDep,
 ) -> OverviewStats:
     """Dashboard summary statistics."""
@@ -91,7 +90,6 @@ async def get_overview(
 
 @router.get("/users", response_model=AdminUserList)
 async def list_users(
-    _admin: AdminUserId,
     db: DbDep,
     q: str = Query("", max_length=128),
     page: int = Query(1, ge=1),
@@ -170,7 +168,6 @@ async def _set_user_active(db: DbDep, user_id: str, *, active: bool) -> BanRespo
 @router.post("/users/{user_id}/ban", response_model=BanResponse)
 async def ban_user(
     user_id: str,
-    _admin: AdminUserId,
     db: DbDep,
 ) -> BanResponse:
     """Deactivate a user account."""
@@ -180,7 +177,6 @@ async def ban_user(
 @router.post("/users/{user_id}/unban", response_model=BanResponse)
 async def unban_user(
     user_id: str,
-    _admin: AdminUserId,
     db: DbDep,
 ) -> BanResponse:
     """Reactivate a user account."""
@@ -194,7 +190,6 @@ _VALID_FEEDBACK_STATUSES = {"new", "reviewed", "resolved"}
 
 @router.get("/feedback", response_model=AdminFeedbackList)
 async def list_feedback(
-    _admin: AdminUserId,
     db: DbDep,
     status: str | None = Query(None, pattern=r"^(new|reviewed|resolved)$"),
     page: int = Query(1, ge=1),
@@ -246,7 +241,6 @@ async def list_feedback(
 async def update_feedback_status(
     feedback_id: str,
     payload: FeedbackStatusUpdate,
-    _admin: AdminUserId,
     db: DbDep,
 ) -> AdminFeedbackDetail:
     """Transition feedback status (new -> reviewed -> resolved)."""

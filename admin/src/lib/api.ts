@@ -60,34 +60,12 @@ export async function register(email: string, password: string, displayName: str
 }
 
 export async function adminFetch<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const tokens = loadTokens();
-  if (!tokens) throw new Error("Not authenticated");
-
   const headers: Record<string, string> = {
     "content-type": "application/json",
-    authorization: `Bearer ${tokens.access_token}`,
     ...(opts.headers as Record<string, string> ?? {}),
   };
 
-  let res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
-
-  // Try refresh on 401
-  if (res.status === 401 && tokens.refresh_token) {
-    const refreshRes = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ refresh_token: tokens.refresh_token }),
-    });
-    if (refreshRes.ok) {
-      const fresh = (await refreshRes.json()) as Tokens;
-      saveTokens(fresh);
-      headers.authorization = `Bearer ${fresh.access_token}`;
-      res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
-    } else {
-      clearTokens();
-      throw new Error("Session expired");
-    }
-  }
+  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
