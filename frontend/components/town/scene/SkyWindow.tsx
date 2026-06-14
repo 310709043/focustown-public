@@ -10,7 +10,7 @@ import { BlinkDot } from "@/components/pixel/BlinkDot";
 import { BroadcastClipPlayer } from "@/components/scene/BroadcastClipPlayer";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { AVATARS, type AvatarDef } from "@/lib/pixel/sprites/avatars";
-import { TOMATO } from "@/lib/pixel/sprites/props";
+import { BATTERY } from "@/lib/pixel/sprites/props";
 import { findCharacter } from "@/lib/data/characters";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import {
@@ -374,8 +374,8 @@ function RankBoard() {
             >
               {r.completed_count}
               <PixelSprite
-                sprite={TOMATO.sprite}
-                palette={TOMATO.palette}
+                sprite={BATTERY.sprite}
+                palette={BATTERY.palette}
                 scale={1.2}
               />
             </span>

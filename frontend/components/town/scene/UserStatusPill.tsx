@@ -7,7 +7,7 @@ import { useAuthStore } from "@/lib/state/authStore";
 import { useUserStats } from "@/lib/hooks/useUserStats";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
-import { TOMATO } from "@/lib/pixel/sprites/props";
+import { BATTERY } from "@/lib/pixel/sprites/props";
 
 interface UserStatusPillProps {
   /** Click handler — reference routes to a profile modal; we leave it
@@ -183,8 +183,8 @@ export function UserStatusPill({ onClick }: UserStatusPillProps) {
         {tomatoes.map((_, i) => (
           <PixelSprite
             key={i}
-            sprite={TOMATO.sprite}
-            palette={TOMATO.palette}
+            sprite={BATTERY.sprite}
+            palette={BATTERY.palette}
             scale={1.1}
             glow={i < filled ? null : null}
             style={i >= filled ? { opacity: 0.3 } : undefined}

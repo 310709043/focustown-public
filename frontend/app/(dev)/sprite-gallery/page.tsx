@@ -4,6 +4,7 @@ import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
 import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { PixelWord } from "@/components/pixel/PixelWord";
 import { AVATARS } from "@/lib/pixel/sprites/avatars";
+import { BATTERY } from "@/lib/pixel/sprites/props";
 import {
   BENCH,
   buildCar,
@@ -14,7 +15,6 @@ import {
   NOTE,
   STAR,
   SUN,
-  TOMATO,
   TREE,
   TROPHY,
   WALKERS,
@@ -104,7 +104,7 @@ export default function SpriteGalleryPage() {
         <div className="flex items-end gap-8 flex-wrap">
           <PixelSprite sprite={MOON.sprite} palette={MOON.palette} scale={4} glow="#fcd34d" />
           <PixelSprite sprite={SUN.sprite} palette={SUN.palette} scale={4} glow="#fcd34d" />
-          <PixelSprite sprite={TOMATO.sprite} palette={TOMATO.palette} scale={4} />
+          <PixelSprite sprite={BATTERY.sprite} palette={BATTERY.palette} scale={4} />
           <PixelSprite sprite={COFFEE.sprite} palette={COFFEE.palette} scale={4} />
           <PixelSprite sprite={STAR.sprite} palette={STAR.palette} scale={5} glow="#fcd34d" />
           <PixelSprite sprite={TROPHY.sprite} palette={TROPHY.palette} scale={4} />

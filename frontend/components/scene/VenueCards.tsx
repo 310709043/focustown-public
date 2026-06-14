@@ -1,7 +1,8 @@
 "use client";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { COFFEE, NOTE, STAR, TOMATO, TROPHY } from "@/lib/pixel/sprites/world";
+import { BATTERY } from "@/lib/pixel/sprites/props";
+import { COFFEE, NOTE, STAR, TROPHY } from "@/lib/pixel/sprites/world";
 
 /**
  * Floating venue cards hovering over the skyline (STUDY HALL, NEKO RAMEN,
@@ -17,7 +18,7 @@ import { COFFEE, NOTE, STAR, TOMATO, TROPHY } from "@/lib/pixel/sprites/world";
 
 interface Venue {
   label: string;
-  icon: typeof TOMATO;
+  icon: typeof BATTERY;
   iconColor?: string;
   x: number; // fractional from left
   y: number; // fractional from top
@@ -26,7 +27,7 @@ interface Venue {
 
 const VENUES: readonly Venue[] = [
   { label: "STUDY HALL", icon: TROPHY, x: 0.18, y: 0.46, delaySeconds: 0 },
-  { label: "NEKO RAMEN", icon: TOMATO, x: 0.6, y: 0.42, delaySeconds: 0.6 },
+  { label: "NEKO RAMEN", icon: BATTERY, x: 0.6, y: 0.42, delaySeconds: 0.6 },
   { label: "CAFE PIXEL", icon: COFFEE, x: 0.08, y: 0.62, delaySeconds: 1.2 },
   { label: "LOFI BAR", icon: NOTE, x: 0.35, y: 0.58, delaySeconds: 0.3 },
   { label: "PIXEL ARCADE", icon: STAR, x: 0.78, y: 0.5, delaySeconds: 0.9 },

@@ -3,7 +3,7 @@
 import { type CSSProperties, type ReactNode } from "react";
 
 import { PixelSprite } from "@/components/pixel/PixelSprite";
-import { TOMATO, TROPHY } from "@/lib/pixel/sprites/props";
+import { BATTERY, TROPHY } from "@/lib/pixel/sprites/props";
 import type { Palette } from "@/lib/pixel/sprite";
 
 export type KpiAccent = "tomato" | "focus" | "streak" | "rank";
@@ -62,7 +62,7 @@ const ACCENTS: Record<KpiAccent, AccentSpec> = {
     border: "#fb7185",
     glow: "0 0 16px rgba(251,113,133,0.45)",
     valueColor: "#fcd34d",
-    iconNode: <PixelSprite sprite={TOMATO.sprite} palette={TOMATO.palette} scale={2.4} />,
+    iconNode: <PixelSprite sprite={BATTERY.sprite} palette={BATTERY.palette} scale={2.4} />,
   },
   focus: {
     border: "#f472b6",
