@@ -66,7 +66,7 @@ from app.infrastructure.db.session import get_session_factory  # noqa: E402
 ACHIEVEMENTS = [
     {"code": "streak_7", "icon": "🔥", "title": "連續 7 天", "description": "每天都有專注"},
     {"code": "night_owl", "icon": "🦉", "title": "深夜王者", "description": "凌晨後還在線"},
-    {"code": "century", "icon": "🍅", "title": "百番茄", "description": "累計 100 個番茄"},
+    {"code": "century", "icon": "🔋", "title": "百番茄", "description": "累計 100 個番茄"},
     {"code": "perfect_pair", "icon": "💞", "title": "完美配對", "description": "共同專注 10h"},
     {"code": "sprint_15", "icon": "⚡", "title": "衝刺之王", "description": "單日 15 個番茄"},
     {"code": "midnight_20", "icon": "🌙", "title": "夜貓族", "description": "午夜後專注 20 次"},

@@ -16,7 +16,7 @@
     "focusTimer": {
       "modeFocus": "FOCUS · #{num}",
       "modeBreak": "BREAK",
-      "progressLabel": "{count} / {total} 🍅",
+      "progressLabel": "{count} / {total} 🔋",
       "startCta": "開始",
       "pauseCta": "暫停",
       "resetAria": "重置計時",
@@ -234,7 +234,7 @@
   },
   "statusPill": {
     "level": "LV.{level}",
-    "focusing": "專注中 · 🍅 #{count}",
+    "focusing": "專注中 · 🔋 #{count}",
     "idle": "休息中",
     "minutes": "{count} min"
   },
@@ -306,7 +306,7 @@
     "closeCta": "✕ 關閉",
     "leadersHeading": "今日番茄鐘排行",
     "leadersEmpty": "尚無資料",
-    "leaderCountSuffix": "🍅",
+    "leaderCountSuffix": "🔋",
     "achievementsHeading": "成就徽章",
     "achievementsEmpty": "尚未建立任何成就（v2 會由 seeder 寫入）"
   },

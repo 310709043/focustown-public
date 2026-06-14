@@ -2,7 +2,7 @@
  * UserStatusPill renders DB-backed numbers, not hardcoded fixtures.
  *
  * Regression cover for the 2026-05-24 fix where the top HUD pill was
- * stuck on LV 4 / 4/8 🍅 / 22 min regardless of the signed-in user.
+ * stuck on LV 4 / 4/8 🔋 / 22 min regardless of the signed-in user.
  *
  * Worth testing:
  *  - Level + tomato totals reflect what `useUserStats` returns

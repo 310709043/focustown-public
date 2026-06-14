@@ -13,7 +13,7 @@
     "modeFocus": "Focus",
     "modeShortBreak": "Short break",
     "modeLongBreak": "Long break",
-    "modeFocusLabel": "🍅 Focus",
+    "modeFocusLabel": "🔋 Focus",
     "modeShortLabel": "☕ Short break",
     "modeLongLabel": "🌙 Long break"
   },
@@ -102,7 +102,7 @@
       "statRankLabel": "WEEKLY RANK"
     },
     "sessionInsight": {
-      "goalLabel": "Today's goal {goal} 🍅",
+      "goalLabel": "Today's goal {goal} 🔋",
       "progressCounter": "{done} / {goal} done",
       "hereLabel": "HERE",
       "tips": {

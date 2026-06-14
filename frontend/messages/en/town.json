@@ -16,7 +16,7 @@
     "focusTimer": {
       "modeFocus": "FOCUS · #{num}",
       "modeBreak": "BREAK",
-      "progressLabel": "{count} / {total} 🍅",
+      "progressLabel": "{count} / {total} 🔋",
       "startCta": "Start",
       "pauseCta": "Pause",
       "resetAria": "Reset timer",
@@ -234,7 +234,7 @@
   },
   "statusPill": {
     "level": "LV.{level}",
-    "focusing": "Focusing · 🍅 #{count}",
+    "focusing": "Focusing · 🔋 #{count}",
     "idle": "Resting",
     "minutes": "{count} min"
   },
@@ -306,7 +306,7 @@
     "closeCta": "✕ CLOSE",
     "leadersHeading": "TODAY'S POMODORO LEADERS",
     "leadersEmpty": "No entries yet",
-    "leaderCountSuffix": "🍅",
+    "leaderCountSuffix": "🔋",
     "achievementsHeading": "ACHIEVEMENT BADGES",
     "achievementsEmpty": "No achievements yet (v2 seeder pending)"
   },

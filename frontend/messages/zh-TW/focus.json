@@ -13,7 +13,7 @@
     "modeFocus": "專注",
     "modeShortBreak": "短休息",
     "modeLongBreak": "長休息",
-    "modeFocusLabel": "🍅 專注",
+    "modeFocusLabel": "🔋 專注",
     "modeShortLabel": "☕ 短休息",
     "modeLongLabel": "🌙 長休息"
   },
@@ -102,7 +102,7 @@
       "statRankLabel": "本週排名"
     },
     "sessionInsight": {
-      "goalLabel": "今日目標 {goal} 🍅",
+      "goalLabel": "今日目標 {goal} 🔋",
       "progressCounter": "{done} / {goal} 完成",
       "hereLabel": "在這",
       "tips": {

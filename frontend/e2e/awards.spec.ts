@@ -24,7 +24,7 @@ test.describe("/awards — reference parity", () => {
         ]),
       "GET  /api/v1/achievements": (r) =>
         json(r, 200, [
-          { code: "first_focus", icon: "🍅", title: "First focus", description: "Complete your first pomodoro" },
+          { code: "first_focus", icon: "🔋", title: "First focus", description: "Complete your first pomodoro" },
           { code: "streak_7", icon: "🔥", title: "7-day streak", description: "Focus 7 days in a row" },
         ]),
     });

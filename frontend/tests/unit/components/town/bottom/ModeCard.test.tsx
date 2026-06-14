@@ -23,7 +23,7 @@ function renderCard(overrides: Partial<React.ComponentProps<typeof ModeCard>> = 
   render(
     <ModeCard
       testId="mode-card-test"
-      icon="🍅"
+      icon="🔋"
       title="SOLO"
       description="Private chamber"
       ctaLabel="Enter ▶"
