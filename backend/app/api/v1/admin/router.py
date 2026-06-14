@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import subprocess
-import sys
-
 from fastapi import APIRouter, Query
 from sqlalchemy import func, select
 
@@ -263,22 +260,3 @@ async def update_feedback_status(
         status=row.status,
         updated_at=row.updated_at,
     )
-
-
-@router.post("/migrate")
-async def run_migration():
-    """Run alembic upgrade head. Temporary endpoint for dev deployments."""
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "alembic", "upgrade", "head"],
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-        return {
-            "success": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-        }
-    except Exception as e:
-        return {"success": False, "error": str(e)}
