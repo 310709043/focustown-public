@@ -1036,6 +1036,7 @@ body {
      visible in image.png. The cluster keeps its own shrink behaviour
      for the pills, which can wrap on narrow viewports. */
   flex-shrink: 1;
+  overflow: hidden;
 }
 .town-top-hud-cluster.is-right { gap: 8px; }
 .town-top-hud-nav-group {
@@ -1043,6 +1044,24 @@ body {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+/* Medium: LEFT + RIGHT stay on row 1 but the centre pill drops to row 2
+   so it doesn't cramp the weather badge or clock/coin. */
+@container town-top-hud (max-width: 960px) {
+  .town-top-hud-inner {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .town-top-hud-cluster.is-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .town-top-hud-cluster.is-right {
+    order: 2;
+    margin-left: auto;
+  }
 }
 
 @container town-top-hud (max-width: 720px) {
