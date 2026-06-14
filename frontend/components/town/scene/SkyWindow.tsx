@@ -12,6 +12,7 @@ import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { AVATARS, type AvatarDef } from "@/lib/pixel/sprites/avatars";
 import { BATTERY } from "@/lib/pixel/sprites/props";
 import { findCharacter } from "@/lib/data/characters";
+import { useImmersiveFocus } from "@/lib/hooks/useImmersiveFocus";
 import { usePresenceStore } from "@/lib/state/presenceStore";
 import {
   BROADCAST_MODES,
@@ -45,6 +46,7 @@ export function SkyWindow() {
   const [adIdx, setAdIdx] = useState(0);
   const t = useTranslations("town");
   const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
+  const immersive = useImmersiveFocus();
 
   useEffect(() => {
     if (BROADCAST_MODES.length <= 1) return;
@@ -62,7 +64,10 @@ export function SkyWindow() {
       style={{
         top: 92,
         left: "50%",
-        transform: "translateX(-50%)",
+        transform: immersive ? "translateX(-50%) translateY(-20px)" : "translateX(-50%)",
+        opacity: immersive ? 0 : 1,
+        pointerEvents: immersive ? "none" : undefined,
+        transition: "opacity 0.4s ease, transform 0.4s ease",
         width: 520,
         maxWidth: "calc(100% - 32px)",
       }}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
+import { BatteryStrip } from "@/components/town/bottom/BatteryStrip";
 import { PixelDigits } from "@/components/pixel/PixelDigits";
 import { useTimer } from "@/lib/hooks/useTimer";
 import {
@@ -119,12 +120,7 @@ export function FocusTimer() {
               : t("modeBreak")}
           </span>
         </div>
-        <span
-          className="font-silkscreen"
-          style={{ fontSize: 10, color: "var(--ink-mute)" }}
-        >
-          {t("progressLabel", { count: batteryCount, total: 8 })}
-        </span>
+        <BatteryStrip count={batteryCount} max={8} scale={1.2} gap={3} />
       </div>
 
       {/* Timer digits */}
