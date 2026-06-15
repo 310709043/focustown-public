@@ -13,7 +13,9 @@ import { findCharacter } from "@/lib/data/characters";
  * header) without duplicating the WebSocket-driven count.
  */
 export function TopStatusPill() {
-  const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
+  const onlineCount = usePresenceStore(
+    (s) => Math.max(Object.keys(s.byId).length, 1),
+  );
   const user = useAuthStore((s) => s.user);
   const myChar = findCharacter(user?.character_key);
   const t = useTranslations("town.presence");

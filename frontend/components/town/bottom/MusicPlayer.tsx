@@ -62,7 +62,7 @@ export function MusicPlayer() {
   // "N listening" — reuse street presence count for city scope (cheap;
   // dedicated SCARD on station channel would need new infra).
   const listenerCount = usePresenceStore(
-    (s) => Object.keys(s.byId).length,
+    (s) => Math.max(Object.keys(s.byId).length, 1),
   );
 
   // Adopt the "city" radio context on mount. Idempotent in the store —

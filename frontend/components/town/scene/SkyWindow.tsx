@@ -45,7 +45,9 @@ export function SkyWindow() {
   // while the rank tab is showing.
   const [adIdx, setAdIdx] = useState(0);
   const t = useTranslations("town");
-  const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
+  const onlineCount = usePresenceStore(
+    (s) => Math.max(Object.keys(s.byId).length, 1),
+  );
   const immersive = useImmersiveFocus();
 
   useEffect(() => {

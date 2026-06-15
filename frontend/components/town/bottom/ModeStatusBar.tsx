@@ -40,7 +40,10 @@ export function ModeStatusBar({
 
   // Number of pilots currently on the street — pulled from the same
   // presence projection the town page already hydrates.
-  const pilotCount = usePresenceStore((s) => Object.keys(s.byId).length);
+  // Floor at 1 to match TownTopHUD: the current user is always online.
+  const pilotCount = usePresenceStore(
+    (s) => Math.max(Object.keys(s.byId).length, 1),
+  );
 
   // City station connection: when the user has explicitly disconnected
   // we soften the indicator from a glowing LIVE pulse to a muted dot.

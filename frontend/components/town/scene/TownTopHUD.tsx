@@ -103,7 +103,10 @@ export function TownTopHUD({
 }) {
   const router = useRouter();
   const scene = useSceneStore((s) => s.current);
-  const onlineCount = usePresenceStore((s) => Object.keys(s.byId).length);
+  // Floor at 1 — the current user is always online.
+  const onlineCount = usePresenceStore(
+    (s) => Math.max(Object.keys(s.byId).length, 1),
+  );
   const tNav = useTranslations("town.nav");
   const tHud = useTranslations("town");
   const tScene = useTranslations("scenes");
