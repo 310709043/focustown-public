@@ -39,10 +39,22 @@ export async function generateMetadata({
     routing.locales.map((l) => [l, `/${l}`]),
   ) as Record<Locale, string>;
 
+  const title = {
+    default: "Low Battery Town — Focus & Social Study Platform",
+    template: "%s | Low Battery Town",
+  };
+
   return {
     metadataBase: new URL(siteUrl),
-    title: "Low Battery Town",
+    title,
     description: t("tagline"),
+    keywords: [
+      "focus", "pomodoro", "study", "lofi", "social study",
+      "focus timer", "study together", "pixel art", "低電量小鎮",
+      "專注", "讀書", "番茄鐘", "一起讀書",
+    ],
+    authors: [{ name: "Low Battery Town" }],
+    creator: "Low Battery Town",
     alternates: {
       canonical: `/${safe}`,
       languages: {
@@ -52,17 +64,43 @@ export async function generateMetadata({
     },
     openGraph: {
       type: "website",
+      siteName: "Low Battery Town",
       url: `/${safe}`,
-      title: "Low Battery Town",
+      title: "Low Battery Town — Focus & Social Study Platform",
       description: t("tagline"),
       locale: OG_LOCALE[safe],
       alternateLocale: routing.locales
         .filter((l) => l !== safe)
         .map((l) => OG_LOCALE[l]),
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "Low Battery Town — A cinematic focus & social study platform",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Low Battery Town — Focus & Social Study Platform",
+      description: t("tagline"),
+      images: ["/og-image.png"],
     },
     icons: {
       icon: [{ url: "/logo.png", type: "image/png" }],
       apple: "/logo.png",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
   };
 }
