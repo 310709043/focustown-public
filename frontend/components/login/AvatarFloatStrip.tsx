@@ -11,7 +11,13 @@ import { AVATARS } from "@/lib/pixel/sprites/avatars";
  * here we honor the same 0.16 s delay between slots so the rhythm
  * matches frame-for-frame.
  */
-export function AvatarFloatStrip({ count = 7 }: { count?: number }) {
+export function AvatarFloatStrip({
+  count = 7,
+  onlineCount = 2847,
+}: {
+  count?: number;
+  onlineCount?: number;
+}) {
   const t = useTranslations("auth.splash");
   const featured = AVATARS.slice(0, count);
   return (
@@ -24,7 +30,7 @@ export function AvatarFloatStrip({ count = 7 }: { count?: number }) {
           letterSpacing: "0.3em",
         }}
       >
-        {t("onlineCountLabel", { count: (2847).toLocaleString() })}
+        {t("onlineCountLabel", { count: onlineCount.toLocaleString() })}
       </div>
       <div className="flex" style={{ gap: 10 }}>
         {featured.map((a, i) => (

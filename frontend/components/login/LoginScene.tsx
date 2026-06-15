@@ -238,7 +238,7 @@ export function LoginScene({
                 >
                   <NumberRoll target={citizenCount} /> {t("citizensFocusing")}
                 </span>
-                <AvatarFloatStrip count={6} />
+                <AvatarFloatStrip count={6} onlineCount={citizenCount} />
               </div>
             ) : null}
           </div>
