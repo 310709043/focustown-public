@@ -19,27 +19,10 @@
 
 /** Stable clip identifier — same slug used by the backend's
  *  ``KNOWN_CLIP_IDS`` set. Naming convention: ``clip-XX``. */
-export type BroadcastClipId =
-  | "clip-01"
-  | "clip-02"
-  | "clip-03"
-  | "clip-04"
-  | "clip-05"
-  | "clip-06"
-  | "clip-07"
-  | "clip-08"
-  | "clip-09";
+export type BroadcastClipId = "clip-01";
 
 export const BROADCAST_CLIP_IDS: ReadonlyArray<BroadcastClipId> = [
   "clip-01",
-  "clip-02",
-  "clip-03",
-  "clip-04",
-  "clip-05",
-  "clip-06",
-  "clip-07",
-  "clip-08",
-  "clip-09",
 ];
 
 /**
