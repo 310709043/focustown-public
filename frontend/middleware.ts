@@ -203,6 +203,6 @@ export const config = {
     //                and the new sprites silently fail to render.
     //   favicon.ico  small static file
     //   logo.png     static image
-    "/((?!api|_next/static|_next/image|audio|assets|favicon.ico|logo.png).*)",
+    "/((?!api|_next/static|_next/image|audio|assets|favicon.ico|logo.png|og-image.png|robots.txt|sitemap.xml|manifest.webmanifest).*)",
   ],
 };
