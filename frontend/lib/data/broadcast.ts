@@ -60,7 +60,7 @@ export const BROADCAST_MODES: ReadonlyArray<BroadcastMode> = [
   {
     kind: "video",
     provider: "youtube",
-    embedId: "PLACEHOLDER",
+    embedId: "BdvtgwLT0Jc",
     channelLabel: "FOCUSTOWN.TV · LOFI 24",
     tag: "ON AIR",
   },
@@ -79,6 +79,8 @@ export function buildYouTubeEmbedSrc(embedId: string): string {
   const params = new URLSearchParams({
     autoplay: "1",
     mute: "1",
+    loop: "1",
+    playlist: embedId,
     controls: "0",
     modestbranding: "1",
     playsinline: "1",

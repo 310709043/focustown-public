@@ -106,7 +106,7 @@ function buildCsp(nonce: string): string {
     // MediaPipe worker threads need blob: URLs.
     "worker-src 'self' blob:",
     "manifest-src 'self'",
-    "frame-src 'none'",
+    "frame-src https://www.youtube-nocookie.com",
     "frame-ancestors 'none'",
     "form-action 'self'",
     "base-uri 'self'",
