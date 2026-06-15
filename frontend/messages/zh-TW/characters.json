@@ -61,6 +61,8 @@
     "displayNamePlaceholder": "請輸入您希望被稱呼的名字",
     "fieldAge": "年齡",
     "ageAria": "年齡",
+    "ageDecrementAria": "減少年齡",
+    "ageIncrementAria": "增加年齡",
     "fieldSpecialty": "專長",
     "specialtyPlaceholder": "UI 設計、小說、研究…",
     "fieldInterests": "興趣（逗號分隔）",

@@ -61,6 +61,8 @@
     "displayNamePlaceholder": "How would you like to be called?",
     "fieldAge": "Age",
     "ageAria": "Age",
+    "ageDecrementAria": "Decrease age",
+    "ageIncrementAria": "Increase age",
     "fieldSpecialty": "Specialty",
     "specialtyPlaceholder": "UI design, novel writing, research…",
     "fieldInterests": "Interests (comma-separated)",

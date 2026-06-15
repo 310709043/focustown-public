@@ -151,7 +151,7 @@ export function ProfileSidebar({
       </div>
 
       <nav
-        aria-label="profile sections"
+        aria-label={tSidebar("sectionsAria")}
         style={{
           flex: 1,
           minHeight: 0,

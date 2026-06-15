@@ -28,7 +28,7 @@ export function KpiRow({
         gap: 12,
       }}
     >
-      <KpiCard accent="battery" value={String(totalBatteries)} label={t("tomatoes")} />
+      <KpiCard accent="battery" value={String(totalBatteries)} label={t("batteries")} />
       <KpiCard
         accent="focus"
         value={t("valueWithUnitHours", { value: allTimeFocusHours })}

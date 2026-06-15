@@ -1042,7 +1042,8 @@ body {
 }
 .town-top-hud-cluster.is-center {
   justify-content: center;
-  min-width: 280px;
+  flex-basis: 280px;
+  min-width: 0;
 }
 .town-top-hud-cluster.is-right { gap: 8px; }
 .town-top-hud-nav-group {

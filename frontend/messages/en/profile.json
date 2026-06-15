@@ -10,7 +10,8 @@
     "xpLabel": "XP {current} / {next}",
     "xpAria": "Experience progress",
     "metaUnknown": "—",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "sectionsAria": "Profile sections"
   },
   "nav": {
     "stats": "Your Stats",
@@ -117,7 +118,7 @@
   },
   "stats": {
     "kpi": {
-      "tomatoes": "Total Batteries",
+      "batteries": "Total Batteries",
       "focusHours": "Focus Hours",
       "streak": "Day Streak",
       "weeklyRank": "Weekly Rank",

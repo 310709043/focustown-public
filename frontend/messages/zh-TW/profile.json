@@ -10,7 +10,8 @@
     "xpLabel": "XP {current} / {next}",
     "xpAria": "經驗值進度",
     "metaUnknown": "—",
-    "signOut": "登出"
+    "signOut": "登出",
+    "sectionsAria": "個人檔案選單"
   },
   "nav": {
     "stats": "我的數據",
@@ -117,7 +118,7 @@
   },
   "stats": {
     "kpi": {
-      "tomatoes": "總電池",
+      "batteries": "總電池",
       "focusHours": "累計專注",
       "streak": "連續打卡",
       "weeklyRank": "本週排名",
