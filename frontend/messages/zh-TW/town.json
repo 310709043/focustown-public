@@ -195,7 +195,11 @@
   },
   "coin": {
     "balanceTooltip": "T 幣餘額：{amount} T",
-    "unit": "T"
+    "unit": "T",
+    "earned": "+{amount} T",
+    "baseReward": "專注獎勵",
+    "nightBonus": "夜貓子加碼",
+    "streakBonus": "連續 {days} 天加碼"
   },
   "leaderboard": {
     "empty": "尚無資料"

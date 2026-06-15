@@ -39,6 +39,7 @@ from app.domain.services.wallet_service import WalletService
 from app.infrastructure.cache.redis_client import close_redis, get_redis, init_redis
 from app.infrastructure.db.observability import init_otel
 from app.infrastructure.db.repositories import (
+    SqlFocusSessionRepo,
     SqlUserRepo,
     SqlWalletRepo,
     SqlWalletTransactionRepo,
@@ -92,6 +93,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
         return _WalletServiceAcquired(
             wallet_service=wallet_service,
+            focus_sessions=SqlFocusSessionRepo(session),
             commit=session.commit,
             rollback=session.rollback,
             close=session.close,

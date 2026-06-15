@@ -7,24 +7,40 @@ import type { Wallet } from "../api/types.gen";
  * Phase 2 client-side wallet cache.
  *
  * Server is the source of truth. Two write paths feed this store:
- *   - `hydrate(snapshot)` — full refresh from HTTP (mount + every Nm)
- *   - `applyDelta(currency, balance)` — WS push (`wallet.updated`)
+ *   - `hydrate(snapshot)` -- full refresh from HTTP (mount + every Nm)
+ *   - `applyDelta(currency, balance)` -- WS push (`wallet.updated`)
  *
- * All amounts are stored in their currency's minor units (T → cT, TWD →
+ * All amounts are stored in their currency's minor units (T -> cT, TWD ->
  * NT$ cents). Use the exported `format` helper to render with the right
  * decimal precision per currency.
  */
 
+export interface WalletDelta {
+  currency: string;
+  amount: number;
+  reason: string;
+  metadata?: Record<string, number>;
+}
+
 interface WalletStore {
   byCurrency: Record<string, number>; // currency_code -> balance_minor
+  lastDelta: WalletDelta | null;
   hydrate: (wallets: Wallet[]) => void;
-  setBalance: (currency: string, balanceMinor: number) => void;
+  setBalance: (
+    currency: string,
+    balanceMinor: number,
+    deltaMinor?: number,
+    reason?: string,
+    metadata?: Record<string, number>,
+  ) => void;
+  clearLastDelta: () => void;
   reset: () => void;
   balanceMinor: (currency: string) => number;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
   byCurrency: {},
+  lastDelta: null,
 
   hydrate(wallets) {
     const next: Record<string, number> = {};
@@ -32,14 +48,23 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     set({ byCurrency: next });
   },
 
-  setBalance(currency, balanceMinor) {
+  setBalance(currency, balanceMinor, deltaMinor, reason, metadata) {
+    const delta: WalletDelta | null =
+      deltaMinor !== undefined && reason
+        ? { currency, amount: deltaMinor, reason, metadata }
+        : null;
     set((prev) => ({
       byCurrency: { ...prev.byCurrency, [currency]: balanceMinor },
+      lastDelta: delta,
     }));
   },
 
+  clearLastDelta() {
+    set({ lastDelta: null });
+  },
+
   reset() {
-    set({ byCurrency: {} });
+    set({ byCurrency: {}, lastDelta: null });
   },
 
   balanceMinor(currency) {

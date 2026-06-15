@@ -27,6 +27,7 @@ import { RainOverlay } from "@/components/pixel/RainOverlay";
 import { FrameTicker } from "@/components/pixel/FrameTicker";
 import { StreetProps } from "@/components/scene/StreetProps";
 import { Road } from "@/components/scene/Road";
+import { CoinRewardToast } from "@/components/town/CoinRewardToast";
 
 // Reference-design town visuals (Page 3 of UI sync). The named
 // 9-building cityscape, FOCUS BROADCAST sky window, and 3-cluster
@@ -219,9 +220,13 @@ export default function TownPage() {
 
   useRealtime((msg) => {
     if (msg.type === "wallet.updated") {
+      const m = msg as Extract<typeof msg, { type: "wallet.updated" }>;
       useWalletStore.getState().setBalance(
-        String(msg.currency_code),
-        Number(msg.balance_minor),
+        m.currency_code,
+        m.balance_minor,
+        m.delta_minor,
+        m.reason,
+        m.metadata,
       );
     }
   });
@@ -460,6 +465,7 @@ export default function TownPage() {
           modals (the tour pauses itself naturally when a modal is open
           via z-index — modal backdrop is 50, tour overlay is 60). */}
       <OnboardingTour />
+      <CoinRewardToast />
     </main>
     </FrameTicker>
   );

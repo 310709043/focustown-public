@@ -129,15 +129,18 @@ class WalletService:
             metadata=metadata,
         )
         if self._pub is not None:
+            payload: dict = {
+                "type": "wallet.updated",
+                "currency_code": currency_code,
+                "balance_minor": new_balance,
+                "delta_minor": delta_minor,
+                "reason": reason,
+            }
+            if metadata:
+                payload["metadata"] = metadata
             await self._pub.publish(
                 IRealtimePublisher.user_channel(user_id),
-                {
-                    "type": "wallet.updated",
-                    "currency_code": currency_code,
-                    "balance_minor": new_balance,
-                    "delta_minor": delta_minor,
-                    "reason": reason,
-                },
+                payload,
             )
         return txn
 

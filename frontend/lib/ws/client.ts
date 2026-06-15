@@ -51,6 +51,7 @@ export type WsMessage =
       balance_minor: number;
       delta_minor: number;
       reason: string;
+      metadata?: Record<string, number>;
     }
   // Phase 8: visitor session lifecycle. Broadcast on the ``room:{id}``
   // channel — VisitorPanel subscribes after sending the ``join`` frame

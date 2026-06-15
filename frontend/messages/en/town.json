@@ -195,7 +195,11 @@
   },
   "coin": {
     "balanceTooltip": "T coin balance: {amount} T",
-    "unit": "T"
+    "unit": "T",
+    "earned": "+{amount} T",
+    "baseReward": "Focus Reward",
+    "nightBonus": "Night Owl Bonus",
+    "streakBonus": "{days}-day Streak Bonus"
   },
   "leaderboard": {
     "empty": "No entries yet"
