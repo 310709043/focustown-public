@@ -21,6 +21,8 @@ export function TabBtn({ active, onClick, children, tabId }: TabBtnProps) {
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={active}
       onClick={onClick}
       data-active={active || undefined}
       data-tab={tabId}

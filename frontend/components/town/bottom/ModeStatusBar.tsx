@@ -78,7 +78,7 @@ export function ModeStatusBar({
         transform: collapsed ? "translateY(12px)" : "translateY(0)",
         pointerEvents: collapsed ? "none" : "auto",
       }}
-      className="md:flex hidden"
+      className="mode-status-bar"
     >
       {/* Left: CITY MODE · LIVE · N pilots focusing */}
       <div

@@ -62,7 +62,7 @@ export function SkyWindow() {
       data-testid="sky-window"
       className="absolute z-[5] pointer-events-none"
       style={{
-        top: 92,
+        top: "var(--top-hud-h, 92px)",
         left: "50%",
         transform: immersive ? "translateX(-50%) translateY(-20px)" : "translateX(-50%)",
         opacity: immersive ? 0 : 1,

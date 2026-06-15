@@ -117,6 +117,7 @@ export function FloatingMusicPlayer({
         right: 14,
         bottom: 14,
         width: 288,
+        maxWidth: "calc(100vw - 28px)",
         background: "rgba(7,4,26,0.92)",
         border: "1px solid var(--accent-3)",
         boxShadow: isPlaying

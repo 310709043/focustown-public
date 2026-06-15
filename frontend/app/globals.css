@@ -72,6 +72,7 @@
      / NPCs stand on sidewalk top (--ground-baseline). Cars drive on the
      asphalt surface (--road-surface-y, +7px above BottomHUD top).
      Change any of these and every ground-anchored layer follows. */
+  --top-hud-h:      92px;
   --bottom-hud-h:   168px;
   --asphalt-h:      90px;
   --sidewalk-h:     30px;
@@ -1258,10 +1259,19 @@ body {
     /* Phone portrait: even tighter cap so the scene gets ≥ 52% of the
        viewport. Padding shrinks too — every saved px is more city. */
     max-height: 48vh;
+    min-height: 120px;
     padding: 10px;
     padding-bottom: max(10px, env(safe-area-inset-bottom));
     gap: 8px;
   }
+}
+
+/* ModeStatusBar — hidden on narrow containers, visible on wider ones.
+   Uses container query (not viewport breakpoint) so it works correctly
+   in split-pane or embedded layouts. */
+.mode-status-bar { display: none; }
+@container bottom-hud (min-width: 768px) {
+  .mode-status-bar { display: flex; }
 }
 
 /* MatchPanel — keep two cards side-by-side as long as we have ≥ 360px
