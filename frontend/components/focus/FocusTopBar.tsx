@@ -11,6 +11,7 @@ import { characterKeyToAvatar } from "@/lib/data/character-to-avatar";
 import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useTimerStore } from "@/lib/state/timerStore";
+import { sessionsApi } from "@/lib/api/endpoints";
 
 /** Solo focus top bar — back / LBT logo · SOLO ROOM subtitle / avatar
  *  pill / mini clock / T-coin balance. */
@@ -44,7 +45,14 @@ export function FocusTopBar() {
           aria-label={t("backAria")}
           className="pixel-btn"
           style={{ fontSize: 11, padding: "6px 12px" }}
-          onClick={() => router.push("/town")}
+          onClick={async () => {
+            const session = useTimerStore.getState().session;
+            if (session) {
+              await sessionsApi.cancel(session.id).catch(() => {});
+              useTimerStore.getState().reset();
+            }
+            router.push("/town");
+          }}
         >
           ◀ {t("backCta")}
         </button>

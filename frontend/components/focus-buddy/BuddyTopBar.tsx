@@ -5,12 +5,14 @@ import { useTranslations } from "next-intl";
 import { Logo } from "@/components/scene/Logo";
 import { CoinBadge } from "@/components/town/CoinBadge";
 import { useRouter } from "@/i18n/routing";
+import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
 
 /** Buddy room top bar — leave/LBT logo/pink BUDDY ROOM subtitle on the
  *  left, room status in the centre, T-coin badge on the right. */
-export function BuddyTopBar({ roomCode = "2847-A" }: { roomCode?: string }) {
+export function BuddyTopBar({ matchId, roomCode = "2847-A" }: { matchId: string; roomCode?: string }) {
   const t = useTranslations("focus.buddy.topBar");
   const router = useRouter();
+  const leaveRoom = useFocusRoomStore((s) => s.leave);
   return (
     <header
       data-testid="buddy-top-bar"
@@ -32,7 +34,10 @@ export function BuddyTopBar({ roomCode = "2847-A" }: { roomCode?: string }) {
           aria-label={t("leaveAria")}
           className="pixel-btn"
           style={{ padding: "6px 12px", fontSize: 10 }}
-          onClick={() => router.push("/town")}
+          onClick={async () => {
+            await leaveRoom(matchId).catch(() => {});
+            router.push("/town");
+          }}
         >
           ◀ {t("leaveCta")}
         </button>

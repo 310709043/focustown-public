@@ -13,10 +13,8 @@ import { AVATARS } from "@/lib/pixel/sprites/avatars";
  */
 export function AvatarFloatStrip({
   count = 7,
-  onlineCount = 2847,
 }: {
   count?: number;
-  onlineCount?: number;
 }) {
   const t = useTranslations("auth.splash");
   const featured = AVATARS.slice(0, count);
@@ -30,7 +28,7 @@ export function AvatarFloatStrip({
           letterSpacing: "0.3em",
         }}
       >
-        {t("onlineCountLabel", { count: onlineCount.toLocaleString() })}
+        {t("onlineNowLabel")}
       </div>
       <div className="flex" style={{ gap: 10 }}>
         {featured.map((a, i) => (

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { BackdropLayer } from "@/components/focus/ambient/BackdropLayer";
 import { BigTimer } from "@/components/focus/BigTimer";
 import { CatSupervisor } from "@/components/focus/CatSupervisor";
@@ -11,6 +13,7 @@ import { TasksPanel } from "@/components/focus/TasksPanel";
 import { findFocusBg, FOCUS_BG_OPTIONS } from "@/lib/data/focusBackgrounds";
 import { useAmbientCycle } from "@/lib/hooks/useAmbientCycle";
 import { useAmbientStore } from "@/lib/state/ambientStore";
+import { useTimerStore } from "@/lib/state/timerStore";
 
 /**
  * Solo focus room.
@@ -30,6 +33,16 @@ import { useAmbientStore } from "@/lib/state/ambientStore";
  */
 export function SoloFocusScene() {
   useAmbientCycle();
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!useTimerStore.getState().session) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
   const fromIdx = useAmbientStore((s) => s.fromIdx);
   const toIdx = useAmbientStore((s) => s.toIdx);
   const t01 = useAmbientStore((s) => s.t);

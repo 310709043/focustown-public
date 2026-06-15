@@ -74,7 +74,7 @@ export function BuddyFocusScene({
 
       {/* Top bar */}
       <div style={{ position: "relative", zIndex: 10 }}>
-        <BuddyTopBar roomCode={matchId.slice(0, 6).toUpperCase()} />
+        <BuddyTopBar matchId={matchId} roomCode={matchId.slice(0, 6).toUpperCase()} />
       </div>
 
       {/* Body. Grid template moved to `.buddy-body-grid` so a media query

@@ -15,7 +15,7 @@ import { AboutTownPanel } from "./AboutTownPanel";
 import { AvatarFloatStrip } from "./AvatarFloatStrip";
 import { FloatingPixels } from "./FloatingPixels";
 import { LoginCitizens } from "./LoginCitizens";
-import { NumberRoll } from "./NumberRoll";
+
 import { SkylineLayers } from "./SkylineLayers";
 import { Tagline } from "./Tagline";
 
@@ -34,9 +34,7 @@ interface LoginSceneProps {
   /** Show the bottom "ONLINE NOW" avatar strip — only used on the
    *  landing `/` route per reference. */
   showAvatarStrip?: boolean;
-  /** Approximate live-citizens number rendered in the top bar. The
-   *  number is decorative — reference hard-codes 2847. */
-  citizenCount?: number;
+  /** @deprecated citizenCount removed — no public API for unauthenticated count */
   /** Theme direction — drives the skyline palette and the optional
    *  rain overlay. Defaults to `neon` for parity with existing callers. */
   direction?: LoginDirection;
@@ -77,7 +75,6 @@ export function LoginScene({
   children,
   showHero = true,
   showAvatarStrip = false,
-  citizenCount = 2847,
   direction = "neon",
   topAlign = false,
   showAboutPanel = false,
@@ -180,7 +177,7 @@ export function LoginScene({
           <span>v1.4.0</span>
           <span>·</span>
           <span style={{ color: "#6ee7b7" }}>
-            {t("citizensLabel")} <NumberRoll target={citizenCount} />
+            {t("citizensOnline")}
           </span>
         </div>
         {/* LocaleSwitcher lives in the global LocaleLayout top-right slot,
@@ -239,9 +236,9 @@ export function LoginScene({
                     letterSpacing: "0.28em",
                   }}
                 >
-                  <NumberRoll target={citizenCount} /> {t("citizensFocusing")}
+                  {t("citizensFocusing")}
                 </span>
-                <AvatarFloatStrip count={6} onlineCount={citizenCount} />
+                <AvatarFloatStrip count={6} />
               </div>
             ) : null}
           </div>
