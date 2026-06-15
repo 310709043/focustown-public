@@ -85,3 +85,6 @@ reference/
 
 # Landing page video assets (large files — deployed via S3, not git)
 landing/assets/video/
+
+# Wrangler local cache (contains account metadata, not a secret but not useful in git)
+**/.wrangler/cache/
