@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { GlobalAudioMount } from "@/components/audio/GlobalAudioMount";
 import { StationRealtimeBridge } from "@/components/audio/StationRealtimeBridge";
 import { DirectionSync } from "@/components/chrome/DirectionSync";
@@ -148,6 +149,7 @@ export default async function LocaleLayout({
         <LocaleSwitcher />
       </div>
       <AdSenseScript />
+      <GoogleAnalytics />
       {children}
     </NextIntlClientProvider>
   );

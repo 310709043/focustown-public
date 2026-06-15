@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { sessionsApi } from "../api/endpoints";
 import type { FocusSession, FocusSessionMode } from "../api/types.gen";
+import { trackFocusComplete, trackFocusStart } from "../analytics/events";
 import { pushErrorToast, pushSuccessToast } from "./toastStore";
 
 interface TimerState {
@@ -55,6 +56,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         partner_user_id: partnerId ?? null,
       });
       set({ session, running: true, remaining: session.remaining_seconds });
+      trackFocusStart(mode, durationSeconds);
     } catch (err) {
       pushErrorToast(err instanceof Error ? err.message : "Failed to start session");
     } finally {
@@ -93,6 +95,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         batteryCount: newCount,
       });
       if (mode === "focus") {
+        trackFocusComplete(mode, session.duration_seconds, 0);
         pushSuccessToast("SESSION COMPLETE +1 🔋");
       }
     } catch {

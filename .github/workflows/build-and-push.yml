@@ -113,6 +113,7 @@ jobs:
             NEXT_PUBLIC_MEDIA_ALLOWED_ORIGINS=https://${{ steps.host.outputs.host }},https://audio.lowbatterytown.com,https://broadcast.lowbatterytown.com
             NEXT_PUBLIC_BROADCAST_PROXY_BASE_URL=https://broadcast.lowbatterytown.com
             NEXT_PUBLIC_ADSENSE_PUB_ID=${{ vars.ADSENSE_PUB_ID }}
+            NEXT_PUBLIC_GA_ID=${{ vars.GA_ID }}
           cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:cache-${{ matrix.env }}
           cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/lowbatterytown-frontend:cache-${{ matrix.env }},mode=max
 

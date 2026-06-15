@@ -11,6 +11,7 @@ import {
 } from "@/lib/state/authStore";
 import { tokenStore } from "@/lib/api/client";
 import { markAudioUnlocked } from "@/lib/audio/unlock";
+import { trackSignIn } from "@/lib/analytics/events";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { AD_SLOTS } from "@/lib/config/ads";
@@ -58,6 +59,7 @@ export default function SplashPage() {
     markAudioUnlocked();
     try {
       await signIn(email, password);
+      trackSignIn();
       router.push("/town");
     } catch {
       /* error already in store */

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/routing";
+import { trackSignIn } from "@/lib/analytics/events";
 import { markAudioUnlocked } from "@/lib/audio/unlock";
 import { sanitizeReturnTo } from "@/lib/routing/safeReturnTo";
 import {
@@ -42,6 +43,7 @@ function SignInForm() {
     markAudioUnlocked();
     try {
       await signIn(email, password);
+      trackSignIn();
       router.push(returnTo ?? "/town");
     } catch {
       /* error already in store */

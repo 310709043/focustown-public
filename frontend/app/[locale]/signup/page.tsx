@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/routing";
+import { trackSignUp } from "@/lib/analytics/events";
 import { sanitizeReturnTo } from "@/lib/routing/safeReturnTo";
 import {
   AUTH_ERROR_NETWORK_FAILURE,
@@ -74,6 +75,7 @@ function SignUpForm() {
         termsVersion: LEGAL.termsVersion,
         marketingOptIn: parsed.data.marketingOptIn,
       });
+      trackSignUp();
       // A new account always needs character selection before it can
       // engage with /town features, so route through /select-character
       // first. Preserve returnTo via query so the character page can
