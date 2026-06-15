@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import random
+from datetime import UTC, datetime, timedelta
+
 from fastapi import APIRouter, Query
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.api.v1.admin.schemas import (
     AdminFeedbackDetail,
@@ -13,11 +17,12 @@ from app.api.v1.admin.schemas import (
     FeedbackStatusUpdate,
     OverviewStats,
 )
-from app.core.deps import DbDep
+from app.core.deps import ClockDep, DbDep, IdGenDep
 from app.core.exceptions import NotFoundError
 from app.infrastructure.db.models.feedback import FeedbackSubmissionORM
 from app.infrastructure.db.models.focus_session import FocusSessionORM
 from app.infrastructure.db.models.match_waiting_pool import MatchWaitingPoolORM
+from app.infrastructure.db.models.user import UserORM
 from app.infrastructure.db.models.user import UserORM
 
 router = APIRouter()
@@ -260,3 +265,64 @@ async def update_feedback_status(
         status=row.status,
         updated_at=row.updated_at,
     )
+
+
+# ── Temporary: Seed leaderboard test data ──────────────────────────────
+
+TEST_USERS = [
+    ("Alice", 4, 25),
+    ("Bob", 3, 20),
+    ("Charlie", 2, 30),
+    ("Diana", 5, 15),
+    ("Eve", 1, 25),
+]
+
+
+@router.post("/seed-leaderboard")
+async def seed_leaderboard(db: DbDep, clock: ClockDep, ids: IdGenDep):
+    """Temporary: seed today's focus sessions for leaderboard testing."""
+    now = clock.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    created = 0
+
+    for display_name, session_count, avg_minutes in TEST_USERS:
+        result = await db.execute(
+            select(UserORM).where(UserORM.display_name == display_name)
+        )
+        user = result.scalar_one_or_none()
+
+        if user is None:
+            user_id = ids.new_id()
+            user = UserORM(
+                id=user_id,
+                email=f"{display_name.lower()}@test.local",
+                display_name=display_name,
+                password_hash="!",
+                is_active=True,
+                is_bot=False,
+            )
+            db.add(user)
+            await db.flush()
+
+        for _ in range(session_count):
+            seconds_today = int((now - today_start).total_seconds())
+            random_offset = random.randint(0, max(0, seconds_today - 1800))
+            started_at = today_start + timedelta(seconds=random_offset)
+            duration = avg_minutes * 60 + random.randint(-300, 300)
+            duration = max(300, duration)
+
+            session = FocusSessionORM(
+                id=ids.new_id(),
+                user_id=user.id,
+                mode="focus",
+                duration_seconds=duration,
+                elapsed_seconds=duration,
+                status="completed",
+                started_at=started_at,
+                ended_at=started_at + timedelta(seconds=duration),
+            )
+            db.add(session)
+            created += 1
+
+    await db.flush()
+    return {"ok": True, "created": created}
