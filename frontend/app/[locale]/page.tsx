@@ -12,6 +12,8 @@ import {
 import { tokenStore } from "@/lib/api/client";
 import { markAudioUnlocked } from "@/lib/audio/unlock";
 import { PasswordInput } from "@/components/forms/PasswordInput";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { AD_SLOTS } from "@/lib/config/ads";
 import { LoginScene } from "@/components/login/LoginScene";
 import { CornerDeco } from "@/components/login/CornerDeco";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
@@ -212,6 +214,14 @@ export default function SplashPage() {
           </Link>
         </div>
       </form>
+      {/* AdSense banner — only renders when NEXT_PUBLIC_ADSENSE_PUB_ID
+          is configured. Sits between the form and the AboutTownPanel. */}
+      <AdSlot
+        slot={AD_SLOTS.loginBanner}
+        format="horizontal"
+        className="animate-fadeUpFast anim-delay-500"
+        testId="ad-login-banner"
+      />
     </LoginScene>
   );
 }

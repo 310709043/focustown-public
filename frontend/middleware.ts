@@ -78,6 +78,21 @@ const mediaOrigins = [
     : []),
 ].join(" ") || apiOriginHttp;
 
+// AdSense CSP origins — only appended when the publisher ID is configured.
+const adsenseEnabled = (process.env.NEXT_PUBLIC_ADSENSE_PUB_ID ?? "").length > 0;
+const adScriptSrc = adsenseEnabled
+  ? " https://pagead2.googlesyndication.com https://www.googletagservices.com https://adservice.google.com https://adservice.google.com.tw"
+  : "";
+const adImgSrc = adsenseEnabled
+  ? " https://pagead2.googlesyndication.com https://www.google.com https://www.google.com.tw"
+  : "";
+const adFrameSrc = adsenseEnabled
+  ? " https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com"
+  : "";
+const adConnectSrc = adsenseEnabled
+  ? " https://pagead2.googlesyndication.com https://adservice.google.com"
+  : "";
+
 function buildCsp(nonce: string): string {
   // Prod uses `'self' 'unsafe-inline'` (NOT `'self' 'nonce-...' 'unsafe-inline'`
   // — the nonce source would suppress `'unsafe-inline'` per CSP spec and break
@@ -86,8 +101,8 @@ function buildCsp(nonce: string): string {
   // cdn.jsdelivr.net is needed for MediaPipe's FilesetResolver which injects
   // <script> tags pointing to the WASM loader at that CDN origin.
   const scriptSrc = isProd
-    ? `'self' 'unsafe-inline' https://cdn.jsdelivr.net`
-    : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net`;
+    ? `'self' 'unsafe-inline' https://cdn.jsdelivr.net${adScriptSrc}`
+    : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net${adScriptSrc}`;
 
   const directives = [
     "default-src 'self'",
@@ -95,18 +110,18 @@ function buildCsp(nonce: string): string {
     // (only the first wins), so this must be the single script-src entry.
     `script-src ${scriptSrc} 'wasm-unsafe-eval'`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    `img-src 'self' data: blob:${adImgSrc}`,
     `media-src 'self' ${mediaOrigins} blob:`,
     "font-src 'self' data:",
     // Restrict to the known API origin only. Bare `ws:`/`wss:` wildcards
     // would let an injected script open a WebSocket to attacker-controlled
     // hosts and exfiltrate chat/tokens. The legitimate WS target is already
     // included via apiOriginWs (derived from NEXT_PUBLIC_API_BASE_URL).
-    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} https://cdn.jsdelivr.net https://storage.googleapis.com`,
+    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} https://cdn.jsdelivr.net https://storage.googleapis.com${adConnectSrc}`,
     // MediaPipe worker threads need blob: URLs.
     "worker-src 'self' blob:",
     "manifest-src 'self'",
-    "frame-src https://www.youtube-nocookie.com",
+    `frame-src https://www.youtube-nocookie.com${adFrameSrc}`,
     "frame-ancestors 'none'",
     "form-action 'self'",
     "base-uri 'self'",
@@ -203,6 +218,6 @@ export const config = {
     //                and the new sprites silently fail to render.
     //   favicon.ico  small static file
     //   logo.png     static image
-    "/((?!api|_next/static|_next/image|audio|assets|favicon.ico|logo.png|og-image.png|robots.txt|sitemap.xml|manifest.webmanifest).*)",
+    "/((?!api|_next/static|_next/image|audio|assets|favicon.ico|logo.png|og-image.png|robots.txt|sitemap.xml|manifest.webmanifest|ads.txt).*)",
   ],
 };
