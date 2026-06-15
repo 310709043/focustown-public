@@ -35,7 +35,8 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_DEPLOY_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_DEPLOY_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Materialize deployment spec
@@ -51,8 +52,16 @@ jobs:
           AWS_APP_SECRET_ACCESS_KEY: ${{ secrets.AWS_APP_SECRET_ACCESS_KEY }}
           SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL }}
           ADMIN_FEEDBACK_EMAIL: ${{ vars.ADMIN_FEEDBACK_EMAIL }}
+          ADMIN_USER_IDS: ${{ vars.ADMIN_USER_IDS }}
           S3_BUCKET: ${{ vars.S3_BUCKET }}
           TERMS_CURRENT_VERSION: ${{ vars.TERMS_CURRENT_VERSION }}
+          R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
+          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
+          AUDIO_PROXY_BASE_URL: ${{ vars.AUDIO_PROXY_BASE_URL }}
+          AUDIO_PROXY_SECRET: ${{ secrets.AUDIO_PROXY_SECRET }}
+          BROADCAST_PROXY_BASE_URL: ${{ vars.BROADCAST_PROXY_BASE_URL }}
+          BROADCAST_PROXY_SECRET: ${{ secrets.BROADCAST_PROXY_SECRET }}
         run: |
           set -euo pipefail
           envsubst < infra/lightsail/dev/containers.json.tpl > /tmp/containers.json
