@@ -317,7 +317,7 @@ function RankBoard() {
             type="button"
             data-testid={`sky-window-rank-row-${rank}`}
             onClick={() => router.push(`/users/${r.user_id}`)}
-            className="font-silkscreen"
+            className="font-silkscreen animate-fadeUpFast"
             style={{
               display: "grid",
               gridTemplateColumns: "28px 28px 1fr auto 60px",
@@ -338,8 +338,9 @@ function RankBoard() {
                 badgeColor
                   ? `1px solid ${badgeColor}44`
                   : "1px solid transparent",
-              transition: "filter 120ms ease",
+              transition: "filter 120ms ease, transform 60ms ease",
               filter: "brightness(1)",
+              animationDelay: `${i * 50}ms`,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.filter = "brightness(1.18)";

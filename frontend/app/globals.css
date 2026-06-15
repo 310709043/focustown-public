@@ -1513,3 +1513,164 @@ body {
   0%, 100% { transform: translateY(0); opacity: 0.7; }
   50% { transform: translateY(-6px); opacity: 0.3; }
 }
+
+/* ════════════════════════════════════════
+   Animation System v2 — page load, interaction feedback, panel entry
+   ════════════════════════════════════════ */
+
+/* --- popIn: panels, modals, chips appearing --- */
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.95) translateY(6px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+.animate-popIn { animation: popIn 220ms cubic-bezier(0.34, 1.3, 0.64, 1) both; }
+
+/* --- slideDown: dropdowns, panels from above --- */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.animate-slideDown { animation: slideDown 200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* --- slideRight: panels from left edge --- */
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+.animate-slideRight { animation: slideRight 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* --- fadeUpFast: shorter version of fadeUp for stagger use --- */
+@keyframes fadeUpFast {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.animate-fadeUpFast { animation: fadeUpFast 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* --- Stagger system: add .anim-stagger to a container; children
+       inherit fadeUpFast with cascading delays (60 ms per slot). --- */
+.anim-stagger > * { animation: fadeUpFast 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-stagger > *:nth-child(1) { animation-delay:   0ms; }
+.anim-stagger > *:nth-child(2) { animation-delay:  60ms; }
+.anim-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.anim-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.anim-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.anim-stagger > *:nth-child(6) { animation-delay: 300ms; }
+.anim-stagger > *:nth-child(7) { animation-delay: 360ms; }
+
+/* --- Explicit delay utilities (combine with any animate-* class) --- */
+.anim-delay-50  { animation-delay:  50ms !important; }
+.anim-delay-100 { animation-delay: 100ms !important; }
+.anim-delay-150 { animation-delay: 150ms !important; }
+.anim-delay-200 { animation-delay: 200ms !important; }
+.anim-delay-300 { animation-delay: 300ms !important; }
+.anim-delay-400 { animation-delay: 400ms !important; }
+.anim-delay-500 { animation-delay: 500ms !important; }
+
+/* --- Universal button press feedback.
+       All interactive elements get tactile scale-down on press.
+       .pixel-btn already has translateY; these cover every other button. --- */
+button:not(.pixel-btn):not([disabled]):active,
+a[role="button"]:not([disabled]):active {
+  transform: scale(0.95) !important;
+  transition: transform 60ms ease !important;
+}
+
+/* Silkscreen-style buttons (non-pixel-btn): add hover glow + press */
+.font-silkscreen:is(button, a[role="button"]):not(.pixel-btn):not([disabled]) {
+  transition: color 150ms ease, border-color 150ms ease,
+              box-shadow 150ms ease, transform 60ms ease,
+              background 150ms ease;
+}
+.font-silkscreen:is(button, a[role="button"]):not(.pixel-btn):not([disabled]):hover {
+  text-shadow: 0 0 8px currentColor;
+}
+.font-silkscreen:is(button, a[role="button"]):not(.pixel-btn):not([disabled]):active {
+  transform: scale(0.94) !important;
+  transition: transform 60ms ease !important;
+}
+
+/* --- pixel-panel hover: subtle lift for interactive panels --- */
+.pixel-panel[data-interactive="true"] {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  cursor: pointer;
+}
+.pixel-panel[data-interactive="true"]:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 0 0 1px var(--dir-panel-stroke),
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 0 24px rgba(183, 148, 246, 0.12);
+}
+
+/* --- Skeleton shimmer for loading states --- */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.7; }
+}
+.skeleton {
+  background: rgba(255, 255, 255, 0.06);
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+/* --- Pixel ripple: brief flash on interactive click
+       Usage: add .pixel-ripple class + trigger via JS dataset --- */
+@keyframes pixelRipple {
+  0%   { opacity: 0.35; transform: scale(0.8); }
+  60%  { opacity: 0.15; transform: scale(1.15); }
+  100% { opacity: 0;    transform: scale(1.3);  }
+}
+
+/* --- NavButton press: defined here so it can be toggled via CSS var --- */
+@keyframes navPress {
+  0%   { transform: translateY(-1px) scale(1);    }
+  40%  { transform: translateY(1px)  scale(0.97); }
+  100% { transform: translateY(0)    scale(1);    }
+}
+.nav-btn-press { animation: navPress 120ms ease both; }
+
+/* --- Tab indicator slide: underline track for tab bars --- */
+@keyframes tabActivate {
+  from { opacity: 0; transform: scaleX(0.5); }
+  to   { opacity: 1; transform: scaleX(1);   }
+}
+
+/* --- Toaster / notification pop --- */
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes toastSlideOut {
+  from { opacity: 1; transform: translateY(0)    scale(1);    }
+  to   { opacity: 0; transform: translateY(-8px) scale(0.96); }
+}
+.animate-toastIn  { animation: toastSlideIn  240ms cubic-bezier(0.34, 1.2, 0.64, 1) both; }
+.animate-toastOut { animation: toastSlideOut 180ms ease both; }
+
+/* --- Page section reveal: used on locale pages for soft entry --- */
+@keyframes pageReveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.animate-pageReveal { animation: pageReveal 400ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Reduced-motion: collapse all new animations to instant */
+@media (prefers-reduced-motion: reduce) {
+  .animate-popIn,
+  .animate-slideDown,
+  .animate-slideRight,
+  .animate-fadeUpFast,
+  .animate-toastIn,
+  .animate-toastOut,
+  .animate-pageReveal,
+  .anim-stagger > *,
+  .nav-btn-press {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+  button:not(.pixel-btn):not([disabled]):active,
+  .font-silkscreen:is(button, a[role="button"]):not(.pixel-btn):not([disabled]):active {
+    transform: none !important;
+  }
+}

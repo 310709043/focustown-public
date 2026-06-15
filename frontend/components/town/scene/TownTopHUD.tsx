@@ -138,7 +138,7 @@ export function TownTopHUD({
           width unchanged. On ≥ 2880 px screens the row clusters in a
           2400 px column while the gradient background still spans the
           whole viewport — Netflix / Apple-TV centring pattern. */}
-      <div className="town-top-hud-inner">
+      <div className="town-top-hud-inner anim-stagger">
       {/* ═══ LEFT cluster: logo + version · scene/weather/temp · ONLINE ═══
            City-Mode immersive keeps the LOGO + weather chip anchored; the
            version chip + ONLINE chip collapse upward so the sky breathes. */}

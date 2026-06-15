@@ -192,7 +192,7 @@ export function LoginScene({
           Mirrors signin.jpg reference: a centred vertical stack rather
           than a three-column layout. */}
       <div
-        className="relative animate-fadeUp"
+        className="relative"
         style={{
           zIndex: 5,
           minHeight: "100%",
@@ -213,13 +213,16 @@ export function LoginScene({
               gap: 10,
             }}
           >
-            <div className="animate-logoBob">
+            <div className="animate-logoBob animate-fadeUpFast">
               <Logo scale={3.6} />
             </div>
-            <Tagline />
+            <div className="animate-fadeUpFast anim-delay-100">
+              <Tagline />
+            </div>
             {showAvatarStrip ? (
               <div
                 data-testid="avatar-strip"
+                className="animate-fadeUpFast anim-delay-200"
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -244,9 +247,15 @@ export function LoginScene({
           </div>
         ) : null}
 
-        {children}
+        <div className="animate-popIn anim-delay-150" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {children}
+        </div>
 
-        {showHero && showAboutPanel ? <AboutTownPanel /> : null}
+        {showHero && showAboutPanel ? (
+          <div className="animate-fadeUpFast anim-delay-300">
+            <AboutTownPanel />
+          </div>
+        ) : null}
       </div>
     </main>
   );

@@ -79,6 +79,18 @@ export function NavButton({
       e.currentTarget.style.background = "linear-gradient(180deg, rgba(16, 22, 40, 0.8) 0%, rgba(12, 16, 32, 0.8) 100%)";
       e.currentTarget.style.boxShadow = "none";
       e.currentTarget.style.transform = "none";
+      e.currentTarget.classList.remove("nav-btn-press");
+    },
+    onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
+      if (disabled) return;
+      e.currentTarget.classList.remove("nav-btn-press");
+      // Force reflow so re-adding the class restarts the animation
+      void e.currentTarget.offsetWidth;
+      e.currentTarget.classList.add("nav-btn-press");
+    },
+    onMouseUp: (e: React.MouseEvent<HTMLElement>) => {
+      if (disabled) return;
+      e.currentTarget.classList.remove("nav-btn-press");
     },
   };
 

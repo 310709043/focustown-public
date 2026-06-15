@@ -35,6 +35,8 @@ export function TabBtn({ active, onClick, children, tabId }: TabBtnProps) {
         fontSize: 11,
         letterSpacing: "0.1em",
         cursor: "pointer",
+        transition:
+          "background 150ms ease, color 150ms ease, border-color 150ms ease, transform 60ms ease",
       }}
     >
       {children}
