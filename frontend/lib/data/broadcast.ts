@@ -60,7 +60,7 @@ export const BROADCAST_MODES: ReadonlyArray<BroadcastMode> = [
   {
     kind: "video",
     provider: "youtube",
-    embedId: "BdvtgwLT0Jc",
+    embedId: "PLACEHOLDER",
     channelLabel: "FOCUSTOWN.TV · LOFI 24",
     tag: "ON AIR",
   },
