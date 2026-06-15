@@ -49,7 +49,7 @@
     },
     "earn": {
       "title": "Earn T-coins free",
-      "pomodoro": "Finish a pomodoro",
+      "pomodoro": "Complete a focus session",
       "deepNight": "Late-night focus",
       "groupFocus": "Co-focus 25 min",
       "streak": "7-day streak",
@@ -66,7 +66,7 @@
       "reasonFallback": "Transaction",
       "reasons": {
         "session_complete": "Focus session complete",
-        "pomodoro_complete": "Pomodoro complete",
+        "pomodoro_complete": "Focus session complete",
         "group_focus": "Co-focus session",
         "streak_bonus": "Login streak reward",
         "achievement_unlock": "Achievement unlocked",
@@ -102,7 +102,7 @@
       "amountLabel": "Amount (T-coins)",
       "amountPlaceholder": "1 – 1000",
       "messageLabel": "Note to attach (optional)",
-      "messagePlaceholder": "e.g. Crushing today's pomodoros together 🔋",
+      "messagePlaceholder": "e.g. Charging up together today 🔋",
       "submitCta": "Send gift",
       "submittingCta": "Sending…",
       "cancelCta": "Cancel",
@@ -193,7 +193,7 @@
       },
       {
         "q": "Why didn't my focus session show up on the leaderboard?",
-        "a": "Only complete FOCUS pomodoros count. Sessions you pause or cancel are excluded. Finish at least one full session to appear on the daily leaderboard."
+        "a": "Only complete FOCUS sessions count. Sessions you pause or cancel are excluded. Finish at least one full session to appear on the daily leaderboard."
       },
       {
         "q": "How do I co-focus with a friend?",
@@ -225,7 +225,7 @@
     "languageZh": "Traditional Chinese",
     "languageEn": "English",
     "sectionFocus": "Focus cadence",
-    "dailyGoalLabel": "Daily pomodoro goal",
+    "dailyGoalLabel": "Daily focus goal",
     "durationLabel": "Default focus length (minutes)",
     "sectionAppearance": "Appearance",
     "sceneRotationLabel": "Rotate through scenes (day / dusk / night)"

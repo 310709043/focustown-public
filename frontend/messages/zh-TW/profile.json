@@ -49,7 +49,7 @@
     },
     "earn": {
       "title": "免費賺 T 幣",
-      "pomodoro": "完成一顆番茄",
+      "pomodoro": "完成一個專注時段",
       "deepNight": "深夜時段專注",
       "groupFocus": "與他人一起專注 25min",
       "streak": "連續登入 7 天",
@@ -66,7 +66,7 @@
       "reasonFallback": "交易",
       "reasons": {
         "session_complete": "完成專注時段",
-        "pomodoro_complete": "完成番茄",
+        "pomodoro_complete": "完成專注時段",
         "group_focus": "與他人共同專注",
         "streak_bonus": "連續登入獎勵",
         "achievement_unlock": "解鎖成就",
@@ -102,7 +102,7 @@
       "amountLabel": "送出數量（T 幣）",
       "amountPlaceholder": "1 - 1000",
       "messageLabel": "留下一句話（選填）",
-      "messagePlaceholder": "例如：今天的番茄一起加油 🔋",
+      "messagePlaceholder": "例如：今天一起充電加油 🔋",
       "submitCta": "送出禮物",
       "submittingCta": "送出中…",
       "cancelCta": "取消",
@@ -193,7 +193,7 @@
       },
       {
         "q": "為什麼我的專注時段沒有計入排行榜？",
-        "a": "排行榜只計算完整的「FOCUS」時段（番茄），暫停或取消的時段不會列入。請確認連續完成至少一個完整時段。"
+        "a": "排行榜只計算完整的「FOCUS」時段，暫停或取消的時段不會列入。請確認連續完成至少一個完整時段。"
       },
       {
         "q": "如何邀請好友一起共同專注？",
@@ -225,7 +225,7 @@
     "languageZh": "繁體中文",
     "languageEn": "English",
     "sectionFocus": "專注節奏",
-    "dailyGoalLabel": "每日番茄目標",
+    "dailyGoalLabel": "每日專注目標",
     "durationLabel": "預設專注時長（分鐘）",
     "sectionAppearance": "畫面",
     "sceneRotationLabel": "自動循環場景（白天 / 黃昏 / 夜晚）"

@@ -279,7 +279,7 @@
       "walkers": {
         "yuki": { "name": "Yuki", "status": "STUDY HALL" },
         "aria": { "name": "Aria", "status": "寫作中" },
-        "kai":  { "name": "Kai",  "status": "番茄 #5" },
+        "kai":  { "name": "Kai",  "status": "充電 #5" },
         "doc":  { "name": "Doc",  "status": "研究" },
         "bear": { "name": "Bear", "status": "深度工作" },
         "milo": { "name": "Milo", "status": "LOFI BAR" },
@@ -304,7 +304,7 @@
   "awards": {
     "title": "大賞區 · HALL OF FAME",
     "closeCta": "✕ 關閉",
-    "leadersHeading": "今日番茄鐘排行",
+    "leadersHeading": "今日充電排行",
     "leadersEmpty": "尚無資料",
     "leaderCountSuffix": "🔋",
     "achievementsHeading": "成就徽章",

@@ -264,14 +264,14 @@
       "shareMusic": "分享音樂",
       "shareMusicAria": "分享音樂",
       "pause": "暫停",
-      "pauseAria": "暫停番茄",
+      "pauseAria": "暫停專注時段",
       "typeMsg": "輸入訊息…",
       "loadError": "無法載入聊天記錄，請稍後再試。",
       "sendError": "訊息送出失敗，請稍後再試。"
     },
     "notes": {
       "defaultTitle": "共同筆記",
-      "placeholderTemplate": "# 共同筆記 · 寫作番茄場\n( 兩人都可以編輯 )\n\n## 約定\n- 25 min 寫，5 min 休息對唸\n- 不開鏡頭只開麥\n- 完成就互按 ✦\n",
+      "placeholderTemplate": "# 共同筆記 · 寫作時段\n( 兩人都可以編輯 )\n\n## 約定\n- 25 min 寫，5 min 休息對唸\n- 不開鏡頭只開麥\n- 完成就互按 ✦\n",
       "partnerEditing": "夥伴正在編輯第 {line} 行",
       "autoSaved": "自動儲存 · 已同步",
       "autoSavedIdle": "尚未編輯"

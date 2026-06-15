@@ -264,14 +264,14 @@
       "shareMusic": "Share music",
       "shareMusicAria": "Share music",
       "pause": "Pause",
-      "pauseAria": "Pause pomodoro",
+      "pauseAria": "Pause focus session",
       "typeMsg": "Type a message…",
       "loadError": "Could not load chat history. Please try again.",
       "sendError": "Could not send the message. Please try again."
     },
     "notes": {
       "defaultTitle": "Shared notes",
-      "placeholderTemplate": "# Shared notes · Writing pomodoro\n( Both of you can edit )\n\n## Ground rules\n- Write 25 min, recap together for 5 min\n- Mics on, cameras off\n- Tap ✦ for each other when done\n",
+      "placeholderTemplate": "# Shared notes · Writing session\n( Both of you can edit )\n\n## Ground rules\n- Write 25 min, recap together for 5 min\n- Mics on, cameras off\n- Tap ✦ for each other when done\n",
       "partnerEditing": "Buddy is editing line {line}",
       "autoSaved": "Auto-saved · synced",
       "autoSavedIdle": "Not yet edited"

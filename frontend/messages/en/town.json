@@ -279,7 +279,7 @@
       "walkers": {
         "yuki": { "name": "Yuki", "status": "STUDY HALL" },
         "aria": { "name": "Aria", "status": "Writing" },
-        "kai":  { "name": "Kai",  "status": "Pomodoro #5" },
+        "kai":  { "name": "Kai",  "status": "Session #5" },
         "doc":  { "name": "Doc",  "status": "Researching" },
         "bear": { "name": "Bear", "status": "Deep work" },
         "milo": { "name": "Milo", "status": "LOFI BAR" },
@@ -304,7 +304,7 @@
   "awards": {
     "title": "AWARDS · HALL OF FAME",
     "closeCta": "✕ CLOSE",
-    "leadersHeading": "TODAY'S POMODORO LEADERS",
+    "leadersHeading": "TODAY'S FOCUS LEADERS",
     "leadersEmpty": "No entries yet",
     "leaderCountSuffix": "🔋",
     "achievementsHeading": "ACHIEVEMENT BADGES",
