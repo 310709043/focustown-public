@@ -73,7 +73,7 @@ export function SkylineLayers({ direction = "neon" }: SkylineLayersProps) {
         ref={farthestRef}
         aria-hidden
         data-testid="skyline-layer"
-        className="pointer-events-none"
+        className="pointer-events-none animate-skylineRise"
         style={{
           position: "absolute",
           left: 0,
@@ -83,13 +83,14 @@ export function SkylineLayers({ direction = "neon" }: SkylineLayersProps) {
           height: 110,
           imageRendering: "pixelated",
           opacity: 0.4,
+          animationDelay: "200ms",
         }}
       />
       <canvas
         ref={farRef}
         aria-hidden
         data-testid="skyline-layer"
-        className="pointer-events-none"
+        className="pointer-events-none animate-skylineRise"
         style={{
           position: "absolute",
           left: 0,
@@ -99,13 +100,14 @@ export function SkylineLayers({ direction = "neon" }: SkylineLayersProps) {
           height: 150,
           imageRendering: "pixelated",
           opacity: 0.55,
+          animationDelay: "400ms",
         }}
       />
       <canvas
         ref={nearRef}
         aria-hidden
         data-testid="skyline-layer"
-        className="pointer-events-none"
+        className="pointer-events-none animate-skylineRise"
         style={{
           position: "absolute",
           left: 0,
@@ -114,6 +116,7 @@ export function SkylineLayers({ direction = "neon" }: SkylineLayersProps) {
           width: "100%",
           height: 230,
           imageRendering: "pixelated",
+          animationDelay: "600ms",
         }}
       />
     </>

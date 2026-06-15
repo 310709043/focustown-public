@@ -292,7 +292,7 @@ export default function TownPage() {
 
   return (
     <FrameTicker>
-    <main className="absolute inset-0 flex flex-col overflow-hidden">
+    <main className="absolute inset-0 flex flex-col overflow-hidden animate-townReveal">
       {/* Top HUD — reference's 3-cluster layout: logo+wordmark+weather chip
           on the left, UserStatusPill in the center, ACHV/SHOP/FRDS + clock
           + T-coin + sign-out on the right. Overlays the scene (absolute). */}

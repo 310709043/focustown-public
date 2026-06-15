@@ -90,8 +90,9 @@ export function LoginScene({
           "linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 65%, var(--sky-low) 100%)",
       }}
     >
-      {/* Stars + meteors */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+      {/* Stars + meteors — stars fade in after a beat so the sky
+          "powers on" progressively like the SplashGate boot sequence. */}
+      <div className="absolute inset-0 pointer-events-none animate-starsReveal" aria-hidden>
         <StarField density={0.0008} />
       </div>
       <ShootingStars />
@@ -101,15 +102,14 @@ export function LoginScene({
         <RainOverlay color="var(--accent)" />
       ) : null}
 
-      {/* Moon (pixel) — gently floats top-right. */}
+      {/* Moon (pixel) — drops in from above then gently floats. */}
       <div
         aria-hidden
-        className="animate-floatMoon pointer-events-none"
+        className="animate-moonEnter pointer-events-none"
         style={{
           position: "absolute",
           top: 80,
           right: 100,
-          opacity: 0.9,
           zIndex: 2,
         }}
       >
@@ -210,16 +210,16 @@ export function LoginScene({
               gap: 10,
             }}
           >
-            <div className="animate-logoBob animate-fadeUpFast">
+            <div className="animate-heroLogoEnter">
               <Logo scale={3.6} />
             </div>
-            <div className="animate-fadeUpFast anim-delay-100">
+            <div className="animate-fadeUpFast anim-delay-200">
               <Tagline />
             </div>
             {showAvatarStrip ? (
               <div
                 data-testid="avatar-strip"
-                className="animate-fadeUpFast anim-delay-200"
+                className="animate-fadeUpFast anim-delay-300"
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -244,12 +244,12 @@ export function LoginScene({
           </div>
         ) : null}
 
-        <div className="animate-popIn anim-delay-150" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div className="animate-popIn anim-delay-400" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
           {children}
         </div>
 
         {showHero && showAboutPanel ? (
-          <div className="animate-fadeUpFast anim-delay-300">
+          <div className="animate-fadeUpFast anim-delay-500">
             <AboutTownPanel />
           </div>
         ) : null}
