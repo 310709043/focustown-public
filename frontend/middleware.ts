@@ -78,17 +78,12 @@ const mediaOrigins = [
     : []),
 ].join(" ") || apiOriginHttp;
 
-// GA4 CSP origins — only appended when the measurement ID is configured.
-const gaEnabled = (process.env.NEXT_PUBLIC_GA_ID ?? "").length > 0;
-const gaScriptSrc = gaEnabled
-  ? " https://www.googletagmanager.com https://www.google-analytics.com"
-  : "";
-const gaConnectSrc = gaEnabled
-  ? " https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net"
-  : "";
-const gaImgSrc = gaEnabled
-  ? " https://www.google-analytics.com https://www.googletagmanager.com"
-  : "";
+// GA4 CSP origins — always allowed so the CSP doesn't depend on
+// build-time env resolution (which can be stale across Docker cache layers).
+// When GA4 isn't loaded, no script talks to these origins — safe no-op.
+const gaScriptSrc = " https://www.googletagmanager.com https://www.google-analytics.com";
+const gaConnectSrc = " https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net";
+const gaImgSrc = " https://www.google-analytics.com https://www.googletagmanager.com";
 
 // AdSense CSP origins — only appended when the publisher ID is configured.
 const adsenseEnabled = (process.env.NEXT_PUBLIC_ADSENSE_PUB_ID ?? "").length > 0;
