@@ -124,6 +124,10 @@ class PresenceService:
             },
         )
 
+    async def refresh(self, user_id: str) -> None:
+        """Touch the TTL without broadcasting — keeps idle users alive."""
+        await self._tracker.update(user_id)
+
     async def set_status(self, user_id: str, status: str) -> None:
         await self._tracker.update(user_id, status=status)
         await self._pub.publish(

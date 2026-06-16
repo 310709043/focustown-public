@@ -332,6 +332,8 @@ async def ws_connect(
                     )
                     continue
                 await pub.add_channels([IRealtimePublisher.room_channel(room_id)])
+            elif kind == "heartbeat":
+                await presence.refresh(user_id)
             elif kind == "presence":
                 status = (data.get("status") or "focus").strip() or "focus"
                 await presence.set_status(user_id, status)

@@ -133,6 +133,7 @@ export class RealtimeClient {
   private reconnectAttempts = 0;
   private intentionalClose = false;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private _state: WsConnectionState = "idle";
 
   get state(): WsConnectionState {
@@ -168,6 +169,7 @@ export class RealtimeClient {
     ws.onopen = () => {
       this.reconnectAttempts = 0;
       this.setState("connected");
+      this.startHeartbeat();
       // Pair with the close log so "still seeing [ws] close" reports can be
       // distinguished from "WS never opened" reports without DevTools dive.
       console.info("[ws] open");
@@ -195,6 +197,7 @@ export class RealtimeClient {
         `[ws] close code=${code} reason=${JSON.stringify(reason)} clean=${clean}`,
       );
       this.ws = null;
+      this.stopHeartbeat();
       if (this.intentionalClose) return;
       // 4401 = the backend rejected our JWT before ``accept()``. Without
       // a refresh, the reconnect loop keeps re-sending the same stale
@@ -213,6 +216,7 @@ export class RealtimeClient {
 
   disconnect() {
     this.intentionalClose = true;
+    this.stopHeartbeat();
     if (this.reconnectTimer !== null) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
@@ -231,6 +235,20 @@ export class RealtimeClient {
   on(fn: Listener) {
     this.listeners.add(fn);
     return () => this.listeners.delete(fn);
+  }
+
+  private startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatTimer = setInterval(() => {
+      this.send({ type: "heartbeat" });
+    }, 60_000);
+  }
+
+  private stopHeartbeat() {
+    if (this.heartbeatTimer !== null) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
   }
 
   private scheduleReconnect() {
