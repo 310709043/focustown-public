@@ -12,6 +12,7 @@ import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/lib/state/authStore";
 import { useTimerStore } from "@/lib/state/timerStore";
 import { sessionsApi } from "@/lib/api/endpoints";
+import { pushErrorToast } from "@/lib/state/toastStore";
 
 /** Solo focus top bar — back / LBT logo · SOLO ROOM subtitle / avatar
  *  pill / mini clock / T-coin balance. */
@@ -48,7 +49,9 @@ export function FocusTopBar() {
           onClick={async () => {
             const session = useTimerStore.getState().session;
             if (session) {
-              await sessionsApi.cancel(session.id).catch(() => {});
+              await sessionsApi.cancel(session.id).catch(() => {
+                pushErrorToast("Failed to cancel session");
+              });
               useTimerStore.getState().reset();
             }
             router.push("/town");

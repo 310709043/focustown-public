@@ -6,6 +6,7 @@ import { Logo } from "@/components/scene/Logo";
 import { CoinBadge } from "@/components/town/CoinBadge";
 import { useRouter } from "@/i18n/routing";
 import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
+import { pushErrorToast } from "@/lib/state/toastStore";
 
 /** Buddy room top bar — leave/LBT logo/pink BUDDY ROOM subtitle on the
  *  left, room status in the centre, T-coin badge on the right. */
@@ -35,7 +36,9 @@ export function BuddyTopBar({ matchId, roomCode = "2847-A" }: { matchId: string;
           className="pixel-btn"
           style={{ padding: "6px 12px", fontSize: 10 }}
           onClick={async () => {
-            await leaveRoom(matchId).catch(() => {});
+            await leaveRoom(matchId).catch(() => {
+              pushErrorToast("Failed to leave room");
+            });
             router.push("/town");
           }}
         >

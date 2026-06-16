@@ -17,7 +17,8 @@ export function CoinRewardToast() {
 
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const outerRef = useRef<ReturnType<typeof setTimeout>>();
+  const innerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (!lastDelta) return;
@@ -27,9 +28,9 @@ export function CoinRewardToast() {
     setVisible(true);
     setLeaving(false);
 
-    timerRef.current = setTimeout(() => {
+    outerRef.current = setTimeout(() => {
       setLeaving(true);
-      setTimeout(() => {
+      innerRef.current = setTimeout(() => {
         setVisible(false);
         setLeaving(false);
         clearLastDelta();
@@ -37,7 +38,8 @@ export function CoinRewardToast() {
     }, 4000);
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (outerRef.current) clearTimeout(outerRef.current);
+      if (innerRef.current) clearTimeout(innerRef.current);
     };
   }, [lastDelta, clearLastDelta]);
 
