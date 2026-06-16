@@ -1,4 +1,5 @@
 from app.infrastructure.db.models.achievement import AchievementORM, UserAchievementORM
+from app.infrastructure.db.models.announcement import AnnouncementORM
 from app.infrastructure.db.models.feedback import FeedbackSubmissionORM
 from app.infrastructure.db.models.focus_session import FocusSessionORM
 from app.infrastructure.db.models.friendship import FriendshipORM
@@ -34,6 +35,7 @@ from app.infrastructure.db.models.wallet_transaction import WalletTransactionORM
 
 __all__ = [
     "AchievementORM",
+    "AnnouncementORM",
     "FeedbackSubmissionORM",
     "FocusSessionORM",
     "FriendshipORM",
