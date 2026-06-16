@@ -37,7 +37,7 @@ export function AdSlot({
   useEffect(() => {
     if (!isAdsEnabled() || !slot || pushed.current) return;
     try {
-      ((window as Record<string, unknown>).adsbygoogle as unknown[] || []).push({});
+      ((window as unknown as Record<string, unknown>).adsbygoogle as unknown[] || []).push({});
       pushed.current = true;
     } catch {
       /* AdSense script not loaded yet or blocked — silent fail. */
