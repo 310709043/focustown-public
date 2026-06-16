@@ -83,14 +83,17 @@ export function BroadcastClipPlayer({
       muted
       autoPlay
       playsInline
+      loop={BROADCAST_CLIP_IDS.length === 1}
       preload="metadata"
       controlsList="nodownload noremoteplayback"
       disablePictureInPicture
       disableRemotePlayback
       onContextMenu={(e) => e.preventDefault()}
-      onEnded={() =>
-        setIndex((i) => (i + 1) % BROADCAST_CLIP_IDS.length)
-      }
+      onEnded={() => {
+        if (BROADCAST_CLIP_IDS.length > 1) {
+          setIndex((i) => (i + 1) % BROADCAST_CLIP_IDS.length);
+        }
+      }}
       onError={() => {
         const clipId =
           BROADCAST_CLIP_IDS[index] ?? BROADCAST_CLIP_IDS[0];
