@@ -19,7 +19,7 @@
       "APP_ENV": "staging",
       "APP_DEBUG": "false",
       "APP_SECRET_KEY": "${APP_SECRET_KEY}",
-      "APP_CORS_ORIGINS": "https://${PUBLIC_HOST},https://www.lowbatterytown.com",
+      "APP_CORS_ORIGINS": "https://${PUBLIC_HOST},https://www.lowbatterytown.com,https://focustown-admin.vercel.app",
       "APP_TRUSTED_PROXIES": "127.0.0.1,172.16.0.0/12",
       "DATABASE_URL": "${DATABASE_URL}",
       "REDIS_URL": "redis://lowbatterytown-dev.service.local:6379/0",
