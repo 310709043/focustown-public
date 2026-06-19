@@ -98,6 +98,8 @@ function SceneLayer({
       <img
         src={spec.cityPng}
         alt=""
+        width={576}
+        height={324}
         className="scene-backdrop-city"
       />
       {spec.skyOverlay ? (
@@ -105,6 +107,8 @@ function SceneLayer({
         <img
           src={spec.skyOverlay.src}
           alt=""
+          width={576}
+          height={324}
           className="scene-backdrop-sky"
           style={{ opacity: spec.skyOverlay.opacity }}
         />

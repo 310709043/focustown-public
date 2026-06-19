@@ -202,9 +202,14 @@ async def test_deliver_reply_sends_greeting_on_first_message() -> None:
     assert messages.messages[0]["kind"] == "text"
     assert messages.messages[0]["metadata"] == {"is_bot_reply": True}
 
-    assert len(publisher.published) == 1
-    assert publisher.published[0][1]["type"] == "chat.message"
-    assert publisher.published[0][1]["sender_id"] == bot.id
+    # typing start + message + typing stop
+    assert len(publisher.published) == 3
+    assert publisher.published[0][1]["type"] == "chat.typing"
+    assert publisher.published[0][1]["is_typing"] is True
+    assert publisher.published[1][1]["type"] == "chat.message"
+    assert publisher.published[1][1]["sender_id"] == bot.id
+    assert publisher.published[2][1]["type"] == "chat.typing"
+    assert publisher.published[2][1]["is_typing"] is False
 
 
 @pytest.mark.asyncio

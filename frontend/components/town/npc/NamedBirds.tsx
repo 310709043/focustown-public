@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { PngAnimatedSprite } from "@/components/pixel/PngAnimatedSprite";
 import { PNG_BIRDS } from "@/lib/pixel/sprites/birdsPng";
@@ -9,6 +9,8 @@ import { PNG_BIRDS } from "@/lib/pixel/sprites/birdsPng";
  * Decorative ground-walking bird — silent scenery without a head label.
  * One rooster gives the city a low-frequency animal pulse without
  * imitating a player. See plan 1-city-2-ancient-hippo.md.
+ *
+ * Performance: ref-based DOM mutation, not React state.
  */
 
 type BirdNPC = {
@@ -30,19 +32,23 @@ const RENDER_SCALE: Record<"chick" | "rooster", number> = {
 };
 
 export function NamedBirds() {
-  const [pos, setPos] = useState<number[]>(() => NPCS.map((n) => n.startX));
+  const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const posRef = useRef<number[]>(NPCS.map((n) => n.startX));
 
   useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
     let raf = 0;
     const tick = () => {
-      setPos((ps) =>
-        ps.map((p, i) => {
-          let np = p + NPCS[i].speed * NPCS[i].dir;
-          if (np > 105) np = -4;
-          if (np < -6) np = 105;
-          return np;
-        }),
-      );
+      for (let i = 0; i < NPCS.length; i++) {
+        let np = posRef.current[i] + NPCS[i].speed * NPCS[i].dir;
+        if (np > 105) np = -4;
+        if (np < -6) np = 105;
+        posRef.current[i] = np;
+        const el = containerRefs.current[i];
+        if (el) el.style.left = `${np}%`;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -56,10 +62,11 @@ export function NamedBirds() {
         return (
           <div
             key={n.key}
+            ref={(el) => { containerRefs.current[i] = el; }}
             data-testid="named-bird"
             style={{
               position: "absolute",
-              left: `${pos[i]}%`,
+              left: `${n.startX}%`,
               bottom: n.bottom,
               zIndex: 5,
               display: "flex",

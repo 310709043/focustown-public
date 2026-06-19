@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useSceneStore } from "@/lib/state/sceneStore";
 import type { SceneName } from "@/lib/state/sceneStore";
@@ -27,6 +27,9 @@ import type { SceneName } from "@/lib/state/sceneStore";
  *
  * Per-cloud spec is deterministic (fixed seed table) so SSR + CSR markup
  * matches without `useId` overhead.
+ *
+ * Performance: ref-based DOM mutation for cloud drift, not React state.
+ * Each frame mutates `style.left` directly to avoid re-renders.
  */
 
 type CloudSpec = {
@@ -106,11 +109,13 @@ export function Clouds() {
   const opacity = OPACITY_BY_SCENE[scene];
   const activeClouds = CLOUD_POOL.slice(0, density);
 
-  const [pos, setPos] = useState<number[]>(() => START_XS.slice(0, density));
+  const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const posRef = useRef<number[]>(START_XS.slice(0, density));
   const [width, setWidth] = useState(0);
 
+  // Reset positions when density changes (scene change).
   useEffect(() => {
-    setPos(START_XS.slice(0, density));
+    posRef.current = START_XS.slice(0, density);
   }, [density]);
 
   useEffect(() => {
@@ -123,14 +128,18 @@ export function Clouds() {
 
   useEffect(() => {
     if (width === 0) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
     let raf = 0;
     const tick = () => {
-      setPos((ps) =>
-        ps.map((p, i) => {
-          const np = p + activeClouds[i].speed;
-          return np > width + 200 ? -200 : np;
-        }),
-      );
+      for (let i = 0; i < activeClouds.length; i++) {
+        let np = posRef.current[i] + activeClouds[i].speed;
+        if (np > width + 200) np = -200;
+        posRef.current[i] = np;
+        const el = imgRefs.current[i];
+        if (el) el.style.left = `${np}px`;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -155,11 +164,14 @@ export function Clouds() {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           key={c.id}
+          ref={(el) => { imgRefs.current[i] = el; }}
           src={spriteUrl(palette, c.shape, c.size)}
           alt=""
+          width={220}
+          height={110}
           style={{
             position: "absolute",
-            left: pos[i],
+            left: posRef.current[i],
             top: c.y,
             imageRendering: "pixelated",
           }}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { PngAnimatedSprite } from "@/components/pixel/PngAnimatedSprite";
 import {
@@ -16,6 +16,8 @@ import {
  * Coexists with `<CarsLane>` (presence-driven, labelled) — that overlay
  * renders one car per online citizen with a vehicle and uses a different
  * sprite source. See plan 1-city-2-ancient-hippo.md.
+ *
+ * Performance: ref-based DOM mutation, not React state.
  */
 
 type CarNPC = {
@@ -31,19 +33,23 @@ const NPCS: readonly CarNPC[] = [
 ];
 
 export function NamedCars() {
-  const [pos, setPos] = useState<number[]>(() => NPCS.map((n) => n.startX));
+  const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const posRef = useRef<number[]>(NPCS.map((n) => n.startX));
 
   useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
     let raf = 0;
     const tick = () => {
-      setPos((ps) =>
-        ps.map((p, i) => {
-          let np = p + NPCS[i].speed * NPCS[i].dir;
-          if (np > 115) np = -10;
-          if (np < -10) np = 115;
-          return np;
-        }),
-      );
+      for (let i = 0; i < NPCS.length; i++) {
+        let np = posRef.current[i] + NPCS[i].speed * NPCS[i].dir;
+        if (np > 115) np = -10;
+        if (np < -10) np = 115;
+        posRef.current[i] = np;
+        const el = containerRefs.current[i];
+        if (el) el.style.left = `${np}%`;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -57,11 +63,12 @@ export function NamedCars() {
         return (
           <div
             key={n.key}
+            ref={(el) => { containerRefs.current[i] = el; }}
             data-testid="named-car"
             className="ground-anchor"
             style={{
               position: "absolute",
-              left: `${pos[i]}%`,
+              left: `${n.startX}%`,
               // Asphalt portion of the Road band (matches <CarsLane>).
               // Road: bottom 168..288, asphalt = bottom 90 px @ 168..258.
               // City-Mode immersive: shifts with the ground stack.

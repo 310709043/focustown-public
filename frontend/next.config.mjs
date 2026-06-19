@@ -29,6 +29,15 @@ const staticSecurityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  images: {
+    // Serve modern formats (avif, webp) for browsers that support them.
+    // Pixel art sprites intentionally bypass next/image to avoid
+    // re-encoding; this config only affects <Image> usage (logos).
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+  },
   experimental: {
     typedRoutes: true,
   },

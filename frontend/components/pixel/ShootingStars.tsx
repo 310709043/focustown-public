@@ -66,10 +66,14 @@ export function ShootingStars({
       });
     };
 
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const tick = (t: number) => {
       const w = canvas.width;
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
+
+      // Under reduced motion, draw nothing (skip animation).
+      if (reduce) return;
 
       if (t - last > minSpawnMs + Math.random() * (maxSpawnMs - minSpawnMs)) {
         spawn();

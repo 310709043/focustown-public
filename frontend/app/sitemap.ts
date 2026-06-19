@@ -8,8 +8,10 @@ const locales = ["zh-TW", "en"] as const;
 const pages = [
   { path: "", priority: 1.0, changeFrequency: "weekly" as const },
   { path: "/town", priority: 0.9, changeFrequency: "daily" as const },
+  { path: "/awards", priority: 0.7, changeFrequency: "daily" as const },
   { path: "/legal/terms", priority: 0.3, changeFrequency: "monthly" as const },
   { path: "/legal/privacy", priority: 0.3, changeFrequency: "monthly" as const },
+  { path: "/legal/refund", priority: 0.3, changeFrequency: "monthly" as const },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

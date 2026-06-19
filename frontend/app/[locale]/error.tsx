@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
+import * as Sentry from "@sentry/nextjs";
 
 import { Link } from "@/i18n/routing";
 
@@ -16,6 +17,7 @@ export default function LocaleError({
 
   useEffect(() => {
     console.error("[locale-error]", error.digest ?? "<no-digest>");
+    Sentry.captureException(error);
   }, [error]);
 
   return (

@@ -5,12 +5,14 @@ import { useTranslations } from "next-intl";
 
 import { ApiError } from "@/lib/api/client";
 import { matchChatApi, type MatchChatMessage } from "@/lib/api/endpoints";
+import { PixelSprite } from "@/components/pixel/PixelSprite";
 import { useAuthStore } from "@/lib/state/authStore";
 import { pushErrorToast } from "@/lib/state/toastStore";
 import { useRealtime } from "@/lib/ws/useRealtime";
 import type { AvatarDef } from "@/lib/pixel/sprites/avatars";
 
 import { MessageView, type ChatMessage } from "./Message";
+import { TypingDots } from "./TypingDots";
 
 interface ChatStreamProps {
   matchId: string;
@@ -69,6 +71,7 @@ export function ChatStream({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [type, setType] = useState<"chat" | "note">("chat");
+  const [typingBuddy, setTypingBuddy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const reload = useCallback(async () => {
@@ -94,18 +97,30 @@ export function ChatStream({
       match_id?: string;
       id?: string;
       sender_id?: string;
+      user_id?: string;
+      is_typing?: boolean;
       kind?: MatchChatMessage["kind"];
       body?: string;
       metadata?: Record<string, unknown> | null;
       created_at?: string;
     };
+    if (payload?.match_id !== matchId) return;
+
+    if (payload.type === "chat.typing" && payload.user_id !== meId) {
+      setTypingBuddy(!!payload.is_typing);
+      return;
+    }
+
     if (
       payload?.type !== "chat.message" ||
-      payload.match_id !== matchId ||
       !payload.id ||
       !payload.body
     ) {
       return;
+    }
+    // Clear typing indicator when the buddy sends a real message.
+    if (payload.sender_id !== meId) {
+      setTypingBuddy(false);
     }
     const incoming: MatchChatMessage = {
       id: payload.id,
@@ -190,6 +205,32 @@ export function ChatStream({
             noteLabel={t("noteLabel")}
           />
         ))}
+        {typingBuddy && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              paddingLeft: 4,
+            }}
+          >
+            <PixelSprite
+              sprite={buddyAvatar.sprite}
+              palette={buddyAvatar.palette}
+              scale={1.6}
+            />
+            <div
+              style={{
+                padding: "8px 12px",
+                background: "rgba(12, 16, 32, 0.5)",
+                border: "1px solid var(--accent-2)30",
+                borderRadius: "var(--r)",
+              }}
+            >
+              <TypingDots />
+            </div>
+          </div>
+        )}
       </div>
       <div
         style={{
@@ -228,6 +269,7 @@ export function ChatStream({
             className="pixel-input"
             placeholder={t("typeMsg")}
             value={input}
+            maxLength={2000}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {

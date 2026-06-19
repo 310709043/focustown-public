@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import random
+from collections.abc import AsyncIterator
 from datetime import timedelta
 
 from fastapi import APIRouter, Query
@@ -34,7 +35,7 @@ from app.api.v1.admin.schemas import (
     FeedbackStatusUpdate,
     OverviewStats,
 )
-from app.core.deps import AdminUserId, ClockDep, DbDep, IdGenDep
+from app.core.deps import AdminUserId, ClockDep, DbDep, IdGenDep, SettingsDep
 from app.core.exceptions import NotFoundError
 from app.infrastructure.db.models.announcement import AnnouncementORM
 from app.infrastructure.db.models.feedback import FeedbackSubmissionORM
@@ -711,33 +712,56 @@ async def delete_announcement(
 # ── Data Export ──────────────────────────────────────────────────────────
 
 
+async def _stream_users_csv(db) -> AsyncIterator[bytes]:  # type: ignore[no-untyped-def]
+    header_buf = io.StringIO()
+    csv.writer(header_buf).writerow([
+        "id", "email", "display_name", "character_key", "is_active", "created_at",
+    ])
+    yield header_buf.getvalue().encode()
+
+    stmt = select(UserORM).order_by(UserORM.created_at.desc())
+    result = await db.stream(stmt)
+    async for row in result.scalars():
+        buf = io.StringIO()
+        csv.writer(buf).writerow([
+            row.id, row.email, row.display_name, row.character_key,
+            row.is_active, row.created_at.isoformat(),
+        ])
+        yield buf.getvalue().encode()
+
+
 @router.get("/export/users")
 async def export_users_csv(
     _admin: AdminUserId,
     db: DbDep,
 ) -> StreamingResponse:
-    """Export all users as CSV."""
-    rows = (
-        (await db.execute(select(UserORM).order_by(UserORM.created_at.desc())))
-        .scalars()
-        .all()
-    )
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow([
-        "id", "email", "display_name", "character_key", "is_active", "created_at",
-    ])
-    for u in rows:
-        writer.writerow([
-            u.id, u.email, u.display_name, u.character_key,
-            u.is_active, u.created_at.isoformat(),
-        ])
-    buf.seek(0)
+    """Export all users as CSV (streamed)."""
     return StreamingResponse(
-        buf,
+        _stream_users_csv(db),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=users.csv"},
     )
+
+
+async def _stream_sessions_csv(db) -> AsyncIterator[bytes]:  # type: ignore[no-untyped-def]
+    header_buf = io.StringIO()
+    csv.writer(header_buf).writerow([
+        "id", "user_id", "mode", "duration_seconds", "elapsed_seconds",
+        "status", "task_label", "started_at", "ended_at",
+    ])
+    yield header_buf.getvalue().encode()
+
+    stmt = select(FocusSessionORM).order_by(FocusSessionORM.started_at.desc())
+    result = await db.stream(stmt)
+    async for row in result.scalars():
+        buf = io.StringIO()
+        csv.writer(buf).writerow([
+            row.id, row.user_id, row.mode, row.duration_seconds,
+            row.elapsed_seconds, row.status, row.task_label,
+            row.started_at.isoformat() if row.started_at else "",
+            row.ended_at.isoformat() if row.ended_at else "",
+        ])
+        yield buf.getvalue().encode()
 
 
 @router.get("/export/sessions")
@@ -745,28 +769,9 @@ async def export_sessions_csv(
     _admin: AdminUserId,
     db: DbDep,
 ) -> StreamingResponse:
-    """Export all focus sessions as CSV."""
-    rows = (
-        (await db.execute(select(FocusSessionORM).order_by(FocusSessionORM.started_at.desc())))
-        .scalars()
-        .all()
-    )
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow([
-        "id", "user_id", "mode", "duration_seconds", "elapsed_seconds",
-        "status", "task_label", "started_at", "ended_at",
-    ])
-    for s in rows:
-        writer.writerow([
-            s.id, s.user_id, s.mode, s.duration_seconds,
-            s.elapsed_seconds, s.status, s.task_label,
-            s.started_at.isoformat() if s.started_at else "",
-            s.ended_at.isoformat() if s.ended_at else "",
-        ])
-    buf.seek(0)
+    """Export all focus sessions as CSV (streamed)."""
     return StreamingResponse(
-        buf,
+        _stream_sessions_csv(db),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=sessions.csv"},
     )
@@ -789,8 +794,15 @@ async def seed_leaderboard(
     db: DbDep,
     clock: ClockDep,
     ids: IdGenDep,
+    settings: SettingsDep,
 ):
-    """Temporary: seed today's focus sessions for leaderboard testing."""
+    """Temporary: seed today's focus sessions for leaderboard testing.
+
+    Only available in non-production environments.
+    """
+    if settings.app_env == "production":
+        from app.core.exceptions import NotFoundError
+        raise NotFoundError("not_found")
     now = clock.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     created = 0

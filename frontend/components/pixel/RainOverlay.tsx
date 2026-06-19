@@ -58,6 +58,24 @@ export function RainOverlay({
       }
     };
 
+    // Under reduced motion, draw rain once statically and skip the rAF loop.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    seed();
+    if (reduce) {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = color;
+      for (const d of drops) {
+        ctx.globalAlpha = 0.35;
+        for (let k = 0; k < d.len; k++) {
+          ctx.fillRect(d.x + k * 0.3, d.y - k, 1, 1);
+        }
+      }
+      ctx.globalAlpha = 1;
+      return;
+    }
+
     const tick = () => {
       const w = canvas.width;
       const h = canvas.height;

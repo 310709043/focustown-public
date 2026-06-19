@@ -50,6 +50,8 @@ export function CityBackground() {
           key={`${mode}-${layer}`}
           src={`/assets/v6/city/${mode}/${layer}.png`}
           alt=""
+          width={576}
+          height={324}
           className="absolute inset-0 w-full h-full"
           style={{
             objectFit: "cover",

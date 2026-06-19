@@ -16,8 +16,11 @@ from app.core.deps import (
     CurrentUserId,
     DbDep,
     IdGenDep,
+    RateLimiterDep,
     RealtimePublisherDep,
+    SettingsDep,
 )
+from app.core.exceptions import RateLimitedError
 from app.domain.repositories.shop_repo import ShopItemRecord
 from app.domain.services.purchase_service import PurchaseService
 from app.domain.services.wallet_service import WalletService
@@ -102,7 +105,16 @@ async def purchase_item(
     clock: ClockDep,
     ids: IdGenDep,
     publisher: RealtimePublisherDep,
+    limiter: RateLimiterDep,
+    settings: SettingsDep,
 ) -> PurchaseResponse:
+    decision = await limiter.hit(
+        f"shop:purchase:{user_id}",
+        limit=settings.shop_rl_purchase_per_user_per_min,
+        window_seconds=60,
+    )
+    if not decision.allowed:
+        raise RateLimitedError("rate_limited")
     wallet_service = WalletService(
         wallets=SqlWalletRepo(db),
         transactions=SqlWalletTransactionRepo(db),

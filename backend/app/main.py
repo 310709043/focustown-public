@@ -26,7 +26,11 @@ from app.core.exceptions import (
 )
 from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
-from app.core.middleware import RequestIDMiddleware, SecurityHeadersMiddleware
+from app.core.middleware import (
+    GlobalRateLimitMiddleware,
+    RequestIDMiddleware,
+    SecurityHeadersMiddleware,
+)
 from app.domain.services.coin_award_service import (
     CoinAwardService,
     _WalletServiceAcquired,
@@ -56,9 +60,29 @@ from app.infrastructure.db.session import (
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.presence.bot_seeder import refresh_bot_presence
 from app.infrastructure.presence.redis_tracker import RedisPresenceTracker
+from app.infrastructure.rate_limit.redis_limiter import RedisRateLimiter
 from app.infrastructure.storage.factory import make_storage
 
 log = get_logger(__name__)
+
+# Sentry — initialised early so all subsequent exceptions are captured.
+# Gracefully degrades if sentry-sdk is not installed (dev without deps).
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.logging import LoggingIntegration
+
+    sentry_logging = LoggingIntegration(level=None, event_level=None)
+    sentry_sdk.init(
+        dsn=get_settings().sentry_dsn,
+        environment=get_settings().app_env,
+        integrations=[sentry_logging],
+        traces_sample_rate=0.1 if get_settings().app_env == "production" else 1.0,
+        send_default_pii=False,
+    )
+except ImportError:
+    pass
+except Exception:
+    log.warning("sentry_init_failed", exc_info=True)
 
 # Module-level constant so the lifespan hook below stays free of pathlib
 # calls (ruff ASYNC240 forbids them inside async functions). The
@@ -287,6 +311,11 @@ def create_app() -> FastAPI:
     app.add_middleware(
         SecurityHeadersMiddleware,
         enable_hsts=settings.app_env == "production",
+    )
+    app.add_middleware(
+        GlobalRateLimitMiddleware,
+        limiter=RedisRateLimiter(get_redis()),
+        settings=settings,
     )
     # Added last so it runs outermost — request_id is bound before any other
     # middleware emits a log line and cleared after they finish.

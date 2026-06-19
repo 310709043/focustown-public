@@ -128,6 +128,43 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      {/* JSON-LD structured data for SEO rich results */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Low Battery Town",
+            alternateName: "低電量小鎮",
+            url: siteUrl,
+            description:
+              "A cinematic pixel-art focus & social study platform with pomodoro timer, live leaderboards, and partner matching.",
+            inLanguage: ["zh-TW", "en"],
+            potentialAction: {
+              "@type": "SearchAction",
+              target: `${siteUrl}/{locale}/town`,
+              "query-input": "required name=search",
+            },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Low Battery Town",
+            alternateName: "低電量小鎮",
+            url: siteUrl,
+            logo: `${siteUrl}/logo.png`,
+            sameAs: [],
+            description:
+              "A cinematic pixel-art focus & social study platform.",
+          }),
+        }}
+      />
       <div className="grain-overlay" aria-hidden />
       <div className="vignette-overlay" aria-hidden />
       <div className="crt-overlay" aria-hidden />

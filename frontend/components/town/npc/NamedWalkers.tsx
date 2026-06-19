@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { PngAnimatedSprite } from "@/components/pixel/PngAnimatedSprite";
 import { PNG_WALKERS, WALKER_SCALE_DEFAULT } from "@/lib/pixel/sprites/walkersPng";
@@ -15,6 +15,9 @@ import { PNG_WALKERS, WALKER_SCALE_DEFAULT } from "@/lib/pixel/sprites/walkersPn
  * Coexists with `<Pedestrians>` (presence-driven). Real users render on
  * top via DOM order so the player feels foregrounded among the town's
  * residents rather than competing for space with them.
+ *
+ * Performance: uses ref-based DOM mutation (not React state) to avoid
+ * re-renders at 60fps. Each frame mutates `style.left` directly.
  */
 
 type WalkerNPC = {
@@ -34,19 +37,23 @@ const NPCS: readonly WalkerNPC[] = [
 ];
 
 export function NamedWalkers() {
-  const [pos, setPos] = useState<number[]>(() => NPCS.map((n) => n.startX));
+  const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const posRef = useRef<number[]>(NPCS.map((n) => n.startX));
 
   useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
     let raf = 0;
     const tick = () => {
-      setPos((ps) =>
-        ps.map((p, i) => {
-          let np = p + NPCS[i].speed * NPCS[i].dir;
-          if (np > 102) np = -4;
-          if (np < -6) np = 102;
-          return np;
-        }),
-      );
+      for (let i = 0; i < NPCS.length; i++) {
+        let np = posRef.current[i] + NPCS[i].speed * NPCS[i].dir;
+        if (np > 102) np = -4;
+        if (np < -6) np = 102;
+        posRef.current[i] = np;
+        const el = containerRefs.current[i];
+        if (el) el.style.left = `${np}%`;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -61,11 +68,12 @@ export function NamedWalkers() {
         return (
           <div
             key={n.key}
+            ref={(el) => { containerRefs.current[i] = el; }}
             data-testid="named-walker"
             className="ground-anchor"
             style={{
               position: "absolute",
-              left: `${pos[i]}%`,
+              left: `${n.startX}%`,
               // Sidewalk strip of the Road band (matches <Pedestrians>).
               // Road: bottom 168..288, sidewalk = top 30 px @ 258..288.
               // City-Mode immersive: shifts with the ground stack.

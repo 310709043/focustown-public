@@ -62,11 +62,26 @@ const Dogs = dynamic(
   { ssr: false },
 );
 
-import { MatchModal } from "@/components/modals/MatchModal";
-import { ShopModal } from "@/components/modals/ShopModal";
-import { AchievementsModal } from "@/components/modals/AchievementsModal";
-import { FriendsModal } from "@/components/modals/FriendsModal";
-import { ProfileModal } from "@/components/modals/ProfileModal";
+const MatchModal = dynamic(
+  () => import("@/components/modals/MatchModal").then((m) => ({ default: m.MatchModal })),
+  { ssr: false },
+);
+const ShopModal = dynamic(
+  () => import("@/components/modals/ShopModal").then((m) => ({ default: m.ShopModal })),
+  { ssr: false },
+);
+const AchievementsModal = dynamic(
+  () => import("@/components/modals/AchievementsModal").then((m) => ({ default: m.AchievementsModal })),
+  { ssr: false },
+);
+const FriendsModal = dynamic(
+  () => import("@/components/modals/FriendsModal").then((m) => ({ default: m.FriendsModal })),
+  { ssr: false },
+);
+const ProfileModal = dynamic(
+  () => import("@/components/modals/ProfileModal").then((m) => ({ default: m.ProfileModal })),
+  { ssr: false },
+);
 import { UnmuteHint } from "@/components/audio/UnmuteHint";
 import { BottomHUD } from "@/components/town/bottom/BottomHUD";
 import { EdgeRevealSentinel } from "@/components/town/focus/EdgeRevealSentinel";
@@ -144,7 +159,7 @@ export default function TownPage() {
         const users = await presenceApi.listStreet(STREET_CAP);
         if (!cancelled) usePresenceStore.getState().hydrate(users);
       } catch {
-        /* surfaced as empty street; next tick will retry */
+        /* next tick will retry; presence store keeps last-known state */
       }
     };
     void fetchSnapshot();

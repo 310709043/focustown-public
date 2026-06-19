@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     ses_from_email: str = ""
     ses_endpoint_url: str = ""
 
+    # Sentry error tracking. Empty string = disabled (graceful degrade).
+    sentry_dsn: str = ""
+
     # Feedback admin pipeline. ``admin_feedback_email`` is the recipient
     # of the real-time SES notification fired on every /feedback submit;
     # leave empty to disable the email side. ``admin_user_ids`` is the
@@ -135,6 +138,16 @@ class Settings(BaseSettings):
     # refresh token could be replayed at line rate. 60/hr per IP comfortably
     # covers a tab-heavy user (refresh interval ~25 min, ~3 tabs).
     auth_rl_refresh_per_ip_per_hour: int = 60
+
+    # Rate limits for wallet mutation endpoints (per user, per minute).
+    shop_rl_purchase_per_user_per_min: int = 10
+    wallet_rl_redeem_per_user_per_min: int = 5
+    wallet_rl_gift_per_user_per_min: int = 5
+
+    # Global rate limit (per IP, per minute) — defence-in-depth against
+    # scrapers and abuse. Applied via GlobalRateLimitMiddleware to all /api/*
+    # paths. Individual endpoints may have tighter per-user limits on top.
+    global_rl_per_ip_per_min: int = 120
 
     # WebSocket + expensive-read rate limits. Per-IP windows guard against
     # connection-spam (auth probing pre-JWT-decode) and scraping.

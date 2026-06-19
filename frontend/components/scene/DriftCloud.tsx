@@ -57,6 +57,8 @@ export function DriftCloud({ spec }: { spec: CloudSpec }) {
         src={spec.src}
         alt=""
         aria-hidden
+        width={SPRITE_W}
+        height={110}
         className="scene-cloud-sprite"
         style={{ animationDelay: `${spec.breathDelaySec}s` }}
         loading="eager"

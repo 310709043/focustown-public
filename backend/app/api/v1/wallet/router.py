@@ -19,8 +19,11 @@ from app.core.deps import (
     CurrentUserId,
     DbDep,
     IdGenDep,
+    RateLimiterDep,
     RealtimePublisherDep,
+    SettingsDep,
 )
+from app.core.exceptions import RateLimitedError
 from app.domain.services.gift_service import GiftService
 from app.domain.services.redemption_service import RedemptionService
 from app.domain.services.wallet_service import WalletService
@@ -136,7 +139,16 @@ async def redeem_code(
     ids: IdGenDep,
     clock: ClockDep,
     publisher: RealtimePublisherDep,
+    limiter: RateLimiterDep,
+    settings: SettingsDep,
 ) -> RedeemCodeResponse:
+    decision = await limiter.hit(
+        f"wallet:redeem:{user_id}",
+        limit=settings.wallet_rl_redeem_per_user_per_min,
+        window_seconds=60,
+    )
+    if not decision.allowed:
+        raise RateLimitedError("rate_limited")
     wallets = _wallet_service(db, publisher, ids, clock)
     svc = RedemptionService(
         codes=SqlRedemptionCodeRepo(db),
@@ -161,8 +173,17 @@ async def gift(
     ids: IdGenDep,
     clock: ClockDep,
     publisher: RealtimePublisherDep,
+    limiter: RateLimiterDep,
+    settings: SettingsDep,
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key", max_length=128),
 ) -> GiftResponse:
+    decision = await limiter.hit(
+        f"wallet:gift:{user_id}",
+        limit=settings.wallet_rl_gift_per_user_per_min,
+        window_seconds=60,
+    )
+    if not decision.allowed:
+        raise RateLimitedError("rate_limited")
     wallets = _wallet_service(db, publisher, ids, clock)
     svc = GiftService(
         wallets=wallets,

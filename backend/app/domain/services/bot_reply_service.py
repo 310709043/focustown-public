@@ -211,6 +211,18 @@ class BotReplyService:
         user_message: str,
         message_count: int,
     ) -> None:
+        # Show typing indicator while "thinking".
+        if self._pub is not None:
+            await self._pub.publish(
+                IRealtimePublisher.room_channel(match_id),
+                {
+                    "type": "chat.typing",
+                    "match_id": match_id,
+                    "user_id": bot_id,
+                    "is_typing": True,
+                },
+            )
+
         delay = random.uniform(1.0, 3.0)  # noqa: S311
         await asyncio.sleep(delay)
 
@@ -259,3 +271,15 @@ class BotReplyService:
                 bot_id=bot_id,
                 match_id=match_id,
             )
+        finally:
+            # Always clear typing indicator, even on failure.
+            if self._pub is not None:
+                await self._pub.publish(
+                    IRealtimePublisher.room_channel(match_id),
+                    {
+                        "type": "chat.typing",
+                        "match_id": match_id,
+                        "user_id": bot_id,
+                        "is_typing": False,
+                    },
+                )

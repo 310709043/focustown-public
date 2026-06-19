@@ -79,6 +79,19 @@ class IAuthSessionWriter(Protocol):
         """
         ...
 
+    async def revoke_all_refresh_tokens(self, user_id: str) -> None:
+        """Invalidate all outstanding refresh tokens for a user.
+
+        Called on sign-in, sign-up, and password reset to ensure that
+        previously issued refresh tokens (e.g. from a stolen token) can
+        no longer be used. Local impl stores a timestamp in Redis; tokens
+        issued before that timestamp are rejected on next refresh.
+
+        Cognito impl is a no-op since Cognito manages its own token
+        lifecycle.
+        """
+        ...
+
 
 class AuthProvider(IAccessTokenVerifier, IAuthSessionWriter, Protocol):
     """Composed port for callers that need both sides (LocalJWTProvider,

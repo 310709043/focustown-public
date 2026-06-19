@@ -828,6 +828,10 @@ body {
    scene wrapper in town/page.tsx). It must be declared via @property
    so transitioning a CSS variable that participates in calc() actually
    animates the resulting <length> rather than snapping at 50%.
+
+   Firefox does not support @property (behind flag as of 2025). The
+   variable still works but the transition snaps instead of animating.
+   Acceptable degradation for a decorative scene animation.
    ────────────────────────────────────────────────────────────────── */
 @property --ground-shift {
   syntax: "<length>";

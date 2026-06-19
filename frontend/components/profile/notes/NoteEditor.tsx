@@ -42,6 +42,7 @@ export function NoteEditor({ initial, onSave, onCancel }: NoteEditorProps) {
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder={t("bodyPlaceholder")}
+        maxLength={10000}
         rows={4}
         className="pixel-input"
         style={{

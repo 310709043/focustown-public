@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 function getLang(): string {
   if (typeof navigator === "undefined") return "en";
@@ -29,6 +30,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error("[global-error]", error.digest ?? "<no-digest>");
+    Sentry.captureException(error);
   }, [error]);
 
   const lang = getLang();

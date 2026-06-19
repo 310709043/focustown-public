@@ -68,6 +68,20 @@ export function StarField({
       }
     };
 
+    // Under reduced motion, draw stars once statically and skip the rAF loop.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    seed();
+    if (reduce) {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      for (const s of stars) {
+        ctx.fillStyle = s.col;
+        ctx.fillRect(s.x, s.y, 1, 1);
+      }
+      return;
+    }
+
     // Throttle to 30fps. Twinkle is a slow `sin(t/700)` — there's no
     // perceptible quality loss vs 60fps, but we halve canvas work.
     const FRAME_MS = 1000 / 30;

@@ -139,6 +139,9 @@ class AuthService:
             user_id=user.id,
             credentials=AuthCredentials(email=email, password=password),
         )
+        # Invalidate any previously issued refresh tokens (e.g. from a
+        # stolen token) so only the freshly issued pair is valid.
+        await self._auth.revoke_all_refresh_tokens(user.id)
         return AuthOutcome(user=user, tokens=tokens)
 
     async def sign_in(
@@ -166,6 +169,8 @@ class AuthService:
             user_id=user.id,
             credentials=AuthCredentials(email=user.email, password=password),
         )
+        # Invalidate any previously issued refresh tokens.
+        await self._auth.revoke_all_refresh_tokens(user.id)
         return AuthOutcome(user=user, tokens=tokens)
 
     async def get_me_with_vehicle(

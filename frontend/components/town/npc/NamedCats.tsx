@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { AnimatedSprite } from "@/components/pixel/AnimatedSprite";
 import { CAT_WALK } from "@/lib/pixel/sprites/walkers";
@@ -9,6 +9,8 @@ import { CAT_WALK } from "@/lib/pixel/sprites/walkers";
  * Decorative scenery cat — wanders the sidewalk without a head label so
  * it reads as background life, not as a player. One entry only; see plan
  * 1-city-2-ancient-hippo.md for the 5-decorative-NPCs cap rationale.
+ *
+ * Performance: ref-based DOM mutation, not React state.
  */
 
 type CatNPC = {
@@ -23,17 +25,22 @@ const NPCS: readonly CatNPC[] = [
 ];
 
 export function NamedCats() {
-  const [pos, setPos] = useState<number[]>(() => NPCS.map((n) => n.startX));
+  const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const posRef = useRef<number[]>(NPCS.map((n) => n.startX));
 
   useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
     let raf = 0;
     const tick = () => {
-      setPos((ps) =>
-        ps.map((p, i) => {
-          const np = p + NPCS[i].speed;
-          return np > 100 ? np - 100 : np;
-        }),
-      );
+      for (let i = 0; i < NPCS.length; i++) {
+        let np = posRef.current[i] + NPCS[i].speed;
+        if (np > 100) np -= 100;
+        posRef.current[i] = np;
+        const el = containerRefs.current[i];
+        if (el) el.style.left = `${np}%`;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -45,11 +52,12 @@ export function NamedCats() {
       {NPCS.map((n, i) => (
         <div
           key={n.key}
+          ref={(el) => { containerRefs.current[i] = el; }}
           data-testid="named-cat"
           className="ground-anchor"
           style={{
             position: "absolute",
-            left: `${pos[i]}%`,
+            left: `${n.startX}%`,
             // 2026-05-21: aligned with new Road sidewalk strip
             // (Road: bottom 168..288; sidewalk @ 258..288).
             // City-Mode immersive: shifts with the ground stack.

@@ -141,4 +141,7 @@ class PasswordResetService:
             user_id=record.user_id,
             new_password=new_password,
         )
+        # Invalidate all outstanding refresh tokens so a stolen token
+        # can no longer be used after the password change.
+        await self._auth.revoke_all_refresh_tokens(record.user_id)
         await self._tokens.mark_consumed(record.id, at=now)
