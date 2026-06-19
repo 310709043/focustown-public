@@ -106,7 +106,7 @@
       "pauseCta": "Pause",
       "resetCta": "Reset",
       "skipCta": "Skip",
-      "statTodayLabel": "TODAY'S FOCUS",
+      "statTodayLabel": "TOTAL FOCUS",
       "statStreakLabel": "STREAK DAYS",
       "statStreakValue": "{days} d",
       "statRankLabel": "WEEKLY RANK"

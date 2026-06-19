@@ -106,7 +106,7 @@
       "pauseCta": "暫停",
       "resetCta": "重置",
       "skipCta": "跳過",
-      "statTodayLabel": "今日專注",
+      "statTodayLabel": "累計專注",
       "statStreakLabel": "連續天數",
       "statStreakValue": "{days} 天",
       "statRankLabel": "本週排名"

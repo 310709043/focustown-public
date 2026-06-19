@@ -21,6 +21,7 @@ from app.core.deps import (
     IdGenDep,
     RealtimePublisherDep,
 )
+from app.domain.services.bot_reply_service import BotReplyService
 from app.domain.services.match_chat_service import (
     MatchAgendaService,
     MatchChatService,
@@ -29,6 +30,7 @@ from app.infrastructure.db.repositories import (
     SqlMatchAgendaRepo,
     SqlMatchMessageRepo,
     SqlMatchRepo,
+    SqlUserRepo,
 )
 
 router = APIRouter()
@@ -105,6 +107,30 @@ async def send_message(
         body=payload.body,
         metadata=payload.metadata,
     )
+
+    # Bot auto-reply: if the match partner is a bot, schedule a reply.
+    if payload.kind == "text":
+        bot_svc = BotReplyService(
+            users=SqlUserRepo(db),
+            matches=SqlMatchRepo(db),
+            messages=SqlMatchMessageRepo(db),
+            publisher=publisher,
+            ids=ids,
+            clock=clock,
+        )
+        bot_id = await bot_svc.get_bot_partner(match_id, user_id)
+        if bot_id is not None:
+            # Count existing messages to decide greeting vs mid-chat
+            existing = await svc.list_messages(
+                viewer_id=user_id, match_id=match_id, limit=100
+            )
+            bot_svc.schedule_reply(
+                match_id=match_id,
+                bot_id=bot_id,
+                user_message=payload.body,
+                message_count=len(existing),
+            )
+
     return ChatMessageDTO(**row.__dict__)
 
 
