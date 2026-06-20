@@ -56,19 +56,25 @@ jobs:
           echo "APP_SECRET_KEY=$APP_SECRET_KEY" >> .env
           echo "DATABASE_URL=$DATABASE_URL" >> .env
           echo "REDIS_URL=$REDIS_URL" >> .env
-          docker compose up --build -d
-          # Wait for backend /ready (deep — DB + Redis round-trip).
+          # Phase 1: start infra (postgres + redis) first so we can run
+          # migrations before the backend / worker try to query DB tables.
+          docker compose up --build -d postgres redis
+          for i in $(seq 1 30); do
+            docker compose exec -T postgres pg_isready -U lowbatterytown && break
+            sleep 2
+          done
+          # Phase 2: run migrations against the now-ready DB.
+          docker compose run --rm backend alembic upgrade head
+          docker compose run --rm backend python /app/scripts/seed-dev-data.py || true
+          # Phase 3: start the rest of the stack; backend /ready will pass
+          # immediately because health_probe table already exists.
+          docker compose up -d
           for i in $(seq 1 60); do
             if curl -fsS http://localhost:8000/ready >/dev/null 2>&1; then
               echo "backend ready"; break
             fi
             sleep 2
           done
-
-      - name: Apply migrations + seed
-        run: |
-          docker compose exec -T backend alembic upgrade head
-          docker compose exec -T backend python /app/scripts/seed-dev-data.py || true
 
       - uses: pnpm/action-setup@v4
         with: { version: 9 }
@@ -145,13 +151,18 @@ jobs:
           echo "APP_SECRET_KEY=$APP_SECRET_KEY" >> .env
           echo "DATABASE_URL=$DATABASE_URL" >> .env
           echo "REDIS_URL=$REDIS_URL" >> .env
-          docker compose up --build -d backend worker postgres redis
+          docker compose up --build -d postgres redis
+          for i in $(seq 1 30); do
+            docker compose exec -T postgres pg_isready -U lowbatterytown && break
+            sleep 2
+          done
+          docker compose run --rm backend alembic upgrade head
+          docker compose run --rm backend python /app/scripts/seed-load-users.py --count 100
+          docker compose up -d backend worker
           for i in $(seq 1 60); do
             curl -fsS http://localhost:8000/ready >/dev/null 2>&1 && break
             sleep 2
           done
-          docker compose exec -T backend alembic upgrade head
-          docker compose exec -T backend python /app/scripts/seed-load-users.py --count 100
 
       - name: Run k6 (smaller cap on CI runners — 50 VUs)
         env:
@@ -191,13 +202,18 @@ jobs:
           echo "APP_SECRET_KEY=$APP_SECRET_KEY" >> .env
           echo "DATABASE_URL=$DATABASE_URL" >> .env
           echo "REDIS_URL=$REDIS_URL" >> .env
-          docker compose up --build -d
+          docker compose up --build -d postgres redis
+          for i in $(seq 1 30); do
+            docker compose exec -T postgres pg_isready -U lowbatterytown && break
+            sleep 2
+          done
+          docker compose run --rm backend alembic upgrade head
+          docker compose run --rm backend python /app/scripts/seed-load-users.py --count 5
+          docker compose up -d
           for i in $(seq 1 60); do
             curl -fsS http://localhost:8000/ready >/dev/null 2>&1 && break
             sleep 2
           done
-          docker compose exec -T backend alembic upgrade head
-          docker compose exec -T backend python /app/scripts/seed-load-users.py --count 5
 
       - name: Redis crash drill
         run: bash tests/chaos/redis_crash.sh

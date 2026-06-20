@@ -72,6 +72,12 @@ services:
       - sh
       - -c
       - "alembic upgrade head && (python /app/scripts/seed-dev-data.py || echo 'seed skipped') && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
 
   worker:
     build:
@@ -86,6 +92,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     volumes:
       - ./backend:/app

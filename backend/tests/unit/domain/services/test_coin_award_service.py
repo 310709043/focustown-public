@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -46,7 +46,7 @@ def test_compute_award_minor_table(duration_seconds: int, expected_minor: int):
     ],
 )
 def test_compute_night_bonus_by_utc_hour(utc_hour: int, expected: int):
-    dt = datetime(2026, 6, 15, utc_hour, 30, 0, tzinfo=timezone.utc)
+    dt = datetime(2026, 6, 15, utc_hour, 30, 0, tzinfo=UTC)
     assert compute_night_bonus(dt) == expected
 
 
@@ -69,33 +69,33 @@ class TestComputeStreakFromDays:
         assert compute_streak_from_days([], date(2026, 6, 15)) == 0
 
     def test_today_only(self):
-        days = [datetime(2026, 6, 15, 10, 0, tzinfo=timezone.utc)]
+        days = [datetime(2026, 6, 15, 10, 0, tzinfo=UTC)]
         assert compute_streak_from_days(days, date(2026, 6, 15)) == 1
 
     def test_three_consecutive(self):
         days = [
-            datetime(2026, 6, 15, 10, 0, tzinfo=timezone.utc),
-            datetime(2026, 6, 14, 8, 0, tzinfo=timezone.utc),
-            datetime(2026, 6, 13, 9, 0, tzinfo=timezone.utc),
+            datetime(2026, 6, 15, 10, 0, tzinfo=UTC),
+            datetime(2026, 6, 14, 8, 0, tzinfo=UTC),
+            datetime(2026, 6, 13, 9, 0, tzinfo=UTC),
         ]
         assert compute_streak_from_days(days, date(2026, 6, 15)) == 3
 
     def test_gap_breaks_streak(self):
         days = [
-            datetime(2026, 6, 15, 10, 0, tzinfo=timezone.utc),
-            datetime(2026, 6, 13, 9, 0, tzinfo=timezone.utc),
+            datetime(2026, 6, 15, 10, 0, tzinfo=UTC),
+            datetime(2026, 6, 13, 9, 0, tzinfo=UTC),
         ]
         assert compute_streak_from_days(days, date(2026, 6, 15)) == 1
 
     def test_grace_yesterday(self):
         days = [
-            datetime(2026, 6, 14, 10, 0, tzinfo=timezone.utc),
-            datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc),
+            datetime(2026, 6, 14, 10, 0, tzinfo=UTC),
+            datetime(2026, 6, 13, 10, 0, tzinfo=UTC),
         ]
         assert compute_streak_from_days(days, date(2026, 6, 15)) == 2
 
     def test_no_grace_if_two_days_ago(self):
-        days = [datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)]
+        days = [datetime(2026, 6, 13, 10, 0, tzinfo=UTC)]
         assert compute_streak_from_days(days, date(2026, 6, 15)) == 0
 
 
@@ -177,7 +177,7 @@ async def test_handler_skips_when_duration_zero():
     # Night bonus is 0 at noon UTC -> total is 0 -> skipped
     await svc._on_session_completed(_event(
         duration=0,
-        ended_at=datetime(2026, 6, 15, 12, 0, 0, tzinfo=timezone.utc),
+        ended_at=datetime(2026, 6, 15, 12, 0, 0, tzinfo=UTC),
     ))
 
     assert ws.calls == []
@@ -192,7 +192,7 @@ async def test_handler_night_bonus_added():
     # 17:00 UTC = 01:00 UTC+8 -> night bonus applies
     await svc._on_session_completed(_event(
         duration=1800,
-        ended_at=datetime(2026, 6, 15, 17, 0, 0, tzinfo=timezone.utc),
+        ended_at=datetime(2026, 6, 15, 17, 0, 0, tzinfo=UTC),
     ))
 
     assert len(ws.calls) == 1

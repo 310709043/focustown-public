@@ -59,7 +59,7 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   // Each test starts with a fresh localStorage so token state never bleeds.
-  if (typeof localStorage !== "undefined") localStorage.clear();
+  try { localStorage.clear(); } catch { /* jsdom env may lack clear */ }
 });
 
 afterAll(() => {

@@ -72,6 +72,14 @@ jobs:
           ADMIN_FEEDBACK_EMAIL: ${{ vars.ADMIN_FEEDBACK_EMAIL }}
           S3_BUCKET: ${{ vars.S3_BUCKET }}
           TERMS_CURRENT_VERSION: ${{ vars.TERMS_CURRENT_VERSION }}
+          R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
+          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
+          AUDIO_PROXY_BASE_URL: ${{ vars.AUDIO_PROXY_BASE_URL }}
+          AUDIO_PROXY_SECRET: ${{ secrets.AUDIO_PROXY_SECRET }}
+          BROADCAST_PROXY_BASE_URL: ${{ vars.BROADCAST_PROXY_BASE_URL }}
+          BROADCAST_PROXY_SECRET: ${{ secrets.BROADCAST_PROXY_SECRET }}
+          ADMIN_USER_IDS: ${{ vars.ADMIN_USER_IDS }}
         run: |
           set -euo pipefail
           envsubst < infra/lightsail/prod/containers.json.tpl > /tmp/containers.json

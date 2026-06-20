@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
@@ -23,19 +25,32 @@ class GlobalRateLimitMiddleware(BaseHTTPMiddleware):
 
     The limiter backend (Redis in prod, in-memory for tests) is injected so
     the middleware stays testable without a live Redis connection.
+
+    ``limiter`` may be either an ``IRateLimiter`` instance **or** a
+    zero-argument callable that returns one.  The callable form allows lazy
+    construction so that the middleware can be registered at app-creation time
+    (before the lifespan hook has initialised Redis) and still resolve the
+    real Redis client on the first request.
     """
 
     def __init__(
         self,
         app,  # type: ignore[no-untyped-def]
         *,
-        limiter: IRateLimiter,
+        limiter: IRateLimiter | Callable[[], IRateLimiter],
         settings: Settings,
     ) -> None:
         super().__init__(app)
-        self._limiter = limiter
+        self._limiter_factory = limiter if callable(limiter) else (lambda: limiter)
+        self._resolved: IRateLimiter | None = None
         self._limit = settings.global_rl_per_ip_per_min
         self._window = 60
+
+    @property
+    def _limiter(self) -> IRateLimiter:
+        if self._resolved is None:
+            self._resolved = self._limiter_factory()
+        return self._resolved
 
     async def dispatch(self, request: Request, call_next) -> Response:  # type: ignore[no-untyped-def]
         # Skip health checks and non-API paths.

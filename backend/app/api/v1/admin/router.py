@@ -819,7 +819,7 @@ async def seed_leaderboard(
                 id=user_id,
                 email=f"{display_name.lower()}@test.local",
                 display_name=display_name,
-                password_hash="!",
+                password_hash="!",  # noqa: S106
                 is_active=True,
                 is_bot=False,
             )
@@ -828,9 +828,9 @@ async def seed_leaderboard(
 
         for _ in range(session_count):
             seconds_today = int((now - today_start).total_seconds())
-            random_offset = random.randint(0, max(0, seconds_today - 1800))
+            random_offset = random.randint(0, max(0, seconds_today - 1800))  # noqa: S311
             started_at = today_start + timedelta(seconds=random_offset)
-            duration = avg_minutes * 60 + random.randint(-300, 300)
+            duration = avg_minutes * 60 + random.randint(-300, 300)  # noqa: S311
             duration = max(300, duration)
 
             session = FocusSessionORM(

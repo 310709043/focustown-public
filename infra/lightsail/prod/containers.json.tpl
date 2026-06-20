@@ -31,15 +31,20 @@
       "S3_SECRET_KEY": "${R2_SECRET_KEY}",
       "AUDIO_PROXY_BASE_URL": "${AUDIO_PROXY_BASE_URL}",
       "AUDIO_PROXY_SECRET": "${AUDIO_PROXY_SECRET}",
+      "BROADCAST_PROXY_BASE_URL": "${BROADCAST_PROXY_BASE_URL}",
+      "BROADCAST_PROXY_SECRET": "${BROADCAST_PROXY_SECRET}",
       "SECRETS_BACKEND": "env",
       "NOTIFIER_BACKEND": "ses",
       "SES_FROM_EMAIL": "${SES_FROM_EMAIL}",
       "ADMIN_FEEDBACK_EMAIL": "${ADMIN_FEEDBACK_EMAIL}",
+      "ADMIN_USER_IDS": "${ADMIN_USER_IDS}",
       "AWS_REGION": "${AWS_REGION}",
       "AWS_ACCESS_KEY_ID": "${AWS_APP_ACCESS_KEY_ID}",
       "AWS_SECRET_ACCESS_KEY": "${AWS_APP_SECRET_ACCESS_KEY}",
       "RESET_URL_BASE": "https://${PUBLIC_HOST}/reset-password",
-      "TERMS_CURRENT_VERSION": "${TERMS_CURRENT_VERSION}"
+      "TERMS_CURRENT_VERSION": "${TERMS_CURRENT_VERSION}",
+      "FEAT_SHARED_STATION": "true",
+      "DEFAULT_CITY_ID": "lowbatterytown"
     }
   },
   "worker": {
@@ -59,6 +64,8 @@
       "S3_SECRET_KEY": "${R2_SECRET_KEY}",
       "AUDIO_PROXY_BASE_URL": "${AUDIO_PROXY_BASE_URL}",
       "AUDIO_PROXY_SECRET": "${AUDIO_PROXY_SECRET}",
+      "BROADCAST_PROXY_BASE_URL": "${BROADCAST_PROXY_BASE_URL}",
+      "BROADCAST_PROXY_SECRET": "${BROADCAST_PROXY_SECRET}",
       "SECRETS_BACKEND": "env",
       "NOTIFIER_BACKEND": "ses",
       "SES_FROM_EMAIL": "${SES_FROM_EMAIL}",
@@ -66,7 +73,9 @@
       "AWS_ACCESS_KEY_ID": "${AWS_APP_ACCESS_KEY_ID}",
       "AWS_SECRET_ACCESS_KEY": "${AWS_APP_SECRET_ACCESS_KEY}",
       "RESET_URL_BASE": "https://${PUBLIC_HOST}/reset-password",
-      "TERMS_CURRENT_VERSION": "${TERMS_CURRENT_VERSION}"
+      "TERMS_CURRENT_VERSION": "${TERMS_CURRENT_VERSION}",
+      "FEAT_SHARED_STATION": "true",
+      "DEFAULT_CITY_ID": "lowbatterytown"
     }
   },
   "frontend": {
@@ -82,6 +91,6 @@
   },
   "redis": {
     "image": "redis:7-alpine",
-    "command": ["redis-server", "--save", "", "--appendonly", "no", "--loglevel", "warning"]
+    "command": ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--loglevel", "warning"]
   }
 }

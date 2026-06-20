@@ -60,6 +60,6 @@
   },
   "redis": {
     "image": "redis:7-alpine",
-    "command": ["redis-server", "--save", "", "--appendonly", "no", "--loglevel", "warning"]
+    "command": ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--loglevel", "warning"]
   }
 }

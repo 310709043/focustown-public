@@ -314,7 +314,7 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(
         GlobalRateLimitMiddleware,
-        limiter=RedisRateLimiter(get_redis()),
+        limiter=lambda: RedisRateLimiter(get_redis()),
         settings=settings,
     )
     # Added last so it runs outermost — request_id is bound before any other

@@ -26,13 +26,12 @@ if BACKEND_DIR is None:
 sys.path.insert(0, str(BACKEND_DIR))
 
 from sqlalchemy import select  # noqa: E402
-from sqlalchemy.dialects.postgresql import insert as pg_insert  # noqa: E402
 
+from app.core.config import get_settings  # noqa: E402
 from app.core.ids import UUID4Generator  # noqa: E402
 from app.infrastructure.db.models.focus_session import FocusSessionORM  # noqa: E402
 from app.infrastructure.db.models.user import UserORM  # noqa: E402
 from app.infrastructure.db.session import get_session_factory  # noqa: E402
-
 
 # Test users with varying focus durations
 TEST_DATA = [
@@ -70,7 +69,7 @@ async def main() -> None:
                     id=user_id,
                     email=email,
                     display_name=display_name,
-                    password_hash="!",
+                    password_hash="!",  # noqa: S106
                     is_active=True,
                     is_bot=False,
                 )
@@ -82,10 +81,10 @@ async def main() -> None:
             for _ in range(session_count):
                 # Random time between midnight and now
                 seconds_today = int((now - today_start).total_seconds())
-                random_offset = random.randint(0, max(0, seconds_today - 1800))
+                random_offset = random.randint(0, max(0, seconds_today - 1800))  # noqa: S311
                 started_at = today_start + timedelta(seconds=random_offset)
 
-                duration = avg_minutes * 60 + random.randint(-300, 300)
+                duration = avg_minutes * 60 + random.randint(-300, 300)  # noqa: S311
                 duration = max(300, duration)  # Min 5 minutes
 
                 session_id = ids.new_id()

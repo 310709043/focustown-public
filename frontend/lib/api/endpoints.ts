@@ -859,8 +859,7 @@ export const matchRoomApi = {
       `/api/v1/rooms/match/${encodeURIComponent(matchId)}/start`,
       {
         method: "POST",
-        body: JSON.stringify({ duration_seconds: durationSeconds }),
-        headers: { "Content-Type": "application/json" },
+        body: { duration_seconds: durationSeconds },
       },
     );
   },
