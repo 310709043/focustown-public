@@ -9,6 +9,13 @@ import { useTimer } from "@/lib/hooks/useTimer";
 import { useUserStats } from "@/lib/hooks/useUserStats";
 import { useAuthStore } from "@/lib/state/authStore";
 
+const PRESETS = [
+  { label: "25", minutes: 25 },
+  { label: "45", minutes: 45 },
+  { label: "50", minutes: 50 },
+  { label: "90", minutes: 90 },
+];
+
 interface BigTimerProps {
   /** Solo passes null; buddy passes the partner user id. Forwarded to
    *  `useTimerStore.start()`. */
@@ -17,13 +24,8 @@ interface BigTimerProps {
 
 /**
  * Solo-room timer card. Header (● DEEP FOCUS / BREAK + 8 battery strip),
- * huge `PixelDigits` countdown, progress bar, two control buttons
- * (reset / play-pause), and a 3-stat footer. Skip / fast-forward was
- * dropped 2026-05-20 — the timer must only pause and restart, never
- * jump forward.
- *
- * Wraps the existing `useTimerStore` + `useTimer` so the session
- * lifecycle (start API call, tick interval, completion) is unchanged.
+ * duration preset picker, huge `PixelDigits` countdown, progress bar,
+ * two control buttons (reset / play-pause), and a 3-stat footer.
  */
 export function BigTimer({ partnerId = null }: BigTimerProps) {
   useTimer();
@@ -37,10 +39,11 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
     start,
     pause,
     reset,
+    setMode,
   } = useTimerStore();
   const t = useTranslations("focus.solo.bigTimer");
   const user = useAuthStore((s) => s.user);
-  const { kpis } = useUserStats(user);
+  const { kpis, weekTotalHours } = useUserStats(user);
 
   const total = Math.max(1, durationSeconds);
   const pct = (1 - remaining / total) * 100;
@@ -75,6 +78,46 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
         </div>
         <BatteryStrip count={batteryCount} max={8} scale={1.4} />
       </div>
+
+      {/* Duration presets — only shown when timer is idle */}
+      {!running && !starting ? (
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          {PRESETS.map((p) => {
+            const isActive = durationSeconds === p.minutes * 60;
+            return (
+              <button
+                key={p.minutes}
+                type="button"
+                className="font-silkscreen"
+                onClick={() => setMode("focus", p.minutes * 60)}
+                style={{
+                  fontSize: 9,
+                  padding: "4px 8px",
+                  letterSpacing: "0.15em",
+                  cursor: "pointer",
+                  border: isActive
+                    ? "1px solid var(--accent)"
+                    : "1px solid rgba(255,255,255,0.15)",
+                  background: isActive ? "var(--accent)" : "rgba(0,0,0,0.3)",
+                  color: isActive ? "#0a0118" : "var(--ink-mute)",
+                  boxShadow: isActive ? "0 0 8px var(--accent)" : "none",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {p.label}
+                <span style={{ opacity: 0.7, marginLeft: 2 }}>m</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       {/* Big timer */}
       <div
@@ -153,7 +196,7 @@ export function BigTimer({ partnerId = null }: BigTimerProps) {
           paddingTop: 12,
         }}
       >
-        <Stat label={t("statTodayLabel")} value={`${kpis.allTimeFocusHours * 60 | 0} min`} color="var(--accent)" />
+        <Stat label="THIS WEEK" value={`${weekTotalHours.toFixed(1)}h`} color="var(--accent)" />
         <Stat label={t("statStreakLabel")} value={t("statStreakValue", { days: kpis.streakDays })} color="var(--accent-2)" />
         <Stat label={t("statRankLabel")} value={kpis.weeklyRank > 0 ? `#${kpis.weeklyRank}` : "—"} color="var(--accent-3)" />
       </div>

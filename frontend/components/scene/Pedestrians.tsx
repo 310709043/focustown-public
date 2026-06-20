@@ -45,18 +45,25 @@ const cityMenVariantFor = (userId: string): number =>
 const seedPos = (userId: string): number =>
   POSITIONS[hashUserId(userId) % POSITIONS.length];
 
+// 3-tier walk speed: fast (0.7×), normal (1.0×), slow (1.4×).
+const speedMultiplier = (userId: string): number => {
+  const tier = hashUserId(userId) % 3;
+  return tier === 0 ? 0.7 : tier === 1 ? 1.0 : 1.4;
+};
+
 function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
   // Initial position must be deterministic (SSR/CSR agreement). We
   // randomise via the interval below — that's client-only.
   const [x, setX] = useState<number>(() => seedPos(user.id));
+  const speed = speedMultiplier(user.id);
 
   useEffect(() => {
     const id = setInterval(
       () => setX(pickPos()),
-      (14 + Math.random() * 8) * 1000,
+      (14 + Math.random() * 8) * speed * 1000,
     );
     return () => clearInterval(id);
-  }, []);
+  }, [speed]);
 
   const ch = findCharacter(user.character_key) ?? fallbackCharacter(user.id);
   const variant = PNG_WALKERS[cityMenVariantFor(user.id)];
@@ -73,8 +80,7 @@ function Pedestrian({ user, isSelf }: { user: StreetUser; isSelf: boolean }) {
         // driving on the asphalt below stay visually separated.
         // City-Mode immersive: shifts with the ground stack via --ground-shift.
         bottom: "calc(var(--ground-baseline) - var(--ground-shift, 0px))",
-        transition:
-          "left 18s cubic-bezier(0.4, 0, 0.2, 1), bottom 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
+        transition: `left ${Math.round(18 * speed)}s cubic-bezier(0.4, 0, 0.2, 1), bottom 1100ms cubic-bezier(0.22, 1, 0.36, 1)`,
       }}
     >
       {/* unified Name · Status · Activity pill — one pixel-pill per

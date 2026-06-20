@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BackdropLayer } from "@/components/focus/ambient/BackdropLayer";
 import { BigTimer } from "@/components/focus/BigTimer";
 import { CatSupervisor } from "@/components/focus/CatSupervisor";
 import { FloatingMusicPlayer } from "@/components/audio/FloatingMusicPlayer";
 import { FocusTopBar } from "@/components/focus/FocusTopBar";
+import { SessionCompleteOverlay } from "@/components/focus/SessionCompleteOverlay";
 import { SessionInsight } from "@/components/focus/SessionInsight";
 import { SoloNotesPanel } from "@/components/focus/SoloNotesPanel";
 import { TasksPanel } from "@/components/focus/TasksPanel";
@@ -24,15 +25,31 @@ import { useTimerStore } from "@/lib/state/timerStore";
  *                      (rotating tips).
  *   FLOATING:          `FloatingMusicPlayer` anchored bottom-right of
  *                      the whole viewport (sibling of the body grid).
- *
- * FriendsNow / SoundMixer / NextEnvCard panels were removed in the
- * 2026-05-20 QA round-1 pass. The ambient backdrop is still a two-stack
- * of `BackdropLayer`s crossfading on a 90 s cycle driven by
- * `useAmbientCycle`. No user-facing picker — the override is the E2E
- * lock at `localStorage.lowbatterytown.ambient.lock`.
  */
 export function SoloFocusScene() {
   useAmbientCycle();
+
+  const [showComplete, setShowComplete] = useState(false);
+
+  // Track the previous session + mode so we can detect the focus→complete
+  // transition without firing on pause, reset, or break completions.
+  const prevSessionRef = useRef<boolean>(false);
+  const prevModeRef = useRef<string>("focus");
+
+  const session = useTimerStore((s) => s.session);
+  const running = useTimerStore((s) => s.running);
+  const mode = useTimerStore((s) => s.mode);
+
+  useEffect(() => {
+    const hadSession = prevSessionRef.current;
+    const wasFocus = prevModeRef.current === "focus";
+    const completedNow = hadSession && !session && !running;
+    if (completedNow && wasFocus) {
+      setShowComplete(true);
+    }
+    prevSessionRef.current = !!session;
+    prevModeRef.current = mode;
+  }, [session, running, mode]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -43,16 +60,14 @@ export function SoloFocusScene() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, []);
+
   const fromIdx = useAmbientStore((s) => s.fromIdx);
   const toIdx = useAmbientStore((s) => s.toIdx);
   const t01 = useAmbientStore((s) => s.t);
 
-  // Defensive lookups so a transient out-of-bounds idx (e.g. during HMR
-  // or a persist-driven mismatch) can't throw and bring the whole scene
-  // down with an error boundary.
   const fromBg = (FOCUS_BG_OPTIONS[fromIdx] ?? FOCUS_BG_OPTIONS[0]).id;
   const toBg = (FOCUS_BG_OPTIONS[toIdx] ?? FOCUS_BG_OPTIONS[0]).id;
-  void findFocusBg; // re-export keeps the helper bundled for tests.
+  void findFocusBg;
 
   return (
     <main
@@ -90,10 +105,6 @@ export function SoloFocusScene() {
 
       <div
         data-testid="solo-body-grid"
-        // Container query: keep the 2fr/1fr split on tablets and wider
-        // (≥ 720px), stack vertically on phones so neither the notes pane
-        // nor the timer pane gets crushed. Both panes stay mounted with
-        // identical content — no element removed.
         className="solo-body-grid"
         style={{
           position: "relative",
@@ -118,9 +129,7 @@ export function SoloFocusScene() {
           <SoloNotesPanel />
         </div>
 
-        {/* Right rail — BigTimer / TasksPanel (with goal strip) /
-            SessionInsight tips. The DND / lock-phone / back-to-town
-            QuickActions cluster was removed 2026-05-21 per QA. */}
+        {/* Right rail */}
         <div
           data-testid="solo-right-rail"
           style={{
@@ -140,11 +149,12 @@ export function SoloFocusScene() {
         </div>
       </div>
 
-      {/* Floating music player — anchored bottom-right of the whole
-          viewport (sibling of the body grid, not nested in the notes
-          column). Uses `position: absolute; right: 14; bottom: 14;` so
-          it resolves against this <main> rather than the notes column. */}
       <FloatingMusicPlayer context="focus" contextId="solo" />
+
+      <SessionCompleteOverlay
+        visible={showComplete}
+        onDismiss={() => setShowComplete(false)}
+      />
     </main>
   );
 }

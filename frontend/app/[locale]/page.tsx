@@ -19,6 +19,44 @@ import { LoginScene } from "@/components/login/LoginScene";
 import { CornerDeco } from "@/components/login/CornerDeco";
 import { BlinkDot } from "@/components/pixel/BlinkDot";
 
+function FeatureChips() {
+  const chips = [
+    { icon: "🏙️", label: "PIXEL CITY", desc: "Live world with real users" },
+    { icon: "🤝", label: "BUDDY MODE", desc: "Focus with a partner" },
+    { icon: "🎵", label: "LOFI RADIO", desc: "53 ambient tracks" },
+  ];
+  return (
+    <div
+      className="animate-fadeUpFast anim-delay-500"
+      style={{
+        display: "flex",
+        gap: 8,
+        width: "min(380px, calc(100vw - 32px))",
+        flexWrap: "wrap",
+      }}
+    >
+      {chips.map((c) => (
+        <div
+          key={c.label}
+          className="pixel-panel font-silkscreen"
+          style={{
+            flex: "1 1 100px",
+            padding: "8px 10px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
+            textAlign: "center",
+          }}
+        >
+          <span style={{ fontSize: 18 }}>{c.icon}</span>
+          <span style={{ fontSize: 8, color: "var(--accent)", letterSpacing: "0.15em" }}>{c.label}</span>
+          <span style={{ fontSize: 8, color: "var(--ink-mute)", letterSpacing: "0.05em" }}>{c.desc}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
  * Landing splash — same scene + sign-in form as `/signin`, but with the
  * hero (logo + wordmark + tagline) shown above and the avatar strip
@@ -251,44 +289,6 @@ export default function SplashPage() {
         testId="ad-login-banner"
       />
     </LoginScene>
-  );
-}
-
-function FeatureChips() {
-  const chips = [
-    { icon: "🏙️", label: "PIXEL CITY", desc: "Live world with real users" },
-    { icon: "🤝", label: "BUDDY MODE", desc: "Focus with a partner" },
-    { icon: "🎵", label: "LOFI RADIO", desc: "53 ambient tracks" },
-  ];
-  return (
-    <div
-      className="animate-fadeUpFast anim-delay-500"
-      style={{
-        display: "flex",
-        gap: 8,
-        width: "min(380px, calc(100vw - 32px))",
-        flexWrap: "wrap",
-      }}
-    >
-      {chips.map((c) => (
-        <div
-          key={c.label}
-          className="pixel-panel font-silkscreen"
-          style={{
-            flex: "1 1 100px",
-            padding: "8px 10px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-            textAlign: "center",
-          }}
-        >
-          <span style={{ fontSize: 18 }}>{c.icon}</span>
-          <span style={{ fontSize: 8, color: "var(--accent)", letterSpacing: "0.15em" }}>{c.label}</span>
-          <span style={{ fontSize: 8, color: "var(--ink-mute)", letterSpacing: "0.05em" }}>{c.desc}</span>
-        </div>
-      ))}
-    </div>
   );
 }
 

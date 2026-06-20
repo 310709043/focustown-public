@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
@@ -32,6 +32,20 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
   const matchStatus = useMatchStore((s) => s.status);
   const busy = matchStatus !== "idle";
   const accepted = useMatchStore((s) => s.accepted);
+  const waitingSince = useMatchStore((s) => s.waitingSince);
+
+  // Live "waiting Xs" counter for queue transparency
+  const [waitSecs, setWaitSecs] = useState(0);
+  useEffect(() => {
+    if (matchStatus !== "waiting" || !waitingSince) {
+      setWaitSecs(0);
+      return;
+    }
+    const update = () => setWaitSecs(Math.floor((Date.now() - waitingSince) / 1000));
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [matchStatus, waitingSince]);
   const avatar = characterKeyToAvatar(user?.character_key);
 
   const hasAccepted = accepted !== null && accepted.status === "accepted";
@@ -267,29 +281,54 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
 
         {/* CTA */}
         <div className="hud-panel-controls">
-          <button
-            type="button"
-            data-testid="mode-card-together-cta"
-            onClick={(e) => { e.stopPropagation(); onTogether(); }}
-            disabled={busy && !hasAccepted}
-            aria-label={togetherAria}
-            className="pixel-btn touch:min-h-[44px]"
-            style={{
-              flex: 1,
-              padding: "6px 10px",
-              fontSize: 10,
-              letterSpacing: "0.18em",
-              borderColor: "var(--accent-2)",
-              color: "var(--accent-2)",
-              opacity: !isSolo ? (busy && !hasAccepted ? 0.4 : 1) : 0,
-              pointerEvents: !isSolo && !(busy && !hasAccepted) ? "auto" : "none",
-              cursor: busy && !hasAccepted ? "wait" : "pointer",
-              transition: modeTransition,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {togetherCta}
-          </button>
+          {matchStatus === "waiting" ? (
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              <span
+                className="font-silkscreen animate-blinkSoft"
+                style={{ fontSize: 9, color: "var(--accent-2)", letterSpacing: "0.15em" }}
+              >
+                ◉ SEARCHING...
+              </span>
+              <span
+                className="font-silkscreen"
+                style={{ fontSize: 8, color: "var(--ink-mute)", letterSpacing: "0.1em" }}
+              >
+                {waitSecs}s · avg ~30s
+              </span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              data-testid="mode-card-together-cta"
+              onClick={(e) => { e.stopPropagation(); onTogether(); }}
+              disabled={busy && !hasAccepted}
+              aria-label={togetherAria}
+              className="pixel-btn touch:min-h-[44px]"
+              style={{
+                flex: 1,
+                padding: "6px 10px",
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                borderColor: "var(--accent-2)",
+                color: "var(--accent-2)",
+                opacity: !isSolo ? (busy && !hasAccepted ? 0.4 : 1) : 0,
+                pointerEvents: !isSolo && !(busy && !hasAccepted) ? "auto" : "none",
+                cursor: busy && !hasAccepted ? "wait" : "pointer",
+                transition: modeTransition,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {togetherCta}
+            </button>
+          )}
         </div>
       </div>
     </div>

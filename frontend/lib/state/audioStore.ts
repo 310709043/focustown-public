@@ -153,7 +153,10 @@ export const useAudioStore = create<AudioState>()(
           const res = await personalRadioApi.getPlaylist({ context, contextId });
           const next =
             res.tracks.length > 0 ? res.tracks : LOCAL_FALLBACK_TRACKS;
-          set({ tracks: next, index: 0 });
+          // Preserve the persisted index so returning users resume where they
+          // left off (playlist is stable within a day). Clamp to new length.
+          const restoredIndex = Math.min(get().index, next.length - 1);
+          set({ tracks: next, index: restoredIndex });
         } catch {
           // Network hiccup — keep whatever we had; the mount will retry
           // by replaying the current track. If we had nothing, fall back
@@ -253,13 +256,15 @@ export const useAudioStore = create<AudioState>()(
         }
         return window.localStorage;
       }),
-      // Persist only the user-tweaked controls. Playlist data is
-      // server-authoritative and unlock is sessionStorage-scoped.
+      // Persist user controls + track index so returning users resume the
+      // same track. Playlist data is server-authoritative; index is clamped
+      // to the new list length in setContext on each load.
       partialize: (s) => ({
         isPlaying: s.isPlaying,
         volume: s.volume,
         muted: s.muted,
         hidden: s.hidden,
+        index: s.index,
       }),
       // On rehydration, sync `audioUnlocked` from sessionStorage so the
       // mount's first effect already has the right gate state.

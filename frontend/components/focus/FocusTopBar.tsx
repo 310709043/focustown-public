@@ -21,6 +21,7 @@ export function FocusTopBar() {
   const t = useTranslations("focus.solo.topBar");
   const user = useAuthStore((s) => s.user);
   const avatar = characterKeyToAvatar(user?.character_key);
+  const running = useTimerStore((s) => s.running);
   const remaining = useTimerStore((s) => s.remaining);
   const durationSeconds = useTimerStore((s) => s.durationSeconds);
   const minutes = Math.ceil((remaining || durationSeconds) / 60);
@@ -47,7 +48,14 @@ export function FocusTopBar() {
           className="pixel-btn"
           style={{ fontSize: 11, padding: "6px 12px" }}
           onClick={async () => {
-            const session = useTimerStore.getState().session;
+            const { session, running: isRunning } = useTimerStore.getState();
+            if (isRunning && session) {
+              const elapsed = session.duration_seconds - useTimerStore.getState().remaining;
+              const elapsedMin = Math.floor(elapsed / 60);
+              if (!window.confirm(
+                `計時器還在跑（已專注 ${elapsedMin} 分鐘）。確定要離開並放棄本次 session 嗎？`
+              )) return;
+            }
             if (session) {
               await sessionsApi.cancel(session.id).catch(() => {
                 pushErrorToast("Failed to cancel session");
