@@ -67,7 +67,7 @@
     "reconnecting": "◌ 重新連線中…"
   },
   "errors": {
-    "networkFailure": "無法連線到伺服器，請確認後端服務已啟動",
-    "unknown": "未知錯誤"
+    "networkFailure": "網路連線有點問題，請再試一次 🔄",
+    "unknown": "出了些小問題，請稍後再試"
   }
 }

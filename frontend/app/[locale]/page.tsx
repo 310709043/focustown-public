@@ -215,7 +215,33 @@ export default function SplashPage() {
             {tSplash("createAcc")} →
           </Link>
         </div>
+
+        {/* Guest preview — lets curious visitors tour the town without signing up */}
+        <button
+          type="button"
+          className="font-silkscreen"
+          style={{
+            marginTop: 2,
+            fontSize: 9,
+            color: "var(--ink-dim)",
+            letterSpacing: "0.15em",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            textDecoration: "underline",
+            textDecorationStyle: "dotted",
+          }}
+          onClick={() => {
+            sessionStorage.setItem("ft_guest", "1");
+            router.push("/town");
+          }}
+        >
+          ↗ GUEST PREVIEW (no account needed)
+        </button>
       </form>
+
+      <FeatureChips />
+
       {/* AdSense banner — only renders when NEXT_PUBLIC_ADSENSE_PUB_ID
           is configured. Sits between the form and the AboutTownPanel. */}
       <AdSlot
@@ -225,6 +251,44 @@ export default function SplashPage() {
         testId="ad-login-banner"
       />
     </LoginScene>
+  );
+}
+
+function FeatureChips() {
+  const chips = [
+    { icon: "🏙️", label: "PIXEL CITY", desc: "Live world with real users" },
+    { icon: "🤝", label: "BUDDY MODE", desc: "Focus with a partner" },
+    { icon: "🎵", label: "LOFI RADIO", desc: "53 ambient tracks" },
+  ];
+  return (
+    <div
+      className="animate-fadeUpFast anim-delay-500"
+      style={{
+        display: "flex",
+        gap: 8,
+        width: "min(380px, calc(100vw - 32px))",
+        flexWrap: "wrap",
+      }}
+    >
+      {chips.map((c) => (
+        <div
+          key={c.label}
+          className="pixel-panel font-silkscreen"
+          style={{
+            flex: "1 1 100px",
+            padding: "8px 10px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
+            textAlign: "center",
+          }}
+        >
+          <span style={{ fontSize: 18 }}>{c.icon}</span>
+          <span style={{ fontSize: 8, color: "var(--accent)", letterSpacing: "0.15em" }}>{c.label}</span>
+          <span style={{ fontSize: 8, color: "var(--ink-mute)", letterSpacing: "0.05em" }}>{c.desc}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 

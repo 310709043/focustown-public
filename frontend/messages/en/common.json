@@ -67,7 +67,7 @@
     "reconnecting": "◌ Reconnecting…"
   },
   "errors": {
-    "networkFailure": "Cannot reach the server. Make sure the backend is running.",
-    "unknown": "Unknown error"
+    "networkFailure": "Network hiccup — please try again! 🔄",
+    "unknown": "Something went wrong — hang tight and try again."
   }
 }

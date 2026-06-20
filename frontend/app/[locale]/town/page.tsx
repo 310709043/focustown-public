@@ -93,6 +93,29 @@ import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 // bots, so a high cap guarantees no logged-in human is dropped on a busy day.
 const STREET_CAP = Number(process.env.NEXT_PUBLIC_STREET_CAP ?? 200);
 
+function FadingRainOverlay({ isWet, color, density }: { isWet: boolean; color: string; density: number }) {
+  const [mounted, setMounted] = useState(isWet);
+  const [opacity, setOpacity] = useState(isWet ? 1 : 0);
+
+  useEffect(() => {
+    if (isWet) {
+      setMounted(true);
+      requestAnimationFrame(() => setOpacity(1));
+    } else {
+      setOpacity(0);
+      const t = setTimeout(() => setMounted(false), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [isWet]);
+
+  if (!mounted) return null;
+  return (
+    <div style={{ opacity, transition: "opacity 1.5s ease-out", pointerEvents: "none" }}>
+      <RainOverlay color={color} density={density} />
+    </div>
+  );
+}
+
 export default function TownPage() {
   const { ready } = useAuthGuard();
   const { user, hydrate } = useAuthStore();
@@ -302,9 +325,26 @@ export default function TownPage() {
 
   if (!ready) {
     return (
-      <main className="absolute inset-0 flex items-center justify-center bg-[var(--bg)]">
-        <span className="font-silkscreen text-[var(--ink-dim)] animate-pulse">
-          LOADING...
+      <main className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--bg)]" style={{ gap: 16 }}>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="animate-pulse"
+              style={{
+                width: 10,
+                height: 18,
+                background: "var(--accent)",
+                borderRadius: 2,
+                opacity: 0.3,
+                animationDelay: `${i * 0.2}s`,
+                boxShadow: "0 0 8px var(--accent)",
+              }}
+            />
+          ))}
+        </div>
+        <span className="font-silkscreen" style={{ fontSize: 10, color: "var(--ink-dim)", letterSpacing: "0.3em" }}>
+          POWERING UP...
         </span>
       </main>
     );
@@ -424,14 +464,13 @@ export default function TownPage() {
             antenna, signal bars, and a LIVE indicator. */}
         <SkyWindow />
 
-        {/* wet-scene atmosphere — only mounts for rain/storm so we don't
-            spin a rAF loop on sunny days. */}
-        {sceneIsWet ? (
-          <RainOverlay
-            color={currentScene === "storm" ? "#88a8d8" : "#00f5d4"}
-            density={currentScene === "storm" ? 1.2 : 1}
-          />
-        ) : null}
+        {/* wet-scene atmosphere — fades in/out over 1.5 s instead of
+            instant mount/unmount to avoid the hard cut when weather clears. */}
+        <FadingRainOverlay
+          isWet={sceneIsWet}
+          color={currentScene === "storm" ? "#88a8d8" : "#00f5d4"}
+          density={currentScene === "storm" ? 1.2 : 1}
+        />
 
         {/* Reference-aligned 180 px BottomHUD: FocusTimer + MatchPanel
             + MusicPlayer in a 1.05fr / 1fr / 1fr grid. Replaces the
