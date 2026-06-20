@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 
+import { AchievementToastManager } from "@/components/achievements/AchievementToastManager";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { GlobalAudioMount } from "@/components/audio/GlobalAudioMount";
@@ -172,6 +173,7 @@ export default async function LocaleLayout({
       <SplashGate />
       <Toaster />
       <ConnectionBanner />
+      <AchievementToastManager />
       {/* Single global <audio> element + store subscriber. Mounted once
           here so playback survives page navigation; every UI player
           surface (MusicPlayer, FloatingMusicPlayer, PersonalRadio) is

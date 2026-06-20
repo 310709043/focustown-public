@@ -646,6 +646,16 @@ body {
   96%           { filter: brightness(0.9); }
 }
 
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(120%); opacity: 0; }
+}
+
 /* Horizontal drift used by the ticker bar (60s linear, full-width wrap). */
 @keyframes drift {
   from { transform: translateX(0); }

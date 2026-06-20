@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { DailyGoalStrip } from "./SessionInsight";
+
+const TASKS_STORAGE_KEY = "lbt.tasks.v1";
 
 interface Task {
   id: string;
@@ -11,20 +13,42 @@ interface Task {
   done: boolean;
 }
 
+function loadTasks(seed: Task[]): Task[] {
+  if (typeof window === "undefined") return seed;
+  try {
+    const raw = window.localStorage.getItem(TASKS_STORAGE_KEY);
+    if (!raw) return seed;
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed as Task[];
+  } catch {
+    // Corrupt storage — fall back to seed
+  }
+  return seed;
+}
+
 /**
- * Solo-room tasks list. The today's-goal strip (formerly inside
- * SessionInsight) now lives in this panel's header per the QA round-1
- * restructure. Supports add / toggle / edit / delete in-memory only;
- * persistence is a future ticket.
+ * Solo-room tasks list. Tasks are persisted to localStorage so they
+ * survive page refreshes and navigation.
  */
 export function TasksPanel() {
   const t = useTranslations("focus.solo.tasksPanel");
-  const [tasks, setTasks] = useState<Task[]>(() => [
+  const seed: Task[] = [
     { id: "t1", label: t("seed.t1"), done: false },
     { id: "t2", label: t("seed.t2"), done: true },
     { id: "t3", label: t("seed.t3"), done: false },
     { id: "t4", label: t("seed.t4"), done: false },
-  ]);
+  ];
+  const [tasks, setTasks] = useState<Task[]>(() => loadTasks(seed));
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    } catch {
+      // Storage quota exceeded or blocked — silently ignore
+    }
+  }, [tasks]);
+
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
