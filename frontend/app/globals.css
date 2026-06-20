@@ -1743,3 +1743,44 @@ a[role="button"]:not([disabled]):active {
     transform: none !important;
   }
 }
+
+/* ══════════════════════════════════════
+   Mobile-specific improvements (≤ 480px phones)
+   ══════════════════════════════════════ */
+@media (max-width: 480px) {
+  /* Prevent iOS from zooming in when tapping an input (font-size < 16px triggers zoom) */
+  input, textarea, select {
+    font-size: max(16px, 1em) !important;
+  }
+
+  /* Ensure all interactive elements meet 44px minimum touch target */
+  .pixel-btn {
+    min-height: 44px;
+  }
+
+  /* Profile modal: hide the sidebar entirely on very small phones
+     (it's already a horizontal strip at 720px; below 480px there's no room) */
+  .profile-modal-panel {
+    grid-template-rows: 1fr !important;
+  }
+  .profile-modal-panel > :first-child {
+    display: none !important;
+  }
+
+  /* Landing page hero: allow scroll on very small phones */
+  body {
+    overflow: auto;
+  }
+
+  /* Prevent any element from overflowing the viewport horizontally */
+  .pixel-panel {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Town top bar: shrink logo and padding */
+  .town-top-hud-inner {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+}

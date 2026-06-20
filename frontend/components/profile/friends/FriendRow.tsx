@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 
 import type { FriendSummary } from "@/lib/api/endpoints";
+import { usePresenceStore } from "@/lib/state/presenceStore";
+import { pushInfoToast } from "@/lib/state/toastStore";
 
 interface FriendRowProps {
   friend: FriendSummary;
@@ -24,6 +26,8 @@ export function FriendRow({
   onGift,
 }: FriendRowProps) {
   const t = useTranslations("profile.friends");
+  const byId = usePresenceStore((s) => s.byId);
+  const isOnline = Boolean(byId[friend.user_id]);
 
   return (
     <li
@@ -40,15 +44,37 @@ export function FriendRow({
     >
       <div style={{ minWidth: 0 }}>
         <div
-          className="font-silkscreen"
           style={{
-            fontSize: 12,
-            letterSpacing: "0.14em",
-            color: "var(--ink)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
             marginBottom: 2,
           }}
         >
-          {friend.display_name}
+          {isOnline && (
+            <span
+              aria-label="online"
+              style={{
+                display: "inline-block",
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#4ade80",
+                boxShadow: "0 0 6px #4ade80",
+                flexShrink: 0,
+              }}
+            />
+          )}
+          <span
+            className="font-silkscreen"
+            style={{
+              fontSize: 12,
+              letterSpacing: "0.14em",
+              color: "var(--ink)",
+            }}
+          >
+            {friend.display_name}
+          </span>
         </div>
         <div
           className="font-silkscreen"
@@ -59,6 +85,9 @@ export function FriendRow({
           }}
         >
           {friend.character_key ?? "—"} · {friend.user_id.slice(0, 8)}
+          {isOnline && (
+            <span style={{ color: "#4ade80", marginLeft: 6 }}>● ONLINE</span>
+          )}
         </div>
       </div>
 
@@ -117,6 +146,28 @@ export function FriendRow({
           </button>
         ) : (
           <>
+            {isOnline ? (
+              <button
+                type="button"
+                data-testid="friend-row-invite"
+                className="font-silkscreen"
+                onClick={() =>
+                  pushInfoToast(`已向 ${friend.display_name} 發送邀請！`)
+                }
+                style={{
+                  padding: "5px 10px",
+                  fontSize: 9,
+                  letterSpacing: "0.18em",
+                  color: "#4ade80",
+                  background: "rgba(20,10,55,0.65)",
+                  border: "1px solid #4ade80",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ✦ 邀請
+              </button>
+            ) : null}
             {onGift ? (
               <button
                 type="button"
