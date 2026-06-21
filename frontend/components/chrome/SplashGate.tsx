@@ -148,10 +148,10 @@ export function SplashGate() {
         }}
       >
         <Image
-          src="/logo.png"
+          src="/logo-trimmed.png"
           alt="Low Battery Town"
           width={280}
-          height={112}
+          height={218}
           priority
           className="splash-logo-img"
         />

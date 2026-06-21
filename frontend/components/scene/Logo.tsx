@@ -9,33 +9,33 @@ type Props = {
 };
 
 const BASE_HEIGHT = 40;
-// 712 × 284 native — wide "Low Battery Town" wordmark.
-const ASPECT = 712 / 284;
+// 600 × 467 native — battery-skyline emblem over "Low Battery Town"
+// wordmark, pre-trimmed with a transparent background. Earlier the asset
+// was a black-backed square faked-transparent via `mixBlendMode: screen`,
+// which washed the logo out (often to invisible) over the town's bright
+// daytime sky. The trimmed alpha PNG renders correctly on any backdrop.
+const ASPECT = 600 / 467;
 
 export function Logo({ scale = 1, glow = true, className }: Props) {
   const height = Math.round(BASE_HEIGHT * scale);
   const width = Math.round(height * ASPECT);
   return (
     <Image
-      src="/logo.png"
+      src="/logo-trimmed.png"
       alt="Low Battery Town"
       width={width}
       height={height}
       priority
       className={className}
-      // Width is the cap; height follows aspect ratio so the wordmark
-      // shrinks proportionally inside narrow containers (e.g. splash hero
-      // at scale=3.6 on a 375 px phone — intrinsic 361 px wide would
-      // otherwise overflow). `aspectRatio` keeps height correct after
-      // CSS scaling without depending on the image to set it.
+      // Width is the cap; height follows aspect ratio so the emblem
+      // shrinks proportionally inside narrow containers. `aspectRatio`
+      // keeps height correct after CSS scaling without depending on the
+      // image to set it.
       style={{
         width,
         height: "auto",
         maxWidth: "100%",
         aspectRatio: `${ASPECT}`,
-        // screen blend mode removes the black background of the PNG,
-        // leaving only the coloured pixel art visible against the dark bg.
-        mixBlendMode: "screen",
         filter: glow
           ? "drop-shadow(0 0 6px rgba(233,167,110,0.5))"
           : "none",
