@@ -9,6 +9,8 @@ interface NavButtonProps {
   onClick?: () => void;
   /** Wrap as `<a>` for routed nav (no client JS needed). */
   href?: string;
+  /** Open the `href` in a new tab (external links — e.g. donate). */
+  newTab?: boolean;
   testId?: string;
   /** Renders the button greyed-out, ignores clicks, and skips hover styling. */
   disabled?: boolean;
@@ -26,6 +28,7 @@ export function NavButton({
   label,
   onClick,
   href,
+  newTab,
   testId,
   disabled,
   title,
@@ -98,6 +101,8 @@ export function NavButton({
     return (
       <a
         href={href}
+        target={newTab ? "_blank" : undefined}
+        rel={newTab ? "noopener noreferrer" : undefined}
         data-testid={testId}
         title={title}
         className="font-silkscreen"

@@ -250,6 +250,16 @@ export function TownTopHUD({
             label={tNav("frds")}
             onClick={() => onOpenModal("frds")}
           />
+          {/* Donate — opens Ko-fi in a new tab so a focus session isn't
+              interrupted. TODO: swap the placeholder URL for the real
+              Ko-fi handle once the account is created (ko-fi.com/<handle>). */}
+          <NavButton
+            testId="nav-donate"
+            icon="☕"
+            label={tNav("donate")}
+            href="https://ko-fi.com/lowbatterytown"
+            newTab
+          />
         </div>
 
         <MiniClock />

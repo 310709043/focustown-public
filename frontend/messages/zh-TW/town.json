@@ -10,7 +10,8 @@
     "achv": "ACHV",
     "frds": "FRDS",
     "feedbackAria": "意見回饋",
-    "supportAria": "技術支援"
+    "supportAria": "技術支援",
+    "donate": "贊助"
   },
   "bottom": {
     "focusTimer": {
@@ -281,27 +282,72 @@
     "broadcastFallback": "節目即將上線",
     "npc": {
       "walkers": {
-        "yuki": { "name": "Yuki", "status": "STUDY HALL" },
-        "aria": { "name": "Aria", "status": "寫作中" },
-        "kai":  { "name": "Kai",  "status": "充電 #5" },
-        "doc":  { "name": "Doc",  "status": "研究" },
-        "bear": { "name": "Bear", "status": "深度工作" },
-        "milo": { "name": "Milo", "status": "LOFI BAR" },
-        "nova": { "name": "Nova", "status": "配對中" }
+        "yuki": {
+          "name": "Yuki",
+          "status": "STUDY HALL"
+        },
+        "aria": {
+          "name": "Aria",
+          "status": "寫作中"
+        },
+        "kai": {
+          "name": "Kai",
+          "status": "充電 #5"
+        },
+        "doc": {
+          "name": "Doc",
+          "status": "研究"
+        },
+        "bear": {
+          "name": "Bear",
+          "status": "深度工作"
+        },
+        "milo": {
+          "name": "Milo",
+          "status": "LOFI BAR"
+        },
+        "nova": {
+          "name": "Nova",
+          "status": "配對中"
+        }
       },
       "cats": {
-        "blackbean": { "name": "小黑", "status": "巡邏" },
-        "milktea":   { "name": "奶茶", "status": "覓食" }
+        "blackbean": {
+          "name": "小黑",
+          "status": "巡邏"
+        },
+        "milktea": {
+          "name": "奶茶",
+          "status": "覓食"
+        }
       },
       "birds": {
-        "whisp": { "name": "Whisp", "status": "夜飛" },
-        "echo":  { "name": "Echo",  "status": "巡邏" },
-        "wren":  { "name": "Wren",  "status": "尋食" }
+        "whisp": {
+          "name": "Whisp",
+          "status": "夜飛"
+        },
+        "echo": {
+          "name": "Echo",
+          "status": "巡邏"
+        },
+        "wren": {
+          "name": "Wren",
+          "status": "尋食"
+        }
       },
       "cars": {
-        "ubermira": { "name": "Uber-Mira", "status": "通勤" },
-        "boltren":  { "name": "Bolt-Ren",  "status": "夜班" },
-        "gogolin":  { "name": "GoGo-Lin",  "status": "外送" }
+        "ubermira": {
+          "name": "Uber-Mira",
+          "status": "通勤"
+        },
+        "boltren": {
+          "name": "Bolt-Ren",
+          "status": "夜班"
+        },
+        "gogolin": {
+          "name": "GoGo-Lin",
+          "status": "外送"
+        }
       }
     }
   },
