@@ -385,10 +385,12 @@ export function GlobalAudioMount() {
     }
 
     if (src.kind === "audio-store") {
-      // PR #90: per-burst failure tracking. When every track in the
-      // current personal-radio playlist has 404'd inside an ~800ms
-      // window, advancing further is pointless — swap to the static
-      // local fallback so the page actually has audio.
+      // Burst-window failure tracking: fall back to local after
+      // FALLBACK_AFTER_ERRORS consecutive failures within 800ms —
+      // don't wait for every track in a 53-track playlist to fail
+      // (that would cause 15-20 seconds of silence on a dev server
+      // where audio bytes are in R2 but not on local disk).
+      const FALLBACK_AFTER_ERRORS = 5;
       const s = useAudioStore.getState();
       if (!tid) return;
       const now = performance.now();
@@ -397,8 +399,8 @@ export function GlobalAudioMount() {
       }
       eb.lastAt = now;
       eb.failed.add(tid);
-      if (eb.failed.size >= s.tracks.length) {
-        console.warn("[audio] all tracks failed; switching to local fallback");
+      if (eb.failed.size >= Math.min(s.tracks.length, FALLBACK_AFTER_ERRORS)) {
+        console.warn("[audio] tracks failing; switching to local fallback");
         pushInfoToast("Switched to offline music");
         useAudioStore.setState({ tracks: LOCAL_FALLBACK_TRACKS, index: 0 });
         eb.failed.clear();
@@ -406,10 +408,7 @@ export function GlobalAudioMount() {
       }
       if (s.tracks.length > 1) s.next();
     } else if (src.kind === "personal") {
-      // Disconnected personal playlist: apply the same burst-window
-      // guard as the audio-store path. Without it, if every track
-      // URL is expired/broken the player rapidly cycles through the
-      // entire playlist in a tight loop.
+      const FALLBACK_AFTER_ERRORS = 5;
       const s = useStationStore.getState();
       if (!tid) return;
       const now2 = performance.now();
@@ -418,23 +417,15 @@ export function GlobalAudioMount() {
       }
       eb.lastAt = now2;
       eb.failed.add(tid);
-      if (eb.failed.size >= s.personalPlaylist.length) {
-        console.warn("[audio] personal all-tracks failed; switching to local fallback");
+      if (eb.failed.size >= Math.min(s.personalPlaylist.length, FALLBACK_AFTER_ERRORS)) {
+        console.warn("[audio] personal tracks failing; switching to local fallback");
         s.setPersonalPlaylist(LOCAL_FALLBACK_TRACKS);
         eb.failed.clear();
         return;
       }
       if (s.personalPlaylist.length > 1) s.nextPersonal();
     } else if (src.kind === "station") {
-      // Normally we lean on the next station.cursor event (≤5s worker
-      // tick) to repoint to the next track. But if every track in the
-      // visible playlist 404s inside one burst, no future cursor will
-      // help — the storage backend is unreachable for this client (S3
-      // CORS misconfig, presigned URL expiry, IAM regression, ...).
-      // Drop activeScope so the source selector promotes the local
-      // lo-fi fallback. The next successful station.cursor that arrives
-      // does NOT auto-resume station mode — re-entering /town (or a
-      // future reconnect button) re-sets activeScope.
+      const FALLBACK_AFTER_ERRORS = 5;
       const playlistIds = selectActivePlaylistIds(useStationStore.getState());
       if (!tid || playlistIds.length === 0) return;
       const now = performance.now();
@@ -443,9 +434,9 @@ export function GlobalAudioMount() {
       }
       eb.lastAt = now;
       eb.failed.add(tid);
-      if (eb.failed.size >= playlistIds.length) {
+      if (eb.failed.size >= Math.min(playlistIds.length, FALLBACK_AFTER_ERRORS)) {
         console.warn(
-          "[audio] station all-tracks failed; switching to local fallback",
+          "[audio] station tracks failing; switching to local fallback",
         );
         useAudioStore.setState({
           tracks: LOCAL_FALLBACK_TRACKS,
