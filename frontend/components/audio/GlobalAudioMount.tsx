@@ -460,7 +460,13 @@ export function GlobalAudioMount() {
   return (
     <audio
       ref={audioRef}
-      preload="metadata"
+      // `auto` (not `metadata`): buffer the whole track ahead instead of
+      // streaming on-demand. On-demand range requests to the cross-origin
+      // audio Worker carry ~0.35s first-byte latency each, so `metadata`
+      // caused constant rebuffering / stutter mid-playback. A full track
+      // is only ~0.7–4 MB and the Worker serves it at ~1 MB/s, so eager
+      // buffering is cheap and makes playback smooth.
+      preload="auto"
       muted
       onEnded={onEnded}
       onError={onError}
