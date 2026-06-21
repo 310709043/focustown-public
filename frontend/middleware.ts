@@ -214,17 +214,19 @@ export const config = {
     // Negative lookahead excludes paths that should bypass next-intl's
     // locale prefix:
     //   api          REST endpoints
-    //   _next/static Next.js bundle chunks
-    //   _next/image  Next.js Image Optimizer
-    //   audio        public /audio/lofi-*.mp3 fallback (was redirecting to
-    //                /en/audio/... and 404ing the static asset)
-    //   assets       public /assets/v6/** Craftpix sprite library (city /
-    //                clouds / walkers / birds / cars) — same gotcha as
-    //                /audio above; without this, the live deploy 307s
-    //                /assets/v6/MANIFEST.json into /zh-TW/assets/... → 404
-    //                and the new sprites silently fail to render.
-    //   favicon.ico  small static file
-    //   logo.png     static image
-    "/((?!api|_next/static|_next/image|audio|assets|favicon.ico|logo.png|og-image.png|robots.txt|sitemap.xml|manifest.webmanifest|ads.txt).*)",
+    //   _next        Next.js bundles + Image Optimizer
+    //   .*\..*       ANY path with a file extension (a dot in the last
+    //                segment). This is the durable fix for a bug that
+    //                recurred four times: every new public static file
+    //                (audio/lofi-*.mp3, assets/v6/*.json, logo.png,
+    //                logo-trimmed.png, og-image.png, robots.txt,
+    //                sitemap.xml, manifest.webmanifest, ads.txt) had to
+    //                be hand-added to a per-file allowlist, and whoever
+    //                shipped a new asset without remembering got a silent
+    //                307 → /zh-TW/<file> → 404. App routes never contain
+    //                a dot (UUID ids, slug segments), so excluding all
+    //                dotted paths bypasses i18n for every static asset at
+    //                once with no false positives.
+    "/((?!api|_next|.*\\..*).*)",
   ],
 };
