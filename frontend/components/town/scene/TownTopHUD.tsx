@@ -143,9 +143,7 @@ export function TownTopHUD({
            City-Mode immersive keeps the LOGO + weather chip anchored; the
            version chip + ONLINE chip collapse upward so the sky breathes. */}
       <div className="town-top-hud-cluster is-left">
-        {/* Logo shrinks on narrow viewports to prevent overflow.
-            Min-width: 0 allows flex-shrink to work properly. */}
-        <div style={{ flexShrink: 1, minWidth: 0, lineHeight: 0 }}>
+        <div style={{ flexShrink: 0, lineHeight: 0 }}>
           <Logo scale={1.3} />
         </div>
         <div

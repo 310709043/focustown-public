@@ -250,14 +250,14 @@ export function GlobalAudioMount() {
       const desiredMuted = !as.audioUnlocked || as.muted;
       if (el.muted !== desiredMuted) el.muted = desiredMuted;
       const wantPlay = (() => {
-        // Every audio source autoplays once the audio is unlocked. The
-        // audio-store branch (solo focus, splash, library) used to gate
-        // on ``isPlaying && audioUnlocked`` because users could pause —
-        // now the only "stop the sound" affordance is mute, so the
-        // element keeps running and ``muted`` carries the user's intent.
-        if (src.kind === "station") return true;
-        if (src.kind === "personal") return true;
-        return as.audioUnlocked;
+        // All sources autoplay — muted initially (browser autoplay policy
+        // allows muted autoplay universally), unmuted by tryUnlock on first
+        // user gesture. This ensures el.play() fires immediately so the
+        // browser actually fetches the audio URL and onerror fires quickly
+        // on 404s (enabling the local-fallback burst guard). Previously
+        // audio-store gated on audioUnlocked which skipped el.play() until
+        // user interaction, leaving onerror un-triggered on some browsers.
+        return true;
       })();
       if (wantPlay && el.paused) {
         void el.play().catch((err) => {

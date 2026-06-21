@@ -33,9 +33,8 @@ export function Logo({ scale = 1, glow = true, className }: Props) {
       // image to set it.
       style={{
         width,
-        height: "auto",
+        height,
         maxWidth: "100%",
-        aspectRatio: `${ASPECT}`,
         filter: glow
           ? "drop-shadow(0 0 6px rgba(233,167,110,0.5))"
           : "none",
