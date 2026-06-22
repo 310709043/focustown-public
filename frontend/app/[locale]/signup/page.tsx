@@ -284,11 +284,10 @@ function SignUpForm() {
 
 export default function SignUpPage() {
   return (
-    <LoginScene showHero topAlign>
+    <LoginScene showHero topAlign footer={<AppFooter />}>
       <Suspense fallback={null}>
         <SignUpForm />
       </Suspense>
-      <AppFooter />
     </LoginScene>
   );
 }

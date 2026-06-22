@@ -225,7 +225,7 @@ function ResetPasswordFallback() {
 export default function ResetPasswordPage() {
   const t = useTranslations("auth.reset");
   return (
-    <LoginScene showHero={false}>
+    <LoginScene showHero={false} footer={<AppFooter />}>
       <div
         className="pixel-panel login-form-anim relative"
         style={{
@@ -252,7 +252,6 @@ export default function ResetPasswordPage() {
           <ResetPasswordInner />
         </Suspense>
       </div>
-      <AppFooter />
     </LoginScene>
   );
 }

@@ -48,6 +48,12 @@ interface LoginSceneProps {
    *  stay focused on the form; the landing page opts in to keep the
    *  marketing tips. */
   showAboutPanel?: boolean;
+  /** Legal footer pinned to the bottom of the scene (on the street),
+   *  separate from `children` so it never floats mid-page and never
+   *  leaves an empty gap between the form and the city — the form group
+   *  takes the free vertical space, the footer sits at the very bottom.
+   *  Pass `<AppFooter />` here instead of as a child. */
+  footer?: ReactNode;
 }
 
 /**
@@ -78,6 +84,7 @@ export function LoginScene({
   direction = "neon",
   topAlign = false,
   showAboutPanel = false,
+  footer = null,
 }: LoginSceneProps) {
   const t = useTranslations("auth.splash");
 
@@ -196,62 +203,81 @@ export function LoginScene({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: topAlign ? "flex-start" : "center",
-          gap: 18,
           padding: `70px 20px ${showAboutPanel ? 110 : 60}px`,
         }}
       >
-        {showHero ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <div className="animate-heroLogoEnter">
-              <Logo scale={3.6} />
-            </div>
-            <div className="animate-fadeUpFast anim-delay-200">
-              <Tagline />
-            </div>
-            {showAvatarStrip ? (
-              <div
-                data-testid="avatar-strip"
-                className="animate-fadeUpFast anim-delay-300"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 6,
-                  marginTop: 4,
-                }}
-              >
-                <span
-                  className="font-silkscreen"
+        {/* Form group — grows to fill the free vertical space and
+            centres (or top-aligns) the hero + form within it. Because it
+            is `flex: 1`, the footer below always lands at the very bottom
+            of the scene (on the street) with no empty sky-gap or seam,
+            regardless of viewport height or form length. */}
+        <div
+          style={{
+            flex: 1,
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: topAlign ? "flex-start" : "center",
+            gap: 18,
+          }}
+        >
+          {showHero ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <div className="animate-heroLogoEnter">
+                <Logo scale={3.6} />
+              </div>
+              <div className="animate-fadeUpFast anim-delay-200">
+                <Tagline />
+              </div>
+              {showAvatarStrip ? (
+                <div
+                  data-testid="avatar-strip"
+                  className="animate-fadeUpFast anim-delay-300"
                   style={{
-                    fontSize: 10,
-                    color: "var(--ink-mute)",
-                    letterSpacing: "0.28em",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 6,
+                    marginTop: 4,
                   }}
                 >
-                  {t("citizensFocusing")}
-                </span>
-                <AvatarFloatStrip count={6} />
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+                  <span
+                    className="font-silkscreen"
+                    style={{
+                      fontSize: 10,
+                      color: "var(--ink-mute)",
+                      letterSpacing: "0.28em",
+                    }}
+                  >
+                    {t("citizensFocusing")}
+                  </span>
+                  <AvatarFloatStrip count={6} />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
-        <div className="animate-popIn anim-delay-400" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {children}
+          <div className="animate-popIn anim-delay-400" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            {children}
+          </div>
+
+          {showHero && showAboutPanel ? (
+            <div className="animate-fadeUpFast anim-delay-500">
+              <AboutTownPanel />
+            </div>
+          ) : null}
         </div>
 
-        {showHero && showAboutPanel ? (
-          <div className="animate-fadeUpFast anim-delay-500">
-            <AboutTownPanel />
-          </div>
+        {footer ? (
+          <div style={{ width: "100%", marginTop: 24 }}>{footer}</div>
         ) : null}
       </div>
     </main>

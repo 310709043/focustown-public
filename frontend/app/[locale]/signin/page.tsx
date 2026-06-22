@@ -207,11 +207,10 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <LoginScene showHero>
+    <LoginScene showHero footer={<AppFooter />}>
       <Suspense fallback={null}>
         <SignInForm />
       </Suspense>
-      <AppFooter />
     </LoginScene>
   );
 }

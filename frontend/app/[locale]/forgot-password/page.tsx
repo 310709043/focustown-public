@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <LoginScene showHero={false}>
+    <LoginScene showHero={false} footer={<AppFooter />}>
       <div
         className="pixel-panel login-form-anim relative"
         style={{
@@ -164,7 +164,6 @@ export default function ForgotPasswordPage() {
           </form>
         )}
       </div>
-      <AppFooter />
     </LoginScene>
   );
 }
