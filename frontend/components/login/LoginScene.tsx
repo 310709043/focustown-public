@@ -92,62 +92,72 @@ export function LoginScene({
     <main
       data-testid="login-scene"
       className="absolute inset-0 overflow-auto"
-      style={{
-        background:
-          "linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 65%, var(--sky-low) 100%)",
-      }}
     >
-      {/* Stars + meteors — stars fade in after a beat so the sky
-          "powers on" progressively like the SplashGate boot sequence. */}
-      <div className="absolute inset-0 pointer-events-none animate-starsReveal" aria-hidden>
-        <StarField density={0.0008} />
-      </div>
-      <ShootingStars />
-
-      {/* Rain — only when the theme direction is `rain`, per reference. */}
-      {direction === "rain" ? (
-        <RainOverlay color="var(--accent)" />
-      ) : null}
-
-      {/* Moon (pixel) — drops in from above then gently floats. */}
+      {/* Fixed scene backdrop — pinned to the viewport so the sky, skyline,
+          ground, and citizens NEVER scroll away. Previously these were
+          absolutely positioned inside the scrolling <main>, so a tall form
+          (signup) that overflowed scrolled the whole city upward and left
+          the footer sitting on a bare sky-gradient band — the reported
+          "超頁" seam. As a fixed full-viewport layer the city stays welded
+          to the bottom of the screen while only the form/footer scroll. */}
       <div
         aria-hidden
-        className="animate-moonEnter pointer-events-none"
+        className="fixed inset-0 pointer-events-none overflow-hidden"
         style={{
-          position: "absolute",
-          top: 80,
-          right: 100,
-          zIndex: 2,
+          background:
+            "linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 65%, var(--sky-low) 100%)",
         }}
       >
-        <PixelSprite
-          sprite={MOON.sprite}
-          palette={MOON.palette}
-          scale={5}
-          glow="rgba(252,211,77,0.5)"
+        {/* Stars + meteors — stars fade in after a beat so the sky
+            "powers on" progressively like the SplashGate boot sequence. */}
+        <div className="absolute inset-0 animate-starsReveal">
+          <StarField density={0.0008} />
+        </div>
+        <ShootingStars />
+
+        {/* Rain — only when the theme direction is `rain`, per reference. */}
+        {direction === "rain" ? (
+          <RainOverlay color="var(--accent)" />
+        ) : null}
+
+        {/* Moon (pixel) — drops in from above then gently floats. */}
+        <div
+          className="animate-moonEnter"
+          style={{
+            position: "absolute",
+            top: 80,
+            right: 100,
+            zIndex: 2,
+          }}
+        >
+          <PixelSprite
+            sprite={MOON.sprite}
+            palette={MOON.palette}
+            scale={5}
+            glow="rgba(252,211,77,0.5)"
+          />
+        </div>
+
+        {/* Three-layer procedural skyline. */}
+        <SkylineLayers direction={direction} />
+
+        {/* Ground strip + faint top edge highlight. */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 80,
+            background: "linear-gradient(180deg, var(--bg-1), var(--bg-0))",
+            borderTop: "1px solid var(--panel-stroke)",
+          }}
         />
+
+        {/* Pedestrians + cat + drifting ambient pixels. */}
+        <LoginCitizens />
+        <FloatingPixels />
       </div>
-
-      {/* Three-layer procedural skyline. */}
-      <SkylineLayers direction={direction} />
-
-      {/* Ground strip + faint top edge highlight. */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 80,
-          background: "linear-gradient(180deg, var(--bg-1), var(--bg-0))",
-          borderTop: "1px solid var(--panel-stroke)",
-        }}
-      />
-
-      {/* Pedestrians + cat + drifting ambient pixels. */}
-      <LoginCitizens />
-      <FloatingPixels />
 
       {/* Top bar with FT marker, version, and live citizens count.
           Wraps cleanly on narrow phones so no chip clips out of view. */}
