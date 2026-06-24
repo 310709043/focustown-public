@@ -111,7 +111,7 @@ function pollUntilPaired(token, startedAtMs) {
 export function setup() {
   // Sanity-check the seed exists. If the first login fails we surface
   // a clear error rather than letting every VU error in parallel.
-  const token = login("load-test-001@loadtest.lowbatterytown.local", PASSWORD);
+  const token = login("load-test-001@loadtest.lowbatterytown.com", PASSWORD);
   if (!token) {
     throw new Error(
       "load-test-001 cannot sign in — did you run `python backend/scripts/seed-load-users.py`?",
@@ -124,7 +124,7 @@ export default function () {
   // Distribute VUs across the seeded pool. __VU is 1-indexed; seed
   // script creates load-test-001..load-test-NNN.
   const userN = ((__VU - 1) % LOAD_VUS) + 1;
-  const email = `load-test-${String(userN).padStart(3, "0")}@loadtest.lowbatterytown.local`;
+  const email = `load-test-${String(userN).padStart(3, "0")}@loadtest.lowbatterytown.com`;
   const token = login(email, PASSWORD);
   if (!token) {
     return;

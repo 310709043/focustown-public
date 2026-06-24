@@ -52,7 +52,10 @@ from app.core.security import hash_password  # noqa: E402
 from app.infrastructure.db.models.user import UserORM  # noqa: E402
 from app.infrastructure.db.session import get_session_factory  # noqa: E402
 
-EMAIL_FMT = "load-test-{n:03d}@loadtest.lowbatterytown.local"
+# NB: non-reserved TLD required — these users sign in through the API, and
+# pydantic EmailStr (email-validator 2.x) rejects `.local` as special-use,
+# which 422s the signin. Keep this in sync with tests/load/match_queue.js.
+EMAIL_FMT = "load-test-{n:03d}@loadtest.lowbatterytown.com"
 PASSWORD = "Loadtest123!"  # noqa: S105 — fixed dev/test fixture, not a secret
 TERMS_VERSION = "2026-05-14"
 DEFAULT_COUNT = 100
