@@ -98,8 +98,8 @@ signin() {
 # 2) Auth the two test users + create a paired match. We hit /matches/auto
 #    on A first (enqueues), then on B (pairs with A). Each accepts to land
 #    in the shared room.
-respA=$(signin "load-test-001@loadtest.lowbatterytown.local")
-respB=$(signin "load-test-002@loadtest.lowbatterytown.local")
+respA=$(signin "load-test-001@loadtest.lowbatterytown.com")
+respB=$(signin "load-test-002@loadtest.lowbatterytown.com")
 TOK_A=$(echo "$respA" | jq -r '.tokens.access_token')
 TOK_B=$(echo "$respB" | jq -r '.tokens.access_token')
 [[ -n "$TOK_A" && "$TOK_A" != "null" ]] || fail "A signin failed: $respA"

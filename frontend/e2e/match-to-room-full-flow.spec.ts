@@ -61,7 +61,10 @@ type TokensPayload = {
 function uniqueEmail(tag: string): string {
   const stamp = Date.now().toString(36);
   const rand = Math.random().toString(36).slice(2, 8);
-  return `e2e-${tag}-${stamp}-${rand}@e2e.lowbatterytown.local`;
+  // NB: must be a non-reserved TLD — pydantic EmailStr (email-validator 2.x)
+  // rejects `.local`/`.test`/etc. as special-use, which surfaces as a 422 at
+  // /auth/signup. Use a subdomain of our own (non-routable) domain instead.
+  return `e2e-${tag}-${stamp}-${rand}@e2e.lowbatterytown.com`;
 }
 
 async function createUser(

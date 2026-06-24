@@ -49,7 +49,7 @@ bold "[redis-chaos] phase 10 drill — $(date -u +%FT%TZ)"
 declare -a TOKENS
 declare -a USER_IDS
 for i in $(seq 1 "$N_USERS"); do
-  email=$(printf "load-test-%03d@loadtest.lowbatterytown.local" "$i")
+  email=$(printf "load-test-%03d@loadtest.lowbatterytown.com" "$i")
   resp=$(curl -sS --max-time 10 -X POST "$API_BASE/api/v1/auth/signin" \
     -H 'content-type: application/json' \
     -d "{\"email\":\"$email\",\"password\":\"$PASSWORD\"}") || fail "signin failed for $email"
