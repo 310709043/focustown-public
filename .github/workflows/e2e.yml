@@ -43,7 +43,7 @@ jobs:
     timeout-minutes: 20
     if: "!contains(github.event.head_commit.message, '[skip-e2e]')"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Boot docker compose stack
         env:
@@ -78,7 +78,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with: { version: 9 }
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: pnpm
@@ -128,7 +128,7 @@ jobs:
     # and saturating CI runners on every PR isn't worth the signal.
     if: "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install k6
         run: |
@@ -190,7 +190,7 @@ jobs:
     timeout-minutes: 25
     if: "github.event_name == 'workflow_dispatch' && inputs.run_chaos"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Boot stack
         env:
