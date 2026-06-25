@@ -8,6 +8,7 @@ from __future__ import annotations
 from tests.integration.conftest import (  # noqa: F401
     _postgres_container,
     _redis_container,
+    _reset_db_engine_cache,
     app,
     auth_headers,
     authed_user,
