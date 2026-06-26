@@ -118,6 +118,29 @@ def integration_env(
 # ── app + session per test ─────────────────────────────────────────────────
 
 
+@pytest_asyncio.fixture(autouse=True)
+async def _reset_db_engine_cache():
+    """Dispose + clear the process-global engine cache after each test.
+
+    ``app.infrastructure.db.session`` caches engines/sessionmakers by URL at
+    module level. pytest-asyncio runs each test in a fresh event loop, so a
+    cached engine (and its asyncpg pool) created by an earlier test is bound
+    to a now-closed loop; the next test that calls ``get_session_factory``
+    (e.g. the WS participant gate in ``test_match_room_subscribe``) reuses it
+    and asyncpg raises ``got Future attached to a different loop``.
+
+    Disposing per test keeps each engine bound to the loop that created it.
+    The engine present at teardown was built during *this* test (the prior
+    test cleared the cache), so ``dispose()`` runs on the matching loop and
+    cannot itself cross loops. Does not touch the per-test ``db_engine``
+    fixture, which owns a separate, uncached engine.
+    """
+    yield
+    from app.infrastructure.db.session import dispose_engine
+
+    await dispose_engine()
+
+
 @pytest_asyncio.fixture
 async def db_engine(integration_env):
     """Per-test engine + nested-transaction session.
