@@ -1,0 +1,75 @@
+name: edge (Cloudflare API)
+
+# LowBatteryTown chat API in edge/: test on PRs, deploy on develop.
+# Deploy needs repo secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID,
+# and a real D1 database_id in edge/wrangler.jsonc (edge/scripts/bootstrap.sh).
+
+on:
+  pull_request:
+    paths: ["edge/**", ".github/workflows/edge.yml"]
+  push:
+    branches: [develop]
+    paths: ["edge/**", ".github/workflows/edge.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: edge-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: edge
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: edge/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: edge
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: edge/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Check the account is bootstrapped
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || grep -q '"database_id": "00000000-0000-0000-0000-000000000000"' wrangler.jsonc; then
+            echo "::warning::Not deployed: run edge/scripts/bootstrap.sh once and commit the D1 id, and set the CLOUDFLARE_* secrets."
+            echo "SKIP=1" >> "$GITHUB_ENV"
+          fi
+      - if: env.SKIP != '1'
+        run: npx wrangler d1 migrations apply lbt --remote
+      - if: env.SKIP != '1'
+        run: npx wrangler deploy
+      - if: env.SKIP != '1'
+        name: Smoke test
+        run: |
+          for i in 1 2 3 4 5 6; do
+            curl -fsS https://api.lowbatterytown.com/healthz && exit 0
+            sleep 5
+          done
+          exit 1
