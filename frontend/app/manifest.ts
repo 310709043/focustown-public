@@ -6,7 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "LBT",
     description: "社交電量低的時候，匿名和一位真人一對一聊聊。不用註冊。",
     lang: "zh-TW",
-    start_url: "/zh-TW",
+    // "/" so the middleware picks the visitor's locale (NEXT_LOCALE cookie, Accept-Language).
+    start_url: "/",
     scope: "/",
     display: "standalone",
     background_color: "#141c31",
