@@ -18,6 +18,7 @@ import {
   type Waiting,
 } from "./rules";
 import type { Conversation, Line, TownStore } from "./store";
+import { COMPANION_ID, COMPANION_PROFILE, INVITE_MS, type CompanionInvite } from "./companion";
 
 export interface TownConfig {
   sessionMs: number;
@@ -111,7 +112,19 @@ export class Town {
     const waiting = (await this.store.listWaiting()).find((w) => w.guestId === guestId);
     if (waiting) {
       this.deps.send(guestId, { type: "lbt.waiting", since: iso(waiting.joinedAt) });
+      const invite = await this.store.companionInvite();
+      if (invite?.guestId === guestId && invite.expiresAt > now) this.sendCompanionInvite(invite);
       return;
+    }
+    if (guestId === COMPANION_ID) {
+      const invite = await this.store.companionInvite();
+      if (invite && invite.expiresAt > now) {
+        const target = (await this.store.listWaiting()).find((w) => w.guestId === invite.guestId);
+        if (target) {
+          this.deps.send(guestId, { type: "lbt.companion_pending", id: invite.id, profile: target.profile });
+          return;
+        }
+      }
     }
     // Neither chatting nor waiting: a client that missed lbt.ended reconciles.
     this.deps.send(guestId, { type: "lbt.idle" });
@@ -124,6 +137,7 @@ export class Town {
   /** The guest's last socket closed. Leave the queue now; an open chat ends
    *  in the sweep only if they don't come back within offlineAfter. */
   async disconnect(guestId: string) {
+    await this.cancelCompanionFor(guestId, "disconnected");
     await this.store.dequeue(guestId);
     await this.store.touchOnline(guestId, this.deps.now());
   }
@@ -131,6 +145,7 @@ export class Town {
   // ── waiting room & pairing ─────────────────────────────────────────
 
   async join(guestId: string, rawProfile: unknown, adult: boolean) {
+    if (guestId === COMPANION_ID) throw new InputError("admin_cannot_queue");
     if (adult !== true) throw new InputError("age_required");
     const now = this.deps.now();
     if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
@@ -143,7 +158,70 @@ export class Town {
   }
 
   async cancel(guestId: string) {
+    await this.cancelCompanionFor(guestId, "cancelled");
     await this.store.dequeue(guestId);
+  }
+
+  /** Offer without removing the visitor from normal matching. Acceptance is explicit. */
+  async inviteCompanion(target: unknown) {
+    if (typeof target !== "string") throw new InputError("not_waiting");
+    const now = this.deps.now();
+    if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
+    if (await this.current(COMPANION_ID)) throw new InputError("companion_busy");
+    const pending = await this.store.companionInvite();
+    if (pending && pending.expiresAt > now) throw new InputError("companion_busy");
+    if (pending) await this.clearCompanion("expired");
+    const visitor = (await this.store.listWaiting()).find((w) => w.guestId === target);
+    const seen = await this.store.lastSeen(target);
+    if (!visitor || seen === null || seen < now - this.cfg.offlineAfterMs) throw new InputError("not_waiting");
+    if ((await this.store.blockedFor(target, now)).has(COMPANION_ID)) throw new InputError("pair_blocked");
+    if (!(await this.store.hit(`companion:invite:${target}`, 1, INVITE_MS, now))) throw new InputError("slow_down");
+    const invite: CompanionInvite = { id: this.deps.newId(), guestId: target, expiresAt: now + INVITE_MS };
+    await this.store.saveCompanionInvite(invite);
+    this.sendCompanionInvite(invite);
+    this.deps.send(COMPANION_ID, { type: "lbt.companion_pending", id: invite.id, profile: visitor.profile });
+  }
+
+  async answerCompanion(guestId: string, id: unknown, accept: boolean) {
+    const invite = await this.store.companionInvite();
+    if (!invite || invite.id !== id || invite.guestId !== guestId) throw new InputError("invite_unavailable");
+    const now = this.deps.now();
+    const adminSeen = await this.store.lastSeen(COMPANION_ID);
+    const target = (await this.store.listWaiting()).find((w) => w.guestId === guestId);
+    if (invite.expiresAt <= now || adminSeen === null || adminSeen < now - this.cfg.offlineAfterMs || !target) {
+      await this.clearCompanion("expired");
+      throw new InputError("invite_unavailable");
+    }
+    if (!accept) return this.clearCompanion("declined");
+    if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) {
+      await this.clearCompanion("cancelled");
+      throw new InputError("closed");
+    }
+    if (await this.current(COMPANION_ID)) throw new InputError("companion_busy");
+    if ((await this.store.blockedFor(guestId, now)).has(COMPANION_ID)) throw new InputError("pair_blocked");
+    await this.clearCompanion("accepted");
+    await this.startConversation(target, { guestId: COMPANION_ID, profile: COMPANION_PROFILE, joinedAt: now }, now);
+  }
+
+  private sendCompanionInvite(invite: CompanionInvite) {
+    this.deps.send(invite.guestId, {
+      type: "lbt.companion_invite", id: invite.id,
+      expires_at: iso(invite.expiresAt), server_now: iso(this.deps.now()),
+    });
+  }
+
+  private async cancelCompanionFor(guestId: string, reason: string) {
+    const invite = await this.store.companionInvite();
+    if (invite && (guestId === COMPANION_ID || invite.guestId === guestId)) await this.clearCompanion(reason);
+  }
+
+  private async clearCompanion(reason: string) {
+    const invite = await this.store.companionInvite();
+    if (!invite) return;
+    await this.store.clearCompanionInvite();
+    for (const g of [invite.guestId, COMPANION_ID]) {
+      this.deps.send(g, { type: "lbt.companion_cleared", id: invite.id, reason });
+    }
   }
 
   /** Pair everyone who can be paired right now; returns pairs made. */
@@ -171,6 +249,8 @@ export class Town {
   }
 
   private async startConversation(a: Waiting, b: Waiting, now: number) {
+    await this.cancelCompanionFor(a.guestId, "matched");
+    await this.cancelCompanionFor(b.guestId, "matched");
     await this.store.dequeue(a.guestId);
     await this.store.dequeue(b.guestId);
     const c: Conversation = {
@@ -226,6 +306,7 @@ export class Town {
   }
 
   async leave(guestId: string) {
+    await this.cancelCompanionFor(guestId, "cancelled");
     await this.store.dequeue(guestId);
     const c = await this.current(guestId);
     if (!c) return;
@@ -272,6 +353,14 @@ export class Town {
   async sweep() {
     const now = this.deps.now();
     const cutoff = now - this.cfg.offlineAfterMs;
+    const invite = await this.store.companionInvite();
+    if (invite) {
+      const seen = await this.store.lastSeen(COMPANION_ID);
+      const targetSeen = await this.store.lastSeen(invite.guestId);
+      if (invite.expiresAt <= now || seen === null || seen < cutoff || targetSeen === null || targetSeen < cutoff) {
+        await this.clearCompanion("expired");
+      }
+    }
     for (const id of await this.store.activeConversationIds()) {
       const c = await this.store.getConversation(id);
       if (!c) continue;

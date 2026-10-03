@@ -55,11 +55,11 @@ function safeStorage(): Pick<Storage, "getItem" | "setItem" | "removeItem"> | nu
 
 function toProfile(raw: unknown): PeerProfile | null {
   if (!raw || typeof raw !== "object") return null;
-  const { nickname, energy, preference } = raw as Record<string, unknown>;
+  const { nickname, energy, preference, role } = raw as Record<string, unknown>;
   if (typeof nickname !== "string") return null;
   if (!(ENERGIES as readonly unknown[]).includes(energy)) return null;
   if (!(PREFERENCES as readonly unknown[]).includes(preference)) return null;
-  return { nickname, energy, preference } as PeerProfile;
+  return { nickname, energy, preference, ...(role === "admin" ? { role } : {}) } as PeerProfile;
 }
 
 /** Server times → local `Date.now()` time, immune to client clock skew. */
@@ -78,6 +78,13 @@ export function mapServerFrame(frame: unknown, now: number): TransportEvent | nu
   switch (f.type) {
     case "lbt.waiting":
       return { type: "waiting" };
+    case "lbt.companion_invite": {
+      const expiresAt = toLocal(f.expires_at, f.server_now, now);
+      return typeof f.id === "string" && expiresAt !== null && expiresAt > now
+        ? { type: "companionInvite", id: f.id, expiresAt } : null;
+    }
+    case "lbt.companion_cleared":
+      return typeof f.id === "string" ? { type: "companionCleared", id: f.id } : null;
     case "lbt.matched": {
       const me = toProfile(f.me);
       const partner = toProfile(f.partner);
@@ -264,6 +271,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
       send({ type: "join", profile: { nickname, energy, preference }, adult }, { queue: true });
     },
     cancel: () => send({ type: "cancel" }, { queue: true }),
+    answerCompanion: (id, accept) => send({ type: "companion_answer", id, accept }, { queue: false }),
     send: (text) => send({ type: "message", text }, { queue: true }),
     typing: () => send({ type: "typing" }, { queue: false }),
     extend: () => send({ type: "extend" }, { queue: true }),

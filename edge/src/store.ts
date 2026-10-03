@@ -7,6 +7,7 @@
  * per-conversation keys, and nothing outlives a day.
  */
 import type { Profile, Waiting } from "./rules";
+import type { CompanionInvite } from "./companion";
 
 export interface Conversation {
   id: string;
@@ -52,6 +53,7 @@ export const TRANSCRIPT_MAX_LINES = 400;
 type Expiring<T> = { value: T; until: number };
 
 const K = {
+  companionInvite: "companion:invite",
   online: "online", // Record<guestId, lastSeenMs>
   queue: "queue", // Waiting[]
   active: "active", // conversationId[]
@@ -67,6 +69,16 @@ const K = {
 
 export class TownStore {
   constructor(private readonly kv: KV) {}
+
+  async companionInvite(): Promise<CompanionInvite | null> {
+    return (await this.kv.get<CompanionInvite>(K.companionInvite)) ?? null;
+  }
+  async saveCompanionInvite(invite: CompanionInvite) {
+    await this.kv.put(K.companionInvite, invite);
+  }
+  async clearCompanionInvite() {
+    await this.kv.delete(K.companionInvite);
+  }
 
   private async map<T>(key: string): Promise<Record<string, T>> {
     return (await this.kv.get<Record<string, T>>(key)) ?? {};

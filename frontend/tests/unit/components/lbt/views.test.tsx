@@ -394,3 +394,42 @@ test("the head count is refreshed as soon as our own connection opens", async ()
 
   expect(store().town?.online).toBe(1);
 });
+
+describe("administrator companion invitation", () => {
+  function waiting() {
+    act(() => { store().setAdult(true); store().startWaiting("小橘"); });
+    emit({type:"connection",state:"open"});
+    emit({type:"companionInvite",id:"offer-1",expiresAt:Date.now()+60000});
+  }
+  test("requires a deliberate choice and does not match on receiving an offer", () => {
+    waiting(); render(<WaitingView />);
+    expect(store().view).toBe("waiting"); expect(transport.ops()).not.toContain("answerCompanion");
+    fireEvent.click(screen.getByRole("button",{name:"lbt.companion.accept"}));
+    expect(transport.calls.at(-1)).toEqual({op:"answerCompanion",arg:{id:"offer-1",accept:true}});
+    expect(store().view).toBe("waiting");
+    expect(screen.getByRole("button",{name:"lbt.companion.answering"})).toBeDisabled();
+  });
+  test("declining asks to keep waiting and clears only the matching offer", () => {
+    waiting();render(<WaitingView />);
+    fireEvent.click(screen.getByRole("button",{name:"lbt.companion.decline"}));
+    expect(transport.calls.at(-1)).toEqual({op:"answerCompanion",arg:{id:"offer-1",accept:false}});
+    emit({type:"companionCleared",id:"other-offer"}); expect(store().companionInvitation).not.toBeNull();
+    emit({type:"companionCleared",id:"offer-1"}); expect(store().view).toBe("waiting");
+    expect(screen.queryByText("lbt.companion.inviteTitle")).toBeNull();
+  });
+  test("expired invitations cannot be accepted", () => {
+    waiting();render(<WaitingView />);act(()=>void vi.advanceTimersByTime(60000));
+    expect(screen.queryByText("lbt.companion.inviteTitle")).toBeNull();
+    act(()=>store().answerCompanion(true)); expect(transport.ops()).not.toContain("answerCompanion");
+  });
+  test("normal matching clears the invitation", () => {
+    waiting();emit(matched()); expect(store().view).toBe("chat"); expect(store().companionInvitation).toBeNull();
+  });
+  test("administrator is explicitly labelled as a human host", () => {
+    openChat();const event=matched();if(event.type!=="matched") throw new Error();
+    event.partner={nickname:"小鎮管理員",energy:2,preference:"story",role:"admin"};emit(event);render(<ChatView />);
+    expect(screen.getByText("lbt.companion.label")).toBeInTheDocument();
+    expect(screen.getByText("lbt.companion.chatDisclosure")).toBeInTheDocument();
+    expect(screen.queryByText("lbt.chat.partnerLabel")).toBeNull();
+  });
+});

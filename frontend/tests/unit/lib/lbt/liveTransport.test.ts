@@ -330,3 +330,20 @@ describe("createLiveTransport", () => {
     await expect(make().report("spam", "")).rejects.toThrow("report_422");
   });
 });
+
+describe("human companion protocol", () => {
+  test("validates invitation expiry and converts server clock", () => {
+    const frame={type:"lbt.companion_invite",id:"i",expires_at:"2026-10-03T13:11:00Z",server_now:"2026-10-03T13:10:00Z"};
+    expect(mapServerFrame(frame,NOW)).toEqual({type:"companionInvite",id:"i",expiresAt:NOW+60000});
+    expect(mapServerFrame({...frame,expires_at:"bad"},NOW)).toBeNull();
+    expect(mapServerFrame({...frame,expires_at:frame.server_now},NOW)).toBeNull();
+    expect(mapServerFrame({type:"lbt.companion_cleared",id:"i"},NOW)).toEqual({type:"companionCleared",id:"i"});
+  });
+  test("preserves only the server's known administrator role", () => {
+    const p={nickname:"管理員",energy:2,preference:"story"};
+    const f={type:"lbt.matched",me:p,partner:{...p,role:"admin"},ends_at:"2026-10-03T13:07:00Z",server_now:"2026-10-03T13:00:00Z"};
+    expect(mapServerFrame(f,NOW)).toMatchObject({partner:{role:"admin"}});
+    const event=mapServerFrame({...f,partner:{...p,role:"untrusted"}},NOW);
+    if(event?.type!=="matched") throw new Error(); expect(event.partner).not.toHaveProperty("role");
+  });
+});

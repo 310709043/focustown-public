@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 const KNOWN = new Set([
+  "invite_unavailable",
   "closed",
   "age_required",
   "slow_down",

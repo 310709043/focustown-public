@@ -10,6 +10,7 @@ import {
 import type { LbtTransport, TransportEvent } from "./transport";
 import type {
   ChatLine,
+  CompanionInvitation,
   ConnectionState,
   EndReason,
   Energy,
@@ -34,6 +35,8 @@ import type {
  */
 
 interface LbtData {
+  companionInvitation: CompanionInvitation | null;
+  companionAnswering: boolean;
   mode: LbtMode;
   view: LbtView;
   energy: Energy;
@@ -64,6 +67,7 @@ interface LbtData {
 }
 
 interface LbtActions {
+  answerCompanion: (accept: boolean) => void;
   attach: (transport: LbtTransport) => () => void;
   setEnergy: (energy: Energy) => void;
   setPreference: (preference: Preference) => void;
@@ -91,6 +95,8 @@ interface LbtActions {
 export type LbtState = LbtData & LbtActions;
 
 const INITIAL: LbtData = {
+  companionInvitation: null,
+  companionAnswering: false,
   mode: "live",
   view: "home",
   energy: 1,
@@ -128,6 +134,7 @@ export function remainingSeconds(state: Pick<LbtData, "endsAt" | "now">): number
 let transport: LbtTransport | null = null;
 let tick: ReturnType<typeof setInterval> | undefined;
 let typingClear: ReturnType<typeof setTimeout> | undefined;
+let inviteExpiry: ReturnType<typeof setTimeout> | undefined;
 let lastTypingSent = 0;
 let systemSeq = 0;
 
@@ -160,10 +167,13 @@ export const useLbtStore = create<LbtState>()((set, get) => {
   };
 
   const toEnd = (reason: EndReason | null) => {
+    clearTimeout(inviteExpiry);
     stopClock();
     clearTimeout(typingClear);
     set((s) => ({
       view: "end",
+      companionInvitation: null,
+      companionAnswering: false,
       endReason: reason,
       partnerTyping: false,
       extendMine: false,
@@ -180,13 +190,28 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     const state = get();
     switch (event.type) {
       case "connection":
-        set({ connection: event.state });
+        set({ connection: event.state, ...(event.state === "offline" ? { companionInvitation: null, companionAnswering: false } : {}) });
+        return;
+      case "companionInvite":
+        if (state.view !== "waiting") return;
+        clearTimeout(inviteExpiry);
+        set({ companionInvitation: { id: event.id, expiresAt: event.expiresAt }, companionAnswering: false });
+        inviteExpiry = setTimeout(() => set({ companionInvitation: null, companionAnswering: false }), Math.max(0, event.expiresAt - Date.now()));
+        return;
+      case "companionCleared":
+        if (state.companionInvitation?.id === event.id) {
+          clearTimeout(inviteExpiry);
+          set({ companionInvitation: null, companionAnswering: false });
+        }
         return;
       case "waiting":
         if (state.view !== "chat") set({ view: "waiting", waitingSince: state.waitingSince ?? Date.now() });
         return;
       case "matched":
+        clearTimeout(inviteExpiry);
         set({
+          companionInvitation: null,
+          companionAnswering: false,
           view: "chat",
           partner: event.partner,
           simulated: event.simulated,
@@ -253,10 +278,10 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         // The server has no session for us (e.g. it ended while we were
         // offline). Reconcile instead of showing a chat that is gone.
         if (state.view === "chat") toEnd(null);
-        else if (state.view === "waiting") set({ view: "home", waitingSince: null, notice: "wait_interrupted" });
+        else if (state.view === "waiting") set({ view: "home", waitingSince: null, companionInvitation: null, notice: "wait_interrupted" });
         return;
       case "error":
-        set({ notice: event.code });
+        set({ notice: event.code, companionAnswering: false });
         if (state.view === "waiting" && SEND_HOME.has(event.code)) {
           set({ view: "home", waitingSince: null });
         }
@@ -293,6 +318,8 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         return;
       }
       set({
+        companionInvitation: null,
+        companionAnswering: false,
         view: "waiting",
         nickname,
         lines: [],
@@ -311,8 +338,16 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     },
 
     cancelWaiting() {
+      clearTimeout(inviteExpiry);
       transport?.cancel();
-      set({ view: "home", waitingSince: null });
+      set({ view: "home", waitingSince: null, companionInvitation: null, companionAnswering: false });
+    },
+
+    answerCompanion(accept) {
+      const { companionInvitation: invite, companionAnswering, view, connection } = get();
+      if (!invite || companionAnswering || view !== "waiting" || connection !== "open" || invite.expiresAt <= Date.now()) return;
+      set({ companionAnswering: true });
+      transport?.answerCompanion(invite.id, accept);
     },
 
     again() {
@@ -320,12 +355,15 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     },
 
     goHome() {
+      clearTimeout(inviteExpiry);
       const { view } = get();
       if (view === "chat") transport?.leave();
       if (view === "waiting") transport?.cancel();
       stopClock();
       set({
         view: "home",
+        companionInvitation: null,
+        companionAnswering: false,
         endsAt: null,
         partner: null,
         modal: null,
@@ -383,6 +421,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     handle,
 
     reset() {
+      clearTimeout(inviteExpiry);
       stopClock();
       clearTimeout(typingClear);
       lastTypingSent = 0;

@@ -19,6 +19,8 @@ export interface Profile {
   nickname: string;
   energy: number;
   preference: Preference;
+  /** Set by the server only; parseProfile never accepts a client-supplied role. */
+  role?: "admin";
 }
 
 export interface Waiting {

@@ -8,6 +8,8 @@
  * allows only this page's own nonce'd script and style.
  */
 
+import { COMPANION_SCRIPT, COMPANION_STYLE } from "./adminCompanion";
+
 const STYLE = `
 :root{--night:#141c31;--night2:#1c2944;--night3:#253554;--line:rgba(211,222,242,.15);--paper:#f9f4eb;
 --mist:#bdc8dc;--subtle:#8291ae;--lamp:#f8d779;--peach:#f4b49d;--mint:#b6d6c4;--red:#f08c8c}
@@ -46,6 +48,7 @@ h2{font-size:16px;margin:28px 0 12px;color:var(--lamp)}
 .empty{color:var(--subtle);padding:24px 0}
 .stats+.meta{margin-top:10px}
 @media (max-width:600px){.people{grid-template-columns:1fr}}
+${COMPANION_STYLE}
 `;
 
 const SCRIPT = `
@@ -79,6 +82,7 @@ async function api(path, opts) {
 }
 
 function signOut(message) {
+  stopCompanion();
   try { sessionStorage.removeItem(KEY); } catch {}
   showLogin(message || "");
 }
@@ -147,6 +151,7 @@ async function render() {
   const reports = el("section", {"aria-label":"檢舉"});
   if (!list.items.length) reports.append(el("p", {class:"empty", text:"沒有符合的檢舉。"}));
   for (const r of list.items) reports.append(reportCard(r));
+  const active = document.activeElement;
   app.replaceChildren(
     el("header", {},
       el("h1", {}, "LowBattery", el("span", {text:"Town"}), " 後台"),
@@ -157,8 +162,11 @@ async function render() {
       stat("目前在線", o.online), stat("等待配對", o.waiting), stat("進行中的對話", o.conversations),
       stat("待處理檢舉", o.reports.byStatus.open, o.reports.byStatus.open > 0), stat("24 小時內新檢舉", o.reports.last24h)),
     el("p", {class:"meta", text: (o.open ? "小鎮開放中" : "小鎮休息中") + (o.hours ? "（" + o.hours + "）" : "（全天開放）") + " · 更新於 " + fmt(new Date().toISOString())}),
-    el("h2", {text:"檢舉"}), tabs, reports);
+    getCompanionPanel(), el("h2", {text:"檢舉"}), tabs, reports);
+  if (active && getCompanionPanel().contains(active)) active.focus({preventScroll:true});
 }
+
+${COMPANION_SCRIPT}
 
 render().catch(() => {});
 setInterval(() => { if (token() && !document.hidden) render().catch(() => {}); }, 30000);
@@ -182,14 +190,15 @@ export function adminPage(nonce: string): string {
 </html>`;
 }
 
-export function adminPageHeaders(nonce: string): Record<string, string> {
+export function adminPageHeaders(nonce: string, origin = "https://api.lowbatterytown.com"): Record<string, string> {
+  const socketOrigin = origin.replace(/^http/, "ws");
   return {
     "Content-Type": "text/html; charset=utf-8",
     "Content-Security-Policy": [
       "default-src 'none'",
       `script-src 'nonce-${nonce}'`,
       `style-src 'nonce-${nonce}'`,
-      "connect-src 'self'",
+      `connect-src 'self' ${socketOrigin}`,
       "img-src 'self' data:",
       "base-uri 'none'",
       "form-action 'none'",

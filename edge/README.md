@@ -25,7 +25,7 @@ otherwise to expire day-old state.
 ```bash
 cd edge
 pnpm install
-pnpm test          # 136 tests inside workerd: rules, session logic, full API over WebSockets
+pnpm test          # rules, session logic and full API over real WebSockets inside workerd
 pnpm typecheck
 printf 'LBT_TOKEN_SECRET=%s\n' "$(openssl rand -hex 24)" > .dev.vars
 npx wrangler d1 migrations apply lbt --local
@@ -67,6 +67,33 @@ It shows live numbers (online, waiting, open conversations, reports) and every
 report with both profiles, the note and the transcript, and lets you mark it
 reviewed / actioned / dismissed. It refreshes every 30 s. The page builds all
 report content with `textContent` (it is user-written) under a nonce-only CSP.
+
+### Human administrator companion
+
+In `/admin`, click **開始陪聊值班**, then invite a visitor from the waiting list.
+The visitor sees an explicit human administrator invitation and can accept or
+keep waiting. Invitations expire after 60 seconds; normal visitor matching
+continues and cancels an offer if it finds a partner first. One administrator
+socket, one pending invitation or one conversation at a time. The host is
+server-labelled **小鎮管理員**, joins the real online count only while on duty,
+and chats directly in the console. Seven-minute windows, mutual extensions,
+leaving, contact masking and reporting use the existing session rules.
+
+Only waiting profiles are exposed by `GET /api/v1/admin/lbt/waiting`; there is
+no access to other active conversations through this feature. The console
+exchanges `ADMIN_TOKEN` for a five-minute, socket-only ticket via
+`POST /api/v1/admin/lbt/companion/token`. Tickets use a separate token type
+and the same-origin `.../companion/ws` endpoint; neither password nor ticket
+is sent in a URL. Pending invitations live in Durable Object storage and
+are replayed across reconnects. Logging out or ending duty leaves the chat.
+
+This extension is Cloudflare-only; the legacy FastAPI implementation is
+unchanged. The frontend still works with it, but receives no host invitations.
+To run the opt-in browser test against a local Worker, provide
+`PLAYWRIGHT_API_BASE_URL`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_NO_SERVER=1` and
+`PLAYWRIGHT_COMPANION_ADMIN_TOKEN` in the environment, then run
+`pnpm exec playwright test e2e/lbt-companion.spec.ts` from `frontend/`.
+Do not retain administrator traces/videos or commit any credentials.
 
 Same data over the API:
 

@@ -16,6 +16,9 @@ export function WaitingView() {
   const mode = useLbtStore((s) => s.mode);
   const connection = useLbtStore((s) => s.connection);
   const waitingSince = useLbtStore((s) => s.waitingSince);
+  const invitation = useLbtStore((s) => s.companionInvitation);
+  const answering = useLbtStore((s) => s.companionAnswering);
+  const answerCompanion = useLbtStore((s) => s.answerCompanion);
   const [longWait, setLongWait] = useState(false);
 
   useEffect(() => {
@@ -57,6 +60,20 @@ export function WaitingView() {
           </p>
         ) : null}
         {longWait && mode === "live" ? <p className="waiting-long">{t("waiting.longWait")}</p> : null}
+        {invitation ? (
+          <section className="companion-invitation" aria-labelledby="companion-title">
+            <h2 id="companion-title">{t("companion.inviteTitle")}</h2>
+            <p>{t("companion.inviteBody")}</p>
+            <div className="companion-actions">
+              <button type="button" className="primary-button" disabled={answering || connection !== "open"} onClick={() => answerCompanion(true)}>
+                {answering ? t("companion.answering") : t("companion.accept")}
+              </button>
+              <button type="button" className="text-button" disabled={answering || connection !== "open"} onClick={() => answerCompanion(false)}>
+                {t("companion.decline")}
+              </button>
+            </div>
+          </section>
+        ) : null}
         <Notice />
         <div className="waiting-progress">
           <span />

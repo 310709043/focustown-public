@@ -2570,3 +2570,13 @@
     padding-top: 28px;
   }
 }
+
+/* Human administrator invitations stay inline and never interrupt ordinary matching. */
+.lbt .companion-invitation { margin: 20px 0; padding: 20px; border: 1px solid var(--lamp); border-radius: 18px; background: var(--night-2); text-align: left; }
+.lbt .companion-invitation h2 { font-size: 18px; margin-bottom: 8px; }
+.lbt .companion-invitation p { line-height: 1.7; }
+.lbt .companion-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 16px; }
+.lbt .companion-actions button { min-height: 44px; }
+.lbt .companion-actions .primary-button { width: auto; margin: 0; padding: 12px 18px; }
+.lbt .companion-actions button:disabled { opacity: .6; cursor: wait; }
+.lbt .companion-disclosure { font-size: 13px; line-height: 1.6; margin-top: 6px; color: var(--lamp); }
