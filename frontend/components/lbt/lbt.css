@@ -2733,3 +2733,255 @@
 @media (prefers-reduced-motion: reduce) {
   .lbt .lbt-intro { display: none; }
 }
+
+/* ── Home layout: everything on one screen ────────────────────────────
+   Desktop (wide and tall enough): the page is exactly one viewport. Hero
+   on the top left, the battery and promises cards under it, the form as
+   its own column on the right, so "走進小鎮" is always visible.
+   Narrower or shorter screens: one column in the order hero → form →
+   info, with a compact hero, so on a phone the whole form (and the start
+   button) sits in the first screen and the extra cards follow. */
+.lbt .home-grid {
+  grid-template-areas: "hero" "form" "info";
+}
+.lbt .home-grid > .main-stage {
+  grid-area: hero;
+}
+.lbt .home-grid > .selection-card {
+  grid-area: form;
+  max-width: none;
+  margin-top: 0;
+}
+.lbt .home-grid > .side-rail {
+  grid-area: info;
+}
+
+@media (min-width: 960px) and (min-height: 620px) {
+  .lbt .site-shell:has(.home-view) {
+    height: 100dvh;
+    min-height: 0;
+  }
+  .lbt .site-shell:has(.home-view) .topbar {
+    height: 64px;
+    flex-shrink: 0;
+  }
+  .lbt .site-shell:has(.home-view) .footer {
+    padding: 10px 0 12px;
+    flex-shrink: 0;
+  }
+  .lbt .home-view {
+    min-height: 0;
+    display: flex;
+  }
+  .lbt .home-grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "hero form"
+      "info form";
+    gap: 14px 16px;
+    padding: 14px 0 0;
+  }
+  .lbt .home-grid > .main-stage {
+    min-height: 0;
+    padding: clamp(18px, 3.2vh, 32px) clamp(24px, 3vw, 44px) 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+  }
+  .lbt .home-grid > .main-stage .hero-copy {
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-bottom: clamp(56px, 11vh, 110px);
+  }
+  .lbt .home-grid > .main-stage .hero-kicker {
+    margin-bottom: 10px;
+  }
+  .lbt .home-grid > .main-stage h1 {
+    font-size: clamp(38px, min(4.6vw, 8vh), 80px);
+  }
+  .lbt .home-grid > .main-stage .hero-subtitle {
+    margin-top: clamp(10px, 2vh, 22px);
+    font-size: 15px;
+    line-height: 1.75;
+  }
+  .lbt .home-grid > .main-stage .townscape {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    height: clamp(70px, 14vh, 140px);
+    z-index: 1;
+  }
+  .lbt .home-grid > .selection-card {
+    min-height: 0;
+    overflow-y: auto;
+    padding: clamp(16px, 2.6vh, 24px) 22px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .lbt .home-grid > .selection-card .nickname-field {
+    margin-bottom: clamp(10px, 1.8vh, 18px);
+    padding-bottom: clamp(10px, 1.6vh, 16px);
+  }
+  .lbt .home-grid > .selection-card .energy-option {
+    min-height: clamp(78px, 11vh, 100px);
+    padding: 12px 11px;
+  }
+  .lbt .home-grid > .selection-card .preference-row {
+    margin-top: clamp(10px, 1.8vh, 18px);
+    padding-top: clamp(10px, 1.6vh, 16px);
+  }
+  .lbt .home-grid > .selection-card > .primary-button {
+    margin-top: auto;
+  }
+  .lbt .home-grid > .selection-card .adult-check {
+    margin-bottom: 14px;
+  }
+  .lbt .home-grid > .side-rail {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+  .lbt .home-grid > .side-rail .side-card {
+    min-height: 0;
+    padding: 16px 20px;
+    border-radius: 20px;
+  }
+  /* Battery card turns sideways: the character left, its words right. */
+  .lbt .home-grid > .side-rail .battery-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "top top"
+      "battery title"
+      "battery text";
+    column-gap: 18px;
+    align-content: start;
+  }
+  .lbt .home-grid > .side-rail .battery-card .side-card-top {
+    grid-area: top;
+    margin-bottom: 6px;
+  }
+  .lbt .home-grid > .side-rail .battery-card .battery-display {
+    grid-area: battery;
+    height: auto;
+    transform: scale(0.62);
+    transform-origin: 50% 0;
+    margin: -6px -22px -64px;
+  }
+  .lbt .home-grid > .side-rail .battery-card h2 {
+    grid-area: title;
+    font-size: 17px;
+    margin: 4px 0 4px;
+  }
+  .lbt .home-grid > .side-rail .battery-card > p {
+    grid-area: text;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  .lbt .home-grid > .side-rail .battery-footnote {
+    display: none;
+  }
+  .lbt .home-grid > .side-rail .how-card ol {
+    margin: 8px 0 10px;
+  }
+  .lbt .home-grid > .side-rail .how-card li p {
+    margin: 6px 0;
+    font-size: 12px;
+  }
+  .lbt .home-grid > .side-rail .how-card .support-note {
+    display: inline;
+    margin-left: 10px;
+  }
+}
+
+@media (max-width: 959px), (max-height: 619px) {
+  .lbt .home-grid {
+    grid-template-columns: 1fr;
+  }
+  .lbt .home-grid > .main-stage {
+    min-height: 0;
+    padding-bottom: 20px;
+  }
+  .lbt .home-grid > .main-stage .hero-copy {
+    margin-top: 22px;
+  }
+  .lbt .home-grid > .main-stage .townscape {
+    display: none;
+  }
+}
+
+/* Phones: a short hero so the whole form fits in the first screen. */
+@media (max-width: 610px) {
+  .lbt .home-grid > .main-stage {
+    padding: 14px 17px;
+    border-radius: 18px;
+  }
+  .lbt .home-grid > .main-stage .stage-topline {
+    display: none;
+  }
+  .lbt .home-grid > .main-stage .hero-copy {
+    margin-top: 0;
+  }
+  .lbt .home-grid > .main-stage .hero-kicker {
+    display: none;
+  }
+  /* One line: "今天還剩幾格電？" */
+  .lbt .home-grid > .main-stage h1 {
+    font-size: clamp(25px, 7.4vw, 32px);
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+  }
+  .lbt .home-grid > .main-stage h1 br {
+    display: none;
+  }
+  .lbt .site-shell:has(.home-view) .topbar {
+    height: 58px;
+  }
+  .lbt .home-grid {
+    padding-top: 10px;
+    gap: 10px;
+  }
+  .lbt .home-grid > .main-stage .hero-subtitle {
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+  .lbt .home-grid > .selection-card {
+    padding: 16px 14px;
+  }
+  .lbt .home-grid > .selection-card .nickname-field {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+  .lbt .home-grid > .selection-card .nickname-field small {
+    display: none;
+  }
+  .lbt .home-grid > .selection-card .energy-option {
+    min-height: 66px;
+    padding: 8px 7px;
+  }
+  .lbt .home-grid > .selection-card .energy-symbol {
+    height: 18px;
+    margin-bottom: 4px;
+  }
+  .lbt .home-grid > .selection-card .energy-purpose {
+    margin-bottom: 10px;
+  }
+  .lbt .home-grid > .selection-card .adult-check small {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .lbt .home-grid > .selection-card .preference-row {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .lbt .home-grid > .selection-card > .primary-button {
+    margin-top: 14px;
+  }
+}
