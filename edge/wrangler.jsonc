@@ -17,7 +17,7 @@
       "binding": "DB",
       "database_name": "lbt",
       // Filled in by `wrangler d1 create lbt` (see edge/README.md).
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "4d9c37d0-0e7a-478d-8373-a314d494a162",
       "migrations_dir": "migrations"
     }
   ],
