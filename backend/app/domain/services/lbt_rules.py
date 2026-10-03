@@ -37,7 +37,7 @@ def clean_text(raw: object, *, limit: int) -> str:
 
 CONTACT_MASK = "•••"
 
-_D = "0-9０-９"  # ASCII and full-width digits
+_D = "0-9\uff10-\uff19"  # ASCII and full-width digits
 _URL = re.compile(
     r"(?:https?://|www\.)\S+"
     r"|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\."
@@ -47,7 +47,9 @@ _URL = re.compile(
 )
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _HANDLE = re.compile(r"(?<![\w@])@[A-Za-z0-9_.]{3,}")
-_PHONE = re.compile(rf"[+＋]?[{_D}](?:[{_D}\s\-－.．()（）]{{6,}})[{_D}]")
+# Separators: space, hyphen, dot, brackets, plus their full-width forms.
+_SEP = "\\s\\-.()\uff0d\uff0e\uff08\uff09"
+_PHONE = re.compile(rf"[+\uff0b]?[{_D}](?:[{_D}{_SEP}]{{6,}})[{_D}]")
 
 
 def _mask_phone(match: re.Match[str]) -> str:
