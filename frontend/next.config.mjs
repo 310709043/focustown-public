@@ -38,8 +38,14 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
-  experimental: {
-    typedRoutes: true,
+  typedRoutes: true,
+  async redirects() {
+    return [{
+      source: "/:path*",
+      has: [{ type: "host", value: "^lowbatterytown\\.com$" }],
+      destination: "https://www.lowbatterytown.com/:path*",
+      statusCode: 301,
+    }];
   },
   async headers() {
     return [
