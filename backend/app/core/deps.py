@@ -346,7 +346,9 @@ def _parse_ip(raw: str | None) -> str | None:
         return None
 
 
-def get_client_ip(request: Request, settings: SettingsDep) -> str | None:
+def resolve_client_ip(
+    peer: str | None, forwarded_for: str | None, settings: Settings
+) -> str | None:
     """Client IP for rate limiting and audit columns.
 
     Returns the direct socket peer by default. Honours X-Forwarded-For ONLY
@@ -354,25 +356,31 @@ def get_client_ip(request: Request, settings: SettingsDep) -> str | None:
     Settings.app_trusted_proxies). Returns None if no valid IP can be
     determined — callers should treat None as "unknown" and apply per-key
     fallbacks rather than skipping limits.
+
+    Shared by HTTP requests and WebSocket handshakes so both see the same
+    client behind the reverse proxy.
     """
-    peer = request.client.host if request.client else None
     peer_validated = _parse_ip(peer)
 
     networks = settings.trusted_proxy_networks
     if peer_validated and networks:
         try:
             peer_addr = _ipaddress.ip_address(peer_validated)
-            if any(peer_addr in net for net in networks):
-                forwarded = request.headers.get("x-forwarded-for")
-                if forwarded:
-                    candidate = forwarded.split(",", 1)[0].strip()
-                    parsed = _parse_ip(candidate)
-                    if parsed:
-                        return parsed
+            if any(peer_addr in net for net in networks) and forwarded_for:
+                candidate = forwarded_for.split(",", 1)[0].strip()
+                parsed = _parse_ip(candidate)
+                if parsed:
+                    return parsed
         except ValueError:
             pass
 
     return peer_validated
+
+
+def get_client_ip(request: Request, settings: SettingsDep) -> str | None:
+    """Client IP of an HTTP request (see ``resolve_client_ip``)."""
+    peer = request.client.host if request.client else None
+    return resolve_client_ip(peer, request.headers.get("x-forwarded-for"), settings)
 
 
 ClientIpDep = Annotated[str | None, Depends(get_client_ip)]

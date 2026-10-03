@@ -10,6 +10,7 @@ Key layout (all under ``lbt:``):
   lbt:guest:{guest}:conv     open conversation id
   lbt:guest:{guest}:last     most recent closed conversation id (for reports)
   lbt:transcript:{id}        LIST of line JSON, capped
+  lbt:extend:{id}            SET of guests who asked to extend (Lua, atomic)
   lbt:blocked:{guest}        SET of guests never to pair with again (TTL)
   lbt:lock:pair              pairing mutex (SET NX PX)
 
@@ -40,6 +41,19 @@ TRANSCRIPT_MAX_LINES = 400
 OPEN_CONVERSATION_TTL = timedelta(hours=6)
 WAITING_TTL = timedelta(hours=1)
 LOCK_TTL_MS = 5000
+
+# Add a vote and, if that makes two, clear the set and report completion —
+# all in one step, so concurrent votes on two processes can neither lose a
+# vote nor both trigger the extension.
+_VOTE_EXTEND = """
+redis.call('sadd', KEYS[1], ARGV[1])
+redis.call('expire', KEYS[1], ARGV[2])
+if redis.call('scard', KEYS[1]) >= 2 then
+  redis.call('del', KEYS[1])
+  return 1
+end
+return 0
+"""
 
 _RELEASE_LOCK = """
 if redis.call('get', KEYS[1]) == ARGV[1] then
@@ -75,6 +89,10 @@ def _guest_last_key(guest_id: str) -> str:
 
 def _transcript_key(conversation_id: str) -> str:
     return f"lbt:transcript:{conversation_id}"
+
+
+def _extend_key(conversation_id: str) -> str:
+    return f"lbt:extend:{conversation_id}"
 
 
 def _blocked_key(guest_id: str) -> str:
@@ -184,7 +202,18 @@ class RedisLbtStore(ILbtStore):
             pipe.set(_guest_last_key(guest), conversation.id, ex=keep)
         pipe.expire(_conv_key(conversation.id), keep)
         pipe.expire(_transcript_key(conversation.id), keep)
+        pipe.delete(_extend_key(conversation.id))
         await pipe.execute()
+
+    async def add_extend_vote(self, conversation_id: str, guest_id: str) -> bool:
+        ttl = int(OPEN_CONVERSATION_TTL.total_seconds())
+        completed = await self._r.eval(
+            _VOTE_EXTEND, 1, _extend_key(conversation_id), guest_id, ttl
+        )
+        return bool(completed)
+
+    async def extend_votes(self, conversation_id: str) -> set[str]:
+        return set(await self._r.smembers(_extend_key(conversation_id)))
 
     async def append_line(self, conversation_id: str, line: LbtTranscriptLine) -> None:
         key = _transcript_key(conversation_id)

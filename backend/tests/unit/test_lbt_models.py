@@ -52,58 +52,31 @@ def test_is_past_grace(conversation, after_end, expected):
     assert conversation.is_past_grace(now, timedelta(seconds=60)) is expected
 
 
-def test_one_request_records_it_without_extending(conversation):
-    updated, extended = conversation.request_extend("g_a", T0, WINDOW)
+def test_extended_adds_one_window_from_the_end(conversation):
+    updated = conversation.extended(T0, WINDOW)
 
-    assert (extended, updated.extend_requests, updated.ends_at) == (
-        False,
-        frozenset({"g_a"}),
-        conversation.ends_at,
-    )
+    assert (updated.ends_at, updated.extensions) == (conversation.ends_at + WINDOW, 1)
 
 
-def test_asking_twice_from_the_same_side_still_does_not_extend(conversation):
-    once, _ = conversation.request_extend("g_a", T0, WINDOW)
-
-    _, extended = once.request_extend("g_a", T0, WINDOW)
-
-    assert extended is False
-
-
-def test_both_requests_extend_and_reset_requests(conversation):
-    once, _ = conversation.request_extend("g_a", T0, WINDOW)
-
-    updated, extended = once.request_extend("g_b", T0, WINDOW)
-
-    assert (extended, updated.ends_at, updated.extend_requests, updated.extensions) == (
-        True,
-        conversation.ends_at + WINDOW,
-        frozenset(),
-        1,
-    )
-
-
-def test_agreeing_during_grace_gives_a_full_window_from_now(conversation):
+def test_extended_during_grace_gives_a_full_window_from_now(conversation):
     late = conversation.ends_at + timedelta(seconds=30)
-    once, _ = conversation.request_extend("g_a", late, WINDOW)
 
-    updated, _ = once.request_extend("g_b", late, WINDOW)
-
-    assert updated.ends_at == late + WINDOW
+    assert conversation.extended(late, WINDOW).ends_at == late + WINDOW
 
 
-def test_request_from_a_stranger_raises(conversation):
-    with pytest.raises(ValueError, match="not part"):
-        conversation.request_extend("g_x", T0, WINDOW)
+def test_extended_does_not_mutate_the_original(conversation):
+    conversation.extended(T0, WINDOW)
+
+    assert (conversation.ends_at, conversation.extensions) == (T0 + WINDOW, 0)
 
 
-def test_request_extend_does_not_mutate_the_original(conversation):
-    conversation.request_extend("g_a", T0, WINDOW)
+def test_from_dict_ignores_legacy_extend_requests(conversation):
+    raw = {**conversation.to_dict(), "extend_requests": ["g_a"]}
 
-    assert conversation.extend_requests == frozenset()
+    assert LbtConversation.from_dict(raw) == conversation
 
 
 def test_dict_round_trip(conversation):
-    original = replace(conversation, extend_requests=frozenset({"g_b"}), extensions=2)
+    original = replace(conversation, extensions=2)
 
     assert LbtConversation.from_dict(original.to_dict()) == original

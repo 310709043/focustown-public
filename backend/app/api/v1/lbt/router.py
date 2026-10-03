@@ -34,6 +34,7 @@ from app.core.deps import (
     RateLimiterDep,
     SettingsDep,
     WSManagerDep,
+    resolve_client_ip,
 )
 from app.core.exceptions import AuthError, RateLimitedError, ValidationError
 from app.core.ids import IIdGenerator
@@ -147,14 +148,22 @@ async def lbt_socket(
     ids: IdGenDep,
     token: str | None = Query(None, max_length=2048),
 ) -> None:
-    peer_ip = websocket.client.host if websocket.client else None
+    # Behind the reverse proxy the socket peer is the proxy itself; use the
+    # same trusted X-Forwarded-For rule as HTTP so visitors don't share one
+    # bucket. LowBatteryTown opens a socket per page view, so its bucket is
+    # kept apart from the legacy endpoint's.
+    client_ip = resolve_client_ip(
+        websocket.client.host if websocket.client else None,
+        websocket.headers.get("x-forwarded-for"),
+        settings,
+    )
     subprotocols = websocket.scope.get("subprotocols") or []
     raw_token, chosen_subprotocol, _ = extract_ws_token(subprotocols, token)
     # Accept first so rejections arrive as WS close codes (see ws/router.py).
     await websocket.accept(subprotocol=chosen_subprotocol)
 
     decision = await limiter.hit(
-        f"ws:ip:{peer_ip or 'unknown'}",
+        f"lbt:ws:ip:{client_ip or 'unknown'}",
         limit=settings.ws_rl_connect_per_ip_per_min,
         window_seconds=60,
     )

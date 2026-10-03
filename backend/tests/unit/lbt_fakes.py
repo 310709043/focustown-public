@@ -1,6 +1,7 @@
 """In-memory test doubles for LowBatteryTown ports."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -25,7 +26,11 @@ class InMemoryLbtStore(ILbtStore):
     guest_last: dict[str, str] = field(default_factory=dict)
     transcripts: dict[str, list[LbtTranscriptLine]] = field(default_factory=dict)
     blocked: dict[str, set[str]] = field(default_factory=dict)
+    votes: dict[str, set[str]] = field(default_factory=dict)
     lock_held: bool = False
+    # Yield to the event loop inside reads/writes so tests can interleave
+    # two coroutines the way two API processes would.
+    interleave: bool = False
     closed_keep_for: dict[str, timedelta] = field(default_factory=dict)
 
     async def touch_online(self, guest_id: str, now: datetime) -> None:
@@ -64,12 +69,18 @@ class InMemoryLbtStore(ILbtStore):
             self.lock_held = False
 
     async def save_conversation(self, conversation: LbtConversation) -> None:
+        await self._yield()
         self.conversations[conversation.id] = conversation
         self.active.add(conversation.id)
         self.guest_conv[conversation.guest_a] = conversation.id
         self.guest_conv[conversation.guest_b] = conversation.id
 
+    async def _yield(self) -> None:
+        if self.interleave:
+            await asyncio.sleep(0)
+
     async def get_conversation(self, conversation_id: str) -> LbtConversation | None:
+        await self._yield()
         return self.conversations.get(conversation_id)
 
     async def conversation_id_of(self, guest_id: str) -> str | None:
@@ -89,6 +100,19 @@ class InMemoryLbtStore(ILbtStore):
             self.guest_conv.pop(guest, None)
             self.guest_last[guest] = conversation.id
         self.closed_keep_for[conversation.id] = keep_for
+        self.votes.pop(conversation.id, None)
+
+    async def add_extend_vote(self, conversation_id: str, guest_id: str) -> bool:
+        # Single synchronous step: mirrors the atomic Lua script.
+        votes = self.votes.setdefault(conversation_id, set())
+        votes.add(guest_id)
+        if len(votes) >= 2:
+            del self.votes[conversation_id]
+            return True
+        return False
+
+    async def extend_votes(self, conversation_id: str) -> set[str]:
+        return set(self.votes.get(conversation_id, set()))
 
     async def append_line(self, conversation_id: str, line: LbtTranscriptLine) -> None:
         self.transcripts.setdefault(conversation_id, []).append(line)

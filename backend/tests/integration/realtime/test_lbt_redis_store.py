@@ -2,6 +2,7 @@
 self-healing and close semantics the in-memory fake cannot vouch for."""
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -137,3 +138,34 @@ async def test_block_pair_is_symmetric_and_expires(store, flushed_redis):
         await store.blocked_for("g_b"),
         0 < await flushed_redis.ttl("lbt:blocked:g_a") <= 86400,
     ) == ({"g_b"}, {"g_a"}, True)
+
+
+async def test_concurrent_extend_votes_complete_exactly_once(store):
+    results = await asyncio.gather(
+        store.add_extend_vote("c1", "g_a"), store.add_extend_vote("c1", "g_b")
+    )
+
+    assert sorted(results) == [False, True]
+
+
+async def test_repeated_vote_from_one_guest_never_completes(store):
+    first = await store.add_extend_vote("c1", "g_a")
+    second = await store.add_extend_vote("c1", "g_a")
+
+    assert (first, second, await store.extend_votes("c1")) == (False, False, {"g_a"})
+
+
+async def test_completed_votes_are_cleared(store):
+    await store.add_extend_vote("c1", "g_a")
+    await store.add_extend_vote("c1", "g_b")
+
+    assert await store.extend_votes("c1") == set()
+
+
+async def test_closing_drops_pending_votes(store):
+    await store.save_conversation(conversation())
+    await store.add_extend_vote("c1", "g_a")
+
+    await store.close_conversation(conversation(), keep_for=timedelta(hours=24))
+
+    assert await store.extend_votes("c1") == set()

@@ -100,15 +100,14 @@ class LbtService:
             await self._send(guest_id, self._matched_frame(conversation, guest_id, now))
             for line in await self._store.transcript(conversation.id):
                 await self._send(guest_id, self._message_frame(line, guest_id))
-            if conversation.extend_requests:
-                for requester in conversation.extend_requests:
-                    await self._send(
-                        guest_id,
-                        {
-                            "type": "lbt.extend_requested",
-                            "by": "me" if requester == guest_id else "partner",
-                        },
-                    )
+            for requester in sorted(await self._store.extend_votes(conversation.id)):
+                await self._send(
+                    guest_id,
+                    {
+                        "type": "lbt.extend_requested",
+                        "by": "me" if requester == guest_id else "partner",
+                    },
+                )
             return
         waiting = {w.guest_id: w for w in await self._store.list_waiting()}
         if guest_id in waiting:
@@ -224,10 +223,13 @@ class LbtService:
         now = self._clock.now()
         if conversation.is_past_grace(now, self._cfg.grace):
             raise LbtInputError("too_late")
-        updated, extended = conversation.request_extend(guest_id, now, self._cfg.session)
-        await self._store.save_conversation(updated)
         partner = conversation.partner_of(guest_id)
-        if extended:
+        # The vote is atomic in the store: exactly one of two concurrent
+        # votes sees the pair complete, and only that call extends.
+        if await self._store.add_extend_vote(conversation.id, guest_id):
+            latest = await self._store.get_conversation(conversation.id) or conversation
+            updated = latest.extended(now, self._cfg.session)
+            await self._store.save_conversation(updated)
             frame = self._timing(updated, now)
             for guest in (guest_id, partner):
                 await self._send(guest, {"type": "lbt.extended", **frame})

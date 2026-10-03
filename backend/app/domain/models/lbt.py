@@ -5,7 +5,7 @@ These dataclasses are framework-free; Redis/SQL adapters serialise them.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from typing import Literal
 
@@ -48,8 +48,9 @@ class LbtConversation:
     """A 1:1 conversation between two guests.
 
     ``ends_at`` is server-authoritative. After it passes, both sides get a
-    grace window to agree on an extension; only when *both* have asked does
-    the window grow (see ``request_extend``).
+    grace window to agree on an extension. Extension votes live in the store
+    as an atomic set (two processes can receive the two votes at the same
+    moment); only the vote that completes the pair calls ``extended``.
     """
 
     id: str
@@ -59,7 +60,6 @@ class LbtConversation:
     profile_b: LbtProfile
     started_at: datetime
     ends_at: datetime
-    extend_requests: frozenset[str] = field(default_factory=frozenset)
     extensions: int = 0
 
     def has(self, guest_id: str) -> bool:
@@ -85,30 +85,12 @@ class LbtConversation:
     def is_past_grace(self, now: datetime, grace: timedelta) -> bool:
         return now >= self.ends_at + grace
 
-    def request_extend(
-        self, guest_id: str, now: datetime, window: timedelta
-    ) -> tuple[LbtConversation, bool]:
-        """Record ``guest_id``'s wish to extend.
-
-        Returns the updated conversation and whether the window was extended
-        (both sides asked). An extension starts from ``max(now, ends_at)`` so
-        agreeing during the grace period still yields a full window.
-        """
-        if not self.has(guest_id):
-            raise ValueError("guest is not part of this conversation")
-        requests = self.extend_requests | {guest_id}
-        if requests >= {self.guest_a, self.guest_b}:
-            base = max(now, self.ends_at)
-            return (
-                replace(
-                    self,
-                    ends_at=base + window,
-                    extend_requests=frozenset(),
-                    extensions=self.extensions + 1,
-                ),
-                True,
-            )
-        return replace(self, extend_requests=frozenset(requests)), False
+    def extended(self, now: datetime, window: timedelta) -> LbtConversation:
+        """A copy with one more window. Starting from ``max(now, ends_at)``
+        means agreeing during the grace period still yields a full window."""
+        return replace(
+            self, ends_at=max(now, self.ends_at) + window, extensions=self.extensions + 1
+        )
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -119,7 +101,6 @@ class LbtConversation:
             "profile_b": self.profile_b.to_dict(),
             "started_at": self.started_at.isoformat(),
             "ends_at": self.ends_at.isoformat(),
-            "extend_requests": sorted(self.extend_requests),
             "extensions": self.extensions,
         }
 
@@ -133,6 +114,5 @@ class LbtConversation:
             profile_b=LbtProfile.from_dict(raw["profile_b"]),  # type: ignore[arg-type]
             started_at=datetime.fromisoformat(str(raw["started_at"])),
             ends_at=datetime.fromisoformat(str(raw["ends_at"])),
-            extend_requests=frozenset(raw.get("extend_requests", ())),  # type: ignore[arg-type]
             extensions=int(raw.get("extensions", 0)),  # type: ignore[arg-type]
         )

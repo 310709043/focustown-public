@@ -2,6 +2,7 @@
 ports. Frames published per guest channel are the observable contract."""
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime, time, timedelta
 
 import pytest
@@ -284,6 +285,43 @@ async def test_extending_after_grace_is_rejected(svc, clock):
         await svc.extend("g_a")
 
     assert exc.value.code == "too_late"
+
+
+async def test_simultaneous_extend_votes_extend_exactly_once(svc, store, pub):
+    """Regression: two processes handling the two votes at the same moment
+    must neither lose a vote nor extend twice."""
+    cid = await pair(svc)
+    store.interleave = True
+
+    await asyncio.gather(svc.extend("g_a"), svc.extend("g_b"))
+
+    assert (
+        store.conversations[cid].ends_at,
+        len(frames(pub, "g_a", "lbt.extended")),
+        len(frames(pub, "g_b", "lbt.extended")),
+    ) == (T0 + CFG.session * 2, 1, 1)
+
+
+async def test_voting_twice_from_one_side_does_not_extend(svc, store):
+    cid = await pair(svc)
+
+    await svc.extend("g_a")
+    await svc.extend("g_a")
+
+    assert store.conversations[cid].ends_at == T0 + CFG.session
+
+
+async def test_votes_reset_after_an_extension(svc, store):
+    cid = await pair(svc)
+    await svc.extend("g_a")
+    await svc.extend("g_b")
+
+    await svc.extend("g_a")
+
+    assert (store.conversations[cid].ends_at, store.votes[cid]) == (
+        T0 + CFG.session * 2,
+        {"g_a"},
+    )
 
 
 # ── leaving ─────────────────────────────────────────────────────────────
