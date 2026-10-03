@@ -40,12 +40,29 @@ const nextConfig = {
   },
   typedRoutes: true,
   async redirects() {
-    return [{
-      source: "/:path*",
-      has: [{ type: "host", value: "^lowbatterytown\\.com$" }],
-      destination: "https://www.lowbatterytown.com/:path*",
-      statusCode: 301,
-    }];
+    // Pages of the old static Focus Town landing (landing/) that search
+    // engines still have indexed under www; 301 them to their successors
+    // so the index moves to the LowBatteryTown pages.
+    const legacyLanding = [
+      ["/index.html", "/zh-TW"],
+      ["/en/index.html", "/en"],
+      ["/pricing.html", "/zh-TW"],
+      ["/legal/privacy.html", "/zh-TW/policies/privacy"],
+      ["/legal/terms.html", "/zh-TW/policies/terms"],
+      ["/legal/refund.html", "/zh-TW/policies/terms"],
+      ["/legal/en/privacy.html", "/en/policies/privacy"],
+      ["/legal/en/terms.html", "/en/policies/terms"],
+      ["/legal/en/refund.html", "/en/policies/terms"],
+    ].map(([source, destination]) => ({ source, destination, statusCode: 301 }));
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "^lowbatterytown\\.com$" }],
+        destination: "https://www.lowbatterytown.com/:path*",
+        statusCode: 301,
+      },
+      ...legacyLanding,
+    ];
   },
   async headers() {
     return [
