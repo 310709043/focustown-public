@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="1 1 80 111" role="img" aria-label="LowBatteryTown">
+  <rect x="21" y="2" width="25" height="13" rx="4" fill="#141c31"/>
+  <path d="M9.75 55.25H48a24.25 24.25 0 0 1 0 48.5H9.75Z" fill="#f4b49d"/>
+  <path d="M9.75 103.75V19.75H45.5a17.75 17.75 0 0 1 0 35.5H9.75M45.5 55.25H48a24.25 24.25 0 0 1 0 48.5H9.75" fill="none" stroke="#141c31" stroke-width="15.5" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

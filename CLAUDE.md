@@ -15,7 +15,7 @@ Frontend (`frontend/`):
 - `app/[locale]/page.tsx` (live) and `app/[locale]/demo/page.tsx` (demo) → `components/lbt/LbtApp.tsx`. Styles: `components/lbt/lbt.css`, scoped under `.lbt`, keyframes prefixed `lbt-`; it scrolls inside its own fixed container because `globals.css` pins `html, body` to `overflow: hidden`.
 - `lib/lbt/sessionStore.ts` applies events from an `LbtTransport` port (`lib/lbt/transport.ts`) and sends intents. Adapters: `liveTransport.ts` (anonymous guest token + one WebSocket, heartbeat, reconnect, server-clock conversion) and `demoTransport.ts` (the script). The store holds ids and codes, never localised strings.
 - Copy: `messages/{zh-TW,en}/lbt.json` (namespace `lbt`). The product voice is casual "你" on purpose, unlike `docs/i18n/bilingual-seo-copywriting-guidelines.md` ("您").
-- Fonts: `lib/lbtFonts.ts`, applied only to this surface.
+- Fonts: `lib/lbtFonts.ts`, applied only to this surface. Brand: the battery-"B" logo is `components/lbt/BrandMark.tsx` (inline SVG, header wordmark in Quicksand) and `public/brand/` (mark SVG, favicons, app/maskable icons, `og-lbt.png`); `public/logo*.png` and `og-image.png` are the legacy Focus Town art.
 
 Backend (`backend/`), separate from the Focus Town matching:
 
@@ -39,7 +39,7 @@ Product rules to keep (from the handoff — do not change without asking the own
 
 Checks for this surface: backend `pytest tests/unit/test_lbt_*.py` and `tests/integration/realtime/test_lbt_redis_store.py` (real Redis); frontend `npx vitest run tests/unit/lib/lbt tests/unit/components/lbt`; `e2e/lbt-flow.spec.ts` (demo, no backend); `PLAYWRIGHT_REAL_STACK=1 pnpm playwright test e2e/lbt-live.spec.ts` (two real browsers against the full stack; the database must be UTF-8).
 
-Known gaps: no admin UI page for reports yet (API only), no keyword filter or link/phone masking, no device-level bans beyond the 24 h pair block, legacy Focus Town pages and their dead components still in the tree, OG image is still the old artwork, the old landing visual baseline is skipped until CI regenerates it.
+Known gaps: no admin UI page for reports yet (API only), no keyword filter or link/phone masking, no device-level bans beyond the 24 h pair block, legacy Focus Town pages and their dead components still in the tree, the old landing visual baseline is skipped until CI regenerates it.
 
 ## Common commands
 

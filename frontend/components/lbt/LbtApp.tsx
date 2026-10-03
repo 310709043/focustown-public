@@ -12,6 +12,7 @@ import { useLbtStore } from "@/lib/lbt/sessionStore";
 import type { LbtTransport } from "@/lib/lbt/transport";
 import type { LbtMode } from "@/lib/lbt/types";
 
+import { Wordmark } from "./BrandMark";
 import { ChatView } from "./ChatView";
 import { EndView } from "./EndView";
 import { HomeView } from "./HomeView";
@@ -114,15 +115,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
               goHome();
             }}
           >
-            <span className="brand-mark" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-            <span>
-              lowbattery<span className="brand-town">town</span>
-              <span className="brand-dot">.</span>
-            </span>
+            <Wordmark />
           </Link>
           <div className="topbar-actions">
             <span className="prototype-pill">

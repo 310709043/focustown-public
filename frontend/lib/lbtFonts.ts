@@ -1,4 +1,4 @@
-import { DM_Mono, Nunito_Sans } from "next/font/google";
+import { DM_Mono, Nunito_Sans, Quicksand } from "next/font/google";
 
 /**
  * Fonts for the LowBatteryTown surface only. Kept apart from lib/fonts.ts
@@ -19,4 +19,12 @@ export const dmMono = DM_Mono({
   variable: "--font-dm-mono",
 });
 
-export const lbtFontVariables = [nunitoSans.variable, dmMono.variable].join(" ");
+/** Wordmark only: the closest open match to the LowBatteryTown logotype. */
+export const quicksand = Quicksand({
+  subsets: ["latin"],
+  weight: ["700"],
+  display: "swap",
+  variable: "--font-quicksand",
+});
+
+export const lbtFontVariables = [nunitoSans.variable, dmMono.variable, quicksand.variable].join(" ");

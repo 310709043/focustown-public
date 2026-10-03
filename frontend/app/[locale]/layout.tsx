@@ -69,7 +69,7 @@ export async function generateMetadata({
         .map((l) => OG_LOCALE[l]),
       images: [
         {
-          url: "/og-image.png",
+          url: "/brand/og-lbt.png",
           width: 1200,
           height: 630,
           alt: t("ogAlt"),
@@ -80,11 +80,15 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: t("title"),
       description: t("description"),
-      images: ["/og-image.png"],
+      images: ["/brand/og-lbt.png"],
     },
     icons: {
-      icon: [{ url: "/logo.png", type: "image/png" }],
-      apple: "/logo.png",
+      icon: [
+        { url: "/favicon.ico", sizes: "48x48" },
+        { url: "/brand/favicon.svg", type: "image/svg+xml" },
+        { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },
+      ],
+      apple: "/brand/apple-touch-icon.png",
     },
     robots: {
       index: true,
