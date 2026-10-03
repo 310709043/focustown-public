@@ -4,8 +4,8 @@ import { LbtApp } from "@/components/lbt/LbtApp";
 import { lbtFontVariables } from "@/lib/lbtFonts";
 
 /**
- * LowBatteryTown home. The experience is a simulated prototype — see
- * components/lbt/LbtApp.tsx — and needs no account or backend.
+ * LowBatteryTown home: pairs real people through the chat API (live
+ * transport). The scripted, labelled partner lives at /demo.
  */
 export default async function HomePage({
   params,
