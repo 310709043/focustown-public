@@ -73,16 +73,15 @@ test.describe("Sign up", () => {
 });
 
 test.describe("Login scene — reference parity", () => {
-  test("/ renders skyline parallax + login citizens + avatar strip", async ({ page }) => {
+  test("/signin renders skyline parallax + login citizens", async ({ page }) => {
     await mockApi(page, {
       "GET  /api/v1/auth/me": (r) => json(r, 200, fixtures.user),
     });
-    await page.goto("/");
+    await page.goto("/signin");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
     await expect(page.getByTestId("login-scene")).toBeVisible();
     await expect(page.getByTestId("skyline-layer")).toHaveCount(3);
     await expect(page.getByTestId("login-citizens")).toBeAttached();
-    await expect(page.getByTestId("avatar-strip")).toBeVisible();
   });
 });
 
@@ -98,7 +97,7 @@ test.describe("Sign in", () => {
       "GET  /api/v1/tracks": (r) => json(r, 200, []),
     });
 
-    await page.goto("/");
+    await page.goto("/signin");
     // The splash overlay blocks pointer events until it unmounts.
     // Generous timeout: first page-load can take a few seconds in dev.
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
@@ -116,7 +115,7 @@ test.describe("Sign in", () => {
         err(r, 401, "invalid_credentials", "帳號或密碼錯誤"),
     });
 
-    await page.goto("/");
+    await page.goto("/signin");
     // The splash overlay blocks pointer events until it unmounts.
     // Generous timeout: first page-load can take a few seconds in dev.
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
@@ -126,6 +125,6 @@ test.describe("Sign in", () => {
     await page.getByTestId("signin-submit").click();
 
     await expect(page.getByTestId("signin-error")).toContainText("帳號或密碼");
-    await expect(page).toHaveURL(/\/(zh-TW|en)\/?$/);
+    await expect(page).toHaveURL(/\/(zh-TW|en)\/signin\/?$/);
   });
 });

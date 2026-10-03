@@ -6,6 +6,31 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 Focus Town — Pomodoro-based social focus app. Pixel-city UI, live leaderboards, partner matching, shared focus rooms with realtime chat. Frontend = Next.js 15 (App Router). Backend = FastAPI + SQLAlchemy 2 async. Postgres + Redis. The original 1318-line single-file UI prototype was the source of visual/interaction design; it has been removed from the working tree but is preserved in git history at `82880df:reference.html` (recover with `git show 82880df:reference.html > reference.html`).
 
+## LowBatteryTown front door (current `/`)
+
+The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". It is a **front-end simulation** — there is no matching service, account, message storage, real report flow or payment behind it. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
+
+Where it lives:
+
+- `app/[locale]/page.tsx` → `components/lbt/LbtApp.tsx` (home → waiting → chat → end, plus dialogs). Styles are `components/lbt/lbt.css`, scoped under `.lbt`, keyframes prefixed `lbt-`. It scrolls inside its own fixed container because `globals.css` pins `html, body` to `overflow: hidden`.
+- `lib/lbt/sessionStore.ts` — zustand state machine and all timers (7-minute window, simulated partner, extend, time-up). It stores ids and counters, never localised strings; the UI translates them. `lib/lbt/constants.ts` holds pacing, ids and limits.
+- Copy: `messages/{zh-TW,en}/lbt.json` (namespace `lbt`, registered in `i18n/request.ts`). The product voice is casual "你" on purpose, which differs from `docs/i18n/bilingual-seo-copywriting-guidelines.md` ("您").
+- Fonts: `lib/lbtFonts.ts` (Nunito Sans, DM Mono), applied only to this surface.
+- The original Focus Town routes were moved into the `app/[locale]/(legacy)/` route group (URLs unchanged). That group's layout carries everything pixel-city-specific (CRT overlays, boot splash, global `<audio>`, realtime bridge, toasts, ads) and sets `noindex`. They are not linked from the new home.
+
+Product rules to keep (from the handoff — do not change without asking the owner):
+
+- Traditional Chinese, mobile and desktop; anonymous, editable nickname, no sign-up.
+- Three social batteries (快沒電了 / 還有一點 / 想說說話) tell the other person the reply pace; they are not identity or a score. Chat intent is chosen separately (隨意聊聊 / 有人聽我說 / 聽聽別人的故事).
+- Every message names its sender; the chat shows both nicknames, batteries and intents. First window is 7 minutes, extendable only when both agree; leaving ("說聲晚安") is always possible.
+- The partner is a labelled script ("模擬對象"). Never present simulated replies or the demo partner as a real person. If AI is ever added it must be labelled and its data handling stated.
+- Support ("替小鎮點燈"): single voluntary payments of **NT$60 / 150 / 300**, no recurring charge, no extra benefits, no fake supporter counts or progress. Checkout stays **disabled** while `SUPPORT_CHECKOUT_LINKS` in `lib/lbt/support.ts` is empty. Enabling it needs an approved payment provider's fixed-amount https links, a published operator identity, a contact address and payment/refund terms (the existing `/legal/*` pages describe Focus Town, not this product). The dialog's cost breakdown is planned usage, not an expense report.
+- User text is rendered as React text only; never put nickname or message content into `dangerouslySetInnerHTML`.
+
+Checks for this surface: `npx vitest run tests/unit/lib/lbt tests/unit/components/lbt`; `e2e/lbt-flow.spec.ts` needs no backend (`PLAYWRIGHT_NO_SERVER=1` against a running server also works).
+
+Known gaps: no real matching/safety tooling, no persistence, legacy Focus Town pages and their dead components (`components/login/AvatarFloatStrip.tsx`, `AboutTownPanel.tsx`) still in the tree, OG image is still the old artwork, the old landing visual baseline is skipped until CI regenerates it.
+
 ## Common commands
 
 Run everything (Docker, recommended):

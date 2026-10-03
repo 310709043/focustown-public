@@ -7,10 +7,17 @@ test.describe("Public navigation", () => {
     await mockApi(page, baselineTownMocks());
   });
 
-  test("/ → click 新帳號註冊 → /signup", async ({ page }) => {
-    await page.goto("/");
+  test("/ is the LowBatteryTown home, not the sign-in form", async ({ page }) => {
+    // Explicit locale: a bare "/" follows the browser's Accept-Language.
+    await page.goto("/zh-TW");
+    await expect(page.getByRole("heading", { name: /今天還剩/ })).toBeVisible();
+    await expect(page.getByTestId("signin-form")).toHaveCount(0);
+  });
+
+  test("/signin → signup link → /signup", async ({ page }) => {
+    await page.goto("/signin");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
-    await page.getByTestId("signup-link").click();
+    await page.locator('a[href$="/signup"]').first().click();
     await expect(page).toHaveURL(/\/(zh-TW|en)\/signup\/?$/);
     await expect(page.getByTestId("signup-form")).toBeVisible();
   });

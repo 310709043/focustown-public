@@ -1,0 +1,216 @@
+{
+  "meta": {
+    "title": "LowBatteryTown · Just Sit For A While",
+    "description": "A LowBatteryTown interactive prototype: how many bars are left today? Pick your social battery and try a low-pressure anonymous chat with no sign-up. Matching and replies are simulated for now.",
+    "keywords": "LowBatteryTown,low social battery,anonymous chat,low-pressure chat,chat with strangers",
+    "ogAlt": "LowBatteryTown: a deep-blue night town with street lamps and an expressive animated battery"
+  },
+  "brand": {
+    "homeAria": "LowBatteryTown, back to the home page"
+  },
+  "topbar": {
+    "prototype": "Prototype",
+    "guide": "Town guide",
+    "languageAria": "Change language"
+  },
+  "home": {
+    "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
+    "coordinate": "Streetlamp No. 07 · Good night",
+    "kicker": "A town for people running low on battery",
+    "titleTop": "How many bars",
+    "titleEm": "are left today?",
+    "subtitleA": "No need to plan what to say. Pick how you feel right now,",
+    "subtitleB": "and sit for a while with someone who also wants a quiet chat.",
+    "nickname": {
+      "label": "What should we call you?",
+      "hint": "Anonymous nickname, editable",
+      "note": "Only shown in the chat. No sign-up needed.",
+      "default": "Night Walker"
+    },
+    "energy": {
+      "heading": "First, tell us",
+      "strong": "your social battery",
+      "purpose": "Your battery is shown to the other person so you both know the pace.",
+      "groupAria": "Choose your current social battery"
+    },
+    "preference": {
+      "label": "Today I'd like",
+      "groupAria": "Choose how you'd like to chat"
+    },
+    "start": "Walk into town",
+    "startNote": "Anonymous · 7 minutes to start · leave any time",
+    "side": {
+      "aria": "Town information",
+      "statusLabel": "Your status",
+      "footnote": "Keeping a lamp on for you",
+      "promiseLabel": "The town's promise",
+      "promise1": "You chat with one stranger only",
+      "promise2": "After 7 minutes, extend only if you both want to",
+      "promise3": "When you want to go, just say good night",
+      "support": "Light a lamp for the town",
+      "supportNote": "Chatting is free · the prototype takes no payments"
+    }
+  },
+  "energy": {
+    "low": {
+      "name": "Nearly out",
+      "hint": "Replies may be slow",
+      "title": "Nearly out is okay, too.",
+      "description": "You can say less today. You don't have to keep finding topics here.",
+      "pace": "Replies may be slow, and saying less is fine."
+    },
+    "mid": {
+      "name": "A little left",
+      "hint": "Happy to go slow",
+      "title": "Slow and steady is just right.",
+      "description": "No rush to get to know anyone. A simple hello is enough.",
+      "pace": "Happy to go slow. No need to reply quickly."
+    },
+    "high": {
+      "name": "Up for a chat",
+      "hint": "Feeling brighter today",
+      "title": "Got something to say? Say it.",
+      "description": "The street lamps are on tonight, a good time to share a story.",
+      "pace": "Feeling brighter today and up for more conversation."
+    }
+  },
+  "preference": {
+    "casual": "Just chatting",
+    "listen": "Someone to listen",
+    "story": "Hear others' stories"
+  },
+  "partner": {
+    "name": "Window Cat",
+    "preference": {
+      "casual": "Just chatting",
+      "listen": "Happy to listen",
+      "story": "Has a story to share"
+    },
+    "opener": {
+      "casual": {
+        "normal": "Hi {nickname}, I'm {partner}. How was your day?",
+        "low": "Hi {nickname}, I'm {partner}. It looks like your battery is low, so let's take it slowly. How was your day?"
+      },
+      "listen": {
+        "normal": "Hi {nickname}, I'm {partner}. Anything on your mind today? I'm listening.",
+        "low": "Hi {nickname}, I'm {partner}. It looks like your battery is low, so let's take it slowly. Anything on your mind today? I'm listening."
+      },
+      "story": {
+        "normal": "Hi {nickname}, I'm {partner}. On my walk today I met a cat who wasn't afraid of people. Want to hear about it?",
+        "low": "Hi {nickname}, I'm {partner}. It looks like your battery is low, so let's take it slowly. On my walk today I met a cat who wasn't afraid of people. Want to hear about it?"
+      }
+    }
+  },
+  "replies": {
+    "understand": "I get that. Sitting here and chatting for a bit feels nice today.",
+    "think": "That's an interesting question. Let me think about it slowly.",
+    "thanks": "Thank you for sharing that. You can go at your own pace.",
+    "similar": "I see. I felt something a bit similar today.",
+    "listening": "Mm, I'm listening. Is there anything else you'd like to say?"
+  },
+  "topics": {
+    "moment": "What small moment today made things feel a little better?",
+    "pause": "If you could set one thing down tonight, what would it be?",
+    "song": "Is there a song lately that sounds like how you feel?",
+    "quiet": "Which quiet moment of the day do you like best?",
+    "story": "Would you rather hear a story or share one today?"
+  },
+  "waiting": {
+    "eyebrow": "A LITTLE SPACE BETWEEN HELLO AND HELLO",
+    "titleTop": "The lamp is on.",
+    "titleBottom": "Waiting for someone to walk over.",
+    "yourEnergy": "Your battery is {energy}.",
+    "breathe": "Take a slow breath. No need to prepare an opening line.",
+    "cancel": "Back to the street corner"
+  },
+  "chat": {
+    "mainAria": "Conversation",
+    "partnerLabel": "Streetlamp No. 07 · Simulated partner",
+    "partnerPrefix": "Them",
+    "selfPrefix": "You",
+    "timerAria": "Time remaining",
+    "extendAria": "Extend by seven minutes if you both agree",
+    "extendMobile": "+7 min",
+    "extendMobilePending": "Waiting…",
+    "leave": "Say good night",
+    "senderMe": "{name} · you",
+    "senderPartner": "{name} · simulated",
+    "avatarMe": "Me",
+    "typing": "The other person is typing",
+    "promptLabel": "Not sure how to start?",
+    "promptDraw": "Draw a topic card",
+    "topicLabel": "The lamp passes you a card",
+    "topicUse": "Put it in the box",
+    "topicNext": "Another one",
+    "composerLabel": "Type a message",
+    "composerPlaceholder": "Say something here…",
+    "composerTimeUp": "Time's up. You can extend or say good night.",
+    "send": "Send message",
+    "privacy": "Please don't share phone numbers, addresses or other private details.",
+    "report": "Report conversation",
+    "system": {
+      "met": "You met under the street lamp. You have 7 minutes to start, and you can stay longer together.",
+      "energyShown": "Your status is shown: {energy}. {pace}",
+      "extendAsked": "You asked for 7 more minutes.",
+      "extendAccepted": "They'd like to stay too. You have 7 more minutes."
+    },
+    "aside": {
+      "label": "A NOTE FROM TOWN",
+      "titleTop": "No need to make",
+      "titleBottom": "every sentence beautiful.",
+      "body": "There are no read receipts and no pressure to reply first. When you want to stop, press \"Say good night\".",
+      "energyLabel": "Your battery now",
+      "extend": "Chat 7 more minutes",
+      "extendPending": "Waiting for a reply…",
+      "hint": "Both of you need to agree.",
+      "hintPending": "Prototype demo: the other side will agree."
+    }
+  },
+  "end": {
+    "eyebrow": "THANK YOU FOR STOPPING BY",
+    "titleTop": "Good night.",
+    "titleBottom": "You've already done a lot.",
+    "bodyTop": "The conversation has ended, and the street lamps stay on.",
+    "bodyBottom": "Come back and sit for a while whenever you feel like talking.",
+    "again": "Meet someone else",
+    "home": "Back to the town entrance",
+    "support": "Enjoying this? You can light a lamp with a one-time contribution"
+  },
+  "modal": {
+    "close": "Close",
+    "gotIt": "Got it",
+    "about": {
+      "eyebrow": "Town guide",
+      "title": "Just sit for a while.",
+      "body": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time. This page is an interactive prototype, and matching and replies are simulated by the program."
+    },
+    "report": {
+      "eyebrow": "Safety note",
+      "title": "Report conversation",
+      "body": "Thank you for looking out for the town. The full service will offer reporting and blocking. The prototype has no real conversations, so nothing is sent right now."
+    },
+    "timeUp": {
+      "eyebrow": "A note from the lamp",
+      "title": "Time's up",
+      "body": "This conversation ends here for now. If you'd like to stay a little longer you can extend by 7 minutes, or say good night whenever you like.",
+      "extend": "Extend the chat",
+      "leave": "Say good night"
+    },
+    "support": {
+      "eyebrow": "Voluntary · pay once",
+      "title": "Light a lamp for the town",
+      "intro": "If you like it here, you can choose a one-time amount. Chat and matching are the same for everyone, and supporting doesn't unlock anything extra.",
+      "legend": "Choose a one-time amount",
+      "totalLabel": "This time",
+      "once": "Pay once · no automatic renewal · supporting is optional",
+      "usage": "Contributions are planned for running the site and handling reports. The live payment page will list the operator, a contact address, and payment and refund terms.",
+      "disclosure": "Payments are not open in the prototype and no payment details are collected.",
+      "unavailable": "Payments not open yet",
+      "checkout": "Go to one-time payment · {amount}"
+    }
+  },
+  "footer": {
+    "left": "LowBatteryTown · a town still being imagined",
+    "right": "Prototype demo: matching and messages are simulated and not connected to real people."
+  }
+}

@@ -1,0 +1,262 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+
+import {
+  DEMO_PARTNER_ENERGY,
+  ENERGY_ID,
+  MESSAGE_MAX,
+} from "@/lib/lbt/constants";
+import { formatClock } from "@/lib/lbt/format";
+import { useLbtStore } from "@/lib/lbt/sessionStore";
+import type { ChatLine } from "@/lib/lbt/types";
+
+const bars = (level: number) => "▮".repeat(level);
+
+export function ChatView() {
+  const t = useTranslations("lbt");
+  const energy = useLbtStore((s) => s.energy);
+  const preference = useLbtStore((s) => s.preference);
+  const nickname = useLbtStore((s) => s.nickname);
+  const remaining = useLbtStore((s) => s.remaining);
+  const lines = useLbtStore((s) => s.lines);
+  const typing = useLbtStore((s) => s.openerPending || s.replyPending);
+  const extendPending = useLbtStore((s) => s.extendPending);
+  const topicId = useLbtStore((s) => s.topicId);
+  const sendMessage = useLbtStore((s) => s.sendMessage);
+  const extend = useLbtStore((s) => s.extend);
+  const leave = useLbtStore((s) => s.leave);
+  const drawTopic = useLbtStore((s) => s.drawTopic);
+  const dismissTopic = useLbtStore((s) => s.dismissTopic);
+  const openModal = useLbtStore((s) => s.openModal);
+
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+
+  const partnerName = t("partner.name");
+  const selfId = ENERGY_ID[energy];
+  const partnerId = ENERGY_ID[DEMO_PARTNER_ENERGY];
+  const timeUp = remaining === 0;
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const node = messagesRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [lines.length, typing]);
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (sendMessage(draft)) setDraft("");
+  };
+
+  const applyTopic = () => {
+    if (!topicId) return;
+    setDraft(t(`topics.${topicId}`));
+    dismissTopic();
+    inputRef.current?.focus();
+  };
+
+  const lineText = (line: Exclude<ChatLine, { kind: "me" }>): string => {
+    if (line.kind === "system") {
+      switch (line.code) {
+        case "energyShown":
+          return t("chat.system.energyShown", {
+            energy: t(`energy.${selfId}.name`),
+            pace: t(`energy.${selfId}.pace`),
+          });
+        default:
+          return t(`chat.system.${line.code}`);
+      }
+    }
+    if (line.ref.type === "reply") return t(`replies.${line.ref.id}`);
+    return t(`partner.opener.${preference}.${energy === 1 ? "low" : "normal"}`, {
+      nickname,
+      partner: partnerName,
+    });
+  };
+
+  const extendLabel = extendPending
+    ? t("chat.aside.extendPending")
+    : t("chat.aside.extend");
+
+  return (
+    <main className="view chat-view">
+      <div className="chat-shell">
+        <section className="chat-main" aria-label={t("chat.mainAria")}>
+          <div className="chat-header">
+            <div className="partner-profile">
+              <span className="small-label">{t("chat.partnerLabel")}</span>
+              <h1 tabIndex={-1}>
+                <span className="profile-prefix">{t("chat.partnerPrefix")}</span>
+                <span>{partnerName}</span>
+              </h1>
+              <p className="partner-details">
+                <span className="profile-energy">
+                  {`${bars(DEMO_PARTNER_ENERGY)} ${t(`energy.${partnerId}.name`)}`}
+                </span>
+                <span>{t(`partner.preference.${preference}`)}</span>
+              </p>
+              <p className="profile-pace">{t(`energy.${partnerId}.pace`)}</p>
+            </div>
+            <div className="chat-header-actions">
+              <span className="session-timer" aria-label={t("chat.timerAria")}>
+                {formatClock(remaining)}
+              </span>
+              <button
+                type="button"
+                className="mobile-extend-button"
+                aria-label={t("chat.extendAria")}
+                disabled={extendPending}
+                onClick={extend}
+              >
+                {extendPending ? t("chat.extendMobilePending") : t("chat.extendMobile")}
+              </button>
+              <button type="button" className="leave-button" onClick={leave}>
+                {t("chat.leave")} <span aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="self-profile">
+            <span className="profile-prefix">{t("chat.selfPrefix")}</span>
+            <strong>{nickname}</strong>
+            <span>{`${bars(energy)} ${t(`energy.${selfId}.name`)}`}</span>
+            <span>{t(`preference.${preference}`)}</span>
+          </div>
+
+          <div className="chat-messages" ref={messagesRef} aria-live="polite">
+            {lines.map((line) =>
+              line.kind === "me" ? (
+                <div key={line.id} className="message me">
+                  <span className="avatar" aria-hidden="true">
+                    {t("chat.avatarMe")}
+                  </span>
+                  <div className="message-content">
+                    <span className="message-sender">
+                      {t("chat.senderMe", { name: nickname })}
+                    </span>
+                    <div className="bubble">{line.text}</div>
+                  </div>
+                </div>
+              ) : line.kind === "partner" ? (
+                <div key={line.id} className="message other">
+                  <span className="avatar" aria-hidden="true">
+                    ✳
+                  </span>
+                  <div className="message-content">
+                    <span className="message-sender">
+                      {t("chat.senderPartner", { name: partnerName })}
+                    </span>
+                    <div className="bubble">{lineText(line)}</div>
+                  </div>
+                </div>
+              ) : (
+                <div key={line.id} className="system-note">
+                  {line.code === "met" ? (
+                    <>
+                      <span aria-hidden="true">✳</span>{" "}
+                    </>
+                  ) : null}
+                  {lineText(line)}
+                </div>
+              ),
+            )}
+            {typing ? (
+              <div
+                className="typing-indicator"
+                role="status"
+                aria-label={t("chat.typing")}
+              >
+                <span aria-hidden="true" />
+                <span aria-hidden="true" />
+                <span aria-hidden="true" />
+              </div>
+            ) : null}
+          </div>
+
+          <div className="chat-bottom">
+            <div className="prompt-row">
+              <span>{t("chat.promptLabel")}</span>
+              <button type="button" onClick={drawTopic}>
+                {t("chat.promptDraw")} <span aria-hidden="true">↗</span>
+              </button>
+            </div>
+            {topicId ? (
+              <div className="topic-card" aria-live="polite">
+                <span className="small-label">{t("chat.topicLabel")}</span>
+                <p>{t(`topics.${topicId}`)}</p>
+                <div className="topic-actions">
+                  <button type="button" onClick={applyTopic}>
+                    {t("chat.topicUse")}
+                  </button>
+                  <button type="button" onClick={drawTopic}>
+                    {t("chat.topicNext")} ↗
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            <form className="composer" onSubmit={submit}>
+              <label htmlFor="lbt-message" className="sr-only">
+                {t("chat.composerLabel")}
+              </label>
+              <input
+                id="lbt-message"
+                ref={inputRef}
+                value={draft}
+                maxLength={MESSAGE_MAX}
+                autoComplete="off"
+                disabled={timeUp}
+                placeholder={
+                  timeUp ? t("chat.composerTimeUp") : t("chat.composerPlaceholder")
+                }
+                onChange={(event) => setDraft(event.target.value)}
+              />
+              <button type="submit" aria-label={t("chat.send")} disabled={timeUp}>
+                ↑
+              </button>
+            </form>
+            <p>
+              {t("chat.privacy")}
+              <button type="button" onClick={() => openModal({ type: "report" })}>
+                {t("chat.report")}
+              </button>
+            </p>
+          </div>
+        </section>
+
+        <aside className="chat-aside">
+          <div className="aside-lamp" aria-hidden="true">
+            ✳
+          </div>
+          <span className="small-label">{t("chat.aside.label")}</span>
+          <h2>
+            {t("chat.aside.titleTop")}
+            <br />
+            {t("chat.aside.titleBottom")}
+          </h2>
+          <p>{t("chat.aside.body")}</p>
+          <div className="aside-divider" />
+          <span className="small-label">{t("chat.aside.energyLabel")}</span>
+          <strong>{t(`energy.${selfId}.name`)}</strong>
+          <button
+            type="button"
+            className="extend-button"
+            disabled={extendPending}
+            onClick={extend}
+          >
+            {extendLabel}{" "}
+            {extendPending ? null : <span aria-hidden="true">＋</span>}
+          </button>
+          <p className="extend-hint">
+            {extendPending ? t("chat.aside.hintPending") : t("chat.aside.hint")}
+          </p>
+        </aside>
+      </div>
+    </main>
+  );
+}

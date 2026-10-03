@@ -48,6 +48,7 @@ export default defineConfig({
         "lib/data/focusBackgrounds.ts",
         // Next.js font-loader config — no logic, just `Font(...)` calls.
         "lib/fonts.ts",
+        "lib/lbtFonts.ts",
         // Constant exports (legal versions, contact addrs) — not code paths.
         "lib/config/legal.ts",
         // Audio components that drive the HTMLAudioElement directly. Their

@@ -1,0 +1,216 @@
+{
+  "meta": {
+    "title": "LowBatteryTown · 來坐一下就好",
+    "description": "LowBatteryTown 互動原型：今天剩幾格電？選一個現在的社交電量，體驗不需註冊、可隨時離開的低壓力匿名聊天。目前配對與回覆為模擬內容。",
+    "keywords": "LowBatteryTown,低電量小鎮,低社交電量,匿名聊天,低壓力聊天,陌生人聊天",
+    "ogAlt": "LowBatteryTown：深藍夜晚的小鎮街燈，與會變換表情的動態電池"
+  },
+  "brand": {
+    "homeAria": "LowBatteryTown 回到首頁"
+  },
+  "topbar": {
+    "prototype": "互動原型",
+    "guide": "小鎮指南",
+    "languageAria": "切換語言"
+  },
+  "home": {
+    "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
+    "coordinate": "第 07 號街燈 · 晚安",
+    "kicker": "一座給低電量的人停靠的小鎮",
+    "titleTop": "今天還剩",
+    "titleEm": "幾格電？",
+    "subtitleA": "不用想好要說什麼。選一個現在的狀態，",
+    "subtitleB": "和一個同樣想聊聊的人坐一下。",
+    "nickname": {
+      "label": "這次想叫什麼？",
+      "hint": "匿名暱稱，可修改",
+      "note": "只在聊天中顯示，不需要註冊。",
+      "default": "晚風旅人"
+    },
+    "energy": {
+      "heading": "先告訴我們",
+      "strong": "你的社交電量",
+      "purpose": "電量會顯示給對方，讓彼此了解現在的聊天節奏。",
+      "groupAria": "選擇目前的社交電量"
+    },
+    "preference": {
+      "label": "今天比較想",
+      "groupAria": "選擇聊天方式"
+    },
+    "start": "走進小鎮",
+    "startNote": "匿名開始 · 一次先聊 7 分鐘 · 隨時可以離開",
+    "side": {
+      "aria": "小鎮資訊",
+      "statusLabel": "你的狀態",
+      "footnote": "正在替你留一盞燈",
+      "promiseLabel": "小鎮的約定",
+      "promise1": "只和一位陌生人聊天",
+      "promise2": "7 分鐘後，雙方願意再延長",
+      "promise3": "想走的時候，說聲晚安就好",
+      "support": "替小鎮點燈",
+      "supportNote": "聊天免費 · 目前原型不收款"
+    }
+  },
+  "energy": {
+    "low": {
+      "name": "快沒電了",
+      "hint": "回覆可能慢一點",
+      "title": "快沒電了，也沒關係。",
+      "description": "今天可以少說一點。這裡不需要你一直找話題。",
+      "pace": "回覆可能慢一點，想少說一些也可以。"
+    },
+    "mid": {
+      "name": "還有一點",
+      "hint": "可以慢慢聊",
+      "title": "慢慢聊，剛剛好。",
+      "description": "不用趕著熟悉誰。從一句簡單的問候開始就好。",
+      "pace": "可以慢慢聊，不用趕著回覆。"
+    },
+    "high": {
+      "name": "想說說話",
+      "hint": "今天比較有精神",
+      "title": "有話想說，就說吧。",
+      "description": "今晚的街燈亮著，正好可以分享一點故事。",
+      "pace": "今天比較有精神，想多交流一些。"
+    }
+  },
+  "preference": {
+    "casual": "隨意聊聊",
+    "listen": "有人聽我說",
+    "story": "聽聽別人的故事"
+  },
+  "partner": {
+    "name": "窗邊小貓",
+    "preference": {
+      "casual": "隨意聊聊",
+      "listen": "願意聽你說",
+      "story": "有個故事想分享"
+    },
+    "opener": {
+      "casual": {
+        "normal": "嗨，{nickname}，我是{partner}。你今天過得怎麼樣？",
+        "low": "嗨，{nickname}，我是{partner}。看到你有點沒電，我們慢慢聊就好。你今天過得怎麼樣？"
+      },
+      "listen": {
+        "normal": "嗨，{nickname}，我是{partner}。今天有什麼想說的？我在聽。",
+        "low": "嗨，{nickname}，我是{partner}。看到你有點沒電，我們慢慢聊就好。今天有什麼想說的？我在聽。"
+      },
+      "story": {
+        "normal": "嗨，{nickname}，我是{partner}。我今天散步時遇見一隻不怕人的小貓。想聽聽嗎？",
+        "low": "嗨，{nickname}，我是{partner}。看到你有點沒電，我們慢慢聊就好。我今天散步時遇見一隻不怕人的小貓。想聽聽嗎？"
+      }
+    }
+  },
+  "replies": {
+    "understand": "我懂。今天能坐在這裡聊一下，感覺也不錯。",
+    "think": "這個問題很有意思。我想慢慢想一下。",
+    "thanks": "謝謝你願意說這些。你可以照自己的速度聊。",
+    "similar": "原來如此。我今天也有一點類似的感覺。",
+    "listening": "嗯，我在聽。還有什麼是你想說的嗎？"
+  },
+  "topics": {
+    "moment": "今天有哪一個小瞬間，讓你覺得還不錯？",
+    "pause": "如果今晚可以暫時放下一件事，你會選哪件？",
+    "song": "最近有沒有一首歌，很像你現在的心情？",
+    "quiet": "你最喜歡一天裡哪一個安靜的時刻？",
+    "story": "今天想聽一個故事，還是想分享一個故事？"
+  },
+  "waiting": {
+    "eyebrow": "A LITTLE SPACE BETWEEN HELLO AND HELLO",
+    "titleTop": "街燈亮了，",
+    "titleBottom": "等另一個人走過來。",
+    "yourEnergy": "你的電量是 {energy}。",
+    "breathe": "先深呼吸一下，不急著準備開場白。",
+    "cancel": "先回到街口"
+  },
+  "chat": {
+    "mainAria": "聊天對話",
+    "partnerLabel": "第 07 號街燈 · 模擬對象",
+    "partnerPrefix": "對方",
+    "selfPrefix": "你",
+    "timerAria": "剩餘時間",
+    "extendAria": "雙方同意後延長七分鐘",
+    "extendMobile": "＋7 分鐘",
+    "extendMobilePending": "等候中…",
+    "leave": "說聲晚安",
+    "senderMe": "{name} · 你",
+    "senderPartner": "{name} · 模擬對象",
+    "avatarMe": "我",
+    "typing": "對方正在輸入",
+    "promptLabel": "不知道怎麼開口？",
+    "promptDraw": "抽一張話題卡",
+    "topicLabel": "街燈遞來一張卡",
+    "topicUse": "放進輸入框",
+    "topicNext": "換一張",
+    "composerLabel": "輸入訊息",
+    "composerPlaceholder": "在這裡說點什麼…",
+    "composerTimeUp": "時間到了，可以延長或說晚安",
+    "send": "送出訊息",
+    "privacy": "請勿分享電話、地址或其他私人資料。",
+    "report": "檢舉對話",
+    "system": {
+      "met": "你們在街燈下相遇了。先聊 7 分鐘，想繼續可以一起留下。",
+      "energyShown": "你的狀態已顯示：{energy}。{pace}",
+      "extendAsked": "你提出再聊 7 分鐘的邀請。",
+      "extendAccepted": "對方也願意留下。你們可以再聊 7 分鐘。"
+    },
+    "aside": {
+      "label": "A NOTE FROM TOWN",
+      "titleTop": "不用把每一句",
+      "titleBottom": "都說得很漂亮。",
+      "body": "這裡沒有已讀，也沒有誰先回覆的壓力。想停下來時，按「說聲晚安」即可。",
+      "energyLabel": "你現在的電量",
+      "extend": "想再聊 7 分鐘",
+      "extendPending": "等待對方回應…",
+      "hint": "需要雙方都願意。",
+      "hintPending": "原型示範：對方會同意延長。"
+    }
+  },
+  "end": {
+    "eyebrow": "THANK YOU FOR STOPPING BY",
+    "titleTop": "晚安，",
+    "titleBottom": "你已經很努力了。",
+    "bodyTop": "一段對話結束了，街燈會繼續亮著。",
+    "bodyBottom": "下次想說話時，隨時回來坐一下。",
+    "again": "再遇見一個人",
+    "home": "回到小鎮入口",
+    "support": "喜歡這裡？可以單次點燈支持"
+  },
+  "modal": {
+    "close": "關閉",
+    "gotIt": "知道了",
+    "about": {
+      "eyebrow": "小鎮指南",
+      "title": "來坐一下就好。",
+      "body": "先選今天的社交電量，再和一位陌生人聊 7 分鐘。彼此都願意，就能繼續留下。你可以隨時離開。本頁是互動原型，配對與回覆目前由程式模擬。"
+    },
+    "report": {
+      "eyebrow": "安全提醒",
+      "title": "檢舉對話",
+      "body": "謝謝你留意小鎮的安全。正式服務會提供檢舉與封鎖功能；原型沒有真人對話，因此現在不會送出檢舉。"
+    },
+    "timeUp": {
+      "eyebrow": "街燈提醒",
+      "title": "時間到了",
+      "body": "這段對話先到這裡。想繼續坐一下，可以再延長 7 分鐘；你也可以隨時說晚安。",
+      "extend": "延長對話",
+      "leave": "說聲晚安"
+    },
+    "support": {
+      "eyebrow": "自願支持 · 只付一次",
+      "title": "替小鎮點一盞燈",
+      "intro": "如果你喜歡這裡，可以自選一次支持金額。聊天和配對對每個人都一樣，支持不會帶來額外權益。",
+      "legend": "選擇單次支持金額",
+      "totalLabel": "這次支持",
+      "once": "只付一次 · 不自動續扣 · 可選擇不支持",
+      "usage": "支持款預計用於網站運作與檢舉處理。正式收款頁會列明營運者、聯絡方式、付款與退款說明。",
+      "disclosure": "原型尚未開放付款，也不會收集付款資料。",
+      "unavailable": "付款尚未開放",
+      "checkout": "前往單次付款 · {amount}"
+    }
+  },
+  "footer": {
+    "left": "LowBatteryTown · 一個正在發想中的小鎮",
+    "right": "原型示範：配對與訊息為模擬內容，尚未連接真人服務。"
+  }
+}
