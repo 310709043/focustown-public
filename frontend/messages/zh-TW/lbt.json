@@ -268,7 +268,8 @@
     "invalid_preference": "請重新選擇聊天方式。",
     "wait_interrupted": "連線中斷，等待已取消。可以再走進小鎮一次。",
     "report_failed": "檢舉沒有送出，請確認網路後再試一次。",
-    "generic": "發生了一點狀況，請再試一次。"
+    "generic": "發生了一點狀況，請再試一次。",
+    "invite_unavailable": "邀請已結束，你仍可以繼續等候。"
   },
   "policy": {
     "nav": {
@@ -443,5 +444,14 @@
         }
       ]
     }
+  },
+  "companion": {
+    "inviteTitle": "小鎮管理員願意陪你聊聊",
+    "inviteBody": "這是一位真人管理員，你可以先聊 7 分鐘，也可以繼續等其他人。邀請一分鐘內有效。",
+    "accept": "和管理員聊聊",
+    "decline": "繼續等其他人",
+    "answering": "正在確認…",
+    "label": "小鎮管理員 · 真人陪聊",
+    "chatDisclosure": "這次陪你聊天的是小鎮管理員。你隨時可以說晚安。"
   }
 }

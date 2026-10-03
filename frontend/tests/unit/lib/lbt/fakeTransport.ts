@@ -29,6 +29,9 @@ export class FakeTransport implements LbtTransport {
   cancel() {
     this.calls.push({ op: "cancel" });
   }
+  answerCompanion(id: string, accept: boolean) {
+    this.calls.push({ op: "answerCompanion", arg: { id, accept } });
+  }
   send(text: string) {
     this.calls.push({ op: "send", arg: text });
   }

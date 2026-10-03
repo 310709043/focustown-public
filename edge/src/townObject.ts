@@ -11,6 +11,7 @@ import { type Env, IDLE_SWEEP_MS, LIMITS, SWEEP_MS, townConfig } from "./config"
 import { saveReport } from "./reports";
 import { InputError } from "./rules";
 import { TownStore } from "./store";
+import { COMPANION_ID } from "./companion";
 import { type Frame, Town } from "./town";
 
 export type ReportResult = { ok: true; id: string } | { ok: false; status: 422 | 429; code: string };
@@ -46,6 +47,18 @@ export class TownObject extends DurableObject<Env> {
     };
   }
 
+  /** Only queue profiles; never expose another pair's messages or active profiles. */
+  async adminWaiting() {
+    const cutoff = Date.now() - townConfig(this.env).offlineAfterMs;
+    const queue = await this.store.listWaiting();
+    const live = [];
+    for (const w of queue) {
+      const seen = await this.store.lastSeen(w.guestId);
+      if (seen !== null && seen >= cutoff) live.push(w);
+    }
+    return live.map((w) => ({ guest_id: w.guestId, profile: w.profile, joined_at: new Date(w.joinedAt).toISOString() }));
+  }
+
   /** Counts a guest-token request from `ip`; false once the hourly limit is used up. */
   allowGuest(ip: string): Promise<boolean> {
     return this.store.hit(`guest:ip:${ip}`, LIMITS.guestPerIpPerHour, 3600_000, Date.now());
@@ -75,6 +88,9 @@ export class TownObject extends DurableObject<Env> {
     const protocol = request.headers.get("x-lbt-protocol");
     if (!guestId || request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
       return new Response("expected websocket", { status: 426 });
+    }
+    if (guestId === COMPANION_ID && this.ctx.getWebSockets(COMPANION_ID).some((ws) => ws.readyState === WebSocket.OPEN)) {
+      return new Response("companion already connected", { status: 409 });
     }
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server, [guestId]);
@@ -110,6 +126,14 @@ export class TownObject extends DurableObject<Env> {
   }
 
   private async dispatch(guestId: string, frame: Record<string, unknown>) {
+    if (frame.type === "companion_invite") {
+      if (guestId !== COMPANION_ID) throw new InputError("unauthorized");
+      return this.town.inviteCompanion(frame.guest_id);
+    }
+    if (frame.type === "companion_answer") {
+      if (typeof frame.accept !== "boolean") throw new InputError("invalid_answer");
+      return this.town.answerCompanion(guestId, frame.id, frame.accept);
+    }
     switch (frame.type) {
       case "heartbeat":
         return this.town.heartbeat(guestId);

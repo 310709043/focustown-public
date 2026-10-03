@@ -37,10 +37,19 @@ export async function createGuestToken(
   nowMs: number,
   ttlHours: number,
 ): Promise<{ token: string; expiresAt: string }> {
+  return createToken(secret, guestId, GUEST_TOKEN_TYPE, nowMs, ttlHours * 3600);
+}
+
+/** Socket-only credential, so the administrator's password never enters a URL/protocol. */
+export async function createCompanionToken(secret: string, nowMs: number) {
+  return createToken(secret, "companion", "lbt_companion", nowMs, 300);
+}
+
+async function createToken(secret: string, subject: string, type: string, nowMs: number, ttlSeconds: number) {
   const iat = Math.floor(nowMs / 1000);
-  const exp = iat + ttlHours * 3600;
+  const exp = iat + ttlSeconds;
   const header = b64url(enc.encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
-  const payload = b64url(enc.encode(JSON.stringify({ sub: guestId, iat, exp, type: GUEST_TOKEN_TYPE })));
+  const payload = b64url(enc.encode(JSON.stringify({ sub: subject, iat, exp, type })));
   const signingInput = `${header}.${payload}`;
   const sig = await crypto.subtle.sign("HMAC", await hmacKey(secret), enc.encode(signingInput));
   return { token: `${signingInput}.${b64url(new Uint8Array(sig))}`, expiresAt: new Date(exp * 1000).toISOString() };
@@ -48,6 +57,15 @@ export async function createGuestToken(
 
 /** The guest id, or null for anything malformed, forged, expired or not a guest token. */
 export async function verifyGuestToken(secret: string, token: string, nowMs: number): Promise<string | null> {
+  const sub = await verifyToken(secret, token, nowMs, GUEST_TOKEN_TYPE);
+  return sub?.startsWith(GUEST_ID_PREFIX) ? sub : null;
+}
+
+export async function verifyCompanionToken(secret: string, token: string, nowMs: number): Promise<boolean> {
+  return (await verifyToken(secret, token, nowMs, "lbt_companion")) === "companion";
+}
+
+async function verifyToken(secret: string, token: string, nowMs: number, type: string): Promise<string | null> {
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   const [h, p, s] = parts as [string, string, string];
@@ -57,10 +75,10 @@ export async function verifyGuestToken(secret: string, token: string, nowMs: num
     const ok = await crypto.subtle.verify("HMAC", await hmacKey(secret), fromB64url(s), enc.encode(`${h}.${p}`));
     if (!ok) return null;
     const claims = JSON.parse(new TextDecoder().decode(fromB64url(p))) as Record<string, unknown>;
-    if (claims.type !== GUEST_TOKEN_TYPE) return null;
+    if (claims.type !== type) return null;
     if (typeof claims.exp !== "number" || claims.exp * 1000 <= nowMs) return null;
     const sub = claims.sub;
-    return typeof sub === "string" && sub.startsWith(GUEST_ID_PREFIX) ? sub : null;
+    return typeof sub === "string" ? sub : null;
   } catch {
     return null;
   }

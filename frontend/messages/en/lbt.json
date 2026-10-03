@@ -268,7 +268,8 @@
     "invalid_preference": "Please choose how you'd like to chat again.",
     "wait_interrupted": "The connection dropped and the wait was cancelled. You can walk in again.",
     "report_failed": "The report didn't go through. Check your connection and try again.",
-    "generic": "Something went wrong. Please try again."
+    "generic": "Something went wrong. Please try again.",
+    "invite_unavailable": "The invitation has ended. You can keep waiting."
   },
   "policy": {
     "nav": {
@@ -443,5 +444,14 @@
         }
       ]
     }
+  },
+  "companion": {
+    "inviteTitle": "A town host is here to chat",
+    "inviteBody": "A real human host can chat with you for 7 minutes, or you can keep waiting for another visitor. This invitation lasts one minute.",
+    "accept": "Chat with the host",
+    "decline": "Keep waiting",
+    "answering": "Confirming…",
+    "label": "Town host · Human companion",
+    "chatDisclosure": "You are chatting with a town administrator. You can leave whenever you like."
   }
 }

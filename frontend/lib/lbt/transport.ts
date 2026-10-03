@@ -23,6 +23,8 @@ export interface JoinRequest {
 export type TransportEvent =
   | { type: "connection"; state: "connecting" | "open" | "offline" }
   | { type: "waiting" }
+  | { type: "companionInvite"; id: string; expiresAt: number }
+  | { type: "companionCleared"; id: string }
   | {
       type: "matched";
       me: PeerProfile;
@@ -51,6 +53,7 @@ export interface LbtTransport {
   start(listener: TransportListener): () => void;
   join(request: JoinRequest): void;
   cancel(): void;
+  answerCompanion(id: string, accept: boolean): void;
   send(text: string): void;
   typing(): void;
   extend(): void;

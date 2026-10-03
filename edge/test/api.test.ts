@@ -26,8 +26,8 @@ interface Client {
   closed: Promise<number>;
 }
 
-async function connect(token: string | null, ip = "203.0.113.1"): Promise<Client> {
-  const res = await SELF.fetch(`${BASE}/api/v1/lbt/ws`, {
+async function connect(token: string | null, ip = "203.0.113.1", path = "/api/v1/lbt/ws"): Promise<Client> {
+  const res = await SELF.fetch(`${BASE}${path}`, {
     headers: {
       Upgrade: "websocket",
       "CF-Connecting-IP": ip,
@@ -207,5 +207,49 @@ describe("socket", () => {
     await worker.scheduled({ cron: "17 19 * * *", scheduledTime: Date.now(), noRetry() {} } as ScheduledController, env, {} as ExecutionContext);
     const row = await env.DB.prepare("SELECT id FROM lbt_reports WHERE id = 'old'").first();
     expect(row).toBeNull();
+  });
+});
+
+describe("authenticated companion sockets", () => {
+  const path = "/api/v1/admin/lbt/companion/ws", auth = {Authorization:"Bearer admin-test-token"};
+  async function ticket() {
+    const r=await SELF.fetch(`${BASE}/api/v1/admin/lbt/companion/token`,{method:"POST",headers:auth});
+    expect(r.status).toBe(200); return ((await r.json()) as {token:string}).token;
+  }
+  const companion=async()=>connect(await ticket(),"203.0.113.2",path);
+  test("waiting profiles and tickets require administrator authentication", async () => {
+    for (const url of ["waiting","companion/token"]) expect((await SELF.fetch(`${BASE}/api/v1/admin/lbt/${url}`,{method:url==="waiting"?"GET":"POST"})).status).toBe(401);
+    const visitor=await connect(await guest()); visitor.send({type:"join",profile:LISTEN,adult:true}); await visitor.next("lbt.waiting");
+    const r=await SELF.fetch(`${BASE}/api/v1/admin/lbt/waiting`,{headers:auth});
+    expect((await r.json() as {items:{profile:unknown}[]}).items[0]?.profile).toEqual(LISTEN); visitor.ws.close();
+  });
+  test("public visitors cannot invite or access companion socket", async () => {
+    const token=await guest(), rejected=await connect(token,"203.0.113.1",path); expect(await rejected.closed).toBe(4401);
+    const visitor=await connect(token); visitor.send({type:"companion_invite",guest_id:"g_other"});
+    expect((await visitor.next("lbt.error")).code).toBe("unauthorized"); visitor.ws.close();
+  });
+  test("offsite origins cannot connect to administrator socket", async () => {
+    expect((await SELF.fetch(`${BASE}${path}`,{headers:{Upgrade:"websocket",Origin:"https://evil.example"}})).status).toBe(403);
+  });
+  test("operator cannot take over another live admin socket", async () => {
+    const first=await companion(); await first.next("lbt.idle");
+    const duplicate=await SELF.fetch(`${BASE}${path}`,{headers:{Upgrade:"websocket","Sec-WebSocket-Protocol":`bearer.${await ticket()}`}});
+    expect(duplicate.status).toBe(409);first.ws.close();
+  });
+  test("real sockets require visitor consent, relay both ways, extend mutually and leave", async () => {
+    const operator=await companion(),visitor=await connect(await guest());
+    visitor.send({type:"join",profile:LISTEN,adult:true}); await visitor.next("lbt.waiting");
+    const list=await SELF.fetch(`${BASE}/api/v1/admin/lbt/waiting`,{headers:auth});
+    const id=(await list.json() as {items:{guest_id:string}[]}).items[0]!.guest_id;
+    operator.send({type:"companion_invite",guest_id:id}); const invite=await visitor.next("lbt.companion_invite"); await operator.next("lbt.companion_pending");
+    expect(visitor.frames.some(f=>f.type==="lbt.matched")).toBe(false);
+    visitor.send({type:"companion_answer",id:invite.id,accept:true});
+    expect((await visitor.next("lbt.matched")).partner).toHaveProperty("role","admin"); await operator.next("lbt.matched");
+    operator.send({type:"message",text:"我在聽"}); expect((await visitor.next("lbt.message")).text).toBe("我在聽");
+    await operator.next("lbt.message"); visitor.send({type:"message",text:"謝謝陪聊"}); expect((await operator.next("lbt.message")).text).toBe("謝謝陪聊");
+    operator.send({type:"extend"}); await visitor.next("lbt.extend_requested"); expect(visitor.frames.some(f=>f.type==="lbt.extended")).toBe(false);
+    visitor.send({type:"extend"}); await visitor.next("lbt.extended");
+    operator.send({type:"leave"}); expect((await visitor.next("lbt.ended")).reason).toBe("partner_left");
+    visitor.ws.close();operator.ws.close();
   });
 });

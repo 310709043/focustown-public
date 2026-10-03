@@ -60,6 +60,7 @@ export function createDemoTransport(options: DemoTransportOptions = {}): LbtTran
 
   return {
     mode: "demo",
+    answerCompanion() { /* Only a live human administrator can offer a chat. */ },
     start(next) {
       listener = next;
       emit({ type: "connection", state: "open" });

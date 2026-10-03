@@ -15,7 +15,8 @@
 import { type Env, retentionDays, tokenTtlHours } from "./config";
 import { adminPage, adminPageHeaders } from "./adminPage";
 import { REPORT_STATUSES, type ReportStatus, listReports, purgeReports, reportCounts, setReportStatus } from "./reports";
-import { createGuestToken, newGuestId, verifyGuestToken } from "./token";
+import { createCompanionToken, createGuestToken, newGuestId, verifyCompanionToken, verifyGuestToken } from "./token";
+import { COMPANION_ID } from "./companion";
 
 export { TownObject } from "./townObject";
 
@@ -114,6 +115,13 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
   if (!env.ADMIN_TOKEN || !token || !sameSecret(token, env.ADMIN_TOKEN)) {
     return error(request, env, 401, "unauthorized");
   }
+  if (path === "/api/v1/admin/lbt/companion/token" && request.method === "POST") {
+    const ticket = await createCompanionToken(env.ADMIN_TOKEN, Date.now());
+    return json(request, env, 200, { token: ticket.token, expires_at: ticket.expiresAt });
+  }
+  if (path === "/api/v1/admin/lbt/waiting" && request.method === "GET") {
+    return json(request, env, 200, { items: await town(env).adminWaiting() });
+  }
   if (request.method === "GET" && path === "/api/v1/admin/lbt/overview") {
     const since = new Date(Date.now() - 86_400_000).toISOString();
     const [live, reports] = await Promise.all([town(env).adminStats(), reportCounts(env.DB, since)]);
@@ -151,10 +159,26 @@ async function route(request: Request, env: Env): Promise<Response> {
   // Admin console (sign-in happens in the page; every data call checks ADMIN_TOKEN).
   if (path === "/admin" && request.method === "GET") {
     const nonce = crypto.randomUUID().replace(/-/g, "");
-    return new Response(adminPage(nonce), { headers: adminPageHeaders(nonce) });
+    return new Response(adminPage(nonce), { headers: adminPageHeaders(nonce, new URL(request.url).origin) });
   }
 
   if (path === "/api/v1/lbt/ws") return handleSocket(request, env);
+
+  if (path === "/api/v1/admin/lbt/companion/ws") {
+    if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") return error(request, env, 426, "websocket_required");
+    const origin = request.headers.get("Origin");
+    if (origin && origin !== new URL(request.url).origin) return error(request, env, 403, "origin_not_allowed");
+    const { token, protocol } = socketToken(request);
+    // Do not accept query credentials for administrator connections.
+    if (!env.ADMIN_TOKEN || !protocol || !token || !(await verifyCompanionToken(env.ADMIN_TOKEN, token, Date.now()))) {
+      return rejectSocket(4401, protocol);
+    }
+    const headers = new Headers(request.headers);
+    headers.set("x-lbt-guest", COMPANION_ID);
+    headers.set("x-lbt-ip", clientIp(request));
+    headers.set("x-lbt-protocol", protocol);
+    return town(env).fetch(new Request(request.url, { headers }));
+  }
 
   if (path === "/api/v1/lbt/status" && request.method === "GET") {
     return json(request, env, 200, await town(env).status());

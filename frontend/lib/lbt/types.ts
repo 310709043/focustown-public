@@ -45,6 +45,12 @@ export interface PeerProfile {
   nickname: string;
   energy: Energy;
   preference: Preference;
+  role?: "admin";
+}
+
+export interface CompanionInvitation {
+  id: string;
+  expiresAt: number;
 }
 
 /**
