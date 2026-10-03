@@ -16,6 +16,7 @@ import { Wordmark } from "./BrandMark";
 import { ChatView } from "./ChatView";
 import { EndView } from "./EndView";
 import { HomeView } from "./HomeView";
+import { IntroSplash } from "./IntroSplash";
 import { LocaleToggle } from "./LocaleToggle";
 import { ModalHost } from "./ModalHost";
 import { WaitingView } from "./WaitingView";
@@ -104,6 +105,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
 
   return (
     <div ref={rootRef} className={`lbt ${fontClassName}`.trim()}>
+      <IntroSplash tagline={`${t("home.titleTop")}${t("home.titleEm")}`} />
       <div className="site-shell">
         <header className="topbar">
           <Link
