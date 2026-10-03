@@ -43,14 +43,17 @@ test("ensureHydrated fetches once then short-circuits subsequent calls", async (
   expect(usePreferencesStore.getState().hydrated).toBe(true);
 });
 
-test("ensureHydrated leaves defaults + hydrated=false on fetch failure (retry-friendly)", async () => {
+test("ensureHydrated falls back to defaults on fetch failure so the UI never hangs", async () => {
   getPrefs.mockRejectedValue(new Error("network"));
 
   await usePreferencesStore.getState().ensureHydrated();
 
-  expect(usePreferencesStore.getState().hydrated).toBe(false);
-  // Defaults intact.
-  expect(usePreferencesStore.getState().byKey[PREF_FOCUS_DURATION_MINUTES]).toBe(25);
+  // hydrated flips to true so Settings and the focus timer render with
+  // defaults instead of a loading state that never ends.
+  expect([
+    usePreferencesStore.getState().hydrated,
+    usePreferencesStore.getState().byKey[PREF_FOCUS_DURATION_MINUTES],
+  ]).toEqual([true, 25]);
 });
 
 test("patch applies the change optimistically before the server responds", async () => {
