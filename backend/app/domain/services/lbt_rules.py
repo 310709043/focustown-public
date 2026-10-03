@@ -35,6 +35,41 @@ def clean_text(raw: object, *, limit: int) -> str:
     return "".join(list(cleaned)[:limit]).strip()
 
 
+CONTACT_MASK = "•••"
+
+_D = "0-9０-９"  # ASCII and full-width digits
+_URL = re.compile(
+    r"(?:https?://|www\.)\S+"
+    r"|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\."
+    r"(?:com|net|org|io|tw|me|cc|co|app|link|ly|gg|xyz|info|top|tv|to|ai|dev|page|site)"
+    r"\b(?:/\S*)?",
+    re.IGNORECASE,
+)
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_HANDLE = re.compile(r"(?<![\w@])@[A-Za-z0-9_.]{3,}")
+_PHONE = re.compile(rf"[+＋]?[{_D}](?:[{_D}\s\-－.．()（）]{{6,}})[{_D}]")
+
+
+def _mask_phone(match: re.Match[str]) -> str:
+    digits = sum(ch.isdigit() for ch in match.group(0))
+    return CONTACT_MASK if digits >= 8 else match.group(0)
+
+
+def mask_contacts(text: str) -> str:
+    """Hide links, e-mail addresses, @handles and phone numbers.
+
+    Strangers are anonymous here on purpose; moving to another channel is
+    where scams and harassment start. Runs on the server so every client
+    and the report transcript see the same text. Short digit runs (times,
+    years, "3 點") stay; eight or more digits read as a phone number.
+    """
+    # E-mail first: its domain would otherwise be taken for a bare link.
+    masked = _EMAIL.sub(CONTACT_MASK, text)
+    masked = _URL.sub(CONTACT_MASK, masked)
+    masked = _HANDLE.sub(CONTACT_MASK, masked)
+    return _PHONE.sub(_mask_phone, masked)
+
+
 def parse_profile(raw: dict[str, object]) -> LbtProfile:
     nickname = clean_text(raw.get("nickname"), limit=NICKNAME_MAX).replace("\n", " ")
     if not nickname:

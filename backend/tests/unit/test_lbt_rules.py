@@ -8,11 +8,13 @@ import pytest
 
 from app.domain.models.lbt import LbtProfile, LbtWaiting
 from app.domain.services.lbt_rules import (
+    CONTACT_MASK,
     NICKNAME_MAX,
     LbtInputError,
     clean_text,
     compatibility,
     is_open,
+    mask_contacts,
     parse_open_hours,
     parse_profile,
     pick_partner,
@@ -227,3 +229,42 @@ def test_is_open_window_crossing_midnight(local_hour, expected):
 
 def test_is_open_without_hours_is_always_open():
     assert is_open(T0, None, "Asia/Taipei") is True
+
+
+# ── contact masking ────────────────────────────────────────────────────
+
+M = CONTACT_MASK
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("加我 https://line.me/ti/p/abc123 吧", f"加我 {M} 吧"),
+        ("www.example.com/x?y=1", M),
+        ("看 my-site.tw 就好", f"看 {M} 就好"),
+        ("寄到 someone.name+tag@mail.co", f"寄到 {M}"),
+        ("IG @night_owl.99 找我", f"IG {M} 找我"),
+        ("打 0912-345-678", f"打 {M}"),
+        ("打 0912 345 678 喔", f"打 {M} 喔"),
+        ("+886 912 345 678", M),
+        ("０９１２３４５６７８", M),
+        ("(02) 2345-6789", f"({M}"),
+    ],
+)
+def test_contacts_are_masked(text, expected):
+    assert mask_contacts(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "今天 10:30 才下班，2026 年好快",
+        "我 3 點睡 7 點起",
+        "分數 95.5 還不錯",
+        "這句沒有聯絡方式。也沒有網址.",
+        "email 的 @ 符號",
+        "價格 1,200 元",
+    ],
+)
+def test_ordinary_text_is_left_alone(text):
+    assert mask_contacts(text) == text

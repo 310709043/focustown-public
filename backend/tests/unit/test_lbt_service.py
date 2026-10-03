@@ -197,6 +197,16 @@ async def test_messages_are_kept_in_the_transcript(svc, store):
     assert [line.text for line in store.transcripts[cid]] == ["hi"]
 
 
+async def test_contact_details_are_hidden_from_both_sides_and_the_transcript(svc, pub, store):
+    cid = await pair(svc)
+
+    await svc.send_message("g_a", "加我 line.me/abc 或 0912-345-678")
+
+    texts = {f["text"] for g in ("g_a", "g_b") for f in frames(pub, g, "lbt.message")}
+    assert texts == {"加我 ••• 或 •••"}
+    assert [line.text for line in store.transcripts[cid]] == ["加我 ••• 或 •••"]
+
+
 @pytest.mark.parametrize("text", ["", "   ", None, 123])
 async def test_empty_or_non_text_messages_are_rejected(svc, text):
     await pair(svc)

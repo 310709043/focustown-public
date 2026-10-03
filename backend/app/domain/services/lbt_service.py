@@ -26,6 +26,7 @@ from app.domain.services.lbt_rules import (
     LbtInputError,
     clean_text,
     is_open,
+    mask_contacts,
     parse_profile,
     pick_partner,
 )
@@ -201,7 +202,7 @@ class LbtService:
     # ── inside a conversation ──────────────────────────────────────────
 
     async def send_message(self, guest_id: str, raw_text: object) -> None:
-        text = clean_text(raw_text, limit=MESSAGE_MAX)
+        text = mask_contacts(clean_text(raw_text, limit=MESSAGE_MAX))
         if not text:
             raise LbtInputError("empty_message")
         conversation = await self._require_conversation(guest_id)
