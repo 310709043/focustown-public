@@ -8,6 +8,8 @@ from app.api.v1.equipment.router import router as equipment_router
 from app.api.v1.feedback.router import router as feedback_router
 from app.api.v1.friends.router import router as friends_router
 from app.api.v1.items.router import router as items_router
+from app.api.v1.lbt.admin_router import router as lbt_admin_router
+from app.api.v1.lbt.router import router as lbt_router
 from app.api.v1.leaderboard.router import router as leaderboard_router
 from app.api.v1.match_realtime.router import router as match_realtime_router
 from app.api.v1.matches.router import router as matches_router
@@ -56,4 +58,6 @@ router.include_router(broadcast_router, prefix="/broadcast", tags=["broadcast"])
 router.include_router(friends_router, prefix="/friends", tags=["friends"])
 router.include_router(preferences_router, prefix="/me/preferences", tags=["preferences"])
 router.include_router(admin_router, prefix="/admin", tags=["admin"])
+router.include_router(lbt_admin_router, prefix="/admin/lbt", tags=["admin", "lbt"])
+router.include_router(lbt_router, prefix="/lbt", tags=["lbt"])
 router.include_router(ws_router, prefix="/ws", tags=["ws"])

@@ -8,28 +8,38 @@ Focus Town — Pomodoro-based social focus app. Pixel-city UI, live leaderboards
 
 ## LowBatteryTown front door (current `/`)
 
-The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". It is a **front-end simulation** — there is no matching service, account, message storage, real report flow or payment behind it. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
+The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". `/` pairs **real people** through the backend; `/demo` (noindex) runs a clearly labelled scripted partner with no backend. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
 
-Where it lives:
+Frontend (`frontend/`):
 
-- `app/[locale]/page.tsx` → `components/lbt/LbtApp.tsx` (home → waiting → chat → end, plus dialogs). Styles are `components/lbt/lbt.css`, scoped under `.lbt`, keyframes prefixed `lbt-`. It scrolls inside its own fixed container because `globals.css` pins `html, body` to `overflow: hidden`.
-- `lib/lbt/sessionStore.ts` — zustand state machine and all timers (7-minute window, simulated partner, extend, time-up). It stores ids and counters, never localised strings; the UI translates them. `lib/lbt/constants.ts` holds pacing, ids and limits.
-- Copy: `messages/{zh-TW,en}/lbt.json` (namespace `lbt`, registered in `i18n/request.ts`). The product voice is casual "你" on purpose, which differs from `docs/i18n/bilingual-seo-copywriting-guidelines.md` ("您").
-- Fonts: `lib/lbtFonts.ts` (Nunito Sans, DM Mono), applied only to this surface.
-- The original Focus Town routes were moved into the `app/[locale]/(legacy)/` route group (URLs unchanged). That group's layout carries everything pixel-city-specific (CRT overlays, boot splash, global `<audio>`, realtime bridge, toasts, ads) and sets `noindex`. They are not linked from the new home.
+- `app/[locale]/page.tsx` (live) and `app/[locale]/demo/page.tsx` (demo) → `components/lbt/LbtApp.tsx`. Styles: `components/lbt/lbt.css`, scoped under `.lbt`, keyframes prefixed `lbt-`; it scrolls inside its own fixed container because `globals.css` pins `html, body` to `overflow: hidden`.
+- `lib/lbt/sessionStore.ts` applies events from an `LbtTransport` port (`lib/lbt/transport.ts`) and sends intents. Adapters: `liveTransport.ts` (anonymous guest token + one WebSocket, heartbeat, reconnect, server-clock conversion) and `demoTransport.ts` (the script). The store holds ids and codes, never localised strings.
+- Copy: `messages/{zh-TW,en}/lbt.json` (namespace `lbt`). The product voice is casual "你" on purpose, unlike `docs/i18n/bilingual-seo-copywriting-guidelines.md` ("您").
+- Fonts: `lib/lbtFonts.ts`, applied only to this surface.
+
+Backend (`backend/`), separate from the Focus Town matching:
+
+- Domain: `domain/models/lbt.py` (`LbtConversation` with mutual `request_extend`), `domain/services/lbt_rules.py` (input cleaning, `compatibility`/`pick_partner`, opening hours), `domain/services/lbt_service.py` (join → pair → relay → extend → leave/report, `sweep`, reconnect replay). Ports in `domain/repositories/lbt.py`.
+- Adapters: `infrastructure/lbt/redis_store.py` (all live state in Redis with TTLs; pairing under a `SET NX` lock), `infrastructure/db/repositories/lbt_report_repo.py` + table `lbt_reports` (migration 0032).
+- API: `api/v1/lbt/router.py` — `POST /lbt/guest` (anonymous token, `type: lbt_guest`, rejected by the user AuthProvider and vice versa), `GET /lbt/status` (real online/waiting counts, open flag), `POST /lbt/reports`, `WS /lbt/ws` (subprotocol `bearer.{token}`). Admin review: `GET /admin/lbt/reports`, `POST /admin/lbt/reports/{id}/status`.
+- Worker job `lbt_sweep` (every `LBT_SWEEP_INTERVAL_SECONDS`): ends conversations past the grace period or whose partner has been gone for `LBT_OFFLINE_AFTER_SECONDS`, drops absent waiters, pairs whoever is left.
+- Settings (`LBT_*` in `core/config.py`): `LBT_OPEN_HOURS` ("21:00-24:00" style, empty = always open; a bad value fails startup), `LBT_TIMEZONE`, session/grace/relax/offline seconds, rate limits for guest tokens, messages and reports.
+
+The original Focus Town routes live in `app/[locale]/(legacy)/` (URLs unchanged); that group's layout carries the pixel-city chrome and sets `noindex`.
 
 Product rules to keep (from the handoff — do not change without asking the owner):
 
-- Traditional Chinese, mobile and desktop; anonymous, editable nickname, no sign-up.
+- Traditional Chinese, mobile and desktop; anonymous, editable nickname, no sign-up. Beta is 18+ (self-declared checkbox, enforced server-side too).
 - Three social batteries (快沒電了 / 還有一點 / 想說說話) tell the other person the reply pace; they are not identity or a score. Chat intent is chosen separately (隨意聊聊 / 有人聽我說 / 聽聽別人的故事).
-- Every message names its sender; the chat shows both nicknames, batteries and intents. First window is 7 minutes, extendable only when both agree; leaving ("說聲晚安") is always possible.
-- The partner is a labelled script ("模擬對象"). Never present simulated replies or the demo partner as a real person. If AI is ever added it must be labelled and its data handling stated.
-- Support ("替小鎮點燈"): single voluntary payments of **NT$60 / 150 / 300**, no recurring charge, no extra benefits, no fake supporter counts or progress. Checkout stays **disabled** while `SUPPORT_CHECKOUT_LINKS` in `lib/lbt/support.ts` is empty. Enabling it needs an approved payment provider's fixed-amount https links, a published operator identity, a contact address and payment/refund terms (the existing `/legal/*` pages describe Focus Town, not this product). The dialog's cost breakdown is planned usage, not an expense report.
+- Every message names its sender; the chat shows both nicknames, batteries and intents. First window is 7 minutes, extended only when **both** press extend; leaving ("說聲晚安") is always possible.
+- No fake people and no fake numbers. Never reuse the legacy `bot_reply_service` here. The demo partner is always labelled "模擬對象". Head counts are real or hidden (the prototype artifact counts people who have the page open).
+- Reports end the chat, snapshot the transcript to `lbt_reports`, and block the pair for 24 h. Closed conversations and transcripts expire from Redis after 24 h. Crisis lines (1925 / 1995) stay visible in the chat aside and the report dialog.
+- Support ("替小鎮點燈"): single voluntary payments of **NT$60 / 150 / 300**, no recurring charge, no extra benefits, no fake supporter counts or progress. Checkout stays **disabled** while `SUPPORT_CHECKOUT_LINKS` in `lib/lbt/support.ts` is empty. Enabling it needs an approved payment provider's fixed-amount https links, a published operator identity, a contact address and payment/refund terms (the existing `/legal/*` pages describe Focus Town, not this product).
 - User text is rendered as React text only; never put nickname or message content into `dangerouslySetInnerHTML`.
 
-Checks for this surface: `npx vitest run tests/unit/lib/lbt tests/unit/components/lbt`; `e2e/lbt-flow.spec.ts` needs no backend (`PLAYWRIGHT_NO_SERVER=1` against a running server also works).
+Checks for this surface: backend `pytest tests/unit/test_lbt_*.py` and `tests/integration/realtime/test_lbt_redis_store.py` (real Redis); frontend `npx vitest run tests/unit/lib/lbt tests/unit/components/lbt`; `e2e/lbt-flow.spec.ts` (demo, no backend); `PLAYWRIGHT_REAL_STACK=1 pnpm playwright test e2e/lbt-live.spec.ts` (two real browsers against the full stack; the database must be UTF-8).
 
-Known gaps: no real matching/safety tooling, no persistence, legacy Focus Town pages and their dead components (`components/login/AvatarFloatStrip.tsx`, `AboutTownPanel.tsx`) still in the tree, OG image is still the old artwork, the old landing visual baseline is skipped until CI regenerates it.
+Known gaps: no admin UI page for reports yet (API only), no keyword filter or link/phone masking, no device-level bans beyond the 24 h pair block, legacy Focus Town pages and their dead components still in the tree, OG image is still the old artwork, the old landing visual baseline is skipped until CI regenerates it.
 
 ## Common commands
 

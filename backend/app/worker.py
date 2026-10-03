@@ -23,12 +23,13 @@ from functools import partial
 import structlog
 
 from app.core.clock import SystemClock
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.events import EventBus
 from app.core.exceptions import BusinessError
 from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
 from app.domain.services.focus_session_service import FocusSessionService
+from app.domain.services.lbt_service import LbtService
 from app.domain.services.leaderboard_service import LeaderboardService
 from app.domain.services.match_room_service import MatchRoomService
 from app.domain.services.matching_queue_reconciler import (
@@ -62,6 +63,7 @@ from app.infrastructure.db.session import (
     get_session_factory,
 )
 from app.infrastructure.jobs.apscheduler_adapter import APSchedulerAdapter
+from app.infrastructure.lbt.redis_store import RedisLbtStore
 from app.infrastructure.matching.redis_queue import RedisMatchingQueue
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.presence.bot_seeder import refresh_bot_presence
@@ -401,6 +403,21 @@ async def room_open_timeout_sweep_job(factory) -> None:
         await db.commit()
 
 
+async def lbt_sweep_job(settings: Settings) -> None:
+    """LowBatteryTown: close timed-out / abandoned conversations, drop
+    absent waiters and pair whoever is left. Redis only — no DB."""
+    from app.core.deps import lbt_config_from_settings
+
+    redis = get_redis()
+    await LbtService(
+        store=RedisLbtStore(redis),
+        publisher=RedisPubSubPublisher(redis),
+        clock=SystemClock(),
+        ids=UUID4Generator(),
+        config=lbt_config_from_settings(settings),
+    ).sweep()
+
+
 async def main() -> None:
     settings = get_settings()
     configure_logging(debug=settings.app_debug)
@@ -503,6 +520,11 @@ async def main() -> None:
             partial(room_open_timeout_sweep_job, factory),
         ),
         seconds=30,
+    )
+    scheduler.schedule_interval(
+        job_id="lbt_sweep",
+        func=_log_job_errors("lbt_sweep", partial(lbt_sweep_job, settings)),
+        seconds=settings.lbt_sweep_interval_seconds,
     )
     await scheduler.start()
     log.info("worker_ready")

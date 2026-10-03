@@ -11,7 +11,8 @@
   "topbar": {
     "prototype": "互動原型",
     "guide": "小鎮指南",
-    "languageAria": "切換語言"
+    "languageAria": "切換語言",
+    "beta": "測試版"
   },
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
@@ -48,8 +49,14 @@
       "promise2": "7 分鐘後，雙方願意再延長",
       "promise3": "想走的時候，說聲晚安就好",
       "support": "替小鎮點燈",
-      "supportNote": "聊天免費 · 目前原型不收款"
-    }
+      "supportNote": "聊天免費 · 目前不收款"
+    },
+    "online": "此刻 {online} 人在小鎮",
+    "onlineDemo": "此刻 {online} 人開著這個原型",
+    "waitingCount": "{waiting} 人正在等",
+    "closed": "街燈還沒亮。開放時間：{hours}",
+    "adult": "我已年滿 18 歲",
+    "adultHint": "測試期間只開放成年人使用。"
   },
   "energy": {
     "low": {
@@ -81,11 +88,6 @@
   },
   "partner": {
     "name": "窗邊小貓",
-    "preference": {
-      "casual": "隨意聊聊",
-      "listen": "願意聽你說",
-      "story": "有個故事想分享"
-    },
     "opener": {
       "casual": {
         "normal": "嗨，{nickname}，我是{partner}。你今天過得怎麼樣？",
@@ -121,7 +123,10 @@
     "titleBottom": "等另一個人走過來。",
     "yourEnergy": "你的電量是 {energy}。",
     "breathe": "先深呼吸一下，不急著準備開場白。",
-    "cancel": "先回到街口"
+    "cancel": "先回到街口",
+    "townNow": "此刻 {online} 人在小鎮，{waiting} 人在等。",
+    "longWait": "人比較少的時候，可能要多等一下。也可以先回街口，晚點再來。",
+    "offline": "暫時連不上小鎮，正在重新連線…"
   },
   "chat": {
     "mainAria": "聊天對話",
@@ -152,7 +157,8 @@
       "met": "你們在街燈下相遇了。先聊 7 分鐘，想繼續可以一起留下。",
       "energyShown": "你的狀態已顯示：{energy}。{pace}",
       "extendAsked": "你提出再聊 7 分鐘的邀請。",
-      "extendAccepted": "對方也願意留下。你們可以再聊 7 分鐘。"
+      "extendAccepted": "對方也願意留下。你們可以再聊 7 分鐘。",
+      "extendPartnerAsked": "對方想再聊 7 分鐘。你也願意的話，按「想再聊 7 分鐘」。"
     },
     "aside": {
       "label": "A NOTE FROM TOWN",
@@ -163,8 +169,15 @@
       "extend": "想再聊 7 分鐘",
       "extendPending": "等待對方回應…",
       "hint": "需要雙方都願意。",
-      "hintPending": "原型示範：對方會同意延長。"
-    }
+      "hintPending": "原型示範：對方會同意延長。",
+      "hintPendingLive": "等對方也按下延長。",
+      "help": "需要專業協助：1925 安心專線（24 小時）、1995 生命線。"
+    },
+    "partnerLabelLive": "第 07 號街燈",
+    "senderPartnerLive": "{name}",
+    "partnerWantsExtend": "對方想再聊 7 分鐘。",
+    "extendAgree": "我也想",
+    "offline": "連線中斷，正在重新連線…"
   },
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
@@ -174,7 +187,15 @@
     "bodyBottom": "下次想說話時，隨時回來坐一下。",
     "again": "再遇見一個人",
     "home": "回到小鎮入口",
-    "support": "喜歡這裡？可以單次點燈支持"
+    "support": "喜歡這裡？可以單次點燈支持",
+    "reason": {
+      "left": "你說了晚安。",
+      "partner_left": "對方說了晚安。",
+      "timeout": "時間到了，這段對話先到這裡。",
+      "partner_disconnected": "對方離開了小鎮，對話已結束。",
+      "reported": "謝謝你告訴我們，我們會查看這段對話。你們不會再被配在一起。",
+      "unknown": "這段對話已經結束。"
+    }
   },
   "modal": {
     "close": "關閉",
@@ -182,12 +203,30 @@
     "about": {
       "eyebrow": "小鎮指南",
       "title": "來坐一下就好。",
-      "body": "先選今天的社交電量，再和一位陌生人聊 7 分鐘。彼此都願意，就能繼續留下。你可以隨時離開。本頁是互動原型，配對與回覆目前由程式模擬。"
+      "body": "先選今天的社交電量，再和一位陌生人聊 7 分鐘。彼此都願意，就能繼續留下。你可以隨時離開。本頁是互動原型，配對與回覆目前由程式模擬。",
+      "bodyLive": "先選今天的社交電量，再和一位陌生人聊 7 分鐘。彼此都願意，就能繼續留下。你可以隨時離開，也可以檢舉讓你不舒服的對話。測試期間只開放年滿 18 歲的人使用，對話結束 24 小時後刪除，被檢舉的對話會保留供審查。"
     },
     "report": {
       "eyebrow": "安全提醒",
       "title": "檢舉對話",
-      "body": "謝謝你留意小鎮的安全。正式服務會提供檢舉與封鎖功能；原型沒有真人對話，因此現在不會送出檢舉。"
+      "intro": "發生了什麼事？送出後對話會結束，你們不會再被配在一起。",
+      "introDemo": "原型示範：這裡沒有真人對話，檢舉不會送出。",
+      "legend": "選擇原因",
+      "reasons": {
+        "harassment": "騷擾或辱罵",
+        "sexual": "性相關內容",
+        "minor": "對方可能未滿 18 歲",
+        "spam": "廣告或詐騙",
+        "self_harm": "對方可能有傷害自己的危險",
+        "other": "其他"
+      },
+      "noteLabel": "補充說明（選填）",
+      "submit": "送出檢舉",
+      "sending": "送出中…",
+      "sentTitle": "已收到",
+      "sentBody": "謝謝你留意小鎮的安全。我們會查看這段對話。",
+      "sentBodyDemo": "原型示範：沒有送出任何資料。",
+      "help": "如果你或對方正處在危險中，請撥打 1925 安心專線（24 小時）或 1995 生命線；緊急狀況請撥 110 或 119。"
     },
     "timeUp": {
       "eyebrow": "街燈提醒",
@@ -211,6 +250,23 @@
   },
   "footer": {
     "left": "LowBatteryTown · 一個正在發想中的小鎮",
-    "right": "原型示範：配對與訊息為模擬內容，尚未連接真人服務。"
+    "right": "原型示範：配對與訊息為模擬內容，尚未連接真人服務。",
+    "rightLive": "測試版：請友善聊天，不舒服時可以隨時說晚安或檢舉。"
+  },
+  "notice": {
+    "closed": "街燈還沒亮，請在開放時間再來。",
+    "age_required": "請先確認你已年滿 18 歲。",
+    "slow_down": "訊息有點快，先休息一下再傳。",
+    "time_up": "時間到了，可以延長或說晚安。",
+    "too_late": "延長的時間已經過了。",
+    "empty_message": "訊息是空的。",
+    "already_in_conversation": "你已經在一段對話裡了。",
+    "no_conversation": "這段對話已經結束。",
+    "nickname_required": "請輸入暱稱。",
+    "invalid_energy": "請重新選擇社交電量。",
+    "invalid_preference": "請重新選擇聊天方式。",
+    "wait_interrupted": "連線中斷，等待已取消。可以再走進小鎮一次。",
+    "report_failed": "檢舉沒有送出，請確認網路後再試一次。",
+    "generic": "發生了一點狀況，請再試一次。"
   }
 }

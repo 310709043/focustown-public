@@ -67,3 +67,43 @@ def decode_token(settings: Settings, token: str) -> dict[str, Any]:
         return jwt.decode(token, settings.app_secret_key, algorithms=[settings.jwt_algorithm])
     except JWTError as e:
         raise AuthError("invalid_or_expired_token") from e
+
+
+# ── LowBatteryTown anonymous guests ─────────────────────────────────────
+#
+# Guests have no user row. Their token carries ``type: lbt_guest`` so the
+# user AuthProvider (which requires ``type: access``) rejects it, and a
+# user access token is rejected here in turn.
+
+GUEST_TOKEN_TYPE = "lbt_guest"  # noqa: S105 — a JWT type tag, not a secret
+GUEST_ID_PREFIX = "g_"
+
+
+def new_guest_id() -> str:
+    import uuid
+
+    return f"{GUEST_ID_PREFIX}{uuid.uuid4().hex}"
+
+
+def create_guest_token(settings: Settings, guest_id: str) -> tuple[str, datetime]:
+    now = datetime.now(UTC)
+    exp = now + timedelta(hours=settings.lbt_guest_token_ttl_hours)
+    payload = {
+        "sub": guest_id,
+        "iat": int(now.timestamp()),
+        "exp": int(exp.timestamp()),
+        "type": GUEST_TOKEN_TYPE,
+    }
+    token = jwt.encode(payload, settings.app_secret_key, algorithm=settings.jwt_algorithm)
+    return token, exp
+
+
+def decode_guest_token(settings: Settings, token: str) -> str:
+    """Return the guest id, or raise AuthError."""
+    claims = decode_token(settings, token)
+    if claims.get("type") != GUEST_TOKEN_TYPE:
+        raise AuthError("not_a_guest_token")
+    sub = claims.get("sub")
+    if not isinstance(sub, str) or not sub.startswith(GUEST_ID_PREFIX):
+        raise AuthError("invalid_guest_token")
+    return sub

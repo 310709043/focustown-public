@@ -2,7 +2,7 @@
 
 社交番茄鐘 App — 像素城市場景、即時排行榜、夥伴配對、共同專注室（含 WebSocket 聊天）。
 
-> **產品方向轉換中：** 首頁 `/` 現在是 **LowBatteryTown**（低社交電量的匿名聊天）的**前端模擬原型**——配對、對話與回覆都是程式模擬，付款停用。原本的 Focus Town 頁面仍在原路徑（`/signin`、`/town`、`/focus/…`、`/shop`、`/awards`、`/legal/…`），但不再被首頁連結，並以 `noindex` 提供。細節見 [CLAUDE.md](./CLAUDE.md) 的「LowBatteryTown front door」。
+> **產品方向轉換中：** 首頁 `/` 現在是 **LowBatteryTown**（低社交電量的匿名一對一聊天，測試版）：匿名、免註冊、18 歲以上，由後端真人配對；`/demo` 是不需後端、標示清楚的模擬版。付款停用。原本的 Focus Town 頁面仍在原路徑（`/signin`、`/town`、`/focus/…`、`/shop`、`/awards`、`/legal/…`），但不再被首頁連結，並以 `noindex` 提供。細節見 [CLAUDE.md](./CLAUDE.md) 的「LowBatteryTown front door」。
 
 - **前端**：Next.js 15 + Tailwind + Zustand
 - **後端**：FastAPI + SQLAlchemy 2 async + Alembic + Redis Pub/Sub + APScheduler
@@ -83,7 +83,7 @@ V1 為策展型歌庫，**不開放使用者上傳**。歌曲由 seed 從本機 
 | # | 動作 | 預期結果 |
 |---|---|---|
 | 1 | `docker compose ps` | 5 個 container 全部 Up，postgres / redis healthy |
-| 2 | 開 http://localhost:3000/zh-TW | 看到 LowBatteryTown 首頁：「今天還剩幾格電？」、暱稱欄、三格社交電量、會變表情的動態電池（模擬原型，無登入） |
+| 2 | 開兩個瀏覽器（或一般＋無痕）到 http://localhost:3000/zh-TW，各自勾選「我已年滿 18 歲」後按「走進小鎮」 | 首頁顯示「此刻 N 人在小鎮」；兩邊被配在一起，看得到對方暱稱與電量，訊息即時互通，雙方都按延長才會加 7 分鐘 |
 | 3 | 開 http://localhost:3000/zh-TW/signin，登入或註冊新帳號 | 看到 splash（只在原 Focus Town 頁面出現）→ 成功跳 `/select-character`（首註冊）或 `/town`（已選角色） |
 | 4 | `/select-character`：填表單、選一個角色、點「進入小鎮」 | 跳 `/town` |
 | 5 | `/town` 看到的元素：thick navbar / 中央 billboard（top-3 + AD SLOT）/ 19 棟建築物 / 10 個 NPC 在走 / 飛機 / 巨大「✦ 進入專注模式 ✦」按鈕 | 全部可見、有動畫 |

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 import { LbtModal } from "./LbtModal";
+import { ReportModal } from "./ReportModal";
 import { SupportModal } from "./SupportModal";
 
 /** Renders whichever dialog the session store has open. */
@@ -14,6 +15,7 @@ export function ModalHost() {
   const closeModal = useLbtStore((s) => s.closeModal);
   const extend = useLbtStore((s) => s.extend);
   const leave = useLbtStore((s) => s.leave);
+  const mode = useLbtStore((s) => s.mode);
 
   if (!modal) return null;
 
@@ -35,17 +37,7 @@ export function ModalHost() {
         </LbtModal>
       );
     case "report":
-      return (
-        <LbtModal
-          eyebrow={t("report.eyebrow")}
-          title={t("report.title")}
-          confirmLabel={t("gotIt")}
-          onConfirm={closeModal}
-          onClose={closeModal}
-        >
-          <p>{t("report.body")}</p>
-        </LbtModal>
-      );
+      return <ReportModal />;
     case "about":
       return (
         <LbtModal
@@ -55,7 +47,7 @@ export function ModalHost() {
           onConfirm={closeModal}
           onClose={closeModal}
         >
-          <p>{t("about.body")}</p>
+          <p>{mode === "demo" ? t("about.body") : t("about.bodyLive")}</p>
         </LbtModal>
       );
   }

@@ -11,7 +11,8 @@
   "topbar": {
     "prototype": "Prototype",
     "guide": "Town guide",
-    "languageAria": "Change language"
+    "languageAria": "Change language",
+    "beta": "Beta"
   },
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
@@ -48,8 +49,14 @@
       "promise2": "After 7 minutes, extend only if you both want to",
       "promise3": "When you want to go, just say good night",
       "support": "Light a lamp for the town",
-      "supportNote": "Chatting is free · the prototype takes no payments"
-    }
+      "supportNote": "Chatting is free · no payments are taken yet"
+    },
+    "online": "{online} in town right now",
+    "onlineDemo": "{online} viewing this prototype right now",
+    "waitingCount": "{waiting} waiting",
+    "closed": "The lamps aren't lit yet. Open hours: {hours}",
+    "adult": "I am 18 or older",
+    "adultHint": "During the beta, only adults can join."
   },
   "energy": {
     "low": {
@@ -81,11 +88,6 @@
   },
   "partner": {
     "name": "Window Cat",
-    "preference": {
-      "casual": "Just chatting",
-      "listen": "Happy to listen",
-      "story": "Has a story to share"
-    },
     "opener": {
       "casual": {
         "normal": "Hi {nickname}, I'm {partner}. How was your day?",
@@ -121,7 +123,10 @@
     "titleBottom": "Waiting for someone to walk over.",
     "yourEnergy": "Your battery is {energy}.",
     "breathe": "Take a slow breath. No need to prepare an opening line.",
-    "cancel": "Back to the street corner"
+    "cancel": "Back to the street corner",
+    "townNow": "{online} in town right now, {waiting} waiting.",
+    "longWait": "When few people are around, it can take a little longer. You can also head back and try later.",
+    "offline": "Can't reach the town right now. Reconnecting…"
   },
   "chat": {
     "mainAria": "Conversation",
@@ -152,7 +157,8 @@
       "met": "You met under the street lamp. You have 7 minutes to start, and you can stay longer together.",
       "energyShown": "Your status is shown: {energy}. {pace}",
       "extendAsked": "You asked for 7 more minutes.",
-      "extendAccepted": "They'd like to stay too. You have 7 more minutes."
+      "extendAccepted": "They'd like to stay too. You have 7 more minutes.",
+      "extendPartnerAsked": "They'd like 7 more minutes. If you do too, press \"Chat 7 more minutes\"."
     },
     "aside": {
       "label": "A NOTE FROM TOWN",
@@ -163,8 +169,15 @@
       "extend": "Chat 7 more minutes",
       "extendPending": "Waiting for a reply…",
       "hint": "Both of you need to agree.",
-      "hintPending": "Prototype demo: the other side will agree."
-    }
+      "hintPending": "Prototype demo: the other side will agree.",
+      "hintPendingLive": "Waiting for them to agree.",
+      "help": "Need professional support? In Taiwan: 1925 (24 h) or 1995 Lifeline."
+    },
+    "partnerLabelLive": "Streetlamp No. 07",
+    "senderPartnerLive": "{name}",
+    "partnerWantsExtend": "They'd like 7 more minutes.",
+    "extendAgree": "Me too",
+    "offline": "Connection lost. Reconnecting…"
   },
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
@@ -174,7 +187,15 @@
     "bodyBottom": "Come back and sit for a while whenever you feel like talking.",
     "again": "Meet someone else",
     "home": "Back to the town entrance",
-    "support": "Enjoying this? You can light a lamp with a one-time contribution"
+    "support": "Enjoying this? You can light a lamp with a one-time contribution",
+    "reason": {
+      "left": "You said good night.",
+      "partner_left": "They said good night.",
+      "timeout": "Time's up. This conversation ends here for now.",
+      "partner_disconnected": "They left town, so the conversation has ended.",
+      "reported": "Thank you for telling us. We'll review the conversation, and you won't be paired again.",
+      "unknown": "This conversation has ended."
+    }
   },
   "modal": {
     "close": "Close",
@@ -182,12 +203,30 @@
     "about": {
       "eyebrow": "Town guide",
       "title": "Just sit for a while.",
-      "body": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time. This page is an interactive prototype, and matching and replies are simulated by the program."
+      "body": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time. This page is an interactive prototype, and matching and replies are simulated by the program.",
+      "bodyLive": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time and report anything that makes you uncomfortable. During the beta only adults can join. Conversations are deleted 24 hours after they end; reported ones are kept for review."
     },
     "report": {
       "eyebrow": "Safety note",
       "title": "Report conversation",
-      "body": "Thank you for looking out for the town. The full service will offer reporting and blocking. The prototype has no real conversations, so nothing is sent right now."
+      "intro": "What happened? Sending this ends the conversation and you won't be paired again.",
+      "introDemo": "Prototype demo: there is no real conversation here, so nothing is sent.",
+      "legend": "Choose a reason",
+      "reasons": {
+        "harassment": "Harassment or abuse",
+        "sexual": "Sexual content",
+        "minor": "They may be under 18",
+        "spam": "Ads or scams",
+        "self_harm": "They may be at risk of harming themselves",
+        "other": "Something else"
+      },
+      "noteLabel": "Anything to add (optional)",
+      "submit": "Send report",
+      "sending": "Sending…",
+      "sentTitle": "Received",
+      "sentBody": "Thank you for looking out for the town. We'll review this conversation.",
+      "sentBodyDemo": "Prototype demo: nothing was sent.",
+      "help": "If you or they are in danger, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in an emergency call 110 or 119."
     },
     "timeUp": {
       "eyebrow": "A note from the lamp",
@@ -211,6 +250,23 @@
   },
   "footer": {
     "left": "LowBatteryTown · a town still being imagined",
-    "right": "Prototype demo: matching and messages are simulated and not connected to real people."
+    "right": "Prototype demo: matching and messages are simulated and not connected to real people.",
+    "rightLive": "Beta: please be kind. You can say good night or report at any time."
+  },
+  "notice": {
+    "closed": "The lamps aren't lit yet. Please come back during open hours.",
+    "age_required": "Please confirm that you are 18 or older.",
+    "slow_down": "That's a lot of messages. Take a breath before the next one.",
+    "time_up": "Time's up. You can extend or say good night.",
+    "too_late": "The time to extend has passed.",
+    "empty_message": "The message is empty.",
+    "already_in_conversation": "You're already in a conversation.",
+    "no_conversation": "This conversation has ended.",
+    "nickname_required": "Please enter a nickname.",
+    "invalid_energy": "Please choose your social battery again.",
+    "invalid_preference": "Please choose how you'd like to chat again.",
+    "wait_interrupted": "The connection dropped and the wait was cancelled. You can walk in again.",
+    "report_failed": "The report didn't go through. Check your connection and try again.",
+    "generic": "Something went wrong. Please try again."
   }
 }

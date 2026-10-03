@@ -2271,3 +2271,233 @@
     justify-content: space-between;
   }
 }
+
+/* ── Live chat additions ─────────────────────────────────────────────── */
+
+/* Real head count (never shown without a real number). */
+.lbt .town-count {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 14px 0 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(20, 28, 49, 0.55);
+  color: var(--mist);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lbt .town-count-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 0 4px rgba(182, 214, 196, 0.14);
+}
+
+.lbt .town-count-waiting {
+  color: var(--subtle);
+}
+
+/* Age confirmation on the selection card (light surface). */
+.lbt .adult-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 2px 10px;
+  margin: 4px 0 14px;
+  color: #25314b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lbt .adult-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #25314b;
+}
+
+.lbt .adult-check small {
+  grid-column: 2;
+  color: #6b7891;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.lbt .closed-note {
+  margin: 0 0 12px;
+  color: #8a5a2b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Inline notices (errors), readable on light and dark cards. */
+.lbt .lbt-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(244, 180, 157, 0.55);
+  border-radius: 10px;
+  background: rgba(244, 180, 157, 0.14);
+  color: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.lbt .lbt-notice button {
+  flex: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.lbt .waiting-town,
+.lbt .waiting-long,
+.lbt .waiting-offline {
+  color: var(--mist);
+  font-size: 14px;
+}
+
+.lbt .waiting-town {
+  font-variant-numeric: tabular-nums;
+}
+
+.lbt .waiting-offline {
+  color: var(--peach);
+}
+
+.lbt .chat-offline {
+  margin: 0;
+  padding: 8px 32px;
+  background: rgba(244, 180, 157, 0.12);
+  color: var(--peach);
+  font-size: 13px;
+}
+
+/* The partner asked to extend: one clear way to agree. */
+.lbt .extend-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 215, 121, 0.4);
+  border-radius: 12px;
+  background: rgba(248, 215, 121, 0.1);
+  color: var(--lamp);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.lbt .extend-banner button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 16px;
+  background: var(--lamp);
+  color: var(--night);
+  font-weight: 800;
+}
+
+.lbt .aside-help {
+  margin-top: 18px;
+  color: var(--subtle);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.lbt .end-reason {
+  color: var(--lamp);
+  font-weight: 700;
+}
+
+/* Report form (inside the light modal). */
+.lbt .report-reasons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+}
+
+.lbt .report-reasons legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.lbt .report-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1.5px solid #d7dce1;
+  border-radius: 10px;
+  background: #fffdf8;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.lbt .report-reason input {
+  margin: 2px 0 0;
+  accent-color: #25314b;
+}
+
+.lbt .report-note {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lbt .report-note textarea {
+  width: 100%;
+  border: 1.5px solid #d7dce1;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fffdf8;
+  color: #25314b;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  resize: vertical;
+}
+
+.lbt .report-failed {
+  color: #a3462c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lbt .crisis-help {
+  margin-top: 6px;
+  color: #6b7891;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 610px) {
+  .lbt .report-reasons {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

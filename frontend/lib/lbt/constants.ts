@@ -3,6 +3,7 @@ import type {
   EnergyId,
   Preference,
   ReplyId,
+  ReportReason,
   SupportAmount,
   TopicId,
 } from "./types";
@@ -10,7 +11,7 @@ import type {
 /** First conversation window, and each extension, in seconds. */
 export const SESSION_SECONDS = 420;
 
-/** Simulated pacing. These are timing choices, not network behaviour. */
+/** Demo-mode pacing. These are timing choices, not network behaviour. */
 export const WAIT_MS = 2200;
 export const OPENER_DELAY_MS = 900;
 export const REPLY_DELAY_MS = 1100;
@@ -57,3 +58,21 @@ export const REPLY_IDS: readonly ReplyId[] = [
 
 export const SUPPORT_AMOUNTS: readonly SupportAmount[] = [60, 150, 300];
 export const DEFAULT_SUPPORT_AMOUNT: SupportAmount = 60;
+
+export const REPORT_REASONS: readonly ReportReason[] = [
+  "harassment",
+  "sexual",
+  "minor",
+  "spam",
+  "self_harm",
+  "other",
+];
+export const REPORT_NOTE_MAX = 500;
+
+/** Live transport timings. The backend treats 45 s of silence as gone. */
+export const HEARTBEAT_MS = 15_000;
+export const STATUS_POLL_MS = 15_000;
+export const TYPING_THROTTLE_MS = 3000;
+export const PARTNER_TYPING_CLEAR_MS = 4000;
+/** After this long in the waiting room, say plainly that it may take a while. */
+export const LONG_WAIT_MS = 45_000;

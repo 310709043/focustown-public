@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ipaddress as _ipaddress
 from collections.abc import AsyncIterator
+from datetime import timedelta
 from typing import Annotated
 
 import structlog
@@ -15,12 +16,15 @@ from app.core.exceptions import AuthError, ForbiddenError
 from app.core.ids import IIdGenerator, UUID4Generator
 from app.domain.notifications import IEmailSender
 from app.domain.rate_limit import IRateLimiter
+from app.domain.repositories.lbt import ILbtStore
 from app.domain.repositories.match_queue import IMatchingQueue
 from app.domain.repositories.match_room_repo import IMatchRoomRepo
 from app.domain.repositories.match_waiting_pool_repo import IMatchWaitingPoolRepo
 from app.domain.repositories.presence import IPresenceTracker
 from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.repositories.room_participant_repo import IRoomParticipantRepo
+from app.domain.services.lbt_rules import parse_open_hours
+from app.domain.services.lbt_service import LbtConfig
 from app.domain.services.match_room_service import MatchRoomService
 from app.domain.services.room_timer_service import RoomTimerService
 from app.infrastructure.auth.providers.base import AuthProvider
@@ -35,6 +39,7 @@ from app.infrastructure.db.repositories.room_participant_repo import (
     SqlRoomParticipantRepo,
 )
 from app.infrastructure.db.session import get_session_factory
+from app.infrastructure.lbt.redis_store import RedisLbtStore
 from app.infrastructure.matching.redis_queue import RedisMatchingQueue
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.messaging.ws_manager import WSManager
@@ -371,3 +376,32 @@ def get_client_ip(request: Request, settings: SettingsDep) -> str | None:
 
 
 ClientIpDep = Annotated[str | None, Depends(get_client_ip)]
+
+
+# ── LowBatteryTown ──────────────────────────────────────────────────────
+
+
+def get_lbt_store() -> ILbtStore:
+    return RedisLbtStore(get_redis())
+
+
+LbtStoreDep = Annotated[ILbtStore, Depends(get_lbt_store)]
+
+
+def get_lbt_config(settings: SettingsDep) -> LbtConfig:
+    return lbt_config_from_settings(settings)
+
+
+LbtConfigDep = Annotated[LbtConfig, Depends(get_lbt_config)]
+
+
+def lbt_config_from_settings(settings: Settings) -> LbtConfig:
+    return LbtConfig(
+        session=timedelta(seconds=settings.lbt_session_seconds),
+        grace=timedelta(seconds=settings.lbt_grace_seconds),
+        relax_after=timedelta(seconds=settings.lbt_relax_after_seconds),
+        offline_after=timedelta(seconds=settings.lbt_offline_after_seconds),
+        open_hours=parse_open_hours(settings.lbt_open_hours),
+        timezone=settings.lbt_timezone,
+        hours_label=settings.lbt_open_hours.strip(),
+    )

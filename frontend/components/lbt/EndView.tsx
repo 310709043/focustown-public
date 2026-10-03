@@ -9,6 +9,7 @@ export function EndView() {
   const again = useLbtStore((s) => s.again);
   const goHome = useLbtStore((s) => s.goHome);
   const openModal = useLbtStore((s) => s.openModal);
+  const endReason = useLbtStore((s) => s.endReason);
 
   return (
     <main className="view end-view">
@@ -22,6 +23,7 @@ export function EndView() {
           <br />
           {t("titleBottom")}
         </h1>
+        <p className="end-reason">{t(`reason.${endReason ?? "unknown"}`)}</p>
         <p>
           {t("bodyTop")}
           <br />

@@ -12,6 +12,7 @@ import {
   NICKNAME_MAX,
   PREFERENCES,
   REPLY_IDS,
+  REPORT_REASONS,
   TOPIC_IDS,
 } from "@/lib/lbt/constants";
 
@@ -64,17 +65,47 @@ describe.each(bundles)("%s", (_locale, bundle) => {
     expect(missing).toEqual([]);
   });
 
-  test("every preference has a visitor label, a partner label and openers", () => {
+  test("every preference has a label and demo openers", () => {
     const missing = PREFERENCES.flatMap((id) =>
-      [
-        `preference.${id}`,
-        `partner.preference.${id}`,
-        `partner.opener.${id}.normal`,
-        `partner.opener.${id}.low`,
-      ].filter((key) => typeof lookup(bundle, key) !== "string"),
+      [`preference.${id}`, `partner.opener.${id}.normal`, `partner.opener.${id}.low`].filter(
+        (key) => typeof lookup(bundle, key) !== "string",
+      ),
     );
 
     expect(missing).toEqual([]);
+  });
+
+  test("every end reason, report reason and notice code has copy", () => {
+    const keys = [
+      ...["left", "partner_left", "timeout", "partner_disconnected", "reported", "unknown"].map(
+        (r) => `end.reason.${r}`,
+      ),
+      ...REPORT_REASONS.map((r) => `modal.report.reasons.${r}`),
+      ...[
+        "closed",
+        "age_required",
+        "slow_down",
+        "time_up",
+        "too_late",
+        "empty_message",
+        "already_in_conversation",
+        "no_conversation",
+        "nickname_required",
+        "invalid_energy",
+        "invalid_preference",
+        "wait_interrupted",
+        "report_failed",
+        "generic",
+      ].map((c) => `notice.${c}`),
+    ];
+
+    expect(keys.filter((key) => typeof lookup(bundle, key) !== "string")).toEqual([]);
+  });
+
+  test("the crisis line appears in the report dialog and chat aside", () => {
+    const texts = [lookup(bundle, "modal.report.help"), lookup(bundle, "chat.aside.help")];
+
+    expect(texts.every((text) => typeof text === "string" && text.includes("1925"))).toBe(true);
   });
 
   test("every scripted topic and reply has text", () => {

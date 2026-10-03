@@ -14,6 +14,8 @@ import { useLbtStore } from "@/lib/lbt/sessionStore";
 import { onRadioGroupKeyDown } from "@/lib/lbt/useRadioArrowKeys";
 
 import { BatteryCharacter } from "./BatteryCharacter";
+import { Notice } from "./Notice";
+import { TownCount } from "./TownCount";
 import { Townscape } from "./Townscape";
 
 export function HomeView() {
@@ -25,6 +27,10 @@ export function HomeView() {
   const setPreference = useLbtStore((s) => s.setPreference);
   const startWaiting = useLbtStore((s) => s.startWaiting);
   const openModal = useLbtStore((s) => s.openModal);
+  const adult = useLbtStore((s) => s.adult);
+  const setAdult = useLbtStore((s) => s.setAdult);
+  const town = useLbtStore((s) => s.town);
+  const closed = town !== null && !town.open;
 
   const defaultNickname = t("home.nickname.default");
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
@@ -54,6 +60,7 @@ export function HomeView() {
               </span>{" "}
               {t("home.kicker")}
             </p>
+            <TownCount />
             <h1 id="lbt-hero-title" tabIndex={-1}>
               {t("home.titleTop")}
               <br />
@@ -144,7 +151,29 @@ export function HomeView() {
                 })}
               </div>
             </div>
-            <button type="button" className="primary-button" onClick={start}>
+            <label className="adult-check" htmlFor="lbt-adult">
+              <input
+                id="lbt-adult"
+                type="checkbox"
+                checked={adult}
+                onChange={(event) => setAdult(event.target.checked)}
+                aria-describedby="lbt-adult-hint"
+              />
+              <span>{t("home.adult")}</span>
+              <small id="lbt-adult-hint">{t("home.adultHint")}</small>
+            </label>
+            {closed ? (
+              <p className="closed-note" role="status">
+                {t("home.closed", { hours: town?.hours ?? "" })}
+              </p>
+            ) : null}
+            <Notice />
+            <button
+              type="button"
+              className="primary-button"
+              onClick={start}
+              disabled={closed}
+            >
               {t("home.start")} <span aria-hidden="true">↗</span>
             </button>
             <p className="selection-note">

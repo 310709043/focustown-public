@@ -1,21 +1,38 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * LowBatteryTown simulated flow. No backend is involved: matching and
- * replies are scripted in lib/lbt/sessionStore.ts, so these tests need no
- * API mocks.
+ * LowBatteryTown demo flow at /demo. No backend is involved: the partner is
+ * the labelled script in lib/lbt/demoTransport.ts, so these tests need no
+ * API mocks. The live flow against a real backend is lbt-live.spec.ts.
  */
 
-const HOME = "/zh-TW";
+const HOME = "/zh-TW/demo";
+
+async function walkIn(page: Page) {
+  await page.getByRole("checkbox", { name: /我已年滿 18 歲/ }).check();
+  await page.getByRole("button", { name: /走進小鎮/ }).click();
+}
 
 async function enterChat(page: Page) {
   await page.goto(HOME);
-  await page.getByRole("button", { name: /走進小鎮/ }).click();
+  await walkIn(page);
   await expect(page.getByRole("heading", { name: /等另一個人走過來/ })).toBeVisible();
   await expect(page.getByLabel("輸入訊息")).toBeVisible({ timeout: 5000 });
 }
 
 test.describe("LowBatteryTown home", () => {
+  test("the demo shows no head count it cannot back up", async ({ page }) => {
+    await page.goto(HOME);
+    await expect(page.getByRole("heading", { name: /今天還剩/ })).toBeVisible();
+    await expect(page.locator(".town-count")).toHaveCount(0);
+  });
+
+  test("walking in needs the 18+ confirmation", async ({ page }) => {
+    await page.goto(HOME);
+    await page.getByRole("button", { name: /走進小鎮/ }).click();
+    await expect(page.locator(".lbt-notice")).toContainText("年滿 18 歲");
+  });
+
   test("shows the three social batteries and updates the battery face", async ({ page }) => {
     await page.goto(HOME);
     const radios = page.getByRole("radiogroup", { name: "選擇目前的社交電量" }).getByRole("radio");
@@ -51,7 +68,7 @@ test.describe("LowBatteryTown home", () => {
   test("switches to English", async ({ page }) => {
     await page.goto(HOME);
     await page.getByRole("button", { name: "EN" }).click();
-    await expect(page).toHaveURL(/\/en$/);
+    await expect(page).toHaveURL(/\/en\/demo$/);
     await expect(page.getByRole("button", { name: /Walk into town/ })).toBeVisible();
   });
 });
@@ -116,7 +133,7 @@ test.describe("LowBatteryTown chat (simulated)", () => {
 
   test("cancelling the wait never opens a chat", async ({ page }) => {
     await page.goto(HOME);
-    await page.getByRole("button", { name: /走進小鎮/ }).click();
+    await walkIn(page);
     await page.getByRole("button", { name: "先回到街口" }).click();
     await page.waitForTimeout(3000);
     await expect(page.getByRole("heading", { name: /今天還剩/ })).toBeVisible();
@@ -126,7 +143,7 @@ test.describe("LowBatteryTown chat (simulated)", () => {
   test("time up offers extend or good night and pauses the composer", async ({ page }) => {
     await page.clock.install();
     await page.goto(HOME);
-    await page.getByRole("button", { name: /走進小鎮/ }).click();
+    await walkIn(page);
     await page.clock.runFor(2300);
     await expect(page.getByLabel("輸入訊息")).toBeVisible();
 
