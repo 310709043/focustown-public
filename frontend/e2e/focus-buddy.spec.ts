@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { baselineTownMocks, fixtures, json, mockApi } from "./helpers/mock-backend";
+import { baselineTownMocks, fixtures, json, matchRoomMocks, mockApi } from "./helpers/mock-backend";
 import { seedAuthTokens } from "./helpers/session";
 
 const MATCH_ID = "match-test-1";
@@ -8,13 +8,14 @@ const MATCH_ID = "match-test-1";
 /**
  * Structural alignment for /focus/{matchId} (BuddyFocusScene). Asserts
  * reference's two-column layout: buddy-header-card / shared-timer /
- * status-mini / shared-agenda / room-music on the left, shared-panel
- * with chat/notes tabs on the right, plus the always-on RainOverlay.
+ * shared-agenda / room-music on the left, shared-panel with chat/notes
+ * tabs on the right, plus the always-on RainOverlay.
  */
 test.describe("/focus/[matchId] — reference parity", () => {
   test.beforeEach(async ({ page }) => {
     await mockApi(page, {
       ...baselineTownMocks(),
+      ...matchRoomMocks(MATCH_ID),
       [`GET  /api/v1/matches/${MATCH_ID}`]: (r) =>
         json(r, 200, {
           id: MATCH_ID,
@@ -43,7 +44,7 @@ test.describe("/focus/[matchId] — reference parity", () => {
     await seedAuthTokens(page);
   });
 
-  test("buddy scene mounts both buddy cards + shared timer + status + agenda + room music + shared panel + rain", async ({ page }) => {
+  test("buddy scene mounts both buddy cards + shared timer + agenda + room music + shared panel + rain", async ({ page }) => {
     await page.goto(`/focus/${MATCH_ID}`);
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
 
@@ -60,7 +61,6 @@ test.describe("/focus/[matchId] — reference parity", () => {
     // legacy button was dropped during the Phase-9 timer refactor.
     await expect(timer.locator("button.pixel-btn")).toHaveCount(2);
 
-    await expect(page.getByTestId("status-mini")).toBeVisible();
     await expect(page.getByTestId("shared-agenda")).toBeVisible();
     await expect(page.getByTestId("room-music")).toBeVisible();
 

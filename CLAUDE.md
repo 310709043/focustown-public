@@ -18,6 +18,8 @@ Frontend (`frontend/`):
 - Copy: `messages/{zh-TW,en}/lbt.json` (namespace `lbt`). The product voice is casual "你" on purpose, unlike `docs/i18n/bilingual-seo-copywriting-guidelines.md` ("您").
 - Fonts: `lib/lbtFonts.ts`, applied only to this surface. Brand: the battery-"B" logo is `components/lbt/BrandMark.tsx` (inline SVG, header wordmark in Quicksand) and `public/brand/` (mark SVG, favicons, app/maskable icons, `og-lbt.png`); `public/logo*.png` and `og-image.png` are the legacy Focus Town art.
 
+Production backend: Cloudflare (`edge/`). LowBatteryTown is moving off AWS: the chat API runs as a Cloudflare Worker at `api.lowbatterytown.com` (one Durable Object holds every socket and all live state; reports in D1; daily purge cron). It is a port of the FastAPI code below with identical routes and frames, so the frontend is unchanged. Change behaviour in **both** places until the FastAPI version is retired, and keep `edge/test/` in step with `backend/tests/unit/test_lbt_*.py`. Details: `edge/README.md`.
+
 Backend (`backend/`), separate from the Focus Town matching:
 
 - Domain: `domain/models/lbt.py` (`LbtConversation` with mutual `request_extend`), `domain/services/lbt_rules.py` (input cleaning, `compatibility`/`pick_partner`, opening hours), `domain/services/lbt_service.py` (join → pair → relay → extend → leave/report, `sweep`, reconnect replay). Ports in `domain/repositories/lbt.py`.

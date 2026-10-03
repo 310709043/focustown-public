@@ -12,7 +12,7 @@ import { useFocusRoomStore } from "@/lib/state/focusRoomStore";
  * WS-fed store.
  */
 export function RoomStatusBanner() {
-  const t = useTranslations("focus.room.banner");
+  const t = useTranslations("focus.room");
   const status = useFocusRoomStore((s) => s.status);
   const endedReason = useFocusRoomStore((s) => s.endedReason);
   const timer = useFocusRoomStore((s) => s.timer);

@@ -26,8 +26,11 @@ const UNAUTH_MOCKS = {
  * Tolerance: maxDiffPixelRatio: 0.02 — strict enough to catch real
  * regressions but lenient on sub-pixel anti-aliasing differences.
  *
- * To intentionally update baselines after a deliberate UI change:
- *   pnpm test:e2e -- visual.spec.ts --update-snapshots
+ * Baselines are chromium-linux PNGs and must come from the CI runner
+ * (local fonts and anti-aliasing differ). After a deliberate UI change, run
+ * the "Update visual baselines" workflow on your branch, or put
+ * `[update-visual-baselines]` in a pushed commit message; it re-captures
+ * every baseline in CI and commits the PNGs back to the branch.
  */
 
 const VIEWPORT = { width: 924, height: 540 } as const;
@@ -58,26 +61,21 @@ test.describe("visual regression — canonical pages @ 924×540", () => {
     await page.setViewportSize(VIEWPORT);
   });
 
-  // `/` is now the LowBatteryTown home, so the chromium-linux baseline of the
-  // old sign-in splash no longer applies. Skip until a CI run regenerates it
-  // with --update-snapshots and commits the new chromium-linux.png.
-  test.skip("landing /zh-TW/", async ({ page }) => {
+  // `/` is the LowBatteryTown home. Capture it through the scripted demo
+  // transport: the live route opens a WebSocket whose reconnect notices
+  // would make the screenshot timing-dependent. No splash on this surface.
+  test("home /zh-TW/demo", async ({ page }) => {
     await mockApi(page, UNAUTH_MOCKS);
 
-    await page.goto("/zh-TW/");
-    await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
+    await page.goto("/zh-TW/demo");
+    await expect(page.locator(".lbt .home-view")).toBeVisible({ timeout: 10_000 });
     await page.addStyleTag({ content: DISABLE_ANIMATIONS_CSS });
     await page.waitForTimeout(SETTLE_MS);
 
     await expect(page).toHaveScreenshot(SCREENSHOT_OPTS);
   });
 
-  // SceneBackdrop v2 (2026-05-20) repaints the /town backdrop end-to-end,
-  // so the chromium-linux baseline from the 832833 Sky+Clouds stack now
-  // diffs ~50%+ vs the 322807 city composite + 801184 sprite clouds. Skip
-  // until a follow-up CI run regenerates the baseline with --update-snapshots
-  // and commits the new chromium-linux.png.
-  test.skip("town /zh-TW/town", async ({ page }) => {
+  test("town /zh-TW/town", async ({ page }) => {
     await mockApi(page, {
       ...baselineTownMocks(),
       "GET  /api/v1/me/room": (r) =>

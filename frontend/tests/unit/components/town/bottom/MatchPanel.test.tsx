@@ -86,8 +86,18 @@ test("TOGETHER card flips to Resume routing to /focus/{matchId} when a match is 
   expect(onFindBuddy).not.toHaveBeenCalled();
 });
 
-test("TOGETHER CTA is disabled while matchStore.status is non-idle (no accepted match)", () => {
+test("while searching (no accepted match) the TOGETHER CTA gives way to the searching indicator", () => {
   useMatchStore.setState({ status: "waiting" });
+  render(<MatchPanel onFindBuddy={vi.fn()} />);
+
+  expect([
+    screen.queryByTestId("mode-card-together-cta"),
+    screen.getByText(/SEARCHING/).textContent,
+  ]).toEqual([null, "◉ SEARCHING..."]);
+});
+
+test("TOGETHER CTA is disabled while a non-waiting request is in flight (no accepted match)", () => {
+  useMatchStore.setState({ status: "accepting" });
   const onFindBuddy = vi.fn();
   render(<MatchPanel onFindBuddy={onFindBuddy} />);
 

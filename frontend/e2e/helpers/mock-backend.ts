@@ -74,3 +74,33 @@ export function baselineTownMocks(): Scenarios {
     "GET  /api/v1/tracks": (r) => json(r, 200, []),
   };
 }
+
+/**
+ * Server-driven focus room for a paired /focus/{matchId} page. The page
+ * GETs this snapshot before rendering the buddy scene and shows "room no
+ * longer available" when it 404s, so every paired-room spec needs it.
+ * Both participants have joined; the session hasn't started.
+ */
+export function matchRoomMocks(matchId: string, partnerId = "u-buddy-1"): Scenarios {
+  const snapshot = {
+    id: `room-${matchId}`,
+    match_id: matchId,
+    status: "both_joined",
+    opened_at: "2026-05-22T00:00:00Z",
+    activated_at: null,
+    ended_at: null,
+    ended_reason: null,
+    participants: [
+      { user_id: fixtures.user.id, role: "requester", joined_at: "2026-05-22T00:00:01Z", left_at: null, focus_session_id: null },
+      { user_id: partnerId, role: "candidate", joined_at: "2026-05-22T00:00:02Z", left_at: null, focus_session_id: null },
+    ],
+    timer_started_at: null,
+    timer_duration_seconds: null,
+    timer_remaining_seconds: null,
+    timer_expected_end_at: null,
+  };
+  return {
+    [`GET  /api/v1/rooms/match/${matchId}`]: (r) => json(r, 200, snapshot),
+    [`POST /api/v1/rooms/match/${matchId}/join`]: (r) => json(r, 200, snapshot),
+  };
+}

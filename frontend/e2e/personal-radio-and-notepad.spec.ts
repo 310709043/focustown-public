@@ -1,6 +1,6 @@
 import { expect, test, type Route } from "@playwright/test";
 
-import { fixtures, json, mockApi } from "./helpers/mock-backend";
+import { fixtures, json, matchRoomMocks, mockApi } from "./helpers/mock-backend";
 import { seedAuthTokens } from "./helpers/session";
 
 /**
@@ -244,6 +244,7 @@ test.describe("Phase 10 — per-user radio + shared notepad", () => {
 
     await mockApi(page, {
       ...focusBaselineMocks(),
+      ...matchRoomMocks(MATCH_ID, PARTNER_USER_ID),
       "GET  /api/v1/notes": (r) => {
         const matchId = new URL(r.request().url()).searchParams.get("match_id");
         if (matchId === MATCH_ID) return json(r, 200, notes);

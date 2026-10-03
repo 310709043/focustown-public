@@ -14,19 +14,24 @@ test.describe("/awards — reference parity", () => {
       ...baselineTownMocks(),
       "GET  /api/v1/leaderboard": (r) =>
         json(r, 200, [
-          { user_id: "u1", display_name: "Kai", completed_count: 13, character_key: "kai" },
-          { user_id: "u2", display_name: "Bear", completed_count: 11, character_key: "bear" },
+          { user_id: "u1", display_name: "Kai", total_seconds: 7800, character_key: "kai" },
+          { user_id: "u2", display_name: "Bear", total_seconds: 6600, character_key: "bear" },
         ]),
       "GET  /api/v1/leaderboard/today": (r) =>
         json(r, 200, [
-          { user_id: "u1", display_name: "Kai", completed_count: 13, character_key: "kai" },
-          { user_id: "u2", display_name: "Bear", completed_count: 11, character_key: "bear" },
+          { user_id: "u1", display_name: "Kai", total_seconds: 7800, character_key: "kai" },
+          { user_id: "u2", display_name: "Bear", total_seconds: 6600, character_key: "bear" },
         ]),
+      // Shapes follow lib/api/types.gen.ts: leaderboard rows carry
+      // total_seconds, achievements come back as a cursor page.
       "GET  /api/v1/achievements": (r) =>
-        json(r, 200, [
-          { code: "first_focus", icon: "🔋", title: "First focus", description: "Complete your first pomodoro" },
-          { code: "streak_7", icon: "🔥", title: "7-day streak", description: "Focus 7 days in a row" },
-        ]),
+        json(r, 200, {
+          items: [
+            { code: "first_focus", icon: "🔋", title: "First focus", description: "Complete your first session" },
+            { code: "streak_7", icon: "🔥", title: "7-day streak", description: "Focus 7 days in a row" },
+          ],
+          next_cursor: null,
+        }),
     });
     await seedAuthTokens(page);
   });

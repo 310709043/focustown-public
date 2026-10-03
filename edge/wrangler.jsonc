@@ -1,0 +1,32 @@
+{
+  // LowBatteryTown chat API. Deploy: `pnpm deploy` (needs CLOUDFLARE_API_TOKEN
+  // and CLOUDFLARE_ACCOUNT_ID). Secrets: `wrangler secret put LBT_TOKEN_SECRET`
+  // (>= 32 chars) and `wrangler secret put ADMIN_TOKEN`.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lbt-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-20",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "api.lowbatterytown.com", "custom_domain": true }],
+  "durable_objects": {
+    "bindings": [{ "name": "TOWN", "class_name": "TownObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["TownObject"] }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lbt",
+      // Filled in by `wrangler d1 create lbt` (see edge/README.md).
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // 03:17 Asia/Taipei: purge reports past LBT_REPORT_RETENTION_DAYS.
+  "triggers": { "crons": ["17 19 * * *"] },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://www.lowbatterytown.com,https://lowbatterytown.com",
+    "LBT_OPEN_HOURS": "",
+    "LBT_TIMEZONE": "Asia/Taipei",
+    "LBT_REPORT_RETENTION_DAYS": "180"
+  }
+}

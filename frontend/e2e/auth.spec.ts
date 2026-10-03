@@ -19,6 +19,7 @@ test.describe("Sign up", () => {
     await page.getByTestId("signup-name").fill("Smoke User");
     await page.getByTestId("signup-email").fill("smoke@example.com");
     await page.getByTestId("signup-password").fill("Smoketest123");
+    await page.getByTestId("signup-confirm-password").fill("Smoketest123");
     await page.getByTestId("signup-terms").check();
     await page.getByTestId("signup-submit").click();
 
@@ -43,6 +44,7 @@ test.describe("Sign up", () => {
     await page.getByTestId("signup-name").fill("Smoke User");
     await page.getByTestId("signup-email").fill("taken@example.com");
     await page.getByTestId("signup-password").fill("Smoketest123");
+    await page.getByTestId("signup-confirm-password").fill("Smoketest123");
     await page.getByTestId("signup-terms").check();
     await page.getByTestId("signup-submit").click();
 
@@ -55,7 +57,8 @@ test.describe("Sign up", () => {
     // a real "backend at :8000 not running" scenario.
     await page.route("**/api/v1/**", (route) => route.abort("failed"));
 
-    await page.goto("/signup");
+    // Pin the locale: a bare /signup follows the browser language.
+    await page.goto("/zh-TW/signup");
     // The splash overlay blocks pointer events until it unmounts.
     // Generous timeout: first page-load can take a few seconds in dev.
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
@@ -63,12 +66,12 @@ test.describe("Sign up", () => {
     await page.getByTestId("signup-name").fill("Smoke User");
     await page.getByTestId("signup-email").fill("smoke@example.com");
     await page.getByTestId("signup-password").fill("Smoketest123");
+    await page.getByTestId("signup-confirm-password").fill("Smoketest123");
     await page.getByTestId("signup-terms").check();
     await page.getByTestId("signup-submit").click();
 
-    await expect(page.getByTestId("signup-error")).toContainText(
-      "無法連線到伺服器",
-    );
+    // messages/zh-TW/common.json → errors.networkFailure
+    await expect(page.getByTestId("signup-error")).toContainText("網路連線有點問題");
   });
 });
 
