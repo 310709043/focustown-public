@@ -1,0 +1,5 @@
+# OpenNext / Wrangler output and local credentials
+.open-next/
+.wrangler/
+.dev.vars
+.dev.vars.*

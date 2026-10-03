@@ -1,0 +1,49 @@
+name: Deploy Cloudflare web
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-cloudflare-web.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_API_BASE_URL: https://api.lowbatterytown.com
+      NEXT_PUBLIC_WS_BASE_URL: wss://api.lowbatterytown.com
+      NEXT_PUBLIC_SITE_URL: https://www.lowbatterytown.com
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build Cloudflare worker
+        run: pnpm cf:build
+      - name: Check worker bundle
+        run: pnpm exec wrangler deploy --dry-run --outdir .open-next/dry-run
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler deploy

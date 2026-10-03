@@ -45,7 +45,7 @@ import { routing } from "./i18n/routing";
 const isProd = process.env.NODE_ENV === "production";
 
 const apiOriginHttp = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-const apiOriginWs = apiOriginHttp.replace(/^http/, "ws");
+const apiOriginWs = process.env.NEXT_PUBLIC_WS_BASE_URL || apiOriginHttp.replace(/^http/, "ws");
 
 // Origins the browser is allowed to load <audio>/<video> bytes from. The
 // streaming endpoint lives on the backend (cross-origin from the frontend
