@@ -64,3 +64,19 @@ export async function purgeReports(db: D1Database, cutoffIso: string): Promise<n
   const res = await db.prepare("DELETE FROM lbt_reports WHERE created_at < ?").bind(cutoffIso).run();
   return res.meta.changes ?? 0;
 }
+
+/** Report counts per status, plus how many arrived since `sinceIso`. */
+export async function reportCounts(db: D1Database, sinceIso: string) {
+  const { results } = await db
+    .prepare("SELECT status, COUNT(*) AS n FROM lbt_reports GROUP BY status")
+    .all<{ status: string; n: number }>();
+  const byStatus = Object.fromEntries(REPORT_STATUSES.map((s) => [s, 0])) as Record<ReportStatus, number>;
+  for (const row of results) {
+    if ((REPORT_STATUSES as readonly string[]).includes(row.status)) byStatus[row.status as ReportStatus] = row.n;
+  }
+  const recent = await db
+    .prepare("SELECT COUNT(*) AS n FROM lbt_reports WHERE created_at >= ?")
+    .bind(sinceIso)
+    .first<{ n: number }>();
+  return { byStatus, last24h: recent?.n ?? 0 };
+}

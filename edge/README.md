@@ -59,10 +59,23 @@ bad value fails every request loudly), `LBT_TIMEZONE`, `LBT_SESSION_SECONDS`,
 `LBT_GUEST_TOKEN_TTL_HOURS`, `LBT_REPORT_RETENTION_DAYS` (keep in step with
 `frontend/lib/lbt/legal.ts`). Abuse limits are in `src/config.ts`.
 
-## Admin
+## Admin console
+
+`https://api.lowbatterytown.com/admin`: sign in with `ADMIN_TOKEN`
+(`npx wrangler secret put ADMIN_TOKEN`; kept in the tab's sessionStorage only).
+It shows live numbers (online, waiting, open conversations, reports) and every
+report with both profiles, the note and the transcript, and lets you mark it
+reviewed / actioned / dismissed. It refreshes every 30 s. The page builds all
+report content with `textContent` (it is user-written) under a nonce-only CSP.
+
+Same data over the API:
 
 ```bash
+curl -H "Authorization: Bearer $ADMIN_TOKEN" https://api.lowbatterytown.com/api/v1/admin/lbt/overview
 curl -H "Authorization: Bearer $ADMIN_TOKEN" "https://api.lowbatterytown.com/api/v1/admin/lbt/reports?status=open"
 curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"status":"reviewed"}' \
   "https://api.lowbatterytown.com/api/v1/admin/lbt/reports/<id>/status"
 ```
+
+Guests are anonymous and a new guest token is free, so there is no account to
+ban: a report already ends the chat and keeps the pair apart for 24 h.
