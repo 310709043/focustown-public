@@ -7,12 +7,14 @@
  *   GET  /api/v1/lbt/status    real online / waiting counts, open flag
  *   POST /api/v1/lbt/reports   safety report (guest bearer token)
  *   GET  /api/v1/lbt/ws        WebSocket, subprotocol `bearer.{token}`
- *   GET  /api/v1/admin/lbt/reports, POST …/{id}/status   (ADMIN_TOKEN)
+ *   GET  /api/v1/admin/lbt/overview, /reports, POST …/{id}/status   (ADMIN_TOKEN)
+ *   GET  /admin                admin console page (signs in with ADMIN_TOKEN)
  *
  * The town itself is one Durable Object (src/townObject.ts); reports go to D1.
  */
 import { type Env, retentionDays, tokenTtlHours } from "./config";
-import { REPORT_STATUSES, type ReportStatus, listReports, purgeReports, setReportStatus } from "./reports";
+import { adminPage, adminPageHeaders } from "./adminPage";
+import { REPORT_STATUSES, type ReportStatus, listReports, purgeReports, reportCounts, setReportStatus } from "./reports";
 import { createGuestToken, newGuestId, verifyGuestToken } from "./token";
 
 export { TownObject } from "./townObject";
@@ -112,6 +114,11 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
   if (!env.ADMIN_TOKEN || !token || !sameSecret(token, env.ADMIN_TOKEN)) {
     return error(request, env, 401, "unauthorized");
   }
+  if (request.method === "GET" && path === "/api/v1/admin/lbt/overview") {
+    const since = new Date(Date.now() - 86_400_000).toISOString();
+    const [live, reports] = await Promise.all([town(env).adminStats(), reportCounts(env.DB, since)]);
+    return json(request, env, 200, { ...live, reports });
+  }
   if (request.method === "GET" && path === "/api/v1/admin/lbt/reports") {
     const params = new URL(request.url).searchParams;
     const raw = params.get("status") ?? "open";
@@ -140,6 +147,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     return new Response(null, { status: 204, headers: { ...corsHeaders(request, env), ...SECURITY_HEADERS } });
   }
   if (path === "/healthz") return json(request, env, 200, { ok: true });
+
+  // Admin console (sign-in happens in the page; every data call checks ADMIN_TOKEN).
+  if (path === "/admin" && request.method === "GET") {
+    const nonce = crypto.randomUUID().replace(/-/g, "");
+    return new Response(adminPage(nonce), { headers: adminPageHeaders(nonce) });
+  }
 
   if (path === "/api/v1/lbt/ws") return handleSocket(request, env);
 

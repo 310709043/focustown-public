@@ -38,6 +38,14 @@ export class TownObject extends DurableObject<Env> {
     return this.town.status();
   }
 
+  /** Live numbers for the admin overview: public status plus open conversations. */
+  async adminStats() {
+    return {
+      ...(await this.town.status()),
+      conversations: (await this.store.activeConversationIds()).length,
+    };
+  }
+
   /** Counts a guest-token request from `ip`; false once the hourly limit is used up. */
   allowGuest(ip: string): Promise<boolean> {
     return this.store.hit(`guest:ip:${ip}`, LIMITS.guestPerIpPerHour, 3600_000, Date.now());
