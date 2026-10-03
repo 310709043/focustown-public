@@ -96,12 +96,12 @@ test("live online count comes from the presence store, not a static fixture", ()
   expect(online).not.toHaveTextContent("2847");
 });
 
-test("rank rows render in order with real display names + counts", async () => {
+test("rank rows render in order with real display names + minutes", async () => {
   server.use(
     http.get(`${BASE}/api/v1/leaderboard/today`, () =>
       HttpResponse.json([
-        { user_id: "u-a", display_name: "Alice", character_key: null, completed_count: 12 },
-        { user_id: "u-b", display_name: "Bob", character_key: null, completed_count: 7 },
+        { user_id: "u-a", display_name: "Alice", character_key: null, total_seconds: 18_000 },
+        { user_id: "u-b", display_name: "Bob", character_key: null, total_seconds: 4_200 },
       ]),
     ),
   );
@@ -112,11 +112,8 @@ test("rank rows render in order with real display names + counts", async () => {
     expect(screen.getByTestId("sky-window-rank-row-1")).toHaveTextContent("Alice");
   });
 
-  const row1 = screen.getByTestId("sky-window-rank-row-1");
-  expect(row1).toHaveTextContent("12");
-  // Today's minutes is completed_count * 25 — a regression here would
-  // mean we're showing fabricated values again.
-  expect(row1).toHaveTextContent("300min");
-
-  expect(screen.getByTestId("sky-window-rank-row-2")).toHaveTextContent("Bob");
+  // Minutes come straight from the API's total_seconds (18 000 s = 300 min);
+  // anything else would mean the row shows fabricated values again.
+  expect(screen.getByTestId("sky-window-rank-row-1")).toHaveTextContent("300min");
+  expect(screen.getByTestId("sky-window-rank-row-2")).toHaveTextContent(/Bob.*70min/);
 });

@@ -281,7 +281,9 @@ export function MatchPanel({ onFindBuddy }: MatchPanelProps) {
 
         {/* CTA */}
         <div className="hud-panel-controls">
-          {matchStatus === "waiting" ? (
+          {/* An accepted match keeps its Resume button even while another
+              search is running, so the user can always get back to the room. */}
+          {matchStatus === "waiting" && !hasAccepted ? (
             <div
               style={{
                 flex: 1,

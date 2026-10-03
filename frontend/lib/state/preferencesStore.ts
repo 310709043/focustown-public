@@ -61,8 +61,10 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
       const bundle = await Promise.race([preferencesApi.get(), timeout]);
       set({ byKey: bundle, hydrated: true });
     } catch {
-      // Timeout or network error — fall back to defaults. hydrated stays
-      // false so a subsequent mount or navigation can retry.
+      // Timeout or network error: keep the defaults and still mark the
+      // store hydrated, so Settings stops showing its loading placeholder
+      // and the focus timer uses the default length instead of waiting
+      // forever. The next successful patch() replaces the bundle.
       set({ hydrated: true });
     }
   },

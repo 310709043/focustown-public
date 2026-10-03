@@ -1,0 +1,353 @@
+/**
+ * LowBatteryTown session logic: waiting room, pairing, chat relay, mutual
+ * extension, leaving, reports and the periodic sweep. A port of
+ * backend/app/domain/services/lbt_service.py; frames are identical so the
+ * frontend's liveTransport works unchanged.
+ */
+import {
+  InputError,
+  MESSAGE_MAX,
+  REPORT_NOTE_MAX,
+  REPORT_REASONS,
+  type OpenHours,
+  cleanText,
+  isOpen,
+  maskContacts,
+  parseProfile,
+  pickPartner,
+  type Waiting,
+} from "./rules";
+import type { Conversation, Line, TownStore } from "./store";
+
+export interface TownConfig {
+  sessionMs: number;
+  graceMs: number;
+  relaxAfterMs: number;
+  offlineAfterMs: number;
+  keepClosedMs: number;
+  blockMs: number;
+  openHours: OpenHours | null;
+  timeZone: string;
+  hoursLabel: string;
+}
+
+export const DEFAULT_CONFIG: TownConfig = {
+  sessionMs: 420_000,
+  graceMs: 60_000,
+  relaxAfterMs: 30_000,
+  offlineAfterMs: 45_000,
+  keepClosedMs: 24 * 3600_000,
+  blockMs: 24 * 3600_000,
+  openHours: null,
+  timeZone: "Asia/Taipei",
+  hoursLabel: "",
+};
+
+export type Frame = Record<string, unknown> & { type: string };
+
+export interface ReportRecord {
+  id: string;
+  conversationId: string;
+  reporterGuestId: string;
+  reportedGuestId: string;
+  reason: string;
+  note: string | null;
+  transcript: { from: "reporter" | "reported"; text: string; at: string }[];
+  reporterProfile: Record<string, unknown>;
+  reportedProfile: Record<string, unknown>;
+  status: "open";
+  createdAt: string;
+}
+
+export interface TownDeps {
+  store: TownStore;
+  send: (guestId: string, frame: Frame) => void;
+  now: () => number;
+  newId: () => string;
+  saveReport?: (record: ReportRecord) => Promise<void>;
+  config: TownConfig;
+}
+
+const iso = (ms: number) => new Date(ms).toISOString();
+
+export class Town {
+  private readonly store: TownStore;
+  private readonly cfg: TownConfig;
+
+  constructor(private readonly deps: TownDeps) {
+    this.store = deps.store;
+    this.cfg = deps.config;
+  }
+
+  // ── read side ──────────────────────────────────────────────────────
+
+  async status() {
+    const now = this.deps.now();
+    return {
+      online: await this.store.countOnline(now - this.cfg.offlineAfterMs),
+      waiting: (await this.store.listWaiting()).length,
+      open: isOpen(now, this.cfg.openHours, this.cfg.timeZone),
+      hours: this.cfg.hoursLabel,
+    };
+  }
+
+  // ── connection lifecycle ───────────────────────────────────────────
+
+  /** Mark online and replay current state to a (re)connecting socket. */
+  async connect(guestId: string) {
+    const now = this.deps.now();
+    await this.store.touchOnline(guestId, now);
+    const c = await this.current(guestId);
+    if (c) {
+      this.deps.send(guestId, this.matchedFrame(c, guestId, now));
+      for (const line of await this.store.transcript(c.id)) {
+        this.deps.send(guestId, messageFrame(line, guestId));
+      }
+      for (const voter of (await this.store.extendVotes(c.id)).sort()) {
+        this.deps.send(guestId, { type: "lbt.extend_requested", by: voter === guestId ? "me" : "partner" });
+      }
+      return;
+    }
+    const waiting = (await this.store.listWaiting()).find((w) => w.guestId === guestId);
+    if (waiting) {
+      this.deps.send(guestId, { type: "lbt.waiting", since: iso(waiting.joinedAt) });
+      return;
+    }
+    // Neither chatting nor waiting: a client that missed lbt.ended reconciles.
+    this.deps.send(guestId, { type: "lbt.idle" });
+  }
+
+  async heartbeat(guestId: string) {
+    await this.store.touchOnline(guestId, this.deps.now());
+  }
+
+  /** The guest's last socket closed. Leave the queue now; an open chat ends
+   *  in the sweep only if they don't come back within offlineAfter. */
+  async disconnect(guestId: string) {
+    await this.store.dequeue(guestId);
+    await this.store.touchOnline(guestId, this.deps.now());
+  }
+
+  // ── waiting room & pairing ─────────────────────────────────────────
+
+  async join(guestId: string, rawProfile: unknown, adult: boolean) {
+    if (adult !== true) throw new InputError("age_required");
+    const now = this.deps.now();
+    if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
+    const profile = parseProfile(rawProfile);
+    if (await this.current(guestId)) throw new InputError("already_in_conversation");
+    await this.store.touchOnline(guestId, now);
+    await this.store.enqueue({ guestId, profile, joinedAt: now });
+    this.deps.send(guestId, { type: "lbt.waiting", since: iso(now) });
+    await this.pairWaiting();
+  }
+
+  async cancel(guestId: string) {
+    await this.store.dequeue(guestId);
+  }
+
+  /** Pair everyone who can be paired right now; returns pairs made. */
+  async pairWaiting(): Promise<number> {
+    const now = this.deps.now();
+    const pool = (await this.store.listWaiting()).sort((a, b) => a.joinedAt - b.joinedAt);
+    const taken = new Set<string>();
+    let made = 0;
+    for (const me of pool) {
+      if (taken.has(me.guestId)) continue;
+      const others = pool.filter((w) => !taken.has(w.guestId) && w.guestId !== me.guestId);
+      const partner = pickPartner(
+        me,
+        others,
+        now,
+        this.cfg.relaxAfterMs,
+        await this.store.blockedFor(me.guestId, now),
+      );
+      if (!partner) continue;
+      taken.add(me.guestId).add(partner.guestId);
+      await this.startConversation(me, partner, now);
+      made += 1;
+    }
+    return made;
+  }
+
+  private async startConversation(a: Waiting, b: Waiting, now: number) {
+    await this.store.dequeue(a.guestId);
+    await this.store.dequeue(b.guestId);
+    const c: Conversation = {
+      id: this.deps.newId(),
+      guestA: a.guestId,
+      guestB: b.guestId,
+      profileA: a.profile,
+      profileB: b.profile,
+      startedAt: now,
+      endsAt: now + this.cfg.sessionMs,
+      extensions: 0,
+    };
+    await this.store.saveConversation(c);
+    for (const g of [a.guestId, b.guestId]) this.deps.send(g, this.matchedFrame(c, g, now));
+  }
+
+  // ── inside a conversation ──────────────────────────────────────────
+
+  async sendMessage(guestId: string, rawText: unknown) {
+    const text = maskContacts(cleanText(rawText, MESSAGE_MAX));
+    if (!text) throw new InputError("empty_message");
+    const c = await this.require(guestId);
+    const now = this.deps.now();
+    if (c.endsAt <= now) throw new InputError("time_up");
+    const line: Line = { id: this.deps.newId(), from: guestId, text, at: now };
+    await this.store.appendLine(c.id, line);
+    for (const g of [guestId, partnerOf(c, guestId)]) this.deps.send(g, messageFrame(line, g));
+  }
+
+  async typing(guestId: string) {
+    const c = await this.current(guestId);
+    if (c) this.deps.send(partnerOf(c, guestId), { type: "lbt.typing" });
+  }
+
+  async extend(guestId: string) {
+    const c = await this.require(guestId);
+    const now = this.deps.now();
+    if (now >= c.endsAt + this.cfg.graceMs) throw new InputError("too_late");
+    const partner = partnerOf(c, guestId);
+    if (await this.store.addExtendVote(c, guestId)) {
+      // Agreeing during the grace period still yields a full window.
+      const updated: Conversation = {
+        ...c,
+        endsAt: Math.max(now, c.endsAt) + this.cfg.sessionMs,
+        extensions: c.extensions + 1,
+      };
+      await this.store.saveConversation(updated);
+      for (const g of [guestId, partner]) this.deps.send(g, { type: "lbt.extended", ...this.timing(updated, now) });
+      return;
+    }
+    this.deps.send(guestId, { type: "lbt.extend_requested", by: "me" });
+    this.deps.send(partner, { type: "lbt.extend_requested", by: "partner" });
+  }
+
+  async leave(guestId: string) {
+    await this.store.dequeue(guestId);
+    const c = await this.current(guestId);
+    if (!c) return;
+    await this.close(c, { [guestId]: "left", [partnerOf(c, guestId)]: "partner_left" });
+  }
+
+  async report(guestId: string, reason: string, note: unknown): Promise<string> {
+    if (!(REPORT_REASONS as readonly string[]).includes(reason)) throw new InputError("invalid_reason");
+    if (!this.deps.saveReport) throw new Error("report storage not wired");
+    const now = this.deps.now();
+    const id =
+      (await this.store.conversationIdOf(guestId)) ?? (await this.store.lastConversationIdOf(guestId, now));
+    const c = id ? await this.store.getConversation(id) : null;
+    if (!c || (c.guestA !== guestId && c.guestB !== guestId)) throw new InputError("no_conversation");
+    const partner = partnerOf(c, guestId);
+    const record: ReportRecord = {
+      id: this.deps.newId(),
+      conversationId: c.id,
+      reporterGuestId: guestId,
+      reportedGuestId: partner,
+      reason,
+      note: cleanText(note, REPORT_NOTE_MAX) || null,
+      transcript: (await this.store.transcript(c.id)).map((l) => ({
+        from: l.from === guestId ? "reporter" : "reported",
+        text: l.text,
+        at: iso(l.at),
+      })),
+      reporterProfile: { ...profileOf(c, guestId) },
+      reportedProfile: { ...profileOf(c, partner) },
+      status: "open",
+      createdAt: iso(now),
+    };
+    await this.deps.saveReport(record);
+    await this.store.blockPair(guestId, partner, now + this.cfg.blockMs);
+    if ((await this.store.conversationIdOf(guestId)) === c.id) {
+      await this.close(c, { [guestId]: "reported", [partner]: "partner_left" });
+    }
+    return record.id;
+  }
+
+  // ── periodic work ──────────────────────────────────────────────────
+
+  /** End timed-out or abandoned chats, drop absent waiters, pair the rest. */
+  async sweep() {
+    const now = this.deps.now();
+    const cutoff = now - this.cfg.offlineAfterMs;
+    for (const id of await this.store.activeConversationIds()) {
+      const c = await this.store.getConversation(id);
+      if (!c) continue;
+      if (now >= c.endsAt + this.cfg.graceMs) {
+        await this.close(c, { [c.guestA]: "timeout", [c.guestB]: "timeout" });
+        continue;
+      }
+      const gone: string[] = [];
+      for (const g of [c.guestA, c.guestB]) {
+        const seen = await this.store.lastSeen(g);
+        if (seen === null || seen < cutoff) gone.push(g);
+      }
+      if (gone.length > 0) {
+        const reasons: Record<string, string> = {};
+        for (const g of [c.guestA, c.guestB]) reasons[g] = gone.includes(g) ? "left" : "partner_disconnected";
+        await this.close(c, reasons);
+      }
+    }
+    for (const w of await this.store.listWaiting()) {
+      const seen = await this.store.lastSeen(w.guestId);
+      if (seen === null || seen < cutoff) await this.store.dequeue(w.guestId);
+    }
+    await this.store.pruneOnline(now - this.cfg.offlineAfterMs * 2);
+    await this.store.pruneExpired(now);
+    await this.pairWaiting();
+  }
+
+  // ── helpers ────────────────────────────────────────────────────────
+
+  private async current(guestId: string): Promise<Conversation | null> {
+    const id = await this.store.conversationIdOf(guestId);
+    return id ? this.store.getConversation(id) : null;
+  }
+
+  private async require(guestId: string): Promise<Conversation> {
+    const c = await this.current(guestId);
+    if (!c) throw new InputError("no_conversation");
+    return c;
+  }
+
+  private async close(c: Conversation, reasons: Record<string, string>) {
+    await this.store.closeConversation(c, this.deps.now() + this.cfg.keepClosedMs);
+    for (const [g, reason] of Object.entries(reasons)) this.deps.send(g, { type: "lbt.ended", reason });
+  }
+
+  private timing(c: Conversation, now: number) {
+    return { ends_at: iso(c.endsAt), grace_seconds: Math.round(this.cfg.graceMs / 1000), server_now: iso(now) };
+  }
+
+  private matchedFrame(c: Conversation, guestId: string, now: number): Frame {
+    return {
+      type: "lbt.matched",
+      conversation_id: c.id,
+      me: { ...profileOf(c, guestId) },
+      partner: { ...profileOf(c, partnerOf(c, guestId)) },
+      ...this.timing(c, now),
+    };
+  }
+}
+
+export function partnerOf(c: Conversation, guestId: string): string {
+  if (guestId === c.guestA) return c.guestB;
+  if (guestId === c.guestB) return c.guestA;
+  throw new Error("guest is not part of this conversation");
+}
+
+function profileOf(c: Conversation, guestId: string) {
+  return guestId === c.guestA ? c.profileA : c.profileB;
+}
+
+function messageFrame(line: Line, recipient: string): Frame {
+  return {
+    type: "lbt.message",
+    id: line.id,
+    from: line.from === recipient ? "me" : "partner",
+    text: line.text,
+    at: iso(line.at),
+  };
+}
