@@ -6,6 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
+from app.core.client_ip import resolve_client_ip
 from app.core.config import Settings
 from app.core.logging import get_logger
 from app.domain.rate_limit import IRateLimiter
@@ -43,6 +44,7 @@ class GlobalRateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self._limiter_factory = limiter if callable(limiter) else (lambda: limiter)
         self._resolved: IRateLimiter | None = None
+        self._settings = settings
         self._limit = settings.global_rl_per_ip_per_min
         self._window = 60
 
@@ -89,8 +91,9 @@ class GlobalRateLimitMiddleware(BaseHTTPMiddleware):
         return response
 
     def _get_client_ip(self, request: Request) -> str:
-        """Extract client IP, respecting X-Forwarded-For behind a trusted proxy."""
-        forwarded = request.headers.get("x-forwarded-for")
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-        return request.client.host if request.client else "unknown"
+        """Client IP via the shared resolver: X-Forwarded-For counts only
+        when the peer is a trusted proxy, so a client cannot pick its own
+        bucket and visitors behind the load balancer do not share one."""
+        peer = request.client.host if request.client else None
+        ip = resolve_client_ip(peer, request.headers.get("x-forwarded-for"), self._settings)
+        return ip or "unknown"

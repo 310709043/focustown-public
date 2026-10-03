@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import ipaddress as _ipaddress
 from collections.abc import AsyncIterator
 from datetime import timedelta
 from typing import Annotated
@@ -9,6 +8,7 @@ import structlog
 from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.client_ip import resolve_client_ip
 from app.core.clock import IClock, SystemClock
 from app.core.config import Settings, get_settings
 from app.core.events import EventBus
@@ -335,46 +335,6 @@ def get_storage(settings: SettingsDep) -> IFileStorage:
 
 
 StorageDep = Annotated[IFileStorage, Depends(get_storage)]
-
-
-def _parse_ip(raw: str | None) -> str | None:
-    if not raw:
-        return None
-    try:
-        return str(_ipaddress.ip_address(raw))
-    except ValueError:
-        return None
-
-
-def resolve_client_ip(
-    peer: str | None, forwarded_for: str | None, settings: Settings
-) -> str | None:
-    """Client IP for rate limiting and audit columns.
-
-    Returns the direct socket peer by default. Honours X-Forwarded-For ONLY
-    when the immediate peer is a configured trusted proxy (see
-    Settings.app_trusted_proxies). Returns None if no valid IP can be
-    determined — callers should treat None as "unknown" and apply per-key
-    fallbacks rather than skipping limits.
-
-    Shared by HTTP requests and WebSocket handshakes so both see the same
-    client behind the reverse proxy.
-    """
-    peer_validated = _parse_ip(peer)
-
-    networks = settings.trusted_proxy_networks
-    if peer_validated and networks:
-        try:
-            peer_addr = _ipaddress.ip_address(peer_validated)
-            if any(peer_addr in net for net in networks) and forwarded_for:
-                candidate = forwarded_for.split(",", 1)[0].strip()
-                parsed = _parse_ip(candidate)
-                if parsed:
-                    return parsed
-        except ValueError:
-            pass
-
-    return peer_validated
 
 
 def get_client_ip(request: Request, settings: SettingsDep) -> str | None:

@@ -20,9 +20,17 @@ def _settings(trusted: str) -> Settings:
 @pytest.mark.parametrize(
     ("trusted", "peer", "xff", "expected"),
     [
-        # behind the trusted proxy: the first forwarded hop is the visitor
+        # behind the trusted proxy: the forwarded visitor
         ("10.0.0.0/8", "10.0.0.2", "198.51.100.7", "198.51.100.7"),
+        # load balancer -> caddy -> app: skip our own hops from the right
         ("10.0.0.0/8", "10.0.0.2", "198.51.100.7, 10.0.0.9", "198.51.100.7"),
+        # a client-written prefix cannot choose the bucket
+        ("10.0.0.0/8", "10.0.0.2", "1.2.3.4, 198.51.100.7, 10.0.0.9", "198.51.100.7"),
+        ("10.0.0.0/8", "10.0.0.2", "10.9.9.9, 198.51.100.7", "198.51.100.7"),
+        # every hop is internal: the furthest one
+        ("10.0.0.0/8", "10.0.0.2", "10.0.0.5, 10.0.0.9", "10.0.0.5"),
+        # garbage left of a trusted hop stops the walk at that hop
+        ("10.0.0.0/8", "10.0.0.2", "junk, 10.0.0.9", "10.0.0.9"),
         # a peer outside the trusted networks cannot spoof via the header
         ("10.0.0.0/8", "203.0.113.5", "1.2.3.4", "203.0.113.5"),
         # no trusted proxies configured: always the peer

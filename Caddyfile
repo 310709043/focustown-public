@@ -13,6 +13,18 @@
 # the same Caddyfile baked into the custom caddy image works for both envs.
 # Ref: https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-container-services.html
 
+# The LCS load balancer sits in front of Caddy and appends the visitor's
+# address to X-Forwarded-For. Without trusted_proxies Caddy discards that
+# header and forwards only the balancer's address, so the backend's per-IP
+# rate limits would put every visitor in one bucket. Trusting private
+# ranges keeps the visitor's address; the backend then walks the header
+# right to left past APP_TRUSTED_PROXIES (app/core/client_ip.py).
+{
+    servers {
+        trusted_proxies static private_ranges
+    }
+}
+
 :80 {
     encode gzip zstd
 
