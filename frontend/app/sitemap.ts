@@ -8,7 +8,14 @@ const locales = ["zh-TW", "en"] as const;
 // Only the LowBatteryTown home is indexed. The original Focus Town routes
 // (town, awards, legal, sign-in) are served with `noindex` — see
 // app/[locale]/(legacy)/layout.tsx — so they stay out of the sitemap too.
-const pages = [{ path: "", priority: 1.0, changeFrequency: "weekly" as const }];
+const pages = [
+  { path: "", priority: 1.0, changeFrequency: "weekly" as const },
+  ...["privacy", "terms", "guidelines"].map((slug) => ({
+    path: `/policies/${slug}`,
+    priority: 0.3,
+    changeFrequency: "yearly" as const,
+  })),
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];

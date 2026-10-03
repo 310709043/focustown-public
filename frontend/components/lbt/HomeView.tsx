@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { Link } from "@/i18n/routing";
+
 import {
   ENERGIES,
   ENERGY_ID,
@@ -160,7 +162,14 @@ export function HomeView() {
                 aria-describedby="lbt-adult-hint"
               />
               <span>{t("home.adult")}</span>
-              <small id="lbt-adult-hint">{t("home.adultHint")}</small>
+              <small id="lbt-adult-hint">
+                {t("home.adultHint")}{" "}
+                {t.rich("home.adultHintPolicies", {
+                  terms: (chunks) => <Link href="/policies/terms">{chunks}</Link>,
+                  guidelines: (chunks) => <Link href="/policies/guidelines">{chunks}</Link>,
+                  privacy: (chunks) => <Link href="/policies/privacy">{chunks}</Link>,
+                })}
+              </small>
             </label>
             {closed ? (
               <p className="closed-note" role="status">

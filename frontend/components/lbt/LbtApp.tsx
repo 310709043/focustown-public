@@ -141,6 +141,11 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
         <footer className="footer">
           <span>{t("footer.left")}</span>
           <span>{storeMode === "demo" ? t("footer.right") : t("footer.rightLive")}</span>
+          <nav className="footer-links" aria-label={t("policy.nav.aria")}>
+            <Link href="/policies/privacy">{t("policy.nav.privacy")}</Link>
+            <Link href="/policies/terms">{t("policy.nav.terms")}</Link>
+            <Link href="/policies/guidelines">{t("policy.nav.guidelines")}</Link>
+          </nav>
           <button
             type="button"
             className="text-button footer-guide"

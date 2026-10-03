@@ -9,13 +9,18 @@ import { handlers } from "./fixtures/handlers";
 // NextIntlClientProvider, so `useTranslations` would otherwise throw.
 // Tests that care about specific translated copy mock this per-file.
 vi.mock("next-intl", () => ({
-  useTranslations:
-    (ns?: string) =>
-    (key: string, vars?: Record<string, unknown>) => {
+  useTranslations: (ns?: string) => {
+    const t = (key: string, vars?: Record<string, unknown>) => {
       const base = ns ? `${ns}.${key}` : key;
       if (!vars) return base;
       return `${base}(${JSON.stringify(vars)})`;
-    },
+    };
+    // `t.rich` returns nodes in the real library; the key is enough here.
+    return Object.assign(t, {
+      rich: (key: string) => (ns ? `${ns}.${key}` : key),
+      raw: (key: string) => (ns ? `${ns}.${key}` : key),
+    });
+  },
   useLocale: () => "zh-TW",
   useFormatter: () => ({
     dateTime: (d: Date) => d.toISOString(),

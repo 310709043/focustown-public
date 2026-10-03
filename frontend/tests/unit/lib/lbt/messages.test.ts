@@ -16,15 +16,16 @@ import {
   TOPIC_IDS,
 } from "@/lib/lbt/constants";
 
-type Tree = { [key: string]: string | Tree };
+// Policy pages keep their sections as arrays (read with `t.raw`).
+type Tree = { [key: string]: string | Tree } | Tree[];
 
 const bundles: Array<[string, Tree]> = [
-  ["zh-TW", zhTW as Tree],
-  ["en", en as Tree],
+  ["zh-TW", zhTW as unknown as Tree],
+  ["en", en as unknown as Tree],
 ];
 
 function leafKeys(tree: Tree, prefix = ""): string[] {
-  return Object.entries(tree).flatMap(([key, value]) =>
+  return Object.entries(tree).flatMap(([key, value]: [string, string | Tree]) =>
     typeof value === "string" ? [`${prefix}${key}`] : leafKeys(value, `${prefix}${key}.`),
   );
 }
@@ -33,13 +34,16 @@ function lookup(tree: Tree, path: string): string | Tree | undefined {
   return path
     .split(".")
     .reduce<string | Tree | undefined>(
-      (node, part) => (node && typeof node !== "string" ? node[part] : undefined),
+      (node, part) =>
+        node && typeof node !== "string" ? (node as Record<string, string | Tree>)[part] : undefined,
       tree,
     );
 }
 
 test("both locales define exactly the same keys", () => {
-  expect(leafKeys(en as Tree).sort()).toEqual(leafKeys(zhTW as Tree).sort());
+  expect(leafKeys(en as unknown as Tree).sort()).toEqual(
+    leafKeys(zhTW as unknown as Tree).sort(),
+  );
 });
 
 describe.each(bundles)("%s", (_locale, bundle) => {
@@ -106,6 +110,28 @@ describe.each(bundles)("%s", (_locale, bundle) => {
     const texts = [lookup(bundle, "modal.report.help"), lookup(bundle, "chat.aside.help")];
 
     expect(texts.every((text) => typeof text === "string" && text.includes("1925"))).toBe(true);
+  });
+
+  test("each policy page has a title, intro and sections", () => {
+    const missing = ["privacy", "terms", "guidelines"].filter((slug) => {
+      const sections = lookup(bundle, `policy.${slug}.sections`);
+      return (
+        typeof lookup(bundle, `policy.${slug}.title`) !== "string" ||
+        typeof lookup(bundle, `policy.${slug}.intro`) !== "string" ||
+        !Array.isArray(sections) ||
+        sections.length === 0
+      );
+    });
+
+    expect(missing).toEqual([]);
+  });
+
+  test("terms and guidelines point to the crisis lines", () => {
+    const texts = ["terms", "guidelines"].map((slug) =>
+      JSON.stringify(lookup(bundle, `policy.${slug}.sections`)),
+    );
+
+    expect(texts.every((text) => text.includes("1925") && text.includes("1995"))).toBe(true);
   });
 
   test("every scripted topic and reply has text", () => {

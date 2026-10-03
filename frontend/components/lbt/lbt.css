@@ -2478,3 +2478,95 @@
   }
 }
 
+
+/* Policy pages (components/lbt/PolicyPage.tsx) and the links to them. */
+.lbt .footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.lbt .footer-links a,
+.lbt .adult-check small a {
+  color: var(--mist);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lbt .footer-links a:hover,
+.lbt .adult-check small a:hover {
+  color: var(--lamp);
+}
+.lbt .policy-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.lbt .policy-nav a {
+  color: var(--mist);
+}
+.lbt .policy-nav a[aria-current="page"] {
+  color: var(--lamp);
+}
+.lbt .policy {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 48px 0 72px;
+  line-height: 1.8;
+}
+.lbt .policy h1 {
+  font-family: var(--display);
+  font-size: clamp(30px, 6vw, 44px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.lbt .policy-meta {
+  margin-top: 10px;
+  color: var(--subtle);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.lbt .policy-intro {
+  margin: 22px 0 8px;
+  color: var(--mist);
+  font-size: 17px;
+}
+.lbt .policy section {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.lbt .policy h2 {
+  margin-bottom: 8px;
+  color: var(--lamp);
+  font-size: 17px;
+}
+.lbt .policy p,
+.lbt .policy li {
+  color: var(--paper);
+  font-size: 15px;
+}
+.lbt .policy ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 1.2em;
+  list-style: disc;
+}
+.lbt .policy-contact {
+  margin: 30px 0 20px;
+}
+.lbt .policy-contact a {
+  color: var(--lamp);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 610px) {
+  .lbt .topbar:has(.policy-nav) {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 0;
+  }
+  .lbt .policy {
+    padding-top: 28px;
+  }
+}

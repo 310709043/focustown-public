@@ -56,7 +56,8 @@
     "waitingCount": "{waiting} waiting",
     "closed": "The lamps aren't lit yet. Open hours: {hours}",
     "adult": "I am 18 or older",
-    "adultHint": "During the beta, only adults can join."
+    "adultHint": "During the beta, only adults can join.",
+    "adultHintPolicies": "By entering you agree to the <terms>terms</terms> and <guidelines>community guidelines</guidelines> and have read the <privacy>privacy policy</privacy>."
   },
   "energy": {
     "low": {
@@ -268,5 +269,179 @@
     "wait_interrupted": "The connection dropped and the wait was cancelled. You can walk in again.",
     "report_failed": "The report didn't go through. Check your connection and try again.",
     "generic": "Something went wrong. Please try again."
+  },
+  "policy": {
+    "nav": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "guidelines": "Community guidelines",
+      "home": "Back to town",
+      "aria": "Town rules"
+    },
+    "effective": "Effective {date}",
+    "contact": "Contact: ",
+    "privacy": {
+      "title": "Privacy policy",
+      "intro": "LowBatteryTown (\"we\") is an anonymous one-to-one chat with no sign-up. This page explains what we handle, why, and for how long.",
+      "sections": [
+        {
+          "h": "What we don't ask for",
+          "p": [
+            "There is no account. We don't collect your real name, e-mail, phone number or social handles.",
+            "Please don't share anything that identifies you. Links, e-mail addresses, @handles and phone numbers are masked automatically before a message is sent."
+          ]
+        },
+        {
+          "h": "What we handle",
+          "p": [
+            "Anonymous guest code: issued to your browser when you enter, kept in the browser's localStorage and valid for {tokenHours} hours, so a refresh or dropped connection can rejoin your chat.",
+            "Nickname, social battery and chat intent: shown to the person you are paired with.",
+            "Messages: relayed to the other person in real time. After a chat ends they are kept for up to {chatHours} hours for reconnects and reports, then deleted automatically.",
+            "IP address: used only for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
+            "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
+            "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
+            "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser."
+          ]
+        },
+        {
+          "h": "Why",
+          "p": [
+            "To pair people and relay chats, to prevent abuse and handle reports, and to keep the service running. We don't sell data or use chats for advertising."
+          ]
+        },
+        {
+          "h": "Where it lives",
+          "p": [
+            "The service runs on Amazon Web Services (Tokyo region) behind Cloudflare, so data may be processed outside Taiwan."
+          ]
+        },
+        {
+          "h": "Your rights",
+          "p": [
+            "Under Taiwan's Personal Data Protection Act you may ask to access, correct or delete your data. Because the service is anonymous we usually can't tell who you are; include the approximate time and your nickname when you write and we'll do our best."
+          ]
+        },
+        {
+          "h": "Age",
+          "p": [
+            "During the beta the town is for people aged 18 and over."
+          ]
+        },
+        {
+          "h": "Changes",
+          "p": [
+            "We'll post material changes on this page and update the effective date."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of use",
+      "intro": "By entering the town you agree to these terms and the community guidelines.",
+      "sections": [
+        {
+          "h": "The service",
+          "p": [
+            "LowBatteryTown pairs two anonymous people for a 7-minute chat, extended only when both agree. It is a beta: features and opening hours may change or pause, and a partner isn't always available."
+          ]
+        },
+        {
+          "h": "Who can use it",
+          "p": [
+            "You must be 18 or older."
+          ]
+        },
+        {
+          "h": "Your conduct",
+          "p": [
+            "Follow the community guidelines. If you don't, we may end chats, pause pairing or restrict your use."
+          ]
+        },
+        {
+          "h": "What you send",
+          "p": [
+            "You are responsible for your messages. You let us process them as needed to relay them and to handle reports."
+          ]
+        },
+        {
+          "h": "Not professional help",
+          "p": [
+            "The town is not counselling or medical care. In immediate danger call 110 or 119 (Taiwan); for someone to listen, call 1925 or 1995."
+          ]
+        },
+        {
+          "h": "Voluntary support",
+          "p": [
+            "\"Light a lamp\" is a one-off, voluntary contribution (NT$60 / 150 / 300). Nothing recurs and free chatting doesn't change. Payments are not open yet; before they open we will publish the operator's details and payment/refund terms."
+          ]
+        },
+        {
+          "h": "Liability",
+          "p": [
+            "The service is provided as is. Each person is responsible for their own conduct; we act on reports but, as far as the law allows, make no promise about what others say or who they are."
+          ]
+        },
+        {
+          "h": "Governing law",
+          "p": [
+            "These terms are governed by the laws of the Republic of China (Taiwan), with the Taiwan Taipei District Court as the court of first instance."
+          ]
+        }
+      ]
+    },
+    "guidelines": {
+      "title": "Community guidelines",
+      "intro": "The town is a place to rest when your social battery is low. A few things keep it safe and easy:",
+      "sections": [
+        {
+          "h": "Go slow; respect their battery",
+          "p": [
+            "Slow replies are fine. Don't rush, pry or demand an answer."
+          ]
+        },
+        {
+          "h": "No harassment",
+          "p": [
+            "No sexual content or innuendo, hate, threats, bullying or discrimination."
+          ]
+        },
+        {
+          "h": "Keep personal details out",
+          "p": [
+            "Don't ask for or share phone numbers, addresses, schools, workplaces or social accounts. Links, e-mails, @handles and phone numbers are masked automatically."
+          ]
+        },
+        {
+          "h": "No selling, no scams",
+          "p": [
+            "No ads, no pulling people to other platforms, no asking for money for any reason."
+          ]
+        },
+        {
+          "h": "18+ only",
+          "p": [
+            "If someone says they are under 18, end the chat and report it."
+          ]
+        },
+        {
+          "h": "Leave when it doesn't feel right",
+          "p": [
+            "You can say good night any time. Reporting ends the chat at once, you won't be paired again for 24 hours, and the conversation is kept for review."
+          ]
+        },
+        {
+          "h": "If you need more support",
+          "p": [
+            "In Taiwan, 1925 and 1995 answer around the clock; in immediate danger call 110 or 119."
+          ]
+        },
+        {
+          "h": "What happens if rules are broken",
+          "p": [
+            "We may end chats or restrict pairing; where the law or someone's safety requires it, we may cooperate with the authorities."
+          ]
+        }
+      ]
+    }
   }
 }
