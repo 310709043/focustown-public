@@ -29,7 +29,7 @@ test("plays, shows the tagline, then removes itself", () => {
   render(<IntroSplash tagline="今天還剩幾格電？" />);
   expect([intro() !== null, screen.getByText("今天還剩幾格電？").textContent]).toEqual([true, "今天還剩幾格電？"]);
 
-  act(() => vi.advanceTimersByTime(2650));
+  act(() => vi.advanceTimersByTime(4400));
 
   expect(intro()).toBeNull();
 });

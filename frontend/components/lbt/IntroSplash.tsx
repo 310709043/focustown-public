@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
  */
 const SEEN_KEY = "lbt.intro.seen";
 /** Matches the lbt-intro-out timing in lbt.css (delay + duration). */
-const TOTAL_MS = 2650;
+const TOTAL_MS = 4400;
 const SKIP_FADE_MS = 280;
 
 type Phase = "playing" | "leaving" | "gone";
