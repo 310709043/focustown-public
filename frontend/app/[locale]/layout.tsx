@@ -7,6 +7,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { routing, type Locale } from "@/i18n/routing";
+import { BRAND, BRAND_ZH, jsonLd, SITE_URL } from "@/lib/lbt/site";
 
 function isSupportedLocale(value: string): value is Locale {
   return (routing.locales as readonly string[]).includes(value);
@@ -17,10 +18,6 @@ const OG_LOCALE: Record<Locale, string> = {
   en: "en_US",
 };
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-const BRAND = "LowBatteryTown";
 
 export async function generateMetadata({
   params,
@@ -41,7 +38,8 @@ export async function generateMetadata({
   };
 
   return {
-    metadataBase: new URL(siteUrl),
+    metadataBase: new URL(SITE_URL),
+    applicationName: BRAND,
     title,
     description: t("description"),
     keywords: t("keywords")
@@ -131,18 +129,32 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      {/* JSON-LD structured data for SEO rich results */}
+      {/* JSON-LD: the site and the organisation behind it (brand name + logo in results). */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
-            "@type": "WebSite",
-            name: BRAND,
-            alternateName: "低電量小鎮",
-            url: siteUrl,
-            description: t("description"),
-            inLanguage: ["zh-TW", "en"],
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": `${SITE_URL}/#website`,
+                name: BRAND,
+                alternateName: BRAND_ZH,
+                url: `${SITE_URL}/${locale}`,
+                description: t("description"),
+                inLanguage: locale,
+                publisher: { "@id": `${SITE_URL}/#org` },
+              },
+              {
+                "@type": "Organization",
+                "@id": `${SITE_URL}/#org`,
+                name: BRAND,
+                alternateName: BRAND_ZH,
+                url: SITE_URL,
+                logo: `${SITE_URL}/brand/icon-512.png`,
+              },
+            ],
           }),
         }}
       />

@@ -1,38 +1,35 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://lowbatterytown.com";
+import { routing } from "@/i18n/routing";
+import { LBT_LEGAL, POLICY_SLUGS } from "@/lib/lbt/legal";
+import { CONTENT_UPDATED, SITE_URL } from "@/lib/lbt/site";
 
-const locales = ["zh-TW", "en"] as const;
-
-// Only the LowBatteryTown home is indexed. The original Focus Town routes
-// (town, awards, legal, sign-in) are served with `noindex` — see
-// app/[locale]/(legacy)/layout.tsx — so they stay out of the sitemap too.
+// Only the LowBatteryTown home and its policies are indexed. The original
+// Focus Town routes (town, awards, legal, sign-in) and /demo are served with
+// `noindex` — see app/[locale]/(legacy)/layout.tsx — so they stay out too.
 const pages = [
-  { path: "", priority: 1.0, changeFrequency: "weekly" as const },
-  ...["privacy", "terms", "guidelines"].map((slug) => ({
+  { path: "", priority: 1.0, changeFrequency: "weekly" as const, lastModified: CONTENT_UPDATED },
+  ...POLICY_SLUGS.map((slug) => ({
     path: `/policies/${slug}`,
     priority: 0.3,
     changeFrequency: "yearly" as const,
+    lastModified: LBT_LEGAL.effectiveDate,
   })),
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const entries: MetadataRoute.Sitemap = [];
-  for (const page of pages) {
-    for (const locale of locales) {
-      entries.push({
-        url: `${siteUrl}/${locale}${page.path}`,
-        lastModified: new Date(),
-        changeFrequency: page.changeFrequency,
-        priority: page.priority,
-        alternates: {
-          languages: Object.fromEntries(
-            locales.map((l) => [l, `${siteUrl}/${l}${page.path}`]),
-          ),
+  return pages.flatMap((page) =>
+    routing.locales.map((locale) => ({
+      url: `${SITE_URL}/${locale}${page.path}`,
+      lastModified: page.lastModified,
+      changeFrequency: page.changeFrequency,
+      priority: page.priority,
+      alternates: {
+        languages: {
+          ...Object.fromEntries(routing.locales.map((l) => [l, `${SITE_URL}/${l}${page.path}`])),
+          "x-default": `${SITE_URL}/${routing.defaultLocale}${page.path}`,
         },
-      });
-    }
-  }
-  return entries;
+      },
+    })),
+  );
 }
