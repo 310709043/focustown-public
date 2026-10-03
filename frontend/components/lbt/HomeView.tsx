@@ -49,6 +49,9 @@ export function HomeView() {
 
   return (
     <main className="view home-view">
+      {/* Grid areas: hero / form / info. Desktop fits one screen (hero and
+          info on the left, the form as its own column); phones stack them
+          in that order so the form comes before the extra cards. */}
       <div className="home-grid">
         <section className="main-stage" aria-labelledby="lbt-hero-title">
           <div className="stage-topline">
@@ -75,122 +78,123 @@ export function HomeView() {
             </p>
           </div>
 
-          <div className="selection-card">
-            <div className="nickname-field">
-              <label htmlFor="lbt-nickname">
-                {t("home.nickname.label")}
-                <span>{t("home.nickname.hint")}</span>
-              </label>
-              <input
-                id="lbt-nickname"
-                maxLength={NICKNAME_MAX}
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                autoComplete="off"
-                spellCheck={false}
-                aria-describedby="lbt-nickname-note"
-              />
-              <small id="lbt-nickname-note">{t("home.nickname.note")}</small>
-            </div>
-            <div className="selection-heading">
-              <span>{t("home.energy.heading")}</span>
-              <strong>{t("home.energy.strong")}</strong>
-            </div>
-            <p className="energy-purpose">{t("home.energy.purpose")}</p>
+          <Townscape />
+        </section>
+
+        <div className="selection-card">
+          <div className="nickname-field">
+            <label htmlFor="lbt-nickname">
+              {t("home.nickname.label")}
+              <span>{t("home.nickname.hint")}</span>
+            </label>
+            <input
+              id="lbt-nickname"
+              maxLength={NICKNAME_MAX}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              aria-describedby="lbt-nickname-note"
+            />
+            <small id="lbt-nickname-note">{t("home.nickname.note")}</small>
+          </div>
+          <div className="selection-heading">
+            <span>{t("home.energy.heading")}</span>
+            <strong>{t("home.energy.strong")}</strong>
+          </div>
+          <p className="energy-purpose">{t("home.energy.purpose")}</p>
+          <div
+            className="energy-options"
+            role="radiogroup"
+            aria-label={t("home.energy.groupAria")}
+            onKeyDown={onRadioGroupKeyDown}
+          >
+            {ENERGIES.map((level) => {
+              const id = ENERGY_ID[level];
+              const selected = level === energy;
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  className={`energy-option${selected ? " selected" : ""}`}
+                  role="radio"
+                  aria-checked={selected}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setEnergy(level)}
+                >
+                  <span className="energy-symbol" aria-hidden="true">
+                    {ENERGIES.slice(0, level).map((bar) => (
+                      <i key={bar} />
+                    ))}
+                  </span>
+                  <strong>{t(`energy.${id}.name`)}</strong>
+                  <small>{t(`energy.${id}.hint`)}</small>
+                </button>
+              );
+            })}
+          </div>
+          <div className="preference-row">
+            <span>{t("home.preference.label")}</span>
             <div
-              className="energy-options"
+              className="preference-options"
               role="radiogroup"
-              aria-label={t("home.energy.groupAria")}
+              aria-label={t("home.preference.groupAria")}
               onKeyDown={onRadioGroupKeyDown}
             >
-              {ENERGIES.map((level) => {
-                const id = ENERGY_ID[level];
-                const selected = level === energy;
+              {PREFERENCES.map((id) => {
+                const selected = id === preference;
                 return (
                   <button
-                    key={level}
+                    key={id}
                     type="button"
-                    className={`energy-option${selected ? " selected" : ""}`}
+                    className={`preference${selected ? " selected" : ""}`}
                     role="radio"
                     aria-checked={selected}
                     tabIndex={selected ? 0 : -1}
-                    onClick={() => setEnergy(level)}
+                    onClick={() => setPreference(id)}
                   >
-                    <span className="energy-symbol" aria-hidden="true">
-                      {ENERGIES.slice(0, level).map((bar) => (
-                        <i key={bar} />
-                      ))}
-                    </span>
-                    <strong>{t(`energy.${id}.name`)}</strong>
-                    <small>{t(`energy.${id}.hint`)}</small>
+                    {t(`preference.${id}`)}
                   </button>
                 );
               })}
             </div>
-            <div className="preference-row">
-              <span>{t("home.preference.label")}</span>
-              <div
-                className="preference-options"
-                role="radiogroup"
-                aria-label={t("home.preference.groupAria")}
-                onKeyDown={onRadioGroupKeyDown}
-              >
-                {PREFERENCES.map((id) => {
-                  const selected = id === preference;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      className={`preference${selected ? " selected" : ""}`}
-                      role="radio"
-                      aria-checked={selected}
-                      tabIndex={selected ? 0 : -1}
-                      onClick={() => setPreference(id)}
-                    >
-                      {t(`preference.${id}`)}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <label className="adult-check" htmlFor="lbt-adult">
-              <input
-                id="lbt-adult"
-                type="checkbox"
-                checked={adult}
-                onChange={(event) => setAdult(event.target.checked)}
-                aria-describedby="lbt-adult-hint"
-              />
-              <span>{t("home.adult")}</span>
-              <small id="lbt-adult-hint">
-                {t("home.adultHint")}{" "}
-                {t.rich("home.adultHintPolicies", {
-                  terms: (chunks) => <Link href="/policies/terms">{chunks}</Link>,
-                  guidelines: (chunks) => <Link href="/policies/guidelines">{chunks}</Link>,
-                  privacy: (chunks) => <Link href="/policies/privacy">{chunks}</Link>,
-                })}
-              </small>
-            </label>
-            {closed ? (
-              <p className="closed-note" role="status">
-                {t("home.closed", { hours: town?.hours ?? "" })}
-              </p>
-            ) : null}
-            <Notice />
-            <button
-              type="button"
-              className="primary-button"
-              onClick={start}
-              disabled={closed}
-            >
-              {t("home.start")} <span aria-hidden="true">↗</span>
-            </button>
-            <p className="selection-note">
-              <span aria-hidden="true">✦</span> {t("home.startNote")}
-            </p>
           </div>
-          <Townscape />
-        </section>
+          <label className="adult-check" htmlFor="lbt-adult">
+            <input
+              id="lbt-adult"
+              type="checkbox"
+              checked={adult}
+              onChange={(event) => setAdult(event.target.checked)}
+              aria-describedby="lbt-adult-hint"
+            />
+            <span>{t("home.adult")}</span>
+            <small id="lbt-adult-hint">
+              {t("home.adultHint")}{" "}
+              {t.rich("home.adultHintPolicies", {
+                terms: (chunks) => <Link href="/policies/terms">{chunks}</Link>,
+                guidelines: (chunks) => <Link href="/policies/guidelines">{chunks}</Link>,
+                privacy: (chunks) => <Link href="/policies/privacy">{chunks}</Link>,
+              })}
+            </small>
+          </label>
+          {closed ? (
+            <p className="closed-note" role="status">
+              {t("home.closed", { hours: town?.hours ?? "" })}
+            </p>
+          ) : null}
+          <Notice />
+          <button
+            type="button"
+            className="primary-button"
+            onClick={start}
+            disabled={closed}
+          >
+            {t("home.start")} <span aria-hidden="true">↗</span>
+          </button>
+          <p className="selection-note">
+            <span aria-hidden="true">✦</span> {t("home.startNote")}
+          </p>
+        </div>
 
         <aside className="side-rail" aria-label={t("home.side.aria")}>
           <div className="side-card battery-card">
