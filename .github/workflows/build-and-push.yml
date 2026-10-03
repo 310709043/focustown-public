@@ -1,8 +1,11 @@
 name: Build & push ECR images
 
+# Paused: LowBatteryTown now deploys to Cloudflare (edge.yml for the API,
+# deploy-cloudflare-web.yml for the site), and the AWS account's deploy key
+# is no longer valid, so every push here only produced a red run. Manual
+# runs still work; deploy-dev / deploy-prod chain off this workflow, so they
+# stay idle too. Restore the push trigger to bring the AWS path back.
 on:
-  push:
-    branches: [develop, main]
   workflow_dispatch:
 
 permissions:
