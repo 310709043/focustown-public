@@ -52,6 +52,7 @@ from app.infrastructure.db.repositories import (
     SqlMatchWaitingPoolRepo,
     SqlUserRepo,
 )
+from app.infrastructure.db.repositories.lbt_report_repo import SqlLbtReportRepo
 from app.infrastructure.db.repositories.match_room_repo import SqlMatchRoomRepo
 from app.infrastructure.db.repositories.room_participant_repo import (
     SqlRoomParticipantRepo,
@@ -418,6 +419,17 @@ async def lbt_sweep_job(settings: Settings) -> None:
     ).sweep()
 
 
+async def lbt_report_purge_job(factory, settings: Settings) -> None:
+    """LowBatteryTown: delete report snapshots (and their transcripts) past
+    ``lbt_report_retention_days``, as the privacy page promises."""
+    cutoff = SystemClock().now() - timedelta(days=settings.lbt_report_retention_days)
+    async with factory() as db:
+        removed = await SqlLbtReportRepo(db).delete_older_than(cutoff)
+        await db.commit()
+    if removed:
+        log.info("lbt_reports_purged", count=removed, cutoff=cutoff.isoformat())
+
+
 async def main() -> None:
     settings = get_settings()
     configure_logging(debug=settings.app_debug)
@@ -525,6 +537,14 @@ async def main() -> None:
         job_id="lbt_sweep",
         func=_log_job_errors("lbt_sweep", partial(lbt_sweep_job, settings)),
         seconds=settings.lbt_sweep_interval_seconds,
+    )
+    scheduler.schedule_cron(
+        job_id="lbt_report_purge",
+        func=_log_job_errors(
+            "lbt_report_purge", partial(lbt_report_purge_job, factory, settings)
+        ),
+        hour=3,
+        minute=17,
     )
     await scheduler.start()
     log.info("worker_ready")

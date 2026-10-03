@@ -197,6 +197,9 @@ class Settings(BaseSettings):
     lbt_guest_per_ip_per_hour: int = 30
     lbt_msg_per_guest_per_min: int = 30
     lbt_report_per_guest_per_hour: int = 5
+    # Report snapshots (with transcripts) are deleted after this many days;
+    # the privacy page promises the same number.
+    lbt_report_retention_days: int = Field(default=180, ge=1)
 
     otel_enabled: bool = False
     otel_exporter_otlp_endpoint: str | None = None

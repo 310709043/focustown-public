@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import select, update
+from datetime import datetime
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.repositories.lbt import ILbtReportRepo, LbtReportRecord
@@ -57,3 +59,9 @@ class SqlLbtReportRepo(ILbtReportRepo):
             update(LbtReportORM).where(LbtReportORM.id == report_id).values(status=status)
         )
         return bool(result.rowcount)
+
+    async def delete_older_than(self, cutoff: datetime) -> int:
+        result = await self._s.execute(
+            delete(LbtReportORM).where(LbtReportORM.created_at < cutoff)
+        )
+        return int(result.rowcount or 0)

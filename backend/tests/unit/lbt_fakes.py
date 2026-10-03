@@ -141,3 +141,9 @@ class InMemoryLbtReportRepo(ILbtReportRepo):
 
     async def set_status(self, report_id: str, status: str) -> bool:
         return any(r.id == report_id for r in self.records)
+
+    async def delete_older_than(self, cutoff: datetime) -> int:
+        kept = [r for r in self.records if r.created_at >= cutoff]
+        removed = len(self.records) - len(kept)
+        self.records = kept
+        return removed
