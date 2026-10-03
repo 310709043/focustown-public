@@ -453,5 +453,41 @@
     "answering": "Confirming…",
     "label": "Town host · Human companion",
     "chatDisclosure": "You are chatting with a town administrator. You can leave whenever you like."
+  },
+  "guide": {
+    "nav": "Anonymous chat guide",
+    "title": "Anonymous Chat Guide and Frequently Asked Questions",
+    "description": "Learn how free, no-sign-up anonymous chat works at LowBatteryTown: real-person matching, social battery, 7-minute conversations, waiting, privacy and reporting.",
+    "intro": "LowBatteryTown is a free, one-on-one anonymous chat website with no sign-up. Choose a nickname and your current social battery, then sit with someone who also wants to talk. You do not need to exchange contact details, and you can leave whenever you like.",
+    "questions": [
+      {
+        "q": "Do I need an account or payment?",
+        "a": "No account is needed and chatting is free. Use a nickname for this visit; payments are currently unavailable. The beta is for people aged 18 or older. Before entering, confirm the terms, community guidelines and privacy policy."
+      },
+      {
+        "q": "What does social battery mean?",
+        "a": "Nearly empty, a little left, and ready to talk describe your current pace. Your partner can see your battery and chat preference. Your battery is not a score or an identity."
+      },
+      {
+        "q": "How do I match with a real person? What if nobody is waiting?",
+        "a": "Choose your nickname, battery and chat preference, confirm you are 18 or older, then enter the town. Matching requires another suitable real person to be waiting. Online visitors are not necessarily waiting, and immediate matching is not guaranteed. You can cancel waiting. If a human administrator is on duty, they may offer a clearly identified companion invitation; chatting starts only if you accept."
+      },
+      {
+        "q": "How long can we chat? Can I leave early?",
+        "a": "The first conversation lasts 7 minutes. It continues only if both people agree to extend it. You can say good night and leave at any time, without explaining why."
+      },
+      {
+        "q": "Is my partner a real person or AI?",
+        "a": "The live town pairs real people. Administrator companions are identified as the town administrator and require your acceptance. The demo uses a clearly labelled simulated partner so you can try the flow."
+      },
+      {
+        "q": "Does anonymous mean no records? Can screenshots be prevented?",
+        "a": "Anonymous means no real-name registration, not zero data retention. Ordinary conversations are kept for 24 hours after ending. Reported transcripts are kept for 180 days for review. A website cannot reliably prevent screenshots or someone taking a photo. Avoid sharing names, phone numbers, addresses or other identifying information. See the privacy policy for details."
+      },
+      {
+        "q": "What if someone harasses me or makes me uncomfortable?",
+        "a": "You can leave at any time or report the conversation. Reporting ends the chat, saves its transcript for review and prevents the pair from matching again for 24 hours. The town is not counselling or an emergency service. If you are in immediate danger, contact local emergency services."
+      }
+    ]
   }
 }
