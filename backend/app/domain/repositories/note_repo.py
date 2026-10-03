@@ -61,7 +61,7 @@ class INoteRepo(Protocol):
         title: str | None = None,
         body: str | None = None,
         done: bool | None = None,
-        shared_in_match_id: str | None | UnsetType = UNSET,
+        shared_in_match_id: str | UnsetType | None = UNSET,
     ) -> NoteRecord: ...
 
     async def delete(self, *, note_id: str, user_id: str) -> None: ...

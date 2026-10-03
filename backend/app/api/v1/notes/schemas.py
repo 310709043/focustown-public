@@ -21,7 +21,7 @@ class NoteUpdate(BaseModel):
     # note back to private; omitting the field leaves the share
     # untouched. Pydantic delivers omitted fields as the model's
     # default (``UNSET``), so the router can read the sentinel.
-    shared_in_match_id: str | None | UnsetType = UNSET
+    shared_in_match_id: str | UnsetType | None = UNSET
 
     model_config = {"arbitrary_types_allowed": True}
 
