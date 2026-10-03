@@ -60,7 +60,10 @@ class LocalJWTProvider(AuthProvider):
                 revoked_ts = float(revoked_at)
             except (ValueError, TypeError):
                 revoked_ts = 0.0
-            if token_iat < revoked_ts:
+            # ``iat`` has whole-second precision, so compare against the
+            # revocation second: a token issued in the same second as the
+            # revoke (sign-in revokes, then issues) must stay valid.
+            if token_iat < int(revoked_ts):
                 raise AuthError("refresh_token_revoked")
 
         return await self.issue_tokens(user_id=user_id)

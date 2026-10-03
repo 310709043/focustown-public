@@ -82,7 +82,7 @@ class NoteService:
         title: str | None = None,
         body: str | None = None,
         done: bool | None = None,
-        shared_in_match_id: str | None | UnsetType = UNSET,
+        shared_in_match_id: str | UnsetType | None = UNSET,
     ) -> NoteRecord:
         if (
             not isinstance(shared_in_match_id, UnsetType)

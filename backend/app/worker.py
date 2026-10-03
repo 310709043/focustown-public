@@ -23,12 +23,13 @@ from functools import partial
 import structlog
 
 from app.core.clock import SystemClock
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.events import EventBus
 from app.core.exceptions import BusinessError
 from app.core.ids import UUID4Generator
 from app.core.logging import configure_logging, get_logger
 from app.domain.services.focus_session_service import FocusSessionService
+from app.domain.services.lbt_service import LbtService
 from app.domain.services.leaderboard_service import LeaderboardService
 from app.domain.services.match_room_service import MatchRoomService
 from app.domain.services.matching_queue_reconciler import (
@@ -51,6 +52,7 @@ from app.infrastructure.db.repositories import (
     SqlMatchWaitingPoolRepo,
     SqlUserRepo,
 )
+from app.infrastructure.db.repositories.lbt_report_repo import SqlLbtReportRepo
 from app.infrastructure.db.repositories.match_room_repo import SqlMatchRoomRepo
 from app.infrastructure.db.repositories.room_participant_repo import (
     SqlRoomParticipantRepo,
@@ -62,6 +64,7 @@ from app.infrastructure.db.session import (
     get_session_factory,
 )
 from app.infrastructure.jobs.apscheduler_adapter import APSchedulerAdapter
+from app.infrastructure.lbt.redis_store import RedisLbtStore
 from app.infrastructure.matching.redis_queue import RedisMatchingQueue
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 from app.infrastructure.presence.bot_seeder import refresh_bot_presence
@@ -401,6 +404,32 @@ async def room_open_timeout_sweep_job(factory) -> None:
         await db.commit()
 
 
+async def lbt_sweep_job(settings: Settings) -> None:
+    """LowBatteryTown: close timed-out / abandoned conversations, drop
+    absent waiters and pair whoever is left. Redis only — no DB."""
+    from app.core.deps import lbt_config_from_settings
+
+    redis = get_redis()
+    await LbtService(
+        store=RedisLbtStore(redis),
+        publisher=RedisPubSubPublisher(redis),
+        clock=SystemClock(),
+        ids=UUID4Generator(),
+        config=lbt_config_from_settings(settings),
+    ).sweep()
+
+
+async def lbt_report_purge_job(factory, settings: Settings) -> None:
+    """LowBatteryTown: delete report snapshots (and their transcripts) past
+    ``lbt_report_retention_days``, as the privacy page promises."""
+    cutoff = SystemClock().now() - timedelta(days=settings.lbt_report_retention_days)
+    async with factory() as db:
+        removed = await SqlLbtReportRepo(db).delete_older_than(cutoff)
+        await db.commit()
+    if removed:
+        log.info("lbt_reports_purged", count=removed, cutoff=cutoff.isoformat())
+
+
 async def main() -> None:
     settings = get_settings()
     configure_logging(debug=settings.app_debug)
@@ -503,6 +532,19 @@ async def main() -> None:
             partial(room_open_timeout_sweep_job, factory),
         ),
         seconds=30,
+    )
+    scheduler.schedule_interval(
+        job_id="lbt_sweep",
+        func=_log_job_errors("lbt_sweep", partial(lbt_sweep_job, settings)),
+        seconds=settings.lbt_sweep_interval_seconds,
+    )
+    scheduler.schedule_cron(
+        job_id="lbt_report_purge",
+        func=_log_job_errors(
+            "lbt_report_purge", partial(lbt_report_purge_job, factory, settings)
+        ),
+        hour=3,
+        minute=17,
     )
     await scheduler.start()
     log.info("worker_ready")

@@ -172,8 +172,8 @@ class SqlUserRepo(IUserRepo):
         self,
         *,
         user_id: str,
-        equipped_vehicle_item_id: str | None | UnsetType = UNSET,
-        equipped_avatar_item_id: str | None | UnsetType = UNSET,
+        equipped_vehicle_item_id: str | UnsetType | None = UNSET,
+        equipped_avatar_item_id: str | UnsetType | None = UNSET,
     ) -> User:
         row = await self._s.get(UserORM, user_id)
         if row is None:

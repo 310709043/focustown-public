@@ -58,7 +58,10 @@ test.describe("visual regression — canonical pages @ 924×540", () => {
     await page.setViewportSize(VIEWPORT);
   });
 
-  test("landing /zh-TW/", async ({ page }) => {
+  // `/` is now the LowBatteryTown home, so the chromium-linux baseline of the
+  // old sign-in splash no longer applies. Skip until a CI run regenerates it
+  // with --update-snapshots and commits the new chromium-linux.png.
+  test.skip("landing /zh-TW/", async ({ page }) => {
     await mockApi(page, UNAUTH_MOCKS);
 
     await page.goto("/zh-TW/");

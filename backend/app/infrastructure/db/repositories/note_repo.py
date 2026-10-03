@@ -93,7 +93,7 @@ class SqlNoteRepo(INoteRepo):
         title: str | None = None,
         body: str | None = None,
         done: bool | None = None,
-        shared_in_match_id: str | None | UnsetType = UNSET,
+        shared_in_match_id: str | UnsetType | None = UNSET,
     ) -> NoteRecord:
         row = await self._s.get(NoteORM, note_id)
         if row is None or row.user_id != user_id:

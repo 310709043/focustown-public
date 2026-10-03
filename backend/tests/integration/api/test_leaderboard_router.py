@@ -3,7 +3,7 @@
 Worth testing:
 - GET /leaderboard/today returns an empty list when there are no completed
   sessions today (so no spurious users leak through)
-- After two users complete sessions, both appear with completed_count >= 1
+- After a user completes a session, they appear on today's board
   (we don't pin the ordering — that's exercised in the service unit tests)
 
 NOT worth testing:
@@ -37,4 +37,5 @@ async def test_today_lists_users_with_completed_sessions(client, auth_headers):
 
     assert response.status_code == 200
     rows = response.json()
-    assert any(row["completed_count"] >= 1 for row in rows)
+    me = (await client.get("/api/v1/auth/me", headers=auth_headers)).json()
+    assert any(row["user_id"] == me["id"] for row in rows)

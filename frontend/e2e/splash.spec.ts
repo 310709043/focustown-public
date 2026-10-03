@@ -8,7 +8,7 @@ test.describe("SplashGate", () => {
   });
 
   test("disappears within 2.5 seconds on first visit", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/signin");
     // Splash may already have unmounted if `goto` had to wait through a slow
     // dev-server compile — that's fine. The user-visible contract is just
     // "splash does not stick around". A long timeout here is the assertion.
@@ -16,7 +16,7 @@ test.describe("SplashGate", () => {
   });
 
   test("sets sessionStorage flag after fade", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/signin");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 2500 });
     const flag = await page.evaluate(() =>
       window.sessionStorage.getItem("ft.splash.seen"),
@@ -26,7 +26,7 @@ test.describe("SplashGate", () => {
 
   test("subsequent reloads skip the splash quickly", async ({ page }) => {
     // First visit — establish flag.
-    await page.goto("/");
+    await page.goto("/signin");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 2500 });
 
     // Reload with the flag already set. The mount-only effect reads the
@@ -38,10 +38,10 @@ test.describe("SplashGate", () => {
   });
 
   test("login form is reachable once splash clears", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/signin");
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 2500 });
     // Login form is present and the signup link is clickable.
     await expect(page.getByTestId("signin-form")).toBeVisible();
-    await expect(page.getByTestId("signup-link")).toBeEnabled();
+    await expect(page.locator('a[href$="/signup"]').first()).toBeEnabled();
   });
 });

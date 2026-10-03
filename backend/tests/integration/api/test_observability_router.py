@@ -25,6 +25,9 @@ def _client():
         patch("app.main.get_redis", MagicMock(return_value=None)),
         patch("app.main.get_session_factory", MagicMock(return_value=MagicMock())),
         patch("app.main.CoinAwardService", MagicMock()),
+        # The global per-IP middleware builds its limiter from get_redis();
+        # give it an in-memory one so it never touches the patched None.
+        patch("app.main.RedisRateLimiter", MagicMock(return_value=MemoryRateLimiter())),
     ]
     for p in patches:
         p.start()

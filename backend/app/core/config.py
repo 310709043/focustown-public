@@ -183,6 +183,24 @@ class Settings(BaseSettings):
     # var of the same name). ``db_slow_query_ms`` is the threshold at
     # which the engine event listener emits a ``db_slow_query``
     # structured log; 200ms is the conservative starting point.
+    # LowBatteryTown anonymous 1:1 chat. ``lbt_open_hours`` is "HH:MM-HH:MM"
+    # in ``lbt_timezone`` (may cross midnight; 24:00 means midnight). Empty
+    # means always open, which suits dev and the closed beta.
+    lbt_open_hours: str = ""
+    lbt_timezone: str = "Asia/Taipei"
+    lbt_session_seconds: int = 420
+    lbt_grace_seconds: int = 60
+    lbt_relax_after_seconds: int = 30
+    lbt_offline_after_seconds: int = 45
+    lbt_sweep_interval_seconds: int = 2
+    lbt_guest_token_ttl_hours: int = 24
+    lbt_guest_per_ip_per_hour: int = 30
+    lbt_msg_per_guest_per_min: int = 30
+    lbt_report_per_guest_per_hour: int = 5
+    # Report snapshots (with transcripts) are deleted after this many days;
+    # the privacy page promises the same number.
+    lbt_report_retention_days: int = Field(default=180, ge=1)
+
     otel_enabled: bool = False
     otel_exporter_otlp_endpoint: str | None = None
     db_slow_query_ms: int = 200
@@ -241,6 +259,15 @@ class Settings(BaseSettings):
         """
         if v == "disabled":
             return ""
+        return v
+
+    @field_validator("lbt_open_hours")
+    @classmethod
+    def _validate_lbt_open_hours(cls, v: str) -> str:
+        # Fail at startup on a typo instead of silently closing the town.
+        from app.domain.services.lbt_rules import parse_open_hours
+
+        parse_open_hours(v)
         return v
 
     @field_validator("reset_url_base")

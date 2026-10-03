@@ -11,16 +11,27 @@ NOT worth testing:
 """
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+
 import pytest
+import pytest_asyncio
 
 from app.core.config import get_settings
 from app.core.exceptions import AuthError
 from app.infrastructure.auth.providers.local_jwt import LocalJWTProvider
 
 
-@pytest.fixture
-def provider(integration_env) -> LocalJWTProvider:
-    return LocalJWTProvider(get_settings())
+@pytest_asyncio.fixture
+async def provider(integration_env) -> AsyncIterator[LocalJWTProvider]:
+    # refresh() consults the revocation key in Redis; bind a client to this
+    # test's event loop like the ``app`` fixture does.
+    import app.infrastructure.cache.redis_client as redis_client_mod
+    from app.infrastructure.cache.redis_client import close_redis, init_redis
+
+    redis_client_mod._client = None
+    await init_redis(integration_env["REDIS_URL"])
+    yield LocalJWTProvider(get_settings())
+    await close_redis()
 
 
 @pytest.mark.asyncio
@@ -50,3 +61,12 @@ async def test_refresh_returns_new_pair(provider):
     refreshed = await provider.refresh(pair.refresh_token)
     assert refreshed.access_token
     assert refreshed.refresh_token
+
+
+@pytest.mark.asyncio
+async def test_refresh_accepts_token_issued_right_after_revoke(provider):
+    # Sign-in revokes older refresh tokens, then issues a pair in the same
+    # second; that fresh pair must still refresh.
+    await provider.revoke_all_refresh_tokens("u-jwt-5")
+    pair = await provider.issue_tokens(user_id="u-jwt-5")
+    assert (await provider.refresh(pair.refresh_token)).access_token

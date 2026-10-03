@@ -6,6 +6,42 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 Focus Town — Pomodoro-based social focus app. Pixel-city UI, live leaderboards, partner matching, shared focus rooms with realtime chat. Frontend = Next.js 15 (App Router). Backend = FastAPI + SQLAlchemy 2 async. Postgres + Redis. The original 1318-line single-file UI prototype was the source of visual/interaction design; it has been removed from the working tree but is preserved in git history at `82880df:reference.html` (recover with `git show 82880df:reference.html > reference.html`).
 
+## LowBatteryTown front door (current `/`)
+
+The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". `/` pairs **real people** through the backend; `/demo` (noindex) runs a clearly labelled scripted partner with no backend. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
+
+Frontend (`frontend/`):
+
+- `app/[locale]/page.tsx` (live) and `app/[locale]/demo/page.tsx` (demo) → `components/lbt/LbtApp.tsx`. Styles: `components/lbt/lbt.css`, scoped under `.lbt`, keyframes prefixed `lbt-`; it scrolls inside its own fixed container because `globals.css` pins `html, body` to `overflow: hidden`.
+- `lib/lbt/sessionStore.ts` applies events from an `LbtTransport` port (`lib/lbt/transport.ts`) and sends intents. Adapters: `liveTransport.ts` (anonymous guest token + one WebSocket, heartbeat, reconnect, server-clock conversion) and `demoTransport.ts` (the script). The store holds ids and codes, never localised strings.
+- Policies: `/policies/{privacy,terms,guidelines}` (`app/[locale]/policies/[slug]/page.tsx` → `components/lbt/PolicyPage.tsx`, copy under `lbt.policy`, facts such as retention days and the contact address in `lib/lbt/legal.ts`; contact overridable via `NEXT_PUBLIC_LBT_CONTACT_EMAIL`). Linked from the footer and the 18+ checkbox. Change the numbers there whenever the backend TTLs or `LBT_REPORT_RETENTION_DAYS` change.
+- Copy: `messages/{zh-TW,en}/lbt.json` (namespace `lbt`). The product voice is casual "你" on purpose, unlike `docs/i18n/bilingual-seo-copywriting-guidelines.md` ("您").
+- Fonts: `lib/lbtFonts.ts`, applied only to this surface. Brand: the battery-"B" logo is `components/lbt/BrandMark.tsx` (inline SVG, header wordmark in Quicksand) and `public/brand/` (mark SVG, favicons, app/maskable icons, `og-lbt.png`); `public/logo*.png` and `og-image.png` are the legacy Focus Town art.
+
+Backend (`backend/`), separate from the Focus Town matching:
+
+- Domain: `domain/models/lbt.py` (`LbtConversation` with mutual `request_extend`), `domain/services/lbt_rules.py` (input cleaning, `compatibility`/`pick_partner`, opening hours), `domain/services/lbt_service.py` (join → pair → relay → extend → leave/report, `sweep`, reconnect replay). Ports in `domain/repositories/lbt.py`.
+- Adapters: `infrastructure/lbt/redis_store.py` (all live state in Redis with TTLs; pairing under a `SET NX` lock), `infrastructure/db/repositories/lbt_report_repo.py` + table `lbt_reports` (migration 0032).
+- API: `api/v1/lbt/router.py` — `POST /lbt/guest` (anonymous token, `type: lbt_guest`, rejected by the user AuthProvider and vice versa), `GET /lbt/status` (real online/waiting counts, open flag), `POST /lbt/reports`, `WS /lbt/ws` (subprotocol `bearer.{token}`). Admin review: `GET /admin/lbt/reports`, `POST /admin/lbt/reports/{id}/status`.
+- Worker job `lbt_sweep` (every `LBT_SWEEP_INTERVAL_SECONDS`): ends conversations past the grace period or whose partner has been gone for `LBT_OFFLINE_AFTER_SECONDS`, drops absent waiters, pairs whoever is left. Daily `lbt_report_purge` deletes reports older than `LBT_REPORT_RETENTION_DAYS` (180).
+- Settings (`LBT_*` in `core/config.py`): `LBT_OPEN_HOURS` ("21:00-24:00" style, empty = always open; a bad value fails startup), `LBT_TIMEZONE`, session/grace/relax/offline seconds, rate limits for guest tokens, messages and reports.
+
+The original Focus Town routes live in `app/[locale]/(legacy)/` (URLs unchanged); that group's layout carries the pixel-city chrome and sets `noindex`.
+
+Product rules to keep (from the handoff — do not change without asking the owner):
+
+- Traditional Chinese, mobile and desktop; anonymous, editable nickname, no sign-up. Beta is 18+ (self-declared checkbox, enforced server-side too).
+- Three social batteries (快沒電了 / 還有一點 / 想說說話) tell the other person the reply pace; they are not identity or a score. Chat intent is chosen separately (隨意聊聊 / 有人聽我說 / 聽聽別人的故事).
+- Every message names its sender; the chat shows both nicknames, batteries and intents. First window is 7 minutes, extended only when **both** press extend; leaving ("說聲晚安") is always possible.
+- No fake people and no fake numbers. Never reuse the legacy `bot_reply_service` here. The demo partner is always labelled "模擬對象". Head counts are real or hidden (the prototype artifact counts people who have the page open).
+- Reports end the chat, snapshot the transcript to `lbt_reports`, and block the pair for 24 h. Closed conversations and transcripts expire from Redis after 24 h. Crisis lines (1925 / 1995) stay visible in the chat aside and the report dialog.
+- Support ("替小鎮點燈"): single voluntary payments of **NT$60 / 150 / 300**, no recurring charge, no extra benefits, no fake supporter counts or progress. Checkout stays **disabled** while `SUPPORT_CHECKOUT_LINKS` in `lib/lbt/support.ts` is empty. Enabling it needs an approved payment provider's fixed-amount https links, a published operator identity, a contact address and payment/refund terms (the existing `/legal/*` pages describe Focus Town, not this product).
+- User text is rendered as React text only; never put nickname or message content into `dangerouslySetInnerHTML`.
+
+Checks for this surface: backend `pytest tests/unit/test_lbt_*.py` and `tests/integration/realtime/test_lbt_redis_store.py` (real Redis); frontend `npx vitest run tests/unit/lib/lbt tests/unit/components/lbt`; `e2e/lbt-flow.spec.ts` (demo, no backend); `PLAYWRIGHT_REAL_STACK=1 pnpm playwright test e2e/lbt-live.spec.ts` (two real browsers against the full stack; the database must be UTF-8).
+
+Known gaps: no admin UI page for reports yet (API only), no keyword filter (links, e-mails, @handles and phone numbers are masked server-side by `lbt_rules.mask_contacts`), no device-level bans beyond the 24 h pair block, legacy Focus Town pages and their dead components still in the tree, the old landing visual baseline is skipped until CI regenerates it.
+
 ## Common commands
 
 Run everything (Docker, recommended):

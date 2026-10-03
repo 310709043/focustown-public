@@ -20,7 +20,7 @@
       "APP_DEBUG": "false",
       "APP_SECRET_KEY": "${APP_SECRET_KEY}",
       "APP_CORS_ORIGINS": "https://${PUBLIC_HOST},https://www.lowbatterytown.com",
-      "APP_TRUSTED_PROXIES": "127.0.0.1,172.16.0.0/12",
+      "APP_TRUSTED_PROXIES": "127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16",
       "DATABASE_URL": "${DATABASE_URL}",
       "REDIS_URL": "redis://lowbatterytown-prod.service.local:6379/0",
       "AUTH_PROVIDER": "local_jwt",
