@@ -32,8 +32,8 @@ interface BuddyFocusSceneProps {
  * pink RainOverlay (reference's signature buddy-room ambient) + 56 px
  * BuddyTopBar + 2-col body grid (1fr / 1.3fr).
  *
- * Left column stacks: BuddyHeaderCard → SharedTimer → StatusMini →
- * SharedAgenda → RoomMusic. Right column is the SharedPanel (chat/notes tabs).
+ * Left column stacks: BuddyHeaderCard → SharedTimer → SharedAgenda →
+ * RoomMusic. Right column is the SharedPanel (chat/notes tabs).
  *
  * Reference: screen-buddy.jsx:L9-L150.
  */

@@ -1,0 +1,65 @@
+name: Update visual baselines
+
+# Visual regression baselines (frontend/e2e/visual.spec.ts-snapshots) are
+# chromium-linux PNGs, so they have to be captured on the CI runner: local
+# fonts and anti-aliasing never match. Run this on a feature branch after a
+# deliberate UI change, either from the Actions tab or by pushing a commit
+# whose message contains [update-visual-baselines]. It re-captures every
+# baseline and commits the PNGs back to the same branch for review.
+#
+# A push made with GITHUB_TOKEN does not start other workflows, so push any
+# follow-up commit (an empty one is fine) to re-run the PR checks.
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [develop, main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: visual-baselines-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.message, '[update-visual-baselines]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --frozen-lockfile || pnpm install
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Capture baselines
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+          NEXT_PUBLIC_WS_BASE_URL: ws://localhost:8000
+        run: pnpm exec playwright test e2e/visual.spec.ts --update-snapshots --retries=0
+      - name: Commit changed baselines
+        run: |
+          git add e2e/visual.spec.ts-snapshots
+          if git diff --cached --quiet; then
+            echo "Baselines unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test(e2e): regenerate visual baselines on the CI runner"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

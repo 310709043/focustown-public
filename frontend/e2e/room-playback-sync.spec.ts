@@ -76,7 +76,9 @@ test.describe("Phase 2 Gap 2 — visitor room playback sync", () => {
     const ws = await mockWs(page);
     await seedAuthTokens(page);
 
-    await page.goto(`/town/room/${ROOM_ID}`);
+    // The assertions below read zh-TW copy; a bare path follows the
+    // browser language (en-US in Desktop Chrome).
+    await page.goto(`/zh-TW/town/room/${ROOM_ID}`);
     await expect(page.getByTestId("splash")).toBeHidden({ timeout: 10_000 });
 
     // Wait for the page's room subscription so WS pushes don't race.

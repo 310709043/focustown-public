@@ -170,6 +170,7 @@ function SignUpForm() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <Label>{t("confirmPasswordLabel").toUpperCase()}</Label>
           <PasswordInput
+            data-testid="signup-confirm-password"
             placeholder={t("confirmPasswordPlaceholder")}
             value={confirmPw}
             onChange={(e) => {
