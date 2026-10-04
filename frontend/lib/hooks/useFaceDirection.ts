@@ -49,7 +49,7 @@ export interface UseFaceDirectionResult {
   faceDetected: boolean;
   /** Smoothed face pose data; null when no face is detected. */
   faceData: FaceData | null;
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   enable: () => Promise<void>;
   disable: () => void;
 }
