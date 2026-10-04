@@ -9,9 +9,9 @@ import en from "@/messages/en/lbt.json";
 import { fillLegalFacts, LBT_LEGAL } from "@/lib/lbt/legal";
 
 test("fills every known placeholder from LBT_LEGAL", () => {
-  const out = fillLegalFacts("{chatHours}/{reportDays}/{pairBlockHours}/{tokenHours}");
+  const out = fillLegalFacts("{reportDays}/{pairBlockHours}/{tokenHours}/{feedbackDays}/{suspensionHours}/{suspensionDays}");
   expect(out).toBe(
-    `${LBT_LEGAL.chatHours}/${LBT_LEGAL.reportDays}/${LBT_LEGAL.pairBlockHours}/${LBT_LEGAL.tokenHours}`,
+    `${LBT_LEGAL.reportDays}/${LBT_LEGAL.pairBlockHours}/${LBT_LEGAL.tokenHours}/${LBT_LEGAL.feedbackDays}/${LBT_LEGAL.suspensionHours}/${LBT_LEGAL.suspensionDays}`,
   );
 });
 
@@ -24,7 +24,8 @@ test.each([
   ["en", en],
 ])("%s guide states retention through placeholders, not literals", (_locale, messages) => {
   const answers = messages.guide.questions.map((q) => q.a).join("\n");
-  expect(answers).toContain("{chatHours}");
+  expect(answers).not.toContain("{chatHours}");
+  expect(answers).toContain(_locale === "zh-TW" ? "立即刪除" : "immediately deletes");
   expect(answers).toContain("{reportDays}");
   expect(answers).toContain("{pairBlockHours}");
   expect(answers).not.toMatch(/\b180\b/);

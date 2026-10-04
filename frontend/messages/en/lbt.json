@@ -333,7 +333,7 @@
             "Feedback box: the type, message, page and language you send from, and the reply e-mail if you choose to leave one. Used to improve the town and answer you; stored in our database and copied to the operator's Google Sheet (hosted by Google), and deleted after {feedbackDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
             "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser.",
-            "Safety review: an anonymous guest code can be suspended from matching for 24 hours or 7 days after report review. Restrictions expire; reasons, durations and revocation history are retained with report evidence for {reportDays} days. No device fingerprint or real-identity profile is created."
+            "Safety review: an anonymous guest code can be suspended from matching for {suspensionHours} hours or {suspensionDays} days after report review. Restrictions expire; reasons, durations and revocation history are retained with report evidence for {reportDays} days. No device fingerprint or real-identity profile is created."
           ]
         },
         {

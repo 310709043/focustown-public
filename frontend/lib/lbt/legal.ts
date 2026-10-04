@@ -9,6 +9,8 @@ export const LBT_LEGAL = {
   tokenHours: 24,
   reportDays: 180,
   pairBlockHours: 24,
+  suspensionHours: 24,
+  suspensionDays: 7,
   /** LBT_FEEDBACK_RETENTION_DAYS in edge/wrangler.jsonc and backend settings. */
   feedbackDays: 365,
 } as const;
@@ -17,6 +19,8 @@ const FACTS: Record<string, string> = {
   tokenHours: String(LBT_LEGAL.tokenHours),
   reportDays: String(LBT_LEGAL.reportDays),
   pairBlockHours: String(LBT_LEGAL.pairBlockHours),
+  suspensionHours: String(LBT_LEGAL.suspensionHours),
+  suspensionDays: String(LBT_LEGAL.suspensionDays),
   feedbackDays: String(LBT_LEGAL.feedbackDays),
 };
 
