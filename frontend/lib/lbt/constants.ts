@@ -4,7 +4,6 @@ import type {
   Preference,
   ReplyId,
   ReportReason,
-  SupportAmount,
   TopicId,
 } from "./types";
 
@@ -55,9 +54,6 @@ export const REPLY_IDS: readonly ReplyId[] = [
   "similar",
   "listening",
 ];
-
-export const SUPPORT_AMOUNTS: readonly SupportAmount[] = [60, 150, 300];
-export const DEFAULT_SUPPORT_AMOUNT: SupportAmount = 60;
 
 export const REPORT_REASONS: readonly ReportReason[] = [
   "harassment",
