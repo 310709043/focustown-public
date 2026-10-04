@@ -17,8 +17,8 @@ export function CoinRewardToast() {
 
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const outerRef = useRef<ReturnType<typeof setTimeout>>();
-  const innerRef = useRef<ReturnType<typeof setTimeout>>();
+  const outerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const innerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (!lastDelta) return;

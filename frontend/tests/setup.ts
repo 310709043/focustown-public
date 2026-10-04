@@ -28,7 +28,7 @@ vi.mock("next-intl", () => ({
     relativeTime: () => "",
   }),
   NextIntlClientProvider: ({ children }: { children: React.ReactNode }) =>
-    children as unknown as JSX.Element,
+    children as unknown as React.JSX.Element,
 }));
 
 // jsdom doesn't implement Element.scrollTo. Components that auto-scroll
