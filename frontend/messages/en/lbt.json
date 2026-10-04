@@ -161,7 +161,7 @@
     "composerPlaceholder": "Say something here…",
     "composerTimeUp": "Time's up. You can extend or say good night.",
     "send": "Send message",
-    "privacy": "Please don't share phone numbers, addresses or other private details.",
+    "privacy": "Chats are cleared when they end. Submit reports before leaving.",
     "report": "Report conversation",
     "system": {
       "met": "You met under the street lamp. You have 7 minutes to start, and you can stay longer together.",
@@ -204,7 +204,8 @@
       "timeout": "Time's up. This conversation ends here for now.",
       "partner_disconnected": "They left town, so the conversation has ended.",
       "reported": "Thank you for telling us. We'll review the conversation, and you won't be paired again.",
-      "unknown": "This conversation has ended."
+      "unknown": "This conversation has ended.",
+      "suspended": "Matching has been suspended for this anonymous guest code, and this chat has ended."
     }
   },
   "modal": {
@@ -214,12 +215,12 @@
       "eyebrow": "Town guide",
       "title": "Just sit for a while.",
       "body": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time. This page is an interactive prototype, and matching and replies are simulated by the program.",
-      "bodyLive": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time and report anything that makes you uncomfortable. During the beta only adults can join. Conversations are deleted 24 hours after they end; reported ones are kept for review."
+      "bodyLive": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time and report anything that makes you uncomfortable. During the beta only adults can join. Ordinary chats and both profiles are deleted when the conversation ends, and the chat screen is cleared. Submit reports before the conversation ends; report evidence is kept for {reportDays} days for review."
     },
     "report": {
       "eyebrow": "Safety note",
       "title": "Report conversation",
-      "intro": "What happened? Sending this ends the conversation and you won't be paired again.",
+      "intro": "Submit your report before the conversation ends. A successful report ends the chat and keeps the necessary conversation and profiles for 180 days for review. You will not be paired again for 24 hours.",
       "introDemo": "Prototype demo: there is no real conversation here, so nothing is sent.",
       "legend": "Choose a reason",
       "reasons": {
@@ -306,7 +307,8 @@
     "wait_interrupted": "The connection dropped and the wait was cancelled. You can walk in again.",
     "report_failed": "The report didn't go through. Check your connection and try again.",
     "generic": "Something went wrong. Please try again.",
-    "invite_unavailable": "The invitation has ended. You can keep waiting."
+    "invite_unavailable": "The invitation has ended. You can keep waiting.",
+    "guest_suspended": "Matching is temporarily suspended for this anonymous guest code. You can join again when the restriction expires."
   },
   "policy": {
     "nav": {
@@ -334,12 +336,13 @@
           "p": [
             "Anonymous guest code: issued to your browser when you enter, kept in the browser's localStorage and valid for {tokenHours} hours, so a refresh or dropped connection can rejoin your chat.",
             "Nickname, social battery and chat intent: shown to the person you are paired with.",
-            "Messages: relayed to the other person in real time. After a chat ends they are kept for up to {chatHours} hours for reconnects and reports, then deleted automatically.",
+            "Messages and pairing profiles: temporarily stored during an active chat for reconnects. When either person leaves, the session expires or the reconnect window runs out, they are immediately deleted from application chat storage and cleared from browsers that receive the end event. Reports cannot be submitted after the chat ends.",
             "IP address: used only for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
             "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
             "Feedback box: the type, message, page and language you send from, and the reply e-mail if you choose to leave one. Used to improve the town and answer you; stored in our database and copied to the operator's Google Sheet (hosted by Google), and deleted after {feedbackDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
-            "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser."
+            "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser.",
+            "Safety review: an anonymous guest code can be suspended from matching for {suspensionHours} hours or {suspensionDays} days after report review. Restrictions expire; reasons, durations and revocation history are retained with report evidence for {reportDays} days. No device fingerprint or real-identity profile is created."
           ]
         },
         {
@@ -351,7 +354,7 @@
         {
           "h": "Where it lives",
           "p": [
-            "The service runs on Cloudflare (Workers, Durable Objects and a D1 database); copies of feedback are kept in the operator's Google Sheet. Data may therefore be processed outside Taiwan."
+            "Cloudflare provides computing and data storage; feedback copies are stored in the operator’s Google Sheet. Data may be processed outside Taiwan. Deletion above refers to application chat storage. Infrastructure backup or recovery systems may have separate retention periods; deletion does not mean all technical records disappear at the same instant."
           ]
         },
         {
@@ -484,13 +487,13 @@
     }
   },
   "companion": {
-    "inviteTitle": "A town host is here to chat",
-    "inviteBody": "A real human host can chat with you for 7 minutes, or you can keep waiting for another visitor. This invitation lasts one minute.",
-    "accept": "Chat with the host",
+    "inviteTitle": "Someone would like to chat with you",
+    "inviteBody": "You can chat for 7 minutes or keep waiting for someone else. This invitation expires in one minute.",
+    "accept": "Accept chat invitation",
     "decline": "Keep waiting",
     "answering": "Confirming…",
-    "label": "Town host · Human companion",
-    "chatDisclosure": "You are chatting with a town administrator. You can leave whenever you like."
+    "label": "Chat partner",
+    "chatDisclosure": "This chat started with your acceptance. You can say good night any time."
   },
   "guide": {
     "nav": "Anonymous chat guide",
@@ -508,7 +511,7 @@
       },
       {
         "q": "How do I match with a real person? What if nobody is waiting?",
-        "a": "Choose your nickname, battery and chat preference, confirm you are 18 or older, then enter the town. Matching requires another suitable real person to be waiting. Online visitors are not necessarily waiting, and immediate matching is not guaranteed. You can cancel waiting. If a human administrator is on duty, they may offer a clearly identified companion invitation; chatting starts only if you accept."
+        "a": "Choose your nickname, battery and chat preference, confirm you are 18 or older, then enter the town. Matching requires another suitable real person to be waiting. Online visitors are not necessarily waiting, and immediate matching is not guaranteed. You can cancel waiting. If a companion is online, you may receive an invitation showing their nickname; chatting starts only if you accept."
       },
       {
         "q": "How long can we chat? Can I leave early?",
@@ -516,11 +519,11 @@
       },
       {
         "q": "Is my partner a real person or AI?",
-        "a": "The live town pairs real people. Administrator companions are identified as the town administrator and require your acceptance. The demo uses a clearly labelled simulated partner so you can try the flow."
+        "a": "The live town pairs real people. Companion invitations show the other person’s nickname and require your acceptance. The demo uses a clearly labelled simulated partner so you can try the flow."
       },
       {
         "q": "Does anonymous mean no records? Can screenshots be prevented?",
-        "a": "Anonymous means no real-name registration, not zero data retention. Ordinary conversations are kept for up to {chatHours} hours after ending. Reported transcripts are kept for {reportDays} days for review. A website cannot reliably prevent screenshots or someone taking a photo. Avoid sharing names, phone numbers, addresses or other identifying information. See the privacy policy for details."
+        "a": "When an ordinary chat ends, the application immediately deletes its messages and both pairing profiles, and clears browsers that receive the end event. Evidence reported during a chat is kept for {reportDays} days for review. Anonymous guest tokens, abuse-prevention counters and technical logs follow separate rules in the privacy policy. A website cannot reliably prevent screenshots or photos. Avoid sharing names, phone numbers, addresses or other identifying information."
       },
       {
         "q": "What if someone harasses me or makes me uncomfortable?",

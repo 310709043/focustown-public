@@ -110,7 +110,7 @@ export function ChatView() {
           <div className="chat-header">
             <div className="partner-profile">
               <span className="small-label">
-                {partner?.role === "admin"
+                {partner?.role === "companion"
                   ? t("companion.label")
                   : simulated
                     ? t("chat.partnerLabel")
@@ -131,7 +131,7 @@ export function ChatView() {
                 ) : null}
               </p>
               <p className="profile-pace">{t(`energy.${partnerId}.pace`)}</p>
-              {partner?.role === "admin" ? (
+              {partner?.role === "companion" ? (
                 <p className="companion-disclosure">
                   {t("companion.chatDisclosure")}
                 </p>

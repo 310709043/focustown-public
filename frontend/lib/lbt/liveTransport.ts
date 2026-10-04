@@ -19,6 +19,7 @@ const END_REASONS: readonly EndReason[] = [
   "timeout",
   "partner_disconnected",
   "reported",
+  "suspended",
 ];
 
 interface StoredToken {
@@ -59,7 +60,7 @@ function toProfile(raw: unknown): PeerProfile | null {
   if (typeof nickname !== "string") return null;
   if (!(ENERGIES as readonly unknown[]).includes(energy)) return null;
   if (!(PREFERENCES as readonly unknown[]).includes(preference)) return null;
-  return { nickname, energy, preference, ...(role === "admin" ? { role } : {}) } as PeerProfile;
+  return { nickname, energy, preference, ...((role === "companion" || role === "admin") ? { role: "companion" } : {}) } as PeerProfile;
 }
 
 /** Server times → local `Date.now()` time, immune to client clock skew. */
@@ -81,7 +82,7 @@ export function mapServerFrame(frame: unknown, now: number): TransportEvent | nu
     case "lbt.companion_invite": {
       const expiresAt = toLocal(f.expires_at, f.server_now, now);
       return typeof f.id === "string" && expiresAt !== null && expiresAt > now
-        ? { type: "companionInvite", id: f.id, expiresAt } : null;
+        ? { type: "companionInvite", id: f.id, expiresAt, ...(typeof f.nickname === "string" ? { nickname: f.nickname } : {}) } : null;
     }
     case "lbt.companion_cleared":
       return typeof f.id === "string" ? { type: "companionCleared", id: f.id } : null;
@@ -226,6 +227,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
         return;
       }
       const event = mapServerFrame(frame, now());
+      if (event?.type === "ended" || event?.type === "idle") outbox.length = 0;
       if (event) emit(event);
     };
     ws.onerror = () => {
@@ -275,7 +277,10 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     send: (text) => send({ type: "message", text }, { queue: true }),
     typing: () => send({ type: "typing" }, { queue: false }),
     extend: () => send({ type: "extend" }, { queue: true }),
-    leave: () => send({ type: "leave" }, { queue: true }),
+    leave: () => {
+      outbox.length = 0;
+      send({ type: "leave" }, { queue: true });
+    },
     async report(reason: ReportReason, note: string) {
       const token = await guestToken();
       const res = await fetcher(`${api}/api/v1/lbt/reports`, {

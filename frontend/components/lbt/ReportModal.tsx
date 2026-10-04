@@ -13,7 +13,7 @@ type Phase = "form" | "sending" | "sent" | "simulated";
 
 /**
  * Report a conversation. Live: files a report (the server ends the chat
- * and never pairs the two again). Demo: says plainly that nothing is sent.
+ * and blocks the pair for 24 hours). Demo: says plainly that nothing is sent.
  * Crisis lines are always on screen.
  */
 export function ReportModal() {
@@ -38,6 +38,7 @@ export function ReportModal() {
     setFailed(false);
     try {
       setPhase(await report(reason, note));
+      setNote("");
     } catch {
       setFailed(true);
       setPhase("form");

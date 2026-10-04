@@ -28,7 +28,8 @@ export type EndReason =
   | "partner_left"
   | "timeout"
   | "partner_disconnected"
-  | "reported";
+  | "reported"
+  | "suspended";
 
 export type ReportReason =
   | "harassment"
@@ -45,10 +46,11 @@ export interface PeerProfile {
   nickname: string;
   energy: Energy;
   preference: Preference;
-  role?: "admin";
+  role?: "companion";
 }
 
 export interface CompanionInvitation {
+  nickname?: string;
   id: string;
   expiresAt: number;
 }

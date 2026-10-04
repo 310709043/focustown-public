@@ -19,6 +19,7 @@ const KNOWN = new Set([
   "invalid_preference",
   "wait_interrupted",
   "report_failed",
+  "guest_suspended",
 ]);
 
 /** Inline, dismissible notice for the store's current error code. */

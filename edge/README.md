@@ -94,14 +94,14 @@ report content with `textContent` (it is user-written) under a nonce-only CSP.
 ### Human administrator companion
 
 In `/admin`, click **開始陪聊值班**, then invite a visitor from the waiting list.
-The visitor sees an explicit human administrator invitation and can accept or
+The visitor sees an explicit companion invitation and can accept or
 keep waiting. Invitations expire after 60 seconds; normal visitor matching
 continues and cancels an offer if it finds a partner first. One administrator
-socket, one pending invitation or one conversation at a time. The newest
-console takes over (the old one is closed with 4409 and stops, so a tab left
-on duty or a sleeping phone never locks you out), and duty survives a reload
-of the same tab, keeping an open chat. The host is
-server-labelled **小鎮管理員**, joins the real online count only while on duty,
+socket, one pending invitation or one conversation at a time. The newest console takes over (the old one closes with 4409), and duty survives a same-tab reload. Before inviting, select the fixed persona **男生 · 小辟穀** or **女生 · 打辟穀**.
+The visitor sees that nickname and a neutral companion label, without the
+administrator role; the internal report record retains the privileged role for
+safety review. The invitation snapshots the chosen persona through acceptance
+and reconnect. The host joins the real online count only while on duty,
 and chats directly in the console. Seven-minute windows, mutual extensions,
 leaving, contact masking and reporting use the existing session rules.
 
@@ -132,6 +132,40 @@ curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"status":"reviewed"}' 
 
 Guests are anonymous and a new guest token is free, so there is no account to
 ban: a report already ends the chat and keeps the pair apart for 24 h.
+
+## Chat data retention
+
+Cloudflare live chat messages and both pairing profiles are deleted when either
+participant leaves, the session expires (after its existing extension grace),
+or the reconnect window expires. Browsers clear their chat on the end/idle
+event; an offline browser reconciles on reconnect. Old 24-hour closed-chat
+records are purged on Durable Object activation and sweeps. Reports must be
+submitted during the chat: D1 stores the evidence before the live copy is
+deleted. Report evidence retains the configured 180-day default and daily
+purge; pair blocks last 24 hours. Guest credentials, presence, abuse counters
+and provider technical logs follow their separate lifetimes. Application
+deletion is not a promise of instant erasure from provider recovery backups or
+other users' screenshots. This policy applies to `edge/`, not the retired AWS
+backend.
+
+## Reviewed anonymous-code restrictions
+
+After reviewing a report in `/admin`, submit a reason and suspend its reported
+guest code for 24 hours or 7 days. An active restriction can be revoked from the
+report that last applied it, with a reason. Every restriction/revocation and
+report-status change has append-only history, retained with the report for the
+configured 180 days. D1 batches atomically save the restriction, audit entry and
+report status. The town caches active restrictions on activation; moderation
+RPCs serialize updates with socket events. Restricted codes are removed from
+queues/invitations, active chats end, and join/companion/reconnect paths enforce
+the restriction until expiry. The daily purge removes expired restrictions and
+old reports (history cascades with the report). Apply migration
+`0002_lbt_moderation.sql` before deploying this API version.
+
+This is not a permanent person/device ban: new anonymous codes and browsers
+can bypass it; existing guest credentials expire after 24 hours. No new IP or
+device fingerprint linkage is collected. `actioned` remains a review status;
+only the dedicated moderation form actually restricts matching.
 
 ## Security hardening
 

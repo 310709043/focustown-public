@@ -123,6 +123,7 @@ test.describe("LowBatteryTown chat (simulated)", () => {
     await enterChat(page);
     await page.getByRole("button", { name: /說聲晚安/ }).click();
     await expect(page.getByRole("heading", { name: /你已經很努力了/ })).toBeVisible();
+    await expect(page.locator(".message, .partner-profile")).toHaveCount(0);
     await page.getByRole("button", { name: /再遇見一個人/ }).click();
     await expect(page.getByRole("heading", { name: /等另一個人走過來/ })).toBeVisible();
     await expect(page.getByLabel("輸入訊息")).toBeVisible({ timeout: 5000 });

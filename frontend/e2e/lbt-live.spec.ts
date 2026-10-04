@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 
 /**
  * LowBatteryTown live flow: two real browsers against a real backend
- * (FastAPI + Redis + Postgres + worker). Opt-in, like the other full-stack
+ * (Cloudflare Worker or the legacy full stack). Opt-in, like the other full-stack
  * specs:
  *
  *   PLAYWRIGHT_REAL_STACK=1 pnpm playwright test e2e/lbt-live.spec.ts
@@ -79,7 +79,10 @@ test("two visitors are paired, chat, extend together and report", async ({ brows
   await dialog.getByRole("button", { name: /知道了/ }).click();
   await expect(a.getByText(/謝謝你告訴我們/)).toBeVisible();
 
-  // The reported pair is never paired again.
+  await expect(a.locator(".message, .partner-profile")).toHaveCount(0);
+  await expect(b.locator(".message, .partner-profile")).toHaveCount(0);
+
+  // The reported pair is blocked for 24 hours.
   await a.getByRole("button", { name: /再遇見一個人/ }).click();
   await b.getByRole("button", { name: /再遇見一個人/ }).click();
   await a.waitForTimeout(3000);

@@ -30,6 +30,7 @@ import { InputError } from "./rules";
 import { REPORT_STATUSES, type ReportStatus, listReports, purgeReports, reportCounts, setReportStatus } from "./reports";
 import { createAdminSession, verifyAdminSession, createCompanionToken, createGuestToken, newGuestId, verifyCompanionToken, verifyGuestToken } from "./token";
 import { COMPANION_ID } from "./companion";
+import { purgeExpiredSuspensions } from "./moderation";
 
 import { adminCookie, adminSigningKey, boundedJson, cookieToken, PayloadTooLarge, sameSecret, tokenFingerprint } from "./security";
 
@@ -160,6 +161,12 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
     if (status && !REPORT_STATUSES.includes(status)) return error(request, env, 422, "invalid_status");
     const limit = Math.min(200, Math.max(1, Number(params.get("limit")) || 50));
     return json(request, env, 200, { items: await listReports(env.DB, status, limit) });
+  }
+  const moderation = /^\/api\/v1\/admin\/lbt\/reports\/([^/]+)\/moderation$/.exec(path);
+  if (request.method === "POST" && moderation) {
+    const result = await town(env).moderate(decodeURIComponent(moderation[1] as string), await boundedJson(request));
+    return result.ok ? json(request, env, 200, result)
+      : error(request, env, result.code === "report_not_found" ? 404 : result.code === "no_active_suspension" ? 409 : 422, result.code);
   }
   const m = /^\/api\/v1\/admin\/lbt\/reports\/([^/]+)\/status$/.exec(path);
   if (request.method === "POST" && m) {
@@ -324,6 +331,7 @@ export default {
   /** Daily: delete reports and feedback past their retention windows (the privacy page promises it). */
   async scheduled(_controller, env, _ctx): Promise<void> {
     const cutoff = new Date(Date.now() - retentionDays(env) * 86_400_000).toISOString();
+    await purgeExpiredSuspensions(env.DB, Date.now());
     const removed = await purgeReports(env.DB, cutoff);
     if (removed > 0) console.log(JSON.stringify({ event: "lbt_reports_purged", removed, cutoff }));
     const feedbackCutoff = new Date(Date.now() - feedbackRetentionDays(env) * 86_400_000).toISOString();

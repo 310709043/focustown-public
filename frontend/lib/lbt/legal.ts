@@ -1,25 +1,26 @@
 /**
  * Facts the LowBatteryTown policy pages state. Keep the numbers in step
- * with the backend: LBT_GUEST_TOKEN_TTL_HOURS, the 24 h Redis TTL on
- * closed conversations, LBT_REPORT_RETENTION_DAYS and the pair block
- * after a report.
+ * with the Cloudflare API: LBT_GUEST_TOKEN_TTL_HOURS and
+ * LBT_REPORT_RETENTION_DAYS. Ordinary ended chats are deleted immediately.
  */
 export const LBT_LEGAL = {
   effectiveDate: "2026-10-04",
   contactEmail: process.env.NEXT_PUBLIC_LBT_CONTACT_EMAIL || "hello@lowbatterytown.com",
   tokenHours: 24,
-  chatHours: 24,
   reportDays: 180,
   pairBlockHours: 24,
+  suspensionHours: 24,
+  suspensionDays: 7,
   /** LBT_FEEDBACK_RETENTION_DAYS in edge/wrangler.jsonc and backend settings. */
   feedbackDays: 365,
 } as const;
 
 const FACTS: Record<string, string> = {
   tokenHours: String(LBT_LEGAL.tokenHours),
-  chatHours: String(LBT_LEGAL.chatHours),
   reportDays: String(LBT_LEGAL.reportDays),
   pairBlockHours: String(LBT_LEGAL.pairBlockHours),
+  suspensionHours: String(LBT_LEGAL.suspensionHours),
+  suspensionDays: String(LBT_LEGAL.suspensionDays),
   feedbackDays: String(LBT_LEGAL.feedbackDays),
 };
 

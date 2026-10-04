@@ -261,7 +261,7 @@ describe("authenticated companion sockets", () => {
     operator.send({type:"companion_invite",guest_id:id}); const invite=await visitor.next("lbt.companion_invite"); await operator.next("lbt.companion_pending");
     expect(visitor.frames.some(f=>f.type==="lbt.matched")).toBe(false);
     visitor.send({type:"companion_answer",id:invite.id,accept:true});
-    expect((await visitor.next("lbt.matched")).partner).toHaveProperty("role","admin"); await operator.next("lbt.matched");
+    expect((await visitor.next("lbt.matched")).partner).toHaveProperty("role","companion"); await operator.next("lbt.matched");
     operator.send({type:"message",text:"我在聽"}); expect((await visitor.next("lbt.message")).text).toBe("我在聽");
     await operator.next("lbt.message"); visitor.send({type:"message",text:"謝謝陪聊"}); expect((await operator.next("lbt.message")).text).toBe("謝謝陪聊");
     operator.send({type:"extend"}); await visitor.next("lbt.extend_requested"); expect(visitor.frames.some(f=>f.type==="lbt.extended")).toBe(false);
@@ -269,4 +269,32 @@ describe("authenticated companion sockets", () => {
     operator.send({type:"leave"}); expect((await visitor.next("lbt.ended")).reason).toBe("partner_left");
     visitor.ws.close();operator.ws.close();
   });
+});
+
+
+test("review immediately ends another active chat, blocks rejoining and reconnecting, and revocation restores matching", async () => {
+  const tokenA=await guest(),tokenB=await guest();
+  const a=await connect(tokenA),b=await connect(tokenB),c=await connect(await guest());
+  const auth={Authorization:"Bearer admin-test-token","Content-Type":"application/json"};
+  try {
+    a.send({type:"join",profile:LISTEN,adult:true});b.send({type:"join",profile:STORY,adult:true});
+    await a.next("lbt.matched");await b.next("lbt.matched");
+    const report=await SELF.fetch(`${BASE}/api/v1/lbt/reports`,{method:"POST",headers:{Authorization:`Bearer ${tokenA}`,"Content-Type":"application/json"},body:JSON.stringify({reason:"spam"})});
+    const id=((await report.json()) as {id:string}).id;
+    await a.next("lbt.ended");await b.next("lbt.ended");
+    b.send({type:"join",profile:STORY,adult:true});c.send({type:"join",profile:LISTEN,adult:true});
+    await b.next("lbt.matched");await c.next("lbt.matched");
+    const apply=await SELF.fetch(`${BASE}/api/v1/admin/lbt/reports/${id}/moderation`,{method:"POST",headers:auth,body:JSON.stringify({action:"suspend",days:1,reason:"reviewed evidence"})});
+    expect(apply.status).toBe(200);
+    expect((await b.next("lbt.ended")).reason).toBe("suspended");
+    expect((await c.next("lbt.ended")).reason).toBe("partner_left");
+    expect((await b.next("lbt.error")).code).toBe("guest_suspended");
+    b.send({type:"join",profile:STORY,adult:true});expect((await b.next("lbt.error")).code).toBe("guest_suspended");
+    const reconnect=await connect(tokenB,"203.0.113.2");
+    expect((await reconnect.next("lbt.error")).code).toBe("guest_suspended");reconnect.ws.close(1000);
+    const lift=await SELF.fetch(`${BASE}/api/v1/admin/lbt/reports/${id}/moderation`,{method:"POST",headers:auth,body:JSON.stringify({action:"revoke",reason:"review corrected"})});
+    expect(lift.status).toBe(200);
+    b.send({type:"join",profile:STORY,adult:true});c.send({type:"join",profile:LISTEN,adult:true});
+    await b.next("lbt.matched");await c.next("lbt.matched");
+  } finally {a.ws.close(1000);b.ws.close(1000);c.ws.close(1000);}
 });

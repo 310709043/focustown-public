@@ -82,6 +82,7 @@ export function WaitingView() {
             aria-labelledby="companion-title"
           >
             <h2 id="companion-title">{t("companion.inviteTitle")}</h2>
+            {invitation.nickname ? <p>{invitation.nickname}</p> : null}
             <p>{t("companion.inviteBody")}</p>
             <div className="companion-actions">
               <button

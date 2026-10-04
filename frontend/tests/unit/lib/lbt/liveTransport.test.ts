@@ -204,6 +204,15 @@ describe("createLiveTransport", () => {
     });
   });
 
+  test("leaving discards offline messages before reconnect", async () => {
+    const transport = await started();
+    transport.send("private unsent message");
+    transport.extend();
+    transport.leave();
+    FakeSocket.instances[0].open();
+    expect(FakeSocket.instances[0].sent.map((frame) => JSON.parse(frame))).toEqual([{ type: "leave" }]);
+  });
+
   test("typing is dropped rather than queued while offline", async () => {
     const transport = await started();
     transport.typing();
@@ -339,10 +348,10 @@ describe("human companion protocol", () => {
     expect(mapServerFrame({...frame,expires_at:frame.server_now},NOW)).toBeNull();
     expect(mapServerFrame({type:"lbt.companion_cleared",id:"i"},NOW)).toEqual({type:"companionCleared",id:"i"});
   });
-  test("preserves only the server's known administrator role", () => {
+  test("maps companion and legacy roles to a public companion role", () => {
     const p={nickname:"管理員",energy:2,preference:"story"};
     const f={type:"lbt.matched",me:p,partner:{...p,role:"admin"},ends_at:"2026-10-03T13:07:00Z",server_now:"2026-10-03T13:00:00Z"};
-    expect(mapServerFrame(f,NOW)).toMatchObject({partner:{role:"admin"}});
+    expect(mapServerFrame(f,NOW)).toMatchObject({partner:{role:"companion"}});
     const event=mapServerFrame({...f,partner:{...p,role:"untrusted"}},NOW);
     if(event?.type!=="matched") throw new Error(); expect(event.partner).not.toHaveProperty("role");
   });

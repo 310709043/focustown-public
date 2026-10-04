@@ -18,14 +18,13 @@ import {
   type Waiting,
 } from "./rules";
 import type { Conversation, Line, TownStore } from "./store";
-import { COMPANION_ID, COMPANION_PROFILE, INVITE_MS, type CompanionInvite } from "./companion";
+import { COMPANION_ID, COMPANION_PROFILE, companionProfile, publicProfile, INVITE_MS, type CompanionInvite } from "./companion";
 
 export interface TownConfig {
   sessionMs: number;
   graceMs: number;
   relaxAfterMs: number;
   offlineAfterMs: number;
-  keepClosedMs: number;
   blockMs: number;
   openHours: OpenHours | null;
   timeZone: string;
@@ -37,7 +36,6 @@ export const DEFAULT_CONFIG: TownConfig = {
   graceMs: 60_000,
   relaxAfterMs: 30_000,
   offlineAfterMs: 45_000,
-  keepClosedMs: 24 * 3600_000,
   blockMs: 24 * 3600_000,
   openHours: null,
   timeZone: "Asia/Taipei",
@@ -67,6 +65,7 @@ export interface TownDeps {
   newId: () => string;
   saveReport?: (record: ReportRecord) => Promise<void>;
   config: TownConfig;
+  suspendedUntil?: (guestId: string) => number | null;
 }
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -98,6 +97,11 @@ export class Town {
   async connect(guestId: string) {
     const now = this.deps.now();
     await this.store.touchOnline(guestId, now);
+    if (this.suspended(guestId)) {
+      await this.restrict(guestId);
+      this.deps.send(guestId, { type: "lbt.error", code: "guest_suspended" });
+      return;
+    }
     const c = await this.current(guestId);
     if (c) {
       this.deps.send(guestId, this.matchedFrame(c, guestId, now));
@@ -121,7 +125,7 @@ export class Town {
       if (invite && invite.expiresAt > now) {
         const target = (await this.store.listWaiting()).find((w) => w.guestId === invite.guestId);
         if (target) {
-          this.deps.send(guestId, { type: "lbt.companion_pending", id: invite.id, profile: target.profile });
+          this.deps.send(guestId, { type: "lbt.companion_pending", id: invite.id, profile: target.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname });
           return;
         }
       }
@@ -146,6 +150,7 @@ export class Town {
 
   async join(guestId: string, rawProfile: unknown, adult: boolean) {
     if (guestId === COMPANION_ID) throw new InputError("admin_cannot_queue");
+    this.requireAllowed(guestId);
     if (adult !== true) throw new InputError("age_required");
     const now = this.deps.now();
     if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
@@ -163,8 +168,12 @@ export class Town {
   }
 
   /** Offer without removing the visitor from normal matching. Acceptance is explicit. */
-  async inviteCompanion(target: unknown) {
+  async inviteCompanion(target: unknown, identity: unknown = "male") {
+    const profile = companionProfile(identity);
+    if (!profile) throw new InputError("invalid_companion_identity");
     if (typeof target !== "string") throw new InputError("not_waiting");
+    this.requireAllowed(COMPANION_ID);
+    this.requireAllowed(target);
     const now = this.deps.now();
     if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
     if (await this.current(COMPANION_ID)) throw new InputError("companion_busy");
@@ -176,13 +185,15 @@ export class Town {
     if (!visitor || seen === null || seen < now - this.cfg.offlineAfterMs) throw new InputError("not_waiting");
     if ((await this.store.blockedFor(target, now)).has(COMPANION_ID)) throw new InputError("pair_blocked");
     if (!(await this.store.hit(`companion:invite:${target}`, 1, INVITE_MS, now))) throw new InputError("slow_down");
-    const invite: CompanionInvite = { id: this.deps.newId(), guestId: target, expiresAt: now + INVITE_MS };
+    const invite: CompanionInvite = { id: this.deps.newId(), guestId: target, expiresAt: now + INVITE_MS, profile };
     await this.store.saveCompanionInvite(invite);
     this.sendCompanionInvite(invite);
-    this.deps.send(COMPANION_ID, { type: "lbt.companion_pending", id: invite.id, profile: visitor.profile });
+    this.deps.send(COMPANION_ID, { type: "lbt.companion_pending", id: invite.id, profile: visitor.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname });
   }
 
   async answerCompanion(guestId: string, id: unknown, accept: boolean) {
+    this.requireAllowed(guestId);
+    this.requireAllowed(COMPANION_ID);
     const invite = await this.store.companionInvite();
     if (!invite || invite.id !== id || invite.guestId !== guestId) throw new InputError("invite_unavailable");
     const now = this.deps.now();
@@ -200,12 +211,12 @@ export class Town {
     if (await this.current(COMPANION_ID)) throw new InputError("companion_busy");
     if ((await this.store.blockedFor(guestId, now)).has(COMPANION_ID)) throw new InputError("pair_blocked");
     await this.clearCompanion("accepted");
-    await this.startConversation(target, { guestId: COMPANION_ID, profile: COMPANION_PROFILE, joinedAt: now }, now);
+    await this.startConversation(target, { guestId: COMPANION_ID, profile: invite.profile ?? COMPANION_PROFILE, joinedAt: now }, now);
   }
 
   private sendCompanionInvite(invite: CompanionInvite) {
     this.deps.send(invite.guestId, {
-      type: "lbt.companion_invite", id: invite.id,
+      type: "lbt.companion_invite", id: invite.id, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname,
       expires_at: iso(invite.expiresAt), server_now: iso(this.deps.now()),
     });
   }
@@ -227,6 +238,8 @@ export class Town {
   /** Pair everyone who can be paired right now; returns pairs made. */
   async pairWaiting(): Promise<number> {
     const now = this.deps.now();
+    const queued = await this.store.listWaiting();
+    for (const w of queued) if (this.suspended(w.guestId)) await this.restrict(w.guestId);
     const pool = (await this.store.listWaiting()).sort((a, b) => a.joinedAt - b.joinedAt);
     const taken = new Set<string>();
     let made = 0;
@@ -281,6 +294,7 @@ export class Town {
   }
 
   async typing(guestId: string) {
+    this.requireAllowed(guestId);
     const c = await this.current(guestId);
     if (c) this.deps.send(partnerOf(c, guestId), { type: "lbt.typing" });
   }
@@ -317,8 +331,7 @@ export class Town {
     if (!(REPORT_REASONS as readonly string[]).includes(reason)) throw new InputError("invalid_reason");
     if (!this.deps.saveReport) throw new Error("report storage not wired");
     const now = this.deps.now();
-    const id =
-      (await this.store.conversationIdOf(guestId)) ?? (await this.store.lastConversationIdOf(guestId, now));
+    const id = await this.store.conversationIdOf(guestId);
     const c = id ? await this.store.getConversation(id) : null;
     if (!c || (c.guestA !== guestId && c.guestB !== guestId)) throw new InputError("no_conversation");
     const partner = partnerOf(c, guestId);
@@ -364,6 +377,8 @@ export class Town {
     for (const id of await this.store.activeConversationIds()) {
       const c = await this.store.getConversation(id);
       if (!c) continue;
+      const restricted = [c.guestA, c.guestB].find((g) => this.suspended(g));
+      if (restricted) { await this.restrict(restricted); continue; }
       if (now >= c.endsAt + this.cfg.graceMs) {
         await this.close(c, { [c.guestA]: "timeout", [c.guestB]: "timeout" });
         continue;
@@ -388,6 +403,21 @@ export class Town {
     await this.pairWaiting();
   }
 
+  /** Remove a reviewed guest from queue/invitations and end any active chat. */
+  async restrict(guestId: string) {
+    await this.cancelCompanionFor(guestId, "cancelled");
+    await this.store.dequeue(guestId);
+    const c = await this.current(guestId);
+    if (c) await this.close(c, { [guestId]: "suspended", [partnerOf(c, guestId)]: "partner_left" });
+  }
+
+  private suspended(guestId: string) {
+    return (this.deps.suspendedUntil?.(guestId) ?? 0) > this.deps.now();
+  }
+  private requireAllowed(guestId: string) {
+    if (this.suspended(guestId)) throw new InputError("guest_suspended");
+  }
+
   // ── helpers ────────────────────────────────────────────────────────
 
   private async current(guestId: string): Promise<Conversation | null> {
@@ -396,13 +426,16 @@ export class Town {
   }
 
   private async require(guestId: string): Promise<Conversation> {
+    this.requireAllowed(guestId);
     const c = await this.current(guestId);
     if (!c) throw new InputError("no_conversation");
+    const partner = partnerOf(c, guestId);
+    if (this.suspended(partner)) { await this.restrict(partner); throw new InputError("no_conversation"); }
     return c;
   }
 
   private async close(c: Conversation, reasons: Record<string, string>) {
-    await this.store.closeConversation(c, this.deps.now() + this.cfg.keepClosedMs);
+    await this.store.closeConversation(c);
     for (const [g, reason] of Object.entries(reasons)) this.deps.send(g, { type: "lbt.ended", reason });
   }
 
@@ -414,8 +447,8 @@ export class Town {
     return {
       type: "lbt.matched",
       conversation_id: c.id,
-      me: { ...profileOf(c, guestId) },
-      partner: { ...profileOf(c, partnerOf(c, guestId)) },
+      me: publicProfile(profileOf(c, guestId)),
+      partner: publicProfile(profileOf(c, partnerOf(c, guestId))),
       ...this.timing(c, now),
     };
   }
