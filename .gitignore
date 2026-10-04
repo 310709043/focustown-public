@@ -72,6 +72,10 @@ reference/
 !backend/assets/seed-tracks/midnight-at-the-overpass.mp3
 !backend/assets/seed-tracks/sunday-window.mp3
 
+# Exception: LowBatteryTown music, the owner's own tracks played by the
+# home battery (frontend/lib/lbt/music.ts, MUSIC_TRACKS).
+!frontend/public/audio/lbt/*.mp3
+
 # Exception: frontend audio fallback. These ship inside the Next.js
 # image (`public/audio/`) and back ``LOCAL_FALLBACK_TRACKS`` in
 # ``frontend/lib/state/audioStore.ts`` — when S3 streaming breaks

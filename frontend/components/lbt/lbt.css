@@ -4305,3 +4305,243 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
     grid-column: auto;
   }
 }
+
+/* ==========================================================================
+   Music: the battery is the switch and sings along; three signal bars set
+   the volume; a small header switch keeps it reachable from every screen.
+   ========================================================================== */
+.lbt .side-card-top {
+  align-items: center;
+  gap: 10px;
+}
+.lbt .side-card-top .music-hint,
+.lbt .side-card-top .music-volume-wrap {
+  margin-left: auto;
+}
+.lbt .music-hint {
+  border: 1px dashed rgba(248, 215, 121, 0.42);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lamp);
+  padding: 0 9px;
+  font: inherit;
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lbt .music-hint:hover {
+  border-style: solid;
+}
+.lbt .music-volume-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lamp);
+}
+.lbt .music-volume-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+.lbt .music-volume {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+}
+.lbt .music-volume button {
+  width: 11px;
+  height: 18px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: flex-end;
+  cursor: pointer;
+}
+.lbt .music-volume button span {
+  display: block;
+  width: 100%;
+  border-radius: 2px;
+  background: #3f5170;
+  transition: background-color 0.2s ease;
+}
+.lbt .music-volume button:nth-child(1) span { height: 6px; }
+.lbt .music-volume button:nth-child(2) span { height: 11px; }
+.lbt .music-volume button:nth-child(3) span { height: 16px; }
+.lbt .music-volume button.on span {
+  background: var(--lamp);
+}
+.lbt .music-hint:focus-visible,
+.lbt .music-volume button:focus-visible,
+.lbt .music-pill:focus-visible,
+.lbt .battery-music-button:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 3px;
+}
+
+/* the battery itself is the button */
+.lbt .battery-music-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 142px;
+  height: 186px;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  border: 0;
+  border-radius: 18px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.lbt .battery-music-button:hover ~ .battery-character .battery-body {
+  border-color: #d3deec;
+}
+
+/* singing */
+.lbt .sing-mouth {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 5px);
+  width: calc(9px + var(--amp, 0) * 4px);
+  height: calc(2px + var(--amp, 0) * 9px);
+  transform: translate(-50%, -50%);
+  border-radius: 50% 50% 46% 46%;
+  background: #334158;
+  box-shadow: inset 0 -2px 0 #b5584a;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.lbt .sing-cheeks {
+  left: calc(50% - 22px);
+  top: calc(50% + 1px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.lbt .battery-display.is-singing .sing-mouth {
+  opacity: 1;
+}
+.lbt .battery-display.is-singing .sing-cheeks {
+  opacity: 0.75;
+}
+.lbt .battery-display.is-singing .battery-face .battery-mouth,
+.lbt .battery-display.is-singing .battery-face .battery-cheeks {
+  opacity: 0 !important;
+  animation: none;
+}
+.lbt .battery-display.is-singing .battery-eyes {
+  animation: none;
+}
+.lbt .battery-display.is-singing .battery-eyes i {
+  width: 7px;
+  height: 6px;
+  background: none;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  transform: none;
+  animation: none;
+}
+.lbt .battery-display.is-singing .battery-character {
+  animation: lbt-sing-sway 1.6s ease-in-out infinite;
+}
+.lbt .battery-display.is-singing .battery-body {
+  transform: translateY(calc(var(--amp, 0) * -3px));
+}
+.lbt .battery-display.is-singing .battery-sleep-mark,
+.lbt .battery-display.is-singing .battery-spark {
+  opacity: 0;
+}
+.lbt .battery-note {
+  position: absolute;
+  left: calc(50% + 40px + var(--x, 0px));
+  top: 46px;
+  z-index: 1;
+  color: var(--lamp);
+  font-size: 17px;
+  pointer-events: none;
+  animation: lbt-note-rise 2.4s ease-out forwards;
+}
+@keyframes lbt-sing-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+@keyframes lbt-note-rise {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-8deg) scale(0.7); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx, 24px), -48px) rotate(10deg) scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lbt .battery-display.is-singing .battery-character {
+    animation: none;
+  }
+  .lbt .battery-note {
+    display: none;
+  }
+}
+
+/* header switch */
+.lbt .music-pill {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid rgba(248, 215, 121, 0.28);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--lamp);
+  cursor: pointer;
+}
+.lbt-app .music-pill {
+  color: var(--pill);
+  border-color: var(--pill-line);
+}
+.lbt .music-pill[aria-pressed="true"] {
+  border-color: currentColor;
+}
+.lbt .music-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.lbt .music-eq i {
+  display: block;
+  width: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+.lbt .music-eq i:nth-child(1) { height: 5px; }
+.lbt .music-eq i:nth-child(2) { height: 10px; }
+.lbt .music-eq i:nth-child(3) { height: 7px; }
+.lbt .music-pill[aria-pressed="true"] .music-eq i {
+  animation: lbt-eq 0.9s ease-in-out infinite;
+}
+.lbt .music-pill[aria-pressed="true"] .music-eq i:nth-child(2) { animation-delay: -0.3s; }
+.lbt .music-pill[aria-pressed="true"] .music-eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes lbt-eq {
+  0%, 100% { height: 3px; }
+  50% { height: 12px; }
+}
+/* phones: the header switch appears once music has been started, and takes
+   the 贊助 pill's place (support stays on the home card and the end screen) */
+@media (max-width: 610px) {
+  .lbt .music-pill {
+    display: none;
+    width: 32px;
+    height: 32px;
+  }
+  .lbt .music-pill.is-started {
+    display: inline-grid;
+  }
+  .lbt .topbar:has(.music-pill.is-started) .support-pill {
+    display: none;
+  }
+}
+@media (max-width: 389px) {
+  .lbt .wordmark {
+    font-size: 17px;
+  }
+}

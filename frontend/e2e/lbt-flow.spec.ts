@@ -160,6 +160,20 @@ test.describe("LowBatteryTown chat (simulated)", () => {
   });
 });
 
+test.describe("LowBatteryTown music", () => {
+  test("the battery starts and stops the music; the header switch follows", async ({ page }) => {
+    await page.goto(HOME);
+    const battery = page.getByRole("button", { name: "播放音樂" }).first();
+    await expect(page.getByRole("button", { name: /點電池哼歌/ })).toBeVisible();
+    await battery.click();
+    await expect(page.locator(".battery-display")).toHaveClass(/is-singing/);
+    await expect(page.getByRole("radiogroup", { name: "音量" }).getByRole("radio")).toHaveCount(3);
+    await expect(page.locator(".music-pill")).toHaveAttribute("aria-pressed", "true");
+    await page.locator(".music-pill").click();
+    await expect(page.locator(".battery-display")).not.toHaveClass(/is-singing/);
+  });
+});
+
 test.describe("LowBatteryTown support dialog", () => {
   test("one-time support on the creator's page; nothing is charged here", async ({ page }) => {
     // Never leave the test environment: answer the external page locally.
