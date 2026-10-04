@@ -20,6 +20,7 @@ import { HomeView } from "./HomeView";
 import { IntroSplash } from "./IntroSplash";
 import { LocaleToggle } from "./LocaleToggle";
 import { ModalHost } from "./ModalHost";
+import { HeaderMusicButton, useMusicLifecycle } from "./MusicControls";
 import { WaitingView } from "./WaitingView";
 
 import "./lbt.css";
@@ -53,6 +54,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
   const firstRender = useRef(true);
 
   const transportRef = useRef<LbtTransport | null>(null);
+  useMusicLifecycle();
 
   // The boot script set the time of day before paint; keep it current while
   // the page stays open (dusk falls, the weekend starts).
@@ -145,6 +147,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
               <span className="prototype-dot" aria-hidden="true" />
               {t("topbar.feedback")}
             </button>
+            <HeaderMusicButton />
             <LocaleToggle />
             <button
               type="button"
