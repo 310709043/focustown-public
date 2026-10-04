@@ -18,7 +18,7 @@ import { onRadioGroupKeyDown } from "@/lib/lbt/useRadioArrowKeys";
 import { BatteryCharacter } from "./BatteryCharacter";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
-import { Townscape } from "./Townscape";
+import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {
   const t = useTranslations("lbt");
@@ -54,9 +54,16 @@ export function HomeView() {
           in that order so the form comes before the extra cards. */}
       <div className="home-grid">
         <section className="main-stage" aria-labelledby="lbt-hero-title">
+          <TownSky />
           <div className="stage-topline">
             <span className="eyebrow">{t("home.eyebrow")}</span>
-            <span className="stage-coordinate">{t("home.coordinate")}</span>
+            {/* One greeting per time of day; CSS shows the one matching <html data-lbt-time>. */}
+            <span className="stage-coordinate">
+              <span className="by-time t-dawn">{t("home.coordinateDawn")}</span>
+              <span className="by-time t-day">{t("home.coordinateDay")}</span>
+              <span className="by-time t-dusk">{t("home.coordinateDusk")}</span>
+              <span className="by-time t-night">{t("home.coordinate")}</span>
+            </span>
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">

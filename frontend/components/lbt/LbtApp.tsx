@@ -10,6 +10,7 @@ import { createDemoTransport } from "@/lib/lbt/demoTransport";
 import { createLiveTransport } from "@/lib/lbt/liveTransport";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 import type { LbtTransport } from "@/lib/lbt/transport";
+import { applyTownTime } from "@/lib/lbt/townTime";
 import type { LbtMode } from "@/lib/lbt/types";
 
 import { Wordmark } from "./BrandMark";
@@ -52,6 +53,15 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
   const firstRender = useRef(true);
 
   const transportRef = useRef<LbtTransport | null>(null);
+
+  // The boot script set the time of day before paint; keep it current while
+  // the page stays open (dusk falls, the weekend starts).
+  useEffect(() => {
+    const tick = () => applyTownTime(document.documentElement, new Date(), window.location.search);
+    tick();
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   // Connect on mount; leaving the page closes the socket and stops timers.
   useEffect(() => {
@@ -104,7 +114,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
   }, [view]);
 
   return (
-    <div ref={rootRef} className={`lbt ${fontClassName}`.trim()}>
+    <div ref={rootRef} className={`lbt lbt-app ${fontClassName}`.trim()}>
       <IntroSplash tagline={`${t("home.titleTop")}${t("home.titleEm")}`} />
       <div className="site-shell">
         <header className="topbar">
