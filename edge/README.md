@@ -97,7 +97,10 @@ In `/admin`, click **開始陪聊值班**, then invite a visitor from the waitin
 The visitor sees an explicit human administrator invitation and can accept or
 keep waiting. Invitations expire after 60 seconds; normal visitor matching
 continues and cancels an offer if it finds a partner first. One administrator
-socket, one pending invitation or one conversation at a time. The host is
+socket, one pending invitation or one conversation at a time. The newest
+console takes over (the old one is closed with 4409 and stops, so a tab left
+on duty or a sleeping phone never locks you out), and duty survives a reload
+of the same tab, keeping an open chat. The host is
 server-labelled **小鎮管理員**, joins the real online count only while on duty,
 and chats directly in the console. Seven-minute windows, mutual extensions,
 leaving, contact masking and reporting use the existing session rules.

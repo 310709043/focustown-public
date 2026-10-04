@@ -21,6 +21,15 @@ let companionEndsAt = 0, companionGrace = 60, companionMine = false, companionOt
 let companionLog, companionWaiting, companionStatus, companionError, companionDraft, companionSubmit;
 let companionChat, companionTitle, companionClock, companionExtend, dutyButton, companionCancel;
 const companionMessages = new Set();
+// Duty survives a reload of this tab, so a refresh never drops a visitor.
+const DUTY_KEY = "lbt.admin.duty";
+function rememberDuty(on) { try { on ? sessionStorage.setItem(DUTY_KEY, "1") : sessionStorage.removeItem(DUTY_KEY); } catch {} }
+function rememberedDuty() { try { return sessionStorage.getItem(DUTY_KEY) === "1"; } catch { return false; } }
+function startDuty() {
+  onDuty = true; rememberDuty(true); dutyButton.textContent = "結束陪聊值班"; connectCompanion();
+  clearInterval(companionTimer);
+  companionTimer = setInterval(() => { if (companionSocket?.readyState === WebSocket.OPEN) companionSocket.send(JSON.stringify({type:"heartbeat"})); }, 10000);
+}
 const COMPANION_ERRORS = {
   companion_busy:"請先結束目前的邀請或對話。", not_waiting:"這位使用者已離開等待區。",
   pair_blocked:"這位使用者暫時無法與管理員配對。", slow_down:"請稍等，避免重複邀請或傳訊。",
@@ -41,7 +50,7 @@ function companionReset() {
   companionDraft.value = "";
 }
 function stopCompanion() {
-  onDuty = false; clearTimeout(companionReconnect); clearInterval(companionTimer);
+  onDuty = false; rememberDuty(false); clearTimeout(companionReconnect); clearInterval(companionTimer);
   if (companionSocket?.readyState === WebSocket.OPEN) companionSocket.send(JSON.stringify({type:"leave"}));
   companionSocket?.close(1000); companionSocket = null;
   companionConnecting = false;
@@ -104,9 +113,15 @@ async function connectCompanion() {
     ws.onclose = (event) => {
       if (companionSocket !== ws) return;
       companionSocket = null; companionPending = null;
-      companionStatus.textContent = "陪聊連線中斷，正在重連。若另一個後台已值班，請先關閉該視窗的值班。";
+      companionStatus.textContent = "陪聊連線中斷，正在重連…";
       updateCompanionControls();
-      if (event.code === 4401) { onDuty = false; signOut("管理密碼已失效，請重新登入。"); }
+      if (event.code === 4409) {
+        // Another tab or device started duty and took over this console.
+        onDuty = false; rememberDuty(false); clearTimeout(companionReconnect); clearInterval(companionTimer);
+        companionReset(); dutyButton.textContent = "開始陪聊值班";
+        companionStatus.textContent = "已在另一個視窗或裝置開始值班，這裡已停止。要改回這裡，再按一次「開始陪聊值班」。";
+        updateCompanionControls();
+      } else if (event.code === 4401) { onDuty = false; signOut("管理密碼已失效，請重新登入。"); }
       else if (onDuty) companionReconnect = setTimeout(connectCompanion, 5000);
     };
     ws.onerror = () => { /* close handles recovery */ };
@@ -153,7 +168,7 @@ function getCompanionPanel() {
   companionError = el("p", {class:"err", role:"alert"});
   dutyButton = el("button", {class:"btn primary", type:"button", text:"開始陪聊值班", onclick:() => {
     if (onDuty) stopCompanion();
-    else { onDuty = true; dutyButton.textContent = "結束陪聊值班"; connectCompanion(); companionTimer = setInterval(() => { if (companionSocket?.readyState === WebSocket.OPEN) companionSocket.send(JSON.stringify({type:"heartbeat"})); }, 10000); }
+    else startDuty();
     updateCompanionControls();
   }});
   companionWaiting = el("div", {"aria-label":"等待陪聊名單"});
@@ -173,6 +188,7 @@ function getCompanionPanel() {
     el("div", {class:"actions"}, dutyButton, companionCancel),
     companionStatus, companionWaiting, companionError, companionChat);
   refreshCompanionWaiting(); updateCompanionControls();
+  if (!onDuty && rememberedDuty() && token()) startDuty();
   return companionPanel;
 }
 setInterval(() => { if (token() && !document.hidden) refreshCompanionWaiting(); }, 5000);

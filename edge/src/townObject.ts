@@ -94,11 +94,19 @@ export class TownObject extends DurableObject<Env> {
     if (!guestId || request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
       return new Response("expected websocket", { status: 426 });
     }
-    if (guestId === COMPANION_ID && this.ctx.getWebSockets(COMPANION_ID).some((ws) => ws.readyState === WebSocket.OPEN)) {
-      return new Response("companion already connected", { status: 409 });
-    }
     const { 0: client, 1: server } = new WebSocketPair();
+    // One administrator console at a time, and the newest one wins: a tab
+    // left on duty or a phone that went to sleep (its socket can linger)
+    // must never lock the operator out. The old console stops on 4409.
+    const replaced = guestId === COMPANION_ID ? this.ctx.getWebSockets(COMPANION_ID) : [];
     this.ctx.acceptWebSocket(server, [guestId]);
+    for (const old of replaced) {
+      try {
+        old.close(4409, "replaced");
+      } catch {
+        /* already closed */
+      }
+    }
     const headers = protocol ? { "Sec-WebSocket-Protocol": protocol } : undefined;
 
     if (!(await this.store.hit(`ws:ip:${ip}`, LIMITS.wsConnectPerIpPerMin, 60_000, Date.now()))) {

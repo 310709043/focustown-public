@@ -24,16 +24,17 @@
     "titleEm": "are left today?",
     "subtitleA": "No need to plan what to say. Pick how you feel right now,",
     "subtitleB": "and sit for a while with someone who also wants a quiet chat.",
+    "subtitleShort": "No need to plan what to say. Just sit a while.",
     "nickname": {
       "label": "What should we call you?",
-      "hint": "Anonymous nickname, editable",
+      "hint": "Anonymous, editable",
       "note": "Only shown in the chat. No sign-up needed.",
       "default": "Night Walker"
     },
     "energy": {
       "heading": "First, tell us",
       "strong": "your social battery",
-      "purpose": "Your battery is shown to the other person so you both know the pace.",
+      "purpose": "Your partner sees it, so you both know the pace.",
       "groupAria": "Choose your current social battery"
     },
     "preference": {
