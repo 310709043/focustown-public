@@ -79,12 +79,9 @@ export function HomeView() {
               <em>{t("home.titleEm")}</em>
             </h1>
             <p className="hero-subtitle">
-              <span className="subtitle-long">
-                {t("home.subtitleA")}
-                <br className="desktop-break" />
-                {t("home.subtitleB")}
-              </span>
-              <span className="subtitle-short">{t("home.subtitleShort")}</span>
+              {t("home.subtitleA")}
+              <br className="desktop-break" />
+              {t("home.subtitleB")}
             </p>
           </div>
 
