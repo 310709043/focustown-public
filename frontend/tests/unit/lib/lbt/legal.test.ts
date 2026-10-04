@@ -39,3 +39,14 @@ test.each([
   expect(answers).toContain("1925");
   expect(answers).toContain("1995");
 });
+
+test.each([
+  ["zh-TW", zh],
+  ["en", en],
+])("%s policy pages state retention and the pair block only through placeholders", (_locale, messages) => {
+  const text = (["privacy", "terms", "guidelines"] as const)
+    .flatMap((slug) => messages.policy[slug].sections.flatMap((s) => s.p))
+    .join("\n");
+  expect(text).not.toMatch(/\b(24|180)\b/);
+  expect(text).toContain("{pairBlockHours}");
+});

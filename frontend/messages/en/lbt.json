@@ -427,7 +427,7 @@
         {
           "h": "Leave when it doesn't feel right",
           "p": [
-            "You can say good night any time. Reporting ends the chat at once, you won't be paired again for 24 hours, and the conversation is kept for review."
+            "You can say good night any time. Reporting ends the chat at once, you won't be paired again for {pairBlockHours} hours, and the conversation is kept for review."
           ]
         },
         {
