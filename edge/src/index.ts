@@ -164,7 +164,7 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
   }
   const moderation = /^\/api\/v1\/admin\/lbt\/reports\/([^/]+)\/moderation$/.exec(path);
   if (request.method === "POST" && moderation) {
-    const result = await town(env).moderate(decodeURIComponent(moderation[1] as string), await request.json().catch(() => null));
+    const result = await town(env).moderate(decodeURIComponent(moderation[1] as string), await boundedJson(request));
     return result.ok ? json(request, env, 200, result)
       : error(request, env, result.code === "report_not_found" ? 404 : result.code === "no_active_suspension" ? 409 : 422, result.code);
   }
