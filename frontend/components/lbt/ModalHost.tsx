@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
+import { FeedbackModal } from "./FeedbackModal";
 import { LbtModal } from "./LbtModal";
 import { ReportModal } from "./ReportModal";
 import { SupportModal } from "./SupportModal";
@@ -38,6 +39,8 @@ export function ModalHost() {
       );
     case "report":
       return <ReportModal />;
+    case "feedback":
+      return <FeedbackModal />;
     case "about":
       return (
         <LbtModal

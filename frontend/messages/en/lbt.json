@@ -247,12 +247,40 @@
       "disclosure": "Payments are not open in the prototype and no payment details are collected.",
       "unavailable": "Payments not open yet",
       "checkout": "Go to one-time payment · {amount}"
+    },
+    "feedback": {
+      "eyebrow": "Feedback box",
+      "title": "What would you like to tell the town?",
+      "intro": "Ideas, problems you ran into, or anything else. No sign-in needed; we read every one.",
+      "legend": "Type",
+      "categories": {
+        "idea": "Idea",
+        "bug": "Problem",
+        "other": "Other"
+      },
+      "messageLabel": "Message",
+      "messagePlaceholder": "For example: I'd like more chat topics to choose from",
+      "emailLabel": "Reply e-mail (optional)",
+      "emailHint": "Only if you'd like a reply. Used just to answer this message, never shown to anyone else.",
+      "submit": "Send",
+      "sending": "Sending…",
+      "sentTitle": "Got it, thank you",
+      "sentBody": "Your note is in the town's feedback box.",
+      "sentBodyEmail": "Your note is in the town's feedback box. We'll write back if needed.",
+      "errors": {
+        "invalid_message": "Write something before sending.",
+        "invalid_email": "That e-mail doesn't look right. Check it or leave it empty.",
+        "too_many_feedback": "That's a lot of notes at once. Take a break and try again later.",
+        "network": "Can't reach the town right now. Please try again later.",
+        "unknown": "Sending failed. Please try again later."
+      }
     }
   },
   "footer": {
     "left": "LowBatteryTown · a town still being imagined",
     "right": "Prototype demo: matching and messages are simulated and not connected to real people.",
-    "rightLive": "Beta: please be kind. You can say good night or report at any time."
+    "rightLive": "Beta: please be kind. You can say good night or report at any time.",
+    "feedback": "Feedback"
   },
   "notice": {
     "closed": "The lamps aren't lit yet. Please come back during open hours.",
@@ -288,7 +316,7 @@
         {
           "h": "What we don't ask for",
           "p": [
-            "There is no account. We don't collect your real name, e-mail, phone number or social handles.",
+            "There is no account. We don't collect your real name, e-mail, phone number or social handles; we only receive an e-mail address if you choose to leave one in the feedback box.",
             "Please don't share anything that identifies you. Links, e-mail addresses, @handles and phone numbers are masked automatically before a message is sent."
           ]
         },
@@ -300,6 +328,7 @@
             "Messages: relayed to the other person in real time. After a chat ends they are kept for up to {chatHours} hours for reconnects and reports, then deleted automatically.",
             "IP address: used only for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
             "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
+            "Feedback box: the type, message, page and language you send from, and the reply e-mail if you choose to leave one. Used to improve the town and answer you; stored in our database and copied to the operator's Google Sheet (hosted by Google), and deleted after {feedbackDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
             "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser."
           ]
@@ -307,13 +336,13 @@
         {
           "h": "Why",
           "p": [
-            "To pair people and relay chats, to prevent abuse and handle reports, and to keep the service running. We don't sell data or use chats for advertising."
+            "To pair people and relay chats, to prevent abuse and handle reports, to answer feedback, and to keep the service running. We don't sell data or use chats for advertising."
           ]
         },
         {
           "h": "Where it lives",
           "p": [
-            "The service runs on Amazon Web Services (Tokyo region) behind Cloudflare, so data may be processed outside Taiwan."
+            "The service runs on Cloudflare (Workers, Durable Objects and a D1 database); copies of feedback are kept in the operator's Google Sheet. Data may therefore be processed outside Taiwan."
           ]
         },
         {

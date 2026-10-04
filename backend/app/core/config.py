@@ -200,6 +200,12 @@ class Settings(BaseSettings):
     # Report snapshots (with transcripts) are deleted after this many days;
     # the privacy page promises the same number.
     lbt_report_retention_days: int = Field(default=180, ge=1)
+    # Feedback box: per-IP limit, retention (the privacy page states it) and
+    # the optional Google Sheet copy (Apps Script web app URL + shared token).
+    lbt_feedback_per_ip_per_hour: int = 5
+    lbt_feedback_retention_days: int = Field(default=365, ge=1)
+    feedback_sheet_url: str = ""
+    feedback_sheet_token: str = ""
 
     otel_enabled: bool = False
     otel_exporter_otlp_endpoint: str | None = None
@@ -244,6 +250,8 @@ class Settings(BaseSettings):
         "ses_from_email",
         "admin_feedback_email",
         "admin_user_ids",
+        "feedback_sheet_url",
+        "feedback_sheet_token",
         mode="before",
     )
     @classmethod

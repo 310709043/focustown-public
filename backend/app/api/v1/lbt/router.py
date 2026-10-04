@@ -14,9 +14,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Body, Depends, Header, Query, WebSocket, WebSocketDisconnect
 
 from app.api.v1.lbt.schemas import (
+    FeedbackCreated,
     GuestSessionResponse,
     ReportCreate,
     ReportCreated,
@@ -41,10 +42,13 @@ from app.core.ids import IIdGenerator
 from app.core.logging import get_logger
 from app.core.security import create_guest_token, decode_guest_token, new_guest_id
 from app.domain.repositories.lbt import ILbtReportRepo, ILbtStore
+from app.domain.services.lbt_feedback import LbtFeedbackService
 from app.domain.services.lbt_rules import LbtInputError
 from app.domain.services.lbt_service import LbtConfig, LbtService, guest_channel
 from app.infrastructure.cache.redis_client import get_redis
+from app.infrastructure.db.repositories.lbt_feedback_repo import SqlLbtFeedbackRepo
 from app.infrastructure.db.repositories.lbt_report_repo import SqlLbtReportRepo
+from app.infrastructure.lbt.feedback_sheet import AppsScriptFeedbackSheet
 from app.infrastructure.messaging.pubsub import RedisPubSubPublisher
 
 log = get_logger(__name__)
@@ -134,6 +138,39 @@ async def create_report(
     except LbtInputError as exc:
         raise ValidationError(exc.code) from exc
     return ReportCreated(id=report_id)
+
+
+@router.post("/feedback", response_model=FeedbackCreated, status_code=201)
+async def create_feedback(
+    db: DbDep,
+    clock: ClockDep,
+    ids: IdGenDep,
+    settings: SettingsDep,
+    limiter: RateLimiterDep,
+    ip: ClientIpDep,
+    body: Annotated[dict[str, object] | None, Body()] = None,
+) -> FeedbackCreated:
+    """Feedback box: anonymous, rate-limited per IP; a filled ``website``
+    honeypot is answered normally and dropped. Copied to the owner's Google
+    Sheet when ``FEEDBACK_SHEET_URL`` and ``FEEDBACK_SHEET_TOKEN`` are set."""
+    decision = await limiter.hit(
+        f"lbt:feedback:ip:{ip or 'unknown'}",
+        limit=settings.lbt_feedback_per_ip_per_hour,
+        window_seconds=3600,
+    )
+    if not decision.allowed:
+        raise RateLimitedError("too_many_feedback")
+    sheet = (
+        AppsScriptFeedbackSheet(settings.feedback_sheet_url, settings.feedback_sheet_token)
+        if settings.feedback_sheet_url.startswith("https://") and settings.feedback_sheet_token
+        else None
+    )
+    service = LbtFeedbackService(repo=SqlLbtFeedbackRepo(db), clock=clock, ids=ids, sheet=sheet)
+    try:
+        feedback_id = await service.submit(body)
+    except LbtInputError as exc:
+        raise ValidationError(exc.code) from exc
+    return FeedbackCreated(id=feedback_id)
 
 
 @router.websocket("/ws")

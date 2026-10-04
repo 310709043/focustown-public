@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 ReportReason = Literal["harassment", "sexual", "minor", "spam", "self_harm", "other"]
 ReportStatus = Literal["open", "reviewed", "actioned", "dismissed"]
+FeedbackStatus = Literal["new", "read", "done"]
 
 
 class GuestSessionResponse(BaseModel):
@@ -51,3 +52,27 @@ class AdminLbtReportList(BaseModel):
 
 class AdminLbtReportStatusUpdate(BaseModel):
     status: ReportStatus
+
+
+class FeedbackCreated(BaseModel):
+    id: str
+
+
+class AdminLbtFeedbackItem(BaseModel):
+    id: str
+    category: str
+    message: str
+    email: str | None
+    page: str | None
+    locale: str | None
+    status: str
+    sheet_sent: bool
+    created_at: datetime
+
+
+class AdminLbtFeedbackList(BaseModel):
+    items: list[AdminLbtFeedbackItem]
+
+
+class AdminLbtFeedbackStatusUpdate(BaseModel):
+    status: FeedbackStatus

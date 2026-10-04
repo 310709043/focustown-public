@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
 const FOCUSABLE =
-  'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  'button:not([disabled]), [href], input:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Elements Tab can actually land on. A radio group is a single tab stop

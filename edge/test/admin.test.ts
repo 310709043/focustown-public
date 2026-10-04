@@ -41,7 +41,7 @@ describe("overview API", () => {
     expect((await SELF.fetch(`${BASE}/api/v1/admin/lbt/overview`)).status).toBe(401);
   });
 
-  test("returns live numbers and report counts", async () => {
+  test("returns live numbers, report and feedback counts", async () => {
     await env.DB.prepare(
       `INSERT INTO lbt_reports (id, conversation_id, reporter_guest_id, reported_guest_id, reason, transcript,
          reporter_profile, reported_profile, status, created_at)
@@ -58,6 +58,7 @@ describe("overview API", () => {
       hours: "",
       conversations: 0,
       reports: { byStatus: { open: 1, reviewed: 0, actioned: 0, dismissed: 1 }, last24h: 1 },
+      feedback: { byStatus: { new: 0, read: 0, done: 0 } },
     });
   });
 });

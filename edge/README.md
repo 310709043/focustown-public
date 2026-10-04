@@ -13,6 +13,7 @@ LowBatteryTown with the same HTTP routes and WebSocket frames, so
 | Pure rules (cleaning, masking, pairing, opening hours) | `src/rules.ts` (port of `lbt_rules.py`) |
 | State layout in Durable Object storage | `src/store.ts` |
 | Reports in D1 | `src/reports.ts`, `migrations/` |
+| Feedback box (D1 + copy to a Google Sheet) | `src/feedback.ts`, `scripts/feedback-sheet.gs` |
 
 One Durable Object handles events one at a time, so pairing and the mutual
 extend vote need no locks. Sockets use the hibernation API; an alarm sweeps
@@ -56,8 +57,27 @@ Token permissions: Account → Workers Scripts: Edit, D1: Edit; Zone
 
 `ALLOWED_ORIGINS`, `LBT_OPEN_HOURS` (`"21:00-24:00"`, empty = always open; a
 bad value fails every request loudly), `LBT_TIMEZONE`, `LBT_SESSION_SECONDS`,
-`LBT_GUEST_TOKEN_TTL_HOURS`, `LBT_REPORT_RETENTION_DAYS` (keep in step with
+`LBT_GUEST_TOKEN_TTL_HOURS`, `LBT_REPORT_RETENTION_DAYS` and
+`LBT_FEEDBACK_RETENTION_DAYS` (keep both in step with
 `frontend/lib/lbt/legal.ts`). Abuse limits are in `src/config.ts`.
+
+## Feedback box
+
+`POST /api/v1/lbt/feedback` takes `{category: idea|bug|other, message (≤1000),
+email?, page?, locale?}` with no account, limited to 5 per IP per hour; a
+filled `website` field (honeypot) is answered 201 and dropped. Each entry is
+stored in D1 (`lbt_feedback`, purged after `LBT_FEEDBACK_RETENTION_DAYS`),
+shown under 意見箱 in `/admin`, and copied to the owner's Google Sheet in the
+background when both secrets are set:
+
+1. Open the sheet → Extensions → Apps Script, paste `scripts/feedback-sheet.gs`.
+2. Script properties: `FEEDBACK_SHEET_TOKEN` = a long random value.
+3. Deploy → Web app (Execute as: Me, Who has access: Anyone) → copy the `/exec` URL.
+4. `npx wrangler secret put FEEDBACK_SHEET_URL` (the URL) and
+   `npx wrangler secret put FEEDBACK_SHEET_TOKEN` (the same random value).
+
+The sheet is a convenience: if it is down, the D1 row stays (admin shows
+whether each entry reached the sheet).
 
 ## Admin console
 

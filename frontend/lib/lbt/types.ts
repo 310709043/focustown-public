@@ -66,6 +66,7 @@ export type LbtModal =
   | { type: "about" }
   | { type: "support" }
   | { type: "report" }
+  | { type: "feedback" }
   | { type: "timeUp" };
 
 export type SupportAmount = 60 | 150 | 300;

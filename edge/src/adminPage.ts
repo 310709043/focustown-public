@@ -60,6 +60,9 @@ const ENERGY = {1:"快沒電了",2:"還有一點",3:"想說說話"};
 const PREF = {casual:"隨意聊聊",listen:"有人聽我說",story:"聽聽別人的故事"};
 const app = document.getElementById("app");
 let filter = "open";
+let feedbackFilter = "new";
+const FEEDBACK_STATUSES = {new:"未讀",read:"已讀",done:"已處理"};
+const FEEDBACK_CATEGORIES = {idea:"建議",bug:"問題回報",other:"其他"};
 
 function el(tag, attrs, ...kids) {
   const n = document.createElement(tag);
@@ -136,11 +139,31 @@ function reportCard(r) {
     chat, actions);
 }
 
+function feedbackCard(f) {
+  const actions = el("div", {class:"actions"}, el("span", {class:"status", text: FEEDBACK_STATUSES[f.status] || f.status}));
+  for (const [s, label] of Object.entries(FEEDBACK_STATUSES)) {
+    if (s === f.status) continue;
+    actions.append(el("button", {class:"btn", type:"button", text: "標為「" + label + "」", onclick: async () => {
+      await api("/api/v1/admin/lbt/feedback/" + encodeURIComponent(f.id) + "/status", {method:"POST", body: JSON.stringify({status: s})});
+      await render();
+    }}));
+  }
+  const meta = fmt(f.created_at) + (f.page ? " · " + f.page : "") + (f.sheet_sent ? " · 已寫入試算表" : "");
+  return el("article", {class:"report"},
+    el("div", {class:"report-head"},
+      el("span", {class:"reason", text: FEEDBACK_CATEGORIES[f.category] || f.category}),
+      el("span", {class:"meta", text: meta})),
+    el("p", {class:"note", text: f.message}),
+    f.email ? el("p", {class:"meta", text: "回覆信箱：" + f.email}) : "",
+    actions);
+}
+
 async function render() {
   if (!token()) return showLogin("");
-  const [o, list] = await Promise.all([
+  const [o, list, fb] = await Promise.all([
     api("/api/v1/admin/lbt/overview"),
     api("/api/v1/admin/lbt/reports?limit=100&status=" + (filter === "all" ? "all" : filter)),
+    api("/api/v1/admin/lbt/feedback?limit=100&status=" + feedbackFilter),
   ]);
   const tabs = el("div", {class:"tabs", role:"group", "aria-label":"依狀態篩選"});
   for (const [s, label] of [...Object.entries(STATUSES), ["all", "全部"]]) {
@@ -151,6 +174,15 @@ async function render() {
   const reports = el("section", {"aria-label":"檢舉"});
   if (!list.items.length) reports.append(el("p", {class:"empty", text:"沒有符合的檢舉。"}));
   for (const r of list.items) reports.append(reportCard(r));
+  const fbTabs = el("div", {class:"tabs", role:"group", "aria-label":"依意見狀態篩選"});
+  for (const [s, label] of [...Object.entries(FEEDBACK_STATUSES), ["all", "全部"]]) {
+    fbTabs.append(el("button", {class:"btn", type:"button", "aria-pressed": String(s === feedbackFilter),
+      text: label + (s !== "all" ? "（" + o.feedback.byStatus[s] + "）" : ""),
+      onclick: () => { feedbackFilter = s; render(); }}));
+  }
+  const feedback = el("section", {"aria-label":"意見箱"});
+  if (!fb.items.length) feedback.append(el("p", {class:"empty", text:"沒有符合的意見。"}));
+  for (const f of fb.items) feedback.append(feedbackCard(f));
   const active = document.activeElement;
   app.replaceChildren(
     el("header", {},
@@ -160,9 +192,11 @@ async function render() {
         el("button", {class:"btn", type:"button", text:"登出", onclick: () => signOut()}))),
     el("div", {class:"stats"},
       stat("目前在線", o.online), stat("等待配對", o.waiting), stat("進行中的對話", o.conversations),
-      stat("待處理檢舉", o.reports.byStatus.open, o.reports.byStatus.open > 0), stat("24 小時內新檢舉", o.reports.last24h)),
+      stat("待處理檢舉", o.reports.byStatus.open, o.reports.byStatus.open > 0), stat("24 小時內新檢舉", o.reports.last24h),
+      stat("未讀意見", o.feedback.byStatus.new, o.feedback.byStatus.new > 0)),
     el("p", {class:"meta", text: (o.open ? "小鎮開放中" : "小鎮休息中") + (o.hours ? "（" + o.hours + "）" : "（全天開放）") + " · 更新於 " + fmt(new Date().toISOString())}),
-    getCompanionPanel(), el("h2", {text:"檢舉"}), tabs, reports);
+    getCompanionPanel(), el("h2", {text:"檢舉"}), tabs, reports,
+    el("h2", {text:"意見箱"}), fbTabs, feedback);
   if (active && getCompanionPanel().contains(active)) active.focus({preventScroll:true});
 }
 
