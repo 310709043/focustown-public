@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
+import { TownSky } from "./Townscape";
+
 export function EndView() {
   const t = useTranslations("lbt.end");
   const again = useLbtStore((s) => s.again);
@@ -14,8 +16,13 @@ export function EndView() {
   return (
     <main className="view end-view">
       <div className="end-card">
+        <TownSky />
+        {/* The night moon, or a sun by day (<html data-lbt-time>). */}
         <div className="end-moon" aria-hidden="true">
-          ☾
+          <span className="by-time t-night">☾</span>
+          <svg className="by-time t-dawn t-day t-dusk end-sun" viewBox="0 0 40 40" focusable="false">
+            <circle cx="20" cy="20" r="11" />
+          </svg>
         </div>
         <span className="eyebrow">{t("eyebrow")}</span>
         <h1 tabIndex={-1}>

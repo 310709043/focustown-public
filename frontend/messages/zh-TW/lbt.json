@@ -127,6 +127,9 @@
   "waiting": {
     "eyebrow": "A LITTLE SPACE BETWEEN HELLO AND HELLO",
     "titleTop": "街燈亮了，",
+    "titleTopDawn": "天快亮了，",
+    "titleTopDay": "趁天還亮著，",
+    "titleTopDusk": "街燈剛亮，",
     "titleBottom": "等另一個人走過來。",
     "yourEnergy": "你的電量是 {energy}。",
     "breathe": "先深呼吸一下，不急著準備開場白。",
