@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Wordmark } from "@/components/lbt/BrandMark";
 import { Link, routing } from "@/i18n/routing";
-import { POLICY_SLUGS } from "@/lib/lbt/legal";
+import { fillLegalFacts, POLICY_SLUGS } from "@/lib/lbt/legal";
 import { BRAND } from "@/lib/lbt/site";
 import { lbtFontVariables } from "@/lib/lbtFonts";
 import "@/components/lbt/lbt.css";
@@ -54,7 +54,7 @@ export default async function GuidePage({ params }: { params: Params }) {
         <main className="policy">
           <h1>{t("guide.title")}</h1>
           <p className="policy-intro">{t("guide.intro")}</p>
-          {questions.map(({ q, a }) => <section key={q}><h2>{q}</h2><p>{a}</p></section>)}
+          {questions.map(({ q, a }) => <section key={q}><h2>{q}</h2><p>{fillLegalFacts(a)}</p></section>)}
           <p className="policy-contact">
             <Link className="text-button" href="/">{t("policy.nav.home")} <span aria-hidden="true">↗</span></Link>
           </p>

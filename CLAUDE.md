@@ -191,7 +191,7 @@ Auth endpoints are rate-limited via `IRateLimiter` (Redis-backed in prod, `Memor
 ### What lives at the root vs in services
 
 - `frontend/app/globals.css` ports the CSS custom properties from `reference.html` (`--bg`, `--a1..a4`, `--teal`, `--pink`, etc.). Tailwind exposes them as `bg-bg`, `text-accent-2`, etc. via `tailwind.config.ts`.
-- Global CRT/grain/vignette overlays live in `app/layout.tsx`. Anything full-screen goes there, not in individual pages.
+- There is no `app/layout.tsx`: `app/[locale]/layout.tsx` and `app/(dev)/layout.tsx` are the root layouts (each renders `<html>`, so `lang` is right in the server HTML), and `app/global-not-found.tsx` serves unmatched URLs. The legacy CRT/grain/vignette overlays live in `app/[locale]/(legacy)/layout.tsx`.
 
 ## Conventions and gotchas
 

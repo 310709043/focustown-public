@@ -6,13 +6,9 @@ import { SCENE_TO_DIRECTION } from "@/lib/data/directions";
 import { useSceneStore } from "@/lib/state/sceneStore";
 
 /**
- * Writes `<html data-direction>` whenever the scene changes, and
- * mirrors the active route locale onto `<html lang>` so SEO crawlers
- * and screen readers see the language the user is actually reading.
- *
- * Lives at the locale layout (one instance per request). The root
- * layout pins a default `lang="zh-TW"` so SSR markup is valid; this
- * effect updates it on hydration when the route is `en/*`.
+ * Writes `<html data-direction>` whenever the scene changes, and keeps
+ * `<html lang>` on the route locale across client-side navigation between
+ * locales (the server HTML already carries it from `[locale]/layout.tsx`).
  */
 export function DirectionSync({ locale }: { locale?: string } = {}) {
   const current = useSceneStore((s) => s.current);

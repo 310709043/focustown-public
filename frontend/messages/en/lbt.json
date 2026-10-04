@@ -482,11 +482,11 @@
       },
       {
         "q": "Does anonymous mean no records? Can screenshots be prevented?",
-        "a": "Anonymous means no real-name registration, not zero data retention. Ordinary conversations are kept for 24 hours after ending. Reported transcripts are kept for 180 days for review. A website cannot reliably prevent screenshots or someone taking a photo. Avoid sharing names, phone numbers, addresses or other identifying information. See the privacy policy for details."
+        "a": "Anonymous means no real-name registration, not zero data retention. Ordinary conversations are kept for up to {chatHours} hours after ending. Reported transcripts are kept for {reportDays} days for review. A website cannot reliably prevent screenshots or someone taking a photo. Avoid sharing names, phone numbers, addresses or other identifying information. See the privacy policy for details."
       },
       {
         "q": "What if someone harasses me or makes me uncomfortable?",
-        "a": "You can leave at any time or report the conversation. Reporting ends the chat, saves its transcript for review and prevents the pair from matching again for 24 hours. The town is not counselling or an emergency service. If you are in immediate danger, contact local emergency services."
+        "a": "You can leave at any time or report the conversation. Reporting ends the chat, saves its transcript for review and prevents the pair from matching again for {pairBlockHours} hours. The town is not counselling or an emergency service: for someone to listen, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in immediate danger call 110 or 119."
       }
     ]
   }
