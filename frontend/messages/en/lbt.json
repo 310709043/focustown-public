@@ -538,5 +538,16 @@
       "1": "Medium",
       "2": "Loud"
     }
+  },
+  "cues": {
+    "arrived": "Someone's here",
+    "invited": "The town host invites you",
+    "messages": "({count}) new",
+    "extend": "They'd like 7 more minutes",
+    "sound": "Chime",
+    "on": "on",
+    "off": "off",
+    "waitingOn": "Feel free to switch tabs. A soft chime and the tab title will tell you when someone arrives.",
+    "waitingOff": "Chime is off. The tab title will tell you when someone arrives."
   }
 }
