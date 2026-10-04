@@ -69,9 +69,9 @@ function relevantErrors(spy: ReturnType<typeof vi.spyOn>): string[] {
   // Filter out unrelated React warnings (e.g. `act()` chatter under jsdom)
   // and only retain the two signatures this regression is about.
   return spy.mock.calls
-    .map((args) => String(args[0] ?? ""))
+    .map((args: unknown[]) => String(args[0] ?? ""))
     .filter(
-      (m) =>
+      (m: string) =>
         m.includes("getSnapshot should be cached") ||
         m.includes("Maximum update depth") ||
         m.includes("Cannot update a component"),

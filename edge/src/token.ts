@@ -49,7 +49,7 @@ async function createToken(secret: string, subject: string, type: string, nowMs:
   const iat = Math.floor(nowMs / 1000);
   const exp = iat + ttlSeconds;
   const header = b64url(enc.encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
-  const payload = b64url(enc.encode(JSON.stringify({ sub: subject, iat, exp, type })));
+  const payload = b64url(enc.encode(JSON.stringify({ sub: subject, iat, exp, type, jti: crypto.randomUUID() })));
   const signingInput = `${header}.${payload}`;
   const sig = await crypto.subtle.sign("HMAC", await hmacKey(secret), enc.encode(signingInput));
   return { token: `${signingInput}.${b64url(new Uint8Array(sig))}`, expiresAt: new Date(exp * 1000).toISOString() };
@@ -65,7 +65,16 @@ export async function verifyCompanionToken(secret: string, token: string, nowMs:
   return (await verifyToken(secret, token, nowMs, "lbt_companion")) === "companion";
 }
 
+export async function createAdminSession(secret: string, nowMs: number) {
+  return createToken(secret, "admin", "lbt_admin", nowMs, 12 * 3600);
+}
+
+export async function verifyAdminSession(secret: string, token: string, nowMs: number): Promise<boolean> {
+  return (await verifyToken(secret, token, nowMs, "lbt_admin")) === "admin";
+}
+
 async function verifyToken(secret: string, token: string, nowMs: number, type: string): Promise<string | null> {
+  if (token.length > 2048) return null;
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   const [h, p, s] = parts as [string, string, string];
@@ -76,7 +85,7 @@ async function verifyToken(secret: string, token: string, nowMs: number, type: s
     if (!ok) return null;
     const claims = JSON.parse(new TextDecoder().decode(fromB64url(p))) as Record<string, unknown>;
     if (claims.type !== type) return null;
-    if (typeof claims.exp !== "number" || claims.exp * 1000 <= nowMs) return null;
+    if (typeof claims.exp !== "number" || !Number.isSafeInteger(claims.exp) || claims.exp * 1000 <= nowMs) return null;
     const sub = claims.sub;
     return typeof sub === "string" ? sub : null;
   } catch {

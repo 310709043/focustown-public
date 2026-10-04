@@ -28,8 +28,10 @@ import {
 } from "./feedback";
 import { InputError } from "./rules";
 import { REPORT_STATUSES, type ReportStatus, listReports, purgeReports, reportCounts, setReportStatus } from "./reports";
-import { createCompanionToken, createGuestToken, newGuestId, verifyCompanionToken, verifyGuestToken } from "./token";
+import { createAdminSession, verifyAdminSession, createCompanionToken, createGuestToken, newGuestId, verifyCompanionToken, verifyGuestToken } from "./token";
 import { COMPANION_ID } from "./companion";
+
+import { adminCookie, adminSigningKey, boundedJson, cookieToken, PayloadTooLarge, sameSecret, tokenFingerprint } from "./security";
 
 export { TownObject } from "./townObject";
 
@@ -37,6 +39,9 @@ const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Cache-Control": "no-store",
+  "X-Frame-Options": "DENY",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 };
 
 function corsHeaders(request: Request, env: Env): Record<string, string> {
@@ -79,22 +84,13 @@ function bearer(request: Request): string | null {
   return auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : null;
 }
 
-/** Constant-time string comparison for the admin token. */
-function sameSecret(a: string, b: string): boolean {
-  const x = new TextEncoder().encode(a);
-  const y = new TextEncoder().encode(b);
-  let diff = x.length ^ y.length;
-  for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] ?? 0) ^ (y[i] ?? 0);
-  return diff === 0;
-}
-
 /** Token from `Sec-WebSocket-Protocol: bearer.<jwt>` (browsers can't set headers on sockets). */
 function socketToken(request: Request): { token: string | null; protocol: string | null } {
   for (const p of (request.headers.get("Sec-WebSocket-Protocol") ?? "").split(",")) {
     const proto = p.trim();
     if (proto.startsWith("bearer.")) return { token: proto.slice(7), protocol: proto };
   }
-  return { token: new URL(request.url).searchParams.get("token"), protocol: null };
+  return { token: null, protocol: null };
 }
 
 /** Accept then close with an application code, so the client sees why (e.g. 4401 → drop token). */
@@ -119,17 +115,30 @@ async function handleSocket(request: Request, env: Env): Promise<Response> {
   const headers = new Headers(request.headers);
   headers.set("x-lbt-guest", guestId);
   headers.set("x-lbt-ip", clientIp(request));
+  headers.delete("x-lbt-protocol");
   if (protocol) headers.set("x-lbt-protocol", protocol);
   return town(env).fetch(new Request(request.url, { headers }));
 }
 
 async function handleAdmin(request: Request, env: Env, path: string): Promise<Response> {
   const token = bearer(request);
-  if (!env.ADMIN_TOKEN || !token || !sameSecret(token, env.ADMIN_TOKEN)) {
-    return error(request, env, 401, "unauthorized");
+  if (!env.ADMIN_TOKEN) return error(request, env, 401, "unauthorized");
+  const signingKey = await adminSigningKey(env.LBT_TOKEN_SECRET, env.ADMIN_TOKEN);
+  const session = cookieToken(request);
+  const authenticated = session && await verifyAdminSession(signingKey, session, Date.now()) &&
+    !(await town(env).adminSessionRevoked(await tokenFingerprint(session)));
+  if (!authenticated) {
+    // Anonymous page probes are not password guesses; only bearer attempts count.
+    if (!token) return error(request, env, 401, "unauthorized");
+    // Keep owner CLI bearer authentication; failed attempts share the login limit.
+    if (await town(env).adminLoginBlocked(clientIp(request))) return error(request, env, 429, "too_many_login_attempts");
+    if (token.length > 1024 || !(await sameSecret(token, env.ADMIN_TOKEN))) {
+      if (!(await town(env).allowAdminLogin(clientIp(request)))) return error(request, env, 429, "too_many_login_attempts");
+      return error(request, env, 401, "unauthorized");
+    }
   }
   if (path === "/api/v1/admin/lbt/companion/token" && request.method === "POST") {
-    const ticket = await createCompanionToken(env.ADMIN_TOKEN, Date.now());
+    const ticket = await createCompanionToken(signingKey, Date.now());
     return json(request, env, 200, { token: ticket.token, expires_at: ticket.expiresAt });
   }
   if (path === "/api/v1/admin/lbt/waiting" && request.method === "GET") {
@@ -154,7 +163,7 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
   }
   const m = /^\/api\/v1\/admin\/lbt\/reports\/([^/]+)\/status$/.exec(path);
   if (request.method === "POST" && m) {
-    const body = (await request.json().catch(() => null)) as { status?: unknown } | null;
+    const body = (await boundedJson(request)) as { status?: unknown } | null;
     const status = body?.status;
     if (typeof status !== "string" || !REPORT_STATUSES.includes(status as ReportStatus)) {
       return error(request, env, 422, "invalid_status");
@@ -172,7 +181,7 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
   }
   const f = /^\/api\/v1\/admin\/lbt\/feedback\/([^/]+)\/status$/.exec(path);
   if (request.method === "POST" && f) {
-    const body = (await request.json().catch(() => null)) as { status?: unknown } | null;
+    const body = (await boundedJson(request)) as { status?: unknown } | null;
     const status = body?.status;
     if (typeof status !== "string" || !FEEDBACK_STATUSES.includes(status as FeedbackStatus)) {
       return error(request, env, 422, "invalid_status");
@@ -188,7 +197,7 @@ async function handleFeedback(request: Request, env: Env, ctx: ExecutionContext)
   if (!(await town(env).allowFeedback(clientIp(request)))) return error(request, env, 429, "too_many_feedback");
   let input;
   try {
-    input = parseFeedback(await request.json().catch(() => null));
+    input = parseFeedback(await boundedJson(request));
   } catch (err) {
     if (err instanceof InputError) return error(request, env, 422, err.code);
     throw err;
@@ -207,6 +216,36 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: { ...corsHeaders(request, env), ...SECURITY_HEADERS } });
   }
+  const origin = request.headers.get("Origin");
+  if (path.startsWith("/api/")) {
+    const allowed = path.startsWith("/api/v1/admin/")
+      ? [new URL(request.url).origin]
+      : (env.ALLOWED_ORIGINS ?? "").split(",").map(o => o.trim());
+    if (origin && !allowed.includes(origin)) return error(request, env, 403, "origin_not_allowed");
+    // Cookie authentication must never accept cross-site browser requests, even without Origin.
+    if (path.startsWith("/api/v1/admin/") && request.headers.get("Sec-Fetch-Site") === "cross-site") {
+      return error(request, env, 403, "origin_not_allowed");
+    }
+  }
+  if (path === "/api/v1/admin/lbt/login" && request.method === "POST") {
+    if (!(await town(env).allowAdminLogin(clientIp(request)))) return error(request, env, 429, "too_many_login_attempts");
+    const body = await boundedJson(request) as { password?: unknown } | null;
+    if (!env.ADMIN_TOKEN || typeof body?.password !== "string" || body.password.length > 1024 ||
+        !(await sameSecret(body.password, env.ADMIN_TOKEN))) return error(request, env, 401, "unauthorized");
+    const session = await createAdminSession(await adminSigningKey(env.LBT_TOKEN_SECRET, env.ADMIN_TOKEN), Date.now());
+    const response = json(request, env, 204, null);
+    response.headers.set("Set-Cookie", adminCookie(session.token));
+    return response;
+  }
+  if (path === "/api/v1/admin/lbt/logout" && request.method === "POST") {
+    const session = cookieToken(request);
+    if (session && env.ADMIN_TOKEN && await verifyAdminSession(await adminSigningKey(env.LBT_TOKEN_SECRET, env.ADMIN_TOKEN), session, Date.now())) {
+      await town(env).revokeAdminSession(await tokenFingerprint(session));
+    }
+    const response = json(request, env, 204, null);
+    response.headers.set("Set-Cookie", adminCookie("", 0));
+    return response;
+  }
   if (path === "/healthz") return json(request, env, 200, { ok: true });
 
   // Admin console (sign-in happens in the page; every data call checks ADMIN_TOKEN).
@@ -223,7 +262,7 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
     if (origin && origin !== new URL(request.url).origin) return error(request, env, 403, "origin_not_allowed");
     const { token, protocol } = socketToken(request);
     // Do not accept query credentials for administrator connections.
-    if (!env.ADMIN_TOKEN || !protocol || !token || !(await verifyCompanionToken(env.ADMIN_TOKEN, token, Date.now()))) {
+    if (!env.ADMIN_TOKEN || !protocol || !token || !(await verifyCompanionToken(await adminSigningKey(env.LBT_TOKEN_SECRET, env.ADMIN_TOKEN), token, Date.now()))) {
       return rejectSocket(4401, protocol);
     }
     const headers = new Headers(request.headers);
@@ -250,7 +289,7 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
     const token = bearer(request);
     const guestId = token ? await verifyGuestToken(env.LBT_TOKEN_SECRET, token, Date.now()) : null;
     if (!guestId) return error(request, env, 401, "missing_guest_token");
-    const body = (await request.json().catch(() => null)) as { reason?: unknown; note?: unknown } | null;
+    const body = (await boundedJson(request)) as { reason?: unknown; note?: unknown } | null;
     const note = body?.note;
     if (typeof body?.reason !== "string") return error(request, env, 422, "invalid_reason");
     if (note !== undefined && note !== null && (typeof note !== "string" || Array.from(note).length > 500)) {
@@ -272,7 +311,14 @@ export default {
     if (!env.LBT_TOKEN_SECRET || env.LBT_TOKEN_SECRET.length < 32) {
       return error(request, env, 500, "server_misconfigured");
     }
-    return route(request, env, ctx);
+    try {
+      return await route(request, env, ctx);
+    } catch (err) {
+      if (err instanceof PayloadTooLarge) return error(request, env, 413, "payload_too_large");
+      // Never include tokens, request URLs, body contents or database errors in logs/responses.
+      console.error(JSON.stringify({ event: "lbt_request_failed" }));
+      return error(request, env, 500, "internal_error");
+    }
   },
 
   /** Daily: delete reports and feedback past their retention windows (the privacy page promises it). */

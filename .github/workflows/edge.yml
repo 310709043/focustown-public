@@ -12,6 +12,9 @@ on:
     paths: ["edge/**", ".github/workflows/edge.yml"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: edge-${{ github.ref }}
   cancel-in-progress: false
@@ -32,6 +35,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: edge/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level high
       - run: pnpm typecheck
       - run: pnpm test
 
