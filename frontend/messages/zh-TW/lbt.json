@@ -62,7 +62,8 @@
     "closed": "街燈還沒亮。開放時間：{hours}",
     "adult": "我已年滿 18 歲",
     "adultHint": "測試期間只開放成年人使用。",
-    "adultHintPolicies": "走進小鎮即表示你同意<terms>使用條款</terms>與<guidelines>社群守則</guidelines>，並了解<privacy>隱私權政策</privacy>。"
+    "adultHintPolicies": "走進小鎮即表示你同意<terms>使用條款</terms>與<guidelines>社群守則</guidelines>，並了解<privacy>隱私權政策</privacy>。",
+    "openGreeting": "街燈亮著，歡迎來坐坐"
   },
   "energy": {
     "low": {

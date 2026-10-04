@@ -62,7 +62,8 @@
     "closed": "The lamps aren't lit yet. Open hours: {hours}",
     "adult": "I am 18 or older",
     "adultHint": "During the beta, only adults can join.",
-    "adultHintPolicies": "By entering you agree to the <terms>terms</terms> and <guidelines>community guidelines</guidelines> and have read the <privacy>privacy policy</privacy>."
+    "adultHintPolicies": "By entering you agree to the <terms>terms</terms> and <guidelines>community guidelines</guidelines> and have read the <privacy>privacy policy</privacy>.",
+    "openGreeting": "The lights are on. Come sit a while."
   },
   "energy": {
     "low": {
