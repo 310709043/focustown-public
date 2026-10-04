@@ -3608,3 +3608,467 @@ html[data-lbt-time="dawn"] .lbt .lbt-intro-glow {
     display: none;
   }
 }
+
+/* ==========================================================================
+   Waiting, chat and end: one screen at every size, and the time of day.
+   Night keeps the original colours; dawn / day / dusk get the sky (waiting,
+   end) or paper panels (chat). Only the chat log scrolls.
+   ========================================================================== */
+
+/* ---- layout: the view fills the window under the top bar ---- */
+.lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) {
+  height: 100dvh;
+  min-height: 0;
+}
+.lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) .topbar {
+  height: 64px;
+  flex-shrink: 0;
+}
+.lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) .footer {
+  padding: 10px 0 12px;
+  flex-shrink: 0;
+}
+.lbt .waiting-view,
+.lbt .end-view {
+  flex: 1;
+  min-height: 0;
+  padding: clamp(10px, 2.4vh, 28px) 0;
+}
+.lbt .waiting-card,
+.lbt .end-card {
+  position: relative;
+  overflow: hidden auto;
+  min-height: 0;
+  max-height: 100%;
+  height: min(640px, 100%);
+  padding: clamp(22px, 5vh, 60px) clamp(18px, 4vw, 40px);
+  scrollbar-width: none;
+}
+.lbt .waiting-card > :not(.town-sky),
+.lbt .end-card > :not(.town-sky) {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.lbt .waiting-lamp {
+  height: clamp(84px, 17vh, 155px);
+  margin-bottom: clamp(10px, 3.4vh, 35px);
+}
+.lbt .waiting-lamp:before {
+  height: calc(100% - 29px);
+}
+.lbt .waiting-card h1,
+.lbt .end-card h1 {
+  font-size: clamp(30px, min(5vw, 6.4vh), 62px);
+  margin: clamp(6px, 1.8vh, 17px) 0;
+}
+.lbt .waiting-progress {
+  margin: clamp(16px, 4.4vh, 44px) auto clamp(10px, 2.4vh, 24px);
+}
+.lbt .end-moon {
+  width: clamp(64px, 12vh, 110px);
+  height: clamp(64px, 12vh, 110px);
+  font-size: clamp(40px, 7.6vh, 72px);
+  margin-bottom: clamp(10px, 2.8vh, 28px);
+}
+.lbt .end-moon .end-sun {
+  width: 72%;
+  height: 72%;
+  fill: var(--sun, #f6d58a);
+}
+.lbt .end-actions {
+  margin-top: clamp(14px, 3.4vh, 35px);
+}
+/* the sky sits behind the card; the end card's own icon is its sun/moon */
+.lbt .waiting-card .town-sky,
+.lbt .end-card .town-sky {
+  border-radius: inherit;
+}
+.lbt .end-card .sky-sun,
+.lbt .end-card .sky-moon {
+  display: none;
+}
+
+.lbt .chat-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(10px, 2vh, 23px) 0;
+}
+.lbt .chat-shell {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+}
+.lbt .chat-main {
+  min-height: 0;
+}
+.lbt .chat-messages {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+.lbt .chat-aside {
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+@media (max-width: 850px) {
+  .lbt .chat-main {
+    min-height: 0;
+  }
+}
+@media (max-width: 610px) {
+  .lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) .topbar {
+    height: 58px;
+  }
+  /* the chat is the whole screen on a phone; the policies stay one tap away
+     on every other screen */
+  .lbt .site-shell:has(> .chat-view) .footer {
+    display: none;
+  }
+  .lbt .chat-view {
+    padding: 8px 0 10px;
+  }
+  .lbt .chat-shell,
+  .lbt .chat-main {
+    min-height: 0;
+  }
+  .lbt .chat-messages {
+    max-height: none;
+  }
+  .lbt .waiting-card,
+  .lbt .end-card {
+    min-height: 0;
+    height: 100%;
+    padding: clamp(18px, 4vh, 35px) 20px;
+  }
+  .lbt .waiting-card h1,
+  .lbt .end-card h1 {
+    font-size: clamp(28px, min(10vw, 5.4vh), 43px);
+  }
+  .lbt .waiting-card > p:not(.eyebrow),
+  .lbt .end-card > p:not(.eyebrow) {
+    line-height: 1.75;
+  }
+}
+/* Landscape phones and tiny windows: let the page scroll instead of
+   squeezing the chat log to nothing. */
+@media (max-height: 520px) {
+  .lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) {
+    height: auto;
+    min-height: 100%;
+  }
+  .lbt .waiting-card,
+  .lbt .end-card {
+    height: auto;
+    max-height: none;
+  }
+  .lbt .chat-messages {
+    min-height: 240px;
+  }
+}
+
+/* ---- colours for dawn / day / dusk ---- */
+html[data-lbt-time="day"] .lbt-app {
+  --panel: #f9f4eb;
+  --panel-2: #f0ebe1;
+  --bubble-other: #e2e9ed;
+}
+html[data-lbt-time="dusk"] .lbt-app {
+  --panel: #fbf3ec;
+  --panel-2: #f3e7de;
+  --bubble-other: #efded5;
+}
+html[data-lbt-time="dawn"] .lbt-app {
+  --panel: #f8f4f3;
+  --panel-2: #eeeaec;
+  --bubble-other: #e5e2ed;
+}
+
+/* waiting + end: the card is the sky of the hour */
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) {
+  background: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 58%, var(--sky-c) 100%);
+  border-color: var(--ground-line);
+  color: var(--hero-ink);
+  box-shadow: 0 18px 44px rgba(31, 42, 68, 0.1);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) h1 {
+  color: var(--hero-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) .eyebrow {
+  color: var(--hero-kicker);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) > p:not(.eyebrow),
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-town, .waiting-long, .town-count-waiting) {
+  color: var(--hero-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card strong, .waiting-offline, .end-reason, .end-support-button, .companion-disclosure) {
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .companion-invitation) .text-button {
+  color: var(--hero-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-progress {
+  background: rgba(31, 42, 68, 0.14);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-progress span {
+  background: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-lamp:before {
+  background: var(--tw-pole);
+}
+/* by day the lamp is off: an unlit head, no glow, no breathing */
+:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-lamp:after {
+  background: var(--tw-pole);
+  box-shadow: none;
+  animation: none;
+  opacity: 0.9;
+}
+/* at dusk it has just come on: warm, a softer glow */
+[data-lbt-time="dusk"] .lbt.lbt-app .waiting-lamp:after {
+  background: #f5c66e;
+  box-shadow: 0 0 40px 18px rgba(245, 198, 110, 0.3);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .end-moon {
+  background: rgba(255, 255, 255, 0.4);
+}
+[data-lbt-time="dusk"] .lbt.lbt-app .end-moon .end-sun {
+  fill: #f2a66f;
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .end-card .secondary-button {
+  border-color: var(--ground-line);
+  color: var(--hero-ink);
+  background: rgba(255, 255, 255, 0.35);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .end-card .secondary-button:hover {
+  border-color: var(--hero-accent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .companion-invitation {
+  background: rgba(255, 255, 255, 0.62);
+  border-color: var(--hero-accent);
+  color: var(--hero-ink);
+}
+
+/* chat: paper panels, the same family as the home form */
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-main, .chat-aside) {
+  background: var(--panel);
+  border-color: var(--ground-line);
+  color: var(--ground-ink);
+  box-shadow: 0 18px 44px rgba(31, 42, 68, 0.1);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-header, .chat-bottom, .self-profile, .aside-divider) {
+  border-color: var(--ground-line);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-header h1, .partner-profile h1, .self-profile strong, .chat-aside h2, .chat-aside > strong) {
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-header p, .chat-header .profile-pace, .profile-prefix, .self-profile, .message-sender, .prompt-row, .chat-bottom > p, .chat-bottom > p button, .chat-aside > p, .chat-aside .extend-hint, .aside-help) {
+  color: var(--ground-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .self-profile {
+  background: var(--panel-2);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.profile-energy, .session-timer, .leave-button span, .prompt-row button, .system-note span, .chat-main .small-label, .chat-aside .small-label, .chat-aside .eyebrow) {
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .leave-button {
+  border-color: var(--ground-line);
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .leave-button:hover {
+  border-color: var(--hero-accent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .system-note {
+  background: var(--panel-2);
+  color: var(--ground-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.message.other .bubble, .typing-indicator) {
+  background: var(--bubble-other);
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .typing-indicator span {
+  background: var(--ground-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .message.other .avatar {
+  background: #8a95a8;
+  color: #fff;
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .composer {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ground-line);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .composer input {
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .composer button {
+  background: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .aside-lamp {
+  border-color: color-mix(in srgb, var(--hero-accent) 28%, transparent);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.extend-button, .mobile-extend-button) {
+  border-color: color-mix(in srgb, var(--hero-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--hero-accent) 7%, transparent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .extend-button:hover {
+  background: color-mix(in srgb, var(--hero-accent) 13%, transparent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .extend-banner {
+  border-color: color-mix(in srgb, var(--hero-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--hero-accent) 8%, transparent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .extend-banner button {
+  background: var(--hero-accent);
+  color: #fff;
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .chat-offline {
+  background: color-mix(in srgb, var(--hero-accent) 10%, transparent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .topic-card {
+  box-shadow: 0 8px 22px rgba(31, 42, 68, 0.12);
+}
+
+/* sky inside the cards: keep the sun and clouds clear of the copy */
+.lbt .waiting-card .sky-sun,
+html[data-lbt-time] .lbt .waiting-card .sky-sun {
+  top: 9%;
+  bottom: auto;
+  right: 13%;
+  left: auto;
+  width: clamp(30px, 6vh, 48px);
+  height: clamp(30px, 6vh, 48px);
+}
+html[data-lbt-time="dusk"] .lbt .waiting-card .sky-sun {
+  top: 15%;
+  right: 16%;
+}
+html[data-lbt-time="dawn"] .lbt .waiting-card .sky-sun {
+  top: 19%;
+  right: 20%;
+}
+.lbt .waiting-card .sky-moon,
+html[data-lbt-time] .lbt .waiting-card .sky-moon {
+  top: 9%;
+  right: 13%;
+  width: clamp(26px, 5vh, 40px);
+  height: clamp(26px, 5vh, 40px);
+}
+.lbt .waiting-card .sky-cloud.c1 {
+  left: 7%;
+  top: 6%;
+}
+.lbt .waiting-card .sky-cloud.c2 {
+  left: 62%;
+  top: 15%;
+}
+.lbt .end-card .sky-cloud {
+  display: none;
+}
+/* phones: the card is the screen; the footer waits below it */
+@media (max-width: 610px) {
+  .lbt .site-shell:has(> .waiting-view, > .end-view) {
+    height: auto;
+    min-height: 100%;
+  }
+  .lbt .waiting-view,
+  .lbt .end-view {
+    flex: none;
+    height: calc(100dvh - 58px);
+  }
+}
+
+/* the cards size to their content, up to the window; spacing follows the
+   window height so nothing is clipped */
+.lbt .waiting-card,
+.lbt .end-card {
+  height: auto;
+  min-height: min(600px, 100%);
+  padding: clamp(18px, 4.2vh, 60px) clamp(18px, 4vw, 40px);
+}
+.lbt .waiting-card h1,
+.lbt .end-card h1 {
+  font-size: clamp(28px, min(5vw, 5.8vh), 62px);
+}
+.lbt .end-moon {
+  width: clamp(56px, 10vh, 110px);
+  height: clamp(56px, 10vh, 110px);
+  font-size: clamp(34px, 6.4vh, 72px);
+}
+.lbt .end-actions .secondary-button,
+.lbt .end-actions .primary-button {
+  min-height: clamp(42px, 6.4vh, 50px);
+}
+/* chat aside on short windows: drop the ornament, tighten the rhythm;
+   the crisis lines (aside-help) always stay in view */
+@media (max-height: 820px) {
+  .lbt .chat-aside {
+    padding: clamp(16px, 3vh, 31px) 22px;
+  }
+  .lbt .aside-lamp {
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
+    margin: 4px 0 clamp(10px, 2.4vh, 31px);
+  }
+  .lbt .chat-aside h2 {
+    font-size: clamp(19px, 3vh, 26px);
+    margin: 8px 0;
+  }
+  .lbt .chat-aside > p {
+    line-height: 1.7;
+  }
+  .lbt .aside-divider {
+    margin: clamp(12px, 2.6vh, 30px) 0;
+  }
+  .lbt .chat-aside > strong {
+    margin: 6px 0 clamp(10px, 2.4vh, 28px);
+  }
+  .lbt .aside-help {
+    margin-top: 10px;
+  }
+}
+@media (max-height: 660px) {
+  .lbt .aside-lamp,
+  .lbt .chat-aside > p:not(.extend-hint):not(.aside-help) {
+    display: none;
+  }
+}
+.lbt .waiting-card,
+.lbt .end-card {
+  scrollbar-width: thin;
+}
+@media (max-height: 640px) {
+  .lbt .waiting-card > p:not(.eyebrow),
+  .lbt .end-card > p:not(.eyebrow) {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .lbt .end-moon {
+    width: 48px;
+    height: 48px;
+    font-size: 30px;
+  }
+  .lbt .waiting-card h1,
+  .lbt .end-card h1 {
+    font-size: clamp(26px, 5.4vh, 34px);
+    line-height: 1.2;
+  }
+  .lbt .end-actions {
+    gap: 8px;
+  }
+}
+@media (max-height: 560px) {
+  .lbt .waiting-card .eyebrow,
+  .lbt .end-card .eyebrow {
+    display: none;
+  }
+}

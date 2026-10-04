@@ -7,6 +7,7 @@ import { ENERGY_ID, LONG_WAIT_MS } from "@/lib/lbt/constants";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 import { Notice } from "./Notice";
+import { TownSky } from "./Townscape";
 
 export function WaitingView() {
   const t = useTranslations("lbt");
@@ -35,12 +36,17 @@ export function WaitingView() {
   return (
     <main className="view waiting-view" aria-live="polite">
       <div className="waiting-card">
+        <TownSky />
         <div className="waiting-lamp" aria-hidden="true">
           <span />
         </div>
         <p className="eyebrow">{t("waiting.eyebrow")}</p>
         <h1 tabIndex={-1}>
-          {t("waiting.titleTop")}
+          {/* the first line follows the hour (<html data-lbt-time>) */}
+          <span className="by-time t-dawn">{t("waiting.titleTopDawn")}</span>
+          <span className="by-time t-day">{t("waiting.titleTopDay")}</span>
+          <span className="by-time t-dusk">{t("waiting.titleTopDusk")}</span>
+          <span className="by-time t-night">{t("waiting.titleTop")}</span>
           <br />
           {t("waiting.titleBottom")}
         </h1>

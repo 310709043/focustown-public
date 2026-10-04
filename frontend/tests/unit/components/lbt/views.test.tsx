@@ -285,7 +285,8 @@ describe("LbtApp", () => {
     fireEvent.click(screen.getByRole("button", { name: "lbt.end.home" }));
 
     expect({ waiting, chat, reason, view: store().view }).toEqual({
-      waiting: "lbt.waiting.titleToplbt.waiting.titleBottom",
+      // one first line per time of day; CSS shows the current one
+      waiting: "lbt.waiting.titleTopDawnlbt.waiting.titleTopDaylbt.waiting.titleTopDusklbt.waiting.titleToplbt.waiting.titleBottom",
       chat: true,
       reason: true,
       view: "home",
