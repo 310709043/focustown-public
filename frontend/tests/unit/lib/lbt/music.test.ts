@@ -54,7 +54,7 @@ function fakeEngine() {
 
 describe("useMusicStore", () => {
   let fake: ReturnType<typeof fakeEngine>;
-  let factory: ReturnType<typeof vi.fn>;
+  let factory: ReturnType<typeof vi.fn<(startTrack: number) => MusicEngine>>;
 
   beforeEach(() => {
     window.localStorage.clear();

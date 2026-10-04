@@ -26,7 +26,7 @@ not an independent penetration-test certification or a capacity guarantee.
 - API typecheck and 201 tests pass in the real workerd test pool, including 20
   new security regression cases. Existing two-person pairing, contact masking,
   mutual extensions, report authorization/retention and admin takeover pass.
-- Frontend typecheck/lint pass; all 573 frontend tests pass with Node 25's
+- Frontend typecheck/lint pass; all 590 frontend tests pass with Node 25's
   experimental webstorage disabled (`NODE_OPTIONS=--no-experimental-webstorage`).
   The deployment CI uses Node 22; the ordinary frontend CI uses Node 20.
 - Ordinary Next.js build ran successfully within cf:build; final OpenNext build
@@ -45,6 +45,9 @@ not an independent penetration-test certification or a capacity guarantee.
 - Live zh-TW/en home, demo and privacy HTML: every inline script carries the
   response's nonce, consecutive responses use different nonces, script CSP
   omits unsafe-inline, and both HTTPS/WSS API origins remain allowed.
+- Latest develop (#29) music was integrated before the final deployment. Both
+  MP3 assets return 200; the production battery play, three-level volume and
+  header pause controls work, with no browser errors observed.
 - Browser: production demo loads and the support modal opens under the strict
   script CSP. No real payment was initiated.
 
@@ -81,8 +84,12 @@ not an independent penetration-test certification or a capacity guarantee.
 ## Deployments
 
 - API security version: 582d8f74-1526-490c-910e-25091cecc3d5.
-- Frontend final version: e71b26d6-96d4-4fb3-bfea-d0e7c8f4083c.
+- Frontend final version: e44613d0-acac-49c9-a8a4-d81f8d19a473.
 
 References: [Cloudflare Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/),
 [Next.js CSP guidance](https://nextjs.org/docs/app/guides/content-security-policy),
 [remaining braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
+
+GitHub run 37203746814 confirms the deployment failed because both Cloudflare
+secret environment values were empty. Manual deployment used existing local
+OAuth. Automatic deployment still requires owner-supplied GitHub Actions secrets.
