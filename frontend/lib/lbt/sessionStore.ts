@@ -200,7 +200,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       case "companionInvite":
         if (state.view !== "waiting") return;
         clearTimeout(inviteExpiry);
-        set({ companionInvitation: { id: event.id, expiresAt: event.expiresAt }, companionAnswering: false });
+        set({ companionInvitation: { id: event.id, expiresAt: event.expiresAt, ...(event.nickname ? { nickname: event.nickname } : {}) }, companionAnswering: false });
         inviteExpiry = setTimeout(() => set({ companionInvitation: null, companionAnswering: false }), Math.max(0, event.expiresAt - Date.now()));
         return;
       case "companionCleared":

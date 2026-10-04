@@ -23,7 +23,7 @@ export interface JoinRequest {
 export type TransportEvent =
   | { type: "connection"; state: "connecting" | "open" | "offline" }
   | { type: "waiting" }
-  | { type: "companionInvite"; id: string; expiresAt: number }
+  | { type: "companionInvite"; id: string; expiresAt: number; nickname?: string }
   | { type: "companionCleared"; id: string }
   | {
       type: "matched";

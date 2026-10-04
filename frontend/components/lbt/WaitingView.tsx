@@ -63,6 +63,7 @@ export function WaitingView() {
         {invitation ? (
           <section className="companion-invitation" aria-labelledby="companion-title">
             <h2 id="companion-title">{t("companion.inviteTitle")}</h2>
+            {invitation.nickname ? <p>{invitation.nickname}</p> : null}
             <p>{t("companion.inviteBody")}</p>
             <div className="companion-actions">
               <button type="button" className="primary-button" disabled={answering || connection !== "open"} onClick={() => answerCompanion(true)}>

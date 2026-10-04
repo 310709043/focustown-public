@@ -446,13 +446,13 @@
     }
   },
   "companion": {
-    "inviteTitle": "A town host is here to chat",
-    "inviteBody": "A real human host can chat with you for 7 minutes, or you can keep waiting for another visitor. This invitation lasts one minute.",
-    "accept": "Chat with the host",
+    "inviteTitle": "Someone would like to chat with you",
+    "inviteBody": "You can chat for 7 minutes or keep waiting for someone else. This invitation expires in one minute.",
+    "accept": "Accept chat invitation",
     "decline": "Keep waiting",
     "answering": "Confirming…",
-    "label": "Town host · Human companion",
-    "chatDisclosure": "You are chatting with a town administrator. You can leave whenever you like."
+    "label": "Chat partner",
+    "chatDisclosure": "This chat started with your acceptance. You can say good night any time."
   },
   "guide": {
     "nav": "Anonymous chat guide",
@@ -470,7 +470,7 @@
       },
       {
         "q": "How do I match with a real person? What if nobody is waiting?",
-        "a": "Choose your nickname, battery and chat preference, confirm you are 18 or older, then enter the town. Matching requires another suitable real person to be waiting. Online visitors are not necessarily waiting, and immediate matching is not guaranteed. You can cancel waiting. If a human administrator is on duty, they may offer a clearly identified companion invitation; chatting starts only if you accept."
+        "a": "Choose your nickname, battery and chat preference, confirm you are 18 or older, then enter the town. Matching requires another suitable real person to be waiting. Online visitors are not necessarily waiting, and immediate matching is not guaranteed. You can cancel waiting. If a companion is online, you may receive an invitation showing their nickname; chatting starts only if you accept."
       },
       {
         "q": "How long can we chat? Can I leave early?",
@@ -478,7 +478,7 @@
       },
       {
         "q": "Is my partner a real person or AI?",
-        "a": "The live town pairs real people. Administrator companions are identified as the town administrator and require your acceptance. The demo uses a clearly labelled simulated partner so you can try the flow."
+        "a": "The live town pairs real people. Companion invitations show the other person’s nickname and require your acceptance. The demo uses a clearly labelled simulated partner so you can try the flow."
       },
       {
         "q": "Does anonymous mean no records? Can screenshots be prevented?",

@@ -18,7 +18,7 @@ import {
   type Waiting,
 } from "./rules";
 import type { Conversation, Line, TownStore } from "./store";
-import { COMPANION_ID, COMPANION_PROFILE, INVITE_MS, type CompanionInvite } from "./companion";
+import { COMPANION_ID, COMPANION_PROFILE, companionProfile, publicProfile, INVITE_MS, type CompanionInvite } from "./companion";
 
 export interface TownConfig {
   sessionMs: number;
@@ -119,7 +119,7 @@ export class Town {
       if (invite && invite.expiresAt > now) {
         const target = (await this.store.listWaiting()).find((w) => w.guestId === invite.guestId);
         if (target) {
-          this.deps.send(guestId, { type: "lbt.companion_pending", id: invite.id, profile: target.profile });
+          this.deps.send(guestId, { type: "lbt.companion_pending", id: invite.id, profile: target.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname });
           return;
         }
       }
@@ -161,7 +161,9 @@ export class Town {
   }
 
   /** Offer without removing the visitor from normal matching. Acceptance is explicit. */
-  async inviteCompanion(target: unknown) {
+  async inviteCompanion(target: unknown, identity: unknown = "male") {
+    const profile = companionProfile(identity);
+    if (!profile) throw new InputError("invalid_companion_identity");
     if (typeof target !== "string") throw new InputError("not_waiting");
     const now = this.deps.now();
     if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
@@ -174,10 +176,10 @@ export class Town {
     if (!visitor || seen === null || seen < now - this.cfg.offlineAfterMs) throw new InputError("not_waiting");
     if ((await this.store.blockedFor(target, now)).has(COMPANION_ID)) throw new InputError("pair_blocked");
     if (!(await this.store.hit(`companion:invite:${target}`, 1, INVITE_MS, now))) throw new InputError("slow_down");
-    const invite: CompanionInvite = { id: this.deps.newId(), guestId: target, expiresAt: now + INVITE_MS };
+    const invite: CompanionInvite = { id: this.deps.newId(), guestId: target, expiresAt: now + INVITE_MS, profile };
     await this.store.saveCompanionInvite(invite);
     this.sendCompanionInvite(invite);
-    this.deps.send(COMPANION_ID, { type: "lbt.companion_pending", id: invite.id, profile: visitor.profile });
+    this.deps.send(COMPANION_ID, { type: "lbt.companion_pending", id: invite.id, profile: visitor.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname });
   }
 
   async answerCompanion(guestId: string, id: unknown, accept: boolean) {
@@ -198,12 +200,12 @@ export class Town {
     if (await this.current(COMPANION_ID)) throw new InputError("companion_busy");
     if ((await this.store.blockedFor(guestId, now)).has(COMPANION_ID)) throw new InputError("pair_blocked");
     await this.clearCompanion("accepted");
-    await this.startConversation(target, { guestId: COMPANION_ID, profile: COMPANION_PROFILE, joinedAt: now }, now);
+    await this.startConversation(target, { guestId: COMPANION_ID, profile: invite.profile ?? COMPANION_PROFILE, joinedAt: now }, now);
   }
 
   private sendCompanionInvite(invite: CompanionInvite) {
     this.deps.send(invite.guestId, {
-      type: "lbt.companion_invite", id: invite.id,
+      type: "lbt.companion_invite", id: invite.id, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname,
       expires_at: iso(invite.expiresAt), server_now: iso(this.deps.now()),
     });
   }
@@ -411,8 +413,8 @@ export class Town {
     return {
       type: "lbt.matched",
       conversation_id: c.id,
-      me: { ...profileOf(c, guestId) },
-      partner: { ...profileOf(c, partnerOf(c, guestId)) },
+      me: publicProfile(profileOf(c, guestId)),
+      partner: publicProfile(profileOf(c, partnerOf(c, guestId))),
       ...this.timing(c, now),
     };
   }

@@ -19,9 +19,11 @@ let companionPanel, companionSocket, companionTimer, companionReconnect;
 let onDuty = false, companionConnecting = false, companionPending = null, companionSession = null;
 let companionEndsAt = 0, companionGrace = 60, companionMine = false, companionOther = false;
 let companionLog, companionWaiting, companionStatus, companionError, companionDraft, companionSubmit;
-let companionChat, companionTitle, companionClock, companionExtend, dutyButton, companionCancel;
+let companionChat, companionTitle, companionClock, companionExtend, dutyButton, companionCancel, companionIdentity;
+let companionNickname = "小辟穀";
 const companionMessages = new Set();
 const COMPANION_ERRORS = {
+  invalid_companion_identity:"請選擇男生或女生陪聊身分。",
   companion_busy:"請先結束目前的邀請或對話。", not_waiting:"這位使用者已離開等待區。",
   pair_blocked:"這位使用者暫時無法與管理員配對。", slow_down:"請稍等，避免重複邀請或傳訊。",
   time_up:"時間到了，雙方同意延長後才能繼續傳訊。", too_late:"這段對話已結束。",
@@ -69,6 +71,7 @@ async function connectCompanion() {
       let f; try { f = JSON.parse(event.data); } catch { return; }
       if (f.type === "lbt.companion_pending") {
         companionPending = f.id;
+        companionIdentity.value = f.nickname === "打辟穀" ? "female" : "male";
         companionStatus.textContent = "已邀請「" + f.profile.nickname + "」，等待對方同意（一分鐘內有效）。";
       } else if (f.type === "lbt.companion_cleared") {
         if (companionPending === f.id) {
@@ -79,13 +82,15 @@ async function connectCompanion() {
       } else if (f.type === "lbt.matched") {
         companionReset(); companionSession = f.conversation_id;
         companionTitle.textContent = "正在和「" + f.partner.nickname + "」聊天";
-        companionStatus.textContent = "對方已同意陪聊，看到的身分是「小鎮管理員」。";
+        companionNickname = f.me.nickname;
+        companionIdentity.value = companionNickname === "打辟穀" ? "female" : "male";
+        companionStatus.textContent = "對方已同意陪聊，看到的暱稱是「" + companionNickname + "」。";
         companionEndsAt = Date.now() + Date.parse(f.ends_at) - Date.parse(f.server_now);
         companionGrace = f.grace_seconds;
         companionChat.hidden = false; companionDraft.focus();
       } else if (f.type === "lbt.message" && companionSession && !companionMessages.has(f.id)) {
         companionMessages.add(f.id);
-        companionLog.append(el("div", {class:"companion-line " + f.from}, el("small", {text:f.from === "me" ? "小鎮管理員（你）" : "對方"}), f.text));
+        companionLog.append(el("div", {class:"companion-line " + f.from}, el("small", {text:f.from === "me" ? companionNickname + "（你）" : "對方"}), f.text));
         companionLog.scrollTop = companionLog.scrollHeight;
       } else if (f.type === "lbt.extend_requested") {
         if (f.by === "me") companionMine = true; else companionOther = true;
@@ -115,6 +120,7 @@ async function connectCompanion() {
   finally { companionConnecting = false; }
 }
 function updateCompanionControls() {
+  if (companionIdentity) companionIdentity.disabled = !!companionPending || !!companionSession;
   if (!companionPanel) return;
   const connected = companionSocket?.readyState === WebSocket.OPEN;
   const seconds = Math.max(0, Math.ceil((companionEndsAt - Date.now()) / 1000));
@@ -134,7 +140,7 @@ async function refreshCompanionWaiting() {
       const minutes = Math.floor(Math.max(0, Date.now() - Date.parse(w.joined_at)) / 60000);
       const btn = el("button", {class:"btn", type:"button", "data-invite":"", text:"邀請「" + w.profile.nickname + "」陪聊", onclick:() => {
         companionError.textContent = "";
-        if (companionSend({type:"companion_invite", guest_id:w.guest_id})) {
+        if (companionSend({type:"companion_invite", guest_id:w.guest_id, identity:companionIdentity.value})) {
           companionPending = "sending";
           updateCompanionControls();
         }
@@ -150,6 +156,8 @@ async function refreshCompanionWaiting() {
 }
 function getCompanionPanel() {
   if (companionPanel) return companionPanel;
+  companionIdentity = el("select", {id:"companion-identity"},
+    el("option", {value:"male", text:"男生 · 小辟穀"}), el("option", {value:"female", text:"女生 · 打辟穀"}));
   companionStatus = el("p", {class:"meta", role:"status", text:"尚未值班。開始值班後才會加入實際在線人數。"});
   companionError = el("p", {class:"err", role:"alert"});
   dutyButton = el("button", {class:"btn primary", type:"button", text:"開始陪聊值班", onclick:() => {
@@ -170,7 +178,8 @@ function getCompanionPanel() {
   companionChat.hidden = true;
   companionCancel = el("button", {class:"btn", type:"button", text:"取消目前邀請", onclick:() => companionSend({type:"cancel"})});
   companionPanel = el("section", {class:"companion", "aria-label":"管理員陪聊"}, el("h2", {text:"管理員陪聊"}),
-    el("p", {class:"meta", text:"只列出等待者。對方會看到管理員身分，接受邀請後才會開始聊天。一次陪一位，一般配對照常進行。"}),
+    el("p", {class:"meta", text:"只列出等待者。對方只看到所選暱稱，不顯示管理員標籤，接受邀請後才開始聊天。一次陪一位，一般配對照常進行。"}),
+    el("label", {for:"companion-identity", text:"陪聊身分"}), companionIdentity,
     el("div", {class:"actions"}, dutyButton, companionCancel),
     companionStatus, companionWaiting, companionError, companionChat);
   refreshCompanionWaiting(); updateCompanionControls();

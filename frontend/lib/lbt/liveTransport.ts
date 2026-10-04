@@ -59,7 +59,7 @@ function toProfile(raw: unknown): PeerProfile | null {
   if (typeof nickname !== "string") return null;
   if (!(ENERGIES as readonly unknown[]).includes(energy)) return null;
   if (!(PREFERENCES as readonly unknown[]).includes(preference)) return null;
-  return { nickname, energy, preference, ...(role === "admin" ? { role } : {}) } as PeerProfile;
+  return { nickname, energy, preference, ...((role === "companion" || role === "admin") ? { role: "companion" } : {}) } as PeerProfile;
 }
 
 /** Server times → local `Date.now()` time, immune to client clock skew. */
@@ -81,7 +81,7 @@ export function mapServerFrame(frame: unknown, now: number): TransportEvent | nu
     case "lbt.companion_invite": {
       const expiresAt = toLocal(f.expires_at, f.server_now, now);
       return typeof f.id === "string" && expiresAt !== null && expiresAt > now
-        ? { type: "companionInvite", id: f.id, expiresAt } : null;
+        ? { type: "companionInvite", id: f.id, expiresAt, ...(typeof f.nickname === "string" ? { nickname: f.nickname } : {}) } : null;
     }
     case "lbt.companion_cleared":
       return typeof f.id === "string" ? { type: "companionCleared", id: f.id } : null;

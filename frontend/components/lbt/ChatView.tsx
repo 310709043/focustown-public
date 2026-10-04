@@ -99,7 +99,7 @@ export function ChatView() {
           <div className="chat-header">
             <div className="partner-profile">
               <span className="small-label">
-                {partner?.role === "admin" ? t("companion.label") : simulated ? t("chat.partnerLabel") : t("chat.partnerLabelLive")}
+                {partner?.role === "companion" ? t("companion.label") : simulated ? t("chat.partnerLabel") : t("chat.partnerLabelLive")}
               </span>
               <h1 tabIndex={-1}>
                 <span className="profile-prefix">{t("chat.partnerPrefix")}</span>
@@ -112,7 +112,7 @@ export function ChatView() {
                 {partner ? <span>{t(`preference.${partner.preference}`)}</span> : null}
               </p>
               <p className="profile-pace">{t(`energy.${partnerId}.pace`)}</p>
-              {partner?.role === "admin" ? <p className="companion-disclosure">{t("companion.chatDisclosure")}</p> : null}
+              {partner?.role === "companion" ? <p className="companion-disclosure">{t("companion.chatDisclosure")}</p> : null}
             </div>
             <div className="chat-header-actions">
               <span className="session-timer" aria-label={t("chat.timerAria")}>

@@ -425,9 +425,9 @@ describe("administrator companion invitation", () => {
   test("normal matching clears the invitation", () => {
     waiting();emit(matched()); expect(store().view).toBe("chat"); expect(store().companionInvitation).toBeNull();
   });
-  test("administrator is explicitly labelled as a human host", () => {
+  test("companion uses the public nickname and neutral label", () => {
     openChat();const event=matched();if(event.type!=="matched") throw new Error();
-    event.partner={nickname:"小鎮管理員",energy:2,preference:"story",role:"admin"};emit(event);render(<ChatView />);
+    event.partner={nickname:"小辟穀",energy:2,preference:"story",role:"companion"};emit(event);render(<ChatView />);
     expect(screen.getByText("lbt.companion.label")).toBeInTheDocument();
     expect(screen.getByText("lbt.companion.chatDisclosure")).toBeInTheDocument();
     expect(screen.queryByText("lbt.chat.partnerLabel")).toBeNull();

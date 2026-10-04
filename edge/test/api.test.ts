@@ -244,7 +244,7 @@ describe("authenticated companion sockets", () => {
     operator.send({type:"companion_invite",guest_id:id}); const invite=await visitor.next("lbt.companion_invite"); await operator.next("lbt.companion_pending");
     expect(visitor.frames.some(f=>f.type==="lbt.matched")).toBe(false);
     visitor.send({type:"companion_answer",id:invite.id,accept:true});
-    expect((await visitor.next("lbt.matched")).partner).toHaveProperty("role","admin"); await operator.next("lbt.matched");
+    expect((await visitor.next("lbt.matched")).partner).toHaveProperty("role","companion"); await operator.next("lbt.matched");
     operator.send({type:"message",text:"我在聽"}); expect((await visitor.next("lbt.message")).text).toBe("我在聽");
     await operator.next("lbt.message"); visitor.send({type:"message",text:"謝謝陪聊"}); expect((await operator.next("lbt.message")).text).toBe("謝謝陪聊");
     operator.send({type:"extend"}); await visitor.next("lbt.extend_requested"); expect(visitor.frames.some(f=>f.type==="lbt.extended")).toBe(false);

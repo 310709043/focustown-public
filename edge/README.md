@@ -71,11 +71,14 @@ report content with `textContent` (it is user-written) under a nonce-only CSP.
 ### Human administrator companion
 
 In `/admin`, click **開始陪聊值班**, then invite a visitor from the waiting list.
-The visitor sees an explicit human administrator invitation and can accept or
+The visitor sees an explicit companion invitation and can accept or
 keep waiting. Invitations expire after 60 seconds; normal visitor matching
 continues and cancels an offer if it finds a partner first. One administrator
-socket, one pending invitation or one conversation at a time. The host is
-server-labelled **小鎮管理員**, joins the real online count only while on duty,
+socket, one pending invitation or one conversation at a time. Before inviting, select the fixed persona **男生 · 小辟穀** or **女生 · 打辟穀**.
+The visitor sees that nickname and a neutral companion label, without the
+administrator role; the internal report record retains the privileged role for
+safety review. The invitation snapshots the chosen persona through acceptance
+and reconnect. The host joins the real online count only while on duty,
 and chats directly in the console. Seven-minute windows, mutual extensions,
 leaving, contact masking and reporting use the existing session rules.
 
