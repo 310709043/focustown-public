@@ -103,3 +103,34 @@ class ILbtReportRepo(Protocol):
     async def delete_older_than(self, cutoff: datetime) -> int:
         """Remove reports created before ``cutoff``; returns how many."""
         ...
+
+
+@dataclass(frozen=True, slots=True)
+class LbtFeedbackRecord:
+    id: str
+    category: str
+    message: str
+    email: str | None
+    page: str | None
+    locale: str | None
+    status: str
+    created_at: datetime
+    sheet_sent: bool = False
+
+
+class ILbtFeedbackRepo(Protocol):
+    async def create(self, record: LbtFeedbackRecord) -> None: ...
+    async def list_recent(self, *, status: str | None, limit: int) -> list[LbtFeedbackRecord]: ...
+    async def set_status(self, feedback_id: str, status: str) -> bool: ...
+    async def mark_sheet_sent(self, feedback_id: str) -> None: ...
+    async def delete_older_than(self, cutoff: datetime) -> int:
+        """Remove feedback created before ``cutoff``; returns how many."""
+        ...
+
+
+class IFeedbackSheet(Protocol):
+    """The owner's Google Sheet (an Apps Script web app)."""
+
+    async def append(self, record: LbtFeedbackRecord) -> bool:
+        """Copy one entry; True when the sheet accepted it. Never raises."""
+        ...

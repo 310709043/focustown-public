@@ -2446,7 +2446,8 @@
   font-weight: 700;
 }
 
-.lbt .report-note textarea {
+.lbt .report-note textarea,
+.lbt .report-note input {
   width: 100%;
   border: 1.5px solid #d7dce1;
   border-radius: 10px;
@@ -2457,6 +2458,21 @@
   font-size: 16px;
   font-weight: 500;
   resize: vertical;
+}
+
+.lbt .report-note small {
+  color: #6b7891;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Feedback box honeypot: off-screen, never focusable, ignored by readers. */
+.lbt .feedback-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 .lbt .report-failed {
@@ -2486,12 +2502,21 @@
   gap: 14px;
 }
 .lbt .footer-links a,
+.lbt .footer-links .footer-link-button,
 .lbt .adult-check small a {
   color: var(--mist);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.lbt .footer-links .footer-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
 .lbt .footer-links a:hover,
+.lbt .footer-links .footer-link-button:hover,
 .lbt .adult-check small a:hover {
   color: var(--lamp);
 }

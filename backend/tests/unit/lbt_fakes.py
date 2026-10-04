@@ -4,13 +4,16 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 
 from app.domain.models.lbt import LbtConversation, LbtWaiting
 from app.domain.repositories.lbt import (
+    IFeedbackSheet,
+    ILbtFeedbackRepo,
     ILbtReportRepo,
     ILbtStore,
+    LbtFeedbackRecord,
     LbtReportRecord,
     LbtTranscriptLine,
 )
@@ -147,3 +150,41 @@ class InMemoryLbtReportRepo(ILbtReportRepo):
         removed = len(self.records) - len(kept)
         self.records = kept
         return removed
+
+
+class InMemoryLbtFeedbackRepo(ILbtFeedbackRepo):
+    def __init__(self) -> None:
+        self.rows: dict[str, LbtFeedbackRecord] = {}
+
+    async def create(self, record: LbtFeedbackRecord) -> None:
+        self.rows[record.id] = record
+
+    async def list_recent(self, *, status: str | None, limit: int) -> list[LbtFeedbackRecord]:
+        rows = [r for r in self.rows.values() if status is None or r.status == status]
+        return sorted(rows, key=lambda r: r.created_at, reverse=True)[:limit]
+
+    async def set_status(self, feedback_id: str, status: str) -> bool:
+        row = self.rows.get(feedback_id)
+        if row is None:
+            return False
+        self.rows[feedback_id] = replace(row, status=status)
+        return True
+
+    async def mark_sheet_sent(self, feedback_id: str) -> None:
+        self.rows[feedback_id] = replace(self.rows[feedback_id], sheet_sent=True)
+
+    async def delete_older_than(self, cutoff: datetime) -> int:
+        old = [k for k, r in self.rows.items() if r.created_at < cutoff]
+        for k in old:
+            del self.rows[k]
+        return len(old)
+
+
+class RecordingFeedbackSheet(IFeedbackSheet):
+    def __init__(self, *, accept: bool = True) -> None:
+        self.accept = accept
+        self.sent: list[LbtFeedbackRecord] = []
+
+    async def append(self, record: LbtFeedbackRecord) -> bool:
+        self.sent.append(record)
+        return self.accept

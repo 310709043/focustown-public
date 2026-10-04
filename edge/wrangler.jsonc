@@ -27,6 +27,7 @@
     "ALLOWED_ORIGINS": "https://www.lowbatterytown.com,https://lowbatterytown.com",
     "LBT_OPEN_HOURS": "",
     "LBT_TIMEZONE": "Asia/Taipei",
-    "LBT_REPORT_RETENTION_DAYS": "180"
+    "LBT_REPORT_RETENTION_DAYS": "180",
+    "LBT_FEEDBACK_RETENTION_DAYS": "365"
   }
 }

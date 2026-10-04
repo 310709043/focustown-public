@@ -94,6 +94,11 @@ export class TownObject extends DurableObject<Env> {
     return this.store.hit(`guest:ip:${ip}`, LIMITS.guestPerIpPerHour, 3600_000, Date.now());
   }
 
+  /** Counts a feedback submission from `ip`; false once the hourly limit is used up. */
+  allowFeedback(ip: string): Promise<boolean> {
+    return this.store.hit(`feedback:ip:${ip}`, LIMITS.feedbackPerIpPerHour, 3600_000, Date.now());
+  }
+
   async report(guestId: string, reason: string, note: unknown): Promise<ReportResult> {
     const now = Date.now();
     if (!(await this.store.hit(`report:${guestId}`, LIMITS.reportsPerGuestPerHour, 3600_000, now))) {

@@ -148,6 +148,9 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
             <Link href="/policies/privacy">{t("policy.nav.privacy")}</Link>
             <Link href="/policies/terms">{t("policy.nav.terms")}</Link>
             <Link href="/policies/guidelines">{t("policy.nav.guidelines")}</Link>
+            <button type="button" className="footer-link-button" onClick={() => openModal({ type: "feedback" })}>
+              {t("footer.feedback")}
+            </button>
           </nav>
           <button
             type="button"

@@ -52,6 +52,7 @@ from app.infrastructure.db.repositories import (
     SqlMatchWaitingPoolRepo,
     SqlUserRepo,
 )
+from app.infrastructure.db.repositories.lbt_feedback_repo import SqlLbtFeedbackRepo
 from app.infrastructure.db.repositories.lbt_report_repo import SqlLbtReportRepo
 from app.infrastructure.db.repositories.match_room_repo import SqlMatchRoomRepo
 from app.infrastructure.db.repositories.room_participant_repo import (
@@ -421,13 +422,20 @@ async def lbt_sweep_job(settings: Settings) -> None:
 
 async def lbt_report_purge_job(factory, settings: Settings) -> None:
     """LowBatteryTown: delete report snapshots (and their transcripts) past
-    ``lbt_report_retention_days``, as the privacy page promises."""
+    ``lbt_report_retention_days`` and feedback past
+    ``lbt_feedback_retention_days``, as the privacy page promises."""
     cutoff = SystemClock().now() - timedelta(days=settings.lbt_report_retention_days)
     async with factory() as db:
         removed = await SqlLbtReportRepo(db).delete_older_than(cutoff)
         await db.commit()
     if removed:
         log.info("lbt_reports_purged", count=removed, cutoff=cutoff.isoformat())
+    feedback_cutoff = SystemClock().now() - timedelta(days=settings.lbt_feedback_retention_days)
+    async with factory() as db:
+        feedback_removed = await SqlLbtFeedbackRepo(db).delete_older_than(feedback_cutoff)
+        await db.commit()
+    if feedback_removed:
+        log.info("lbt_feedback_purged", count=feedback_removed, cutoff=feedback_cutoff.isoformat())
 
 
 async def main() -> None:

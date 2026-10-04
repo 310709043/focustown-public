@@ -7,13 +7,26 @@
  *   GET  /api/v1/lbt/status    real online / waiting counts, open flag
  *   POST /api/v1/lbt/reports   safety report (guest bearer token)
  *   GET  /api/v1/lbt/ws        WebSocket, subprotocol `bearer.{token}`
- *   GET  /api/v1/admin/lbt/overview, /reports, POST …/{id}/status   (ADMIN_TOKEN)
+ *   POST /api/v1/lbt/feedback  feedback box (anonymous, rate-limited per IP; copied to the owner's Google Sheet)
+ *   GET  /api/v1/admin/lbt/overview, /reports, /feedback, POST …/{id}/status   (ADMIN_TOKEN)
  *   GET  /admin                admin console page (signs in with ADMIN_TOKEN)
  *
  * The town itself is one Durable Object (src/townObject.ts); reports go to D1.
  */
-import { type Env, retentionDays, tokenTtlHours } from "./config";
+import { type Env, feedbackRetentionDays, retentionDays, tokenTtlHours } from "./config";
 import { adminPage, adminPageHeaders } from "./adminPage";
+import {
+  FEEDBACK_STATUSES,
+  type FeedbackStatus,
+  feedbackCounts,
+  forwardToSheet,
+  listFeedback,
+  parseFeedback,
+  purgeFeedback,
+  saveFeedback,
+  setFeedbackStatus,
+} from "./feedback";
+import { InputError } from "./rules";
 import { REPORT_STATUSES, type ReportStatus, listReports, purgeReports, reportCounts, setReportStatus } from "./reports";
 import { createCompanionToken, createGuestToken, newGuestId, verifyCompanionToken, verifyGuestToken } from "./token";
 import { COMPANION_ID } from "./companion";
@@ -125,8 +138,12 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
   }
   if (request.method === "GET" && path === "/api/v1/admin/lbt/overview") {
     const since = new Date(Date.now() - 86_400_000).toISOString();
-    const [live, reports] = await Promise.all([town(env).adminStats(), reportCounts(env.DB, since)]);
-    return json(request, env, 200, { ...live, reports });
+    const [live, reports, feedback] = await Promise.all([
+      town(env).adminStats(),
+      reportCounts(env.DB, since),
+      feedbackCounts(env.DB),
+    ]);
+    return json(request, env, 200, { ...live, reports, feedback });
   }
   if (request.method === "GET" && path === "/api/v1/admin/lbt/reports") {
     const params = new URL(request.url).searchParams;
@@ -152,10 +169,46 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
     const found = await setReportStatus(env.DB, decodeURIComponent(m[1] as string), status as ReportStatus);
     return found ? json(request, env, 204, null) : error(request, env, 404, "report_not_found");
   }
+  if (request.method === "GET" && path === "/api/v1/admin/lbt/feedback") {
+    const params = new URL(request.url).searchParams;
+    const raw = params.get("status") ?? "new";
+    const status = raw === "all" ? null : (raw as FeedbackStatus);
+    if (status && !FEEDBACK_STATUSES.includes(status)) return error(request, env, 422, "invalid_status");
+    const limit = Math.min(200, Math.max(1, Number(params.get("limit")) || 50));
+    return json(request, env, 200, { items: await listFeedback(env.DB, status, limit) });
+  }
+  const f = /^\/api\/v1\/admin\/lbt\/feedback\/([^/]+)\/status$/.exec(path);
+  if (request.method === "POST" && f) {
+    const body = (await request.json().catch(() => null)) as { status?: unknown } | null;
+    const status = body?.status;
+    if (typeof status !== "string" || !FEEDBACK_STATUSES.includes(status as FeedbackStatus)) {
+      return error(request, env, 422, "invalid_status");
+    }
+    const found = await setFeedbackStatus(env.DB, decodeURIComponent(f[1] as string), status as FeedbackStatus);
+    return found ? json(request, env, 204, null) : error(request, env, 404, "feedback_not_found");
+  }
   return error(request, env, 404, "not_found");
 }
 
-async function route(request: Request, env: Env): Promise<Response> {
+/** Feedback box: validate, store in D1, then copy to the Google Sheet in the background. */
+async function handleFeedback(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  if (!(await town(env).allowFeedback(clientIp(request)))) return error(request, env, 429, "too_many_feedback");
+  let input;
+  try {
+    input = parseFeedback(await request.json().catch(() => null));
+  } catch (err) {
+    if (err instanceof InputError) return error(request, env, 422, err.code);
+    throw err;
+  }
+  // Honeypot filled in: look successful, keep nothing.
+  if (!input) return json(request, env, 201, { id: crypto.randomUUID() });
+  const record = { ...input, id: crypto.randomUUID(), status: "new" as const, createdAt: new Date().toISOString() };
+  await saveFeedback(env.DB, record);
+  ctx.waitUntil(forwardToSheet(env.DB, env.FEEDBACK_SHEET_URL, env.FEEDBACK_SHEET_TOKEN, record));
+  return json(request, env, 201, { id: record.id });
+}
+
+async function route(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const path = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
 
   if (request.method === "OPTIONS") {
@@ -214,24 +267,31 @@ async function route(request: Request, env: Env): Promise<Response> {
     return result.ok ? json(request, env, 201, { id: result.id }) : error(request, env, result.status, result.code);
   }
 
+  if (path === "/api/v1/lbt/feedback" && request.method === "POST") return handleFeedback(request, env, ctx);
+
   if (path.startsWith("/api/v1/admin/lbt/")) return handleAdmin(request, env, path);
 
   return error(request, env, 404, "not_found");
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
     if (!env.LBT_TOKEN_SECRET || env.LBT_TOKEN_SECRET.length < 32) {
       return error(request, env, 500, "server_misconfigured");
     }
-    return route(request, env);
+    return route(request, env, ctx);
   },
 
-  /** Daily: delete report snapshots past the retention window (the privacy page promises it). */
+  /** Daily: delete reports and feedback past their retention windows (the privacy page promises it). */
   async scheduled(_controller, env, _ctx): Promise<void> {
     const cutoff = new Date(Date.now() - retentionDays(env) * 86_400_000).toISOString();
     await purgeExpiredSuspensions(env.DB, Date.now());
     const removed = await purgeReports(env.DB, cutoff);
     if (removed > 0) console.log(JSON.stringify({ event: "lbt_reports_purged", removed, cutoff }));
+    const feedbackCutoff = new Date(Date.now() - feedbackRetentionDays(env) * 86_400_000).toISOString();
+    const feedbackRemoved = await purgeFeedback(env.DB, feedbackCutoff);
+    if (feedbackRemoved > 0) {
+      console.log(JSON.stringify({ event: "lbt_feedback_purged", removed: feedbackRemoved, cutoff: feedbackCutoff }));
+    }
   },
 } satisfies ExportedHandler<Env>;
