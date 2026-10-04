@@ -9,6 +9,7 @@ import { CONTENT_UPDATED, SITE_URL } from "@/lib/lbt/site";
 // `noindex` — see app/[locale]/(legacy)/layout.tsx — so they stay out too.
 const pages = [
   { path: "", priority: 1.0, changeFrequency: "weekly" as const, lastModified: CONTENT_UPDATED },
+  { path: "/guide", priority: 0.7, changeFrequency: "monthly" as const, lastModified: CONTENT_UPDATED },
   ...POLICY_SLUGS.map((slug) => ({
     path: `/policies/${slug}`,
     priority: 0.3,

@@ -41,3 +41,22 @@ pnpm exec wrangler deploy --dry-run --outdir .open-next/dry-run
 
 OpenNext and Wrangler output is ignored. No API Worker, backend, AWS or Lightsail
 configuration is managed by this frontend workflow.
+
+## Search visibility
+
+The indexable pages are the bilingual home, `/[locale]/guide` and the three
+LowBatteryTown policies. Demo and legacy routes keep `noindex`; private chats
+are never published as search content. The guide is server-rendered and linked
+from the home footer, with localized canonical, hreflang and sharing metadata.
+Update `CONTENT_UPDATED` in `lib/lbt/site.ts` when public content changes.
+
+For Google Search Console, verify the `lowbatterytown.com` domain property,
+submit `https://www.lowbatterytown.com/sitemap.xml`, and inspect the Chinese
+and English home and guide URLs. Verification needs the owner's Google
+account; no verification token or access is bundled with the site. Track
+indexed pages, search impressions and clicks before judging SEO changes.
+Sitemaps and metadata do not guarantee indexing or a ranking position.
+
+Browser check: `pnpm exec playwright test e2e/lbt-seo.spec.ts`. When checking
+a deployed site, set `PLAYWRIGHT_NO_SERVER=1` and `PLAYWRIGHT_BASE_URL` to its
+origin; `NEXT_PUBLIC_SITE_URL` must match the value used for that build.
