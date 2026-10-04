@@ -5,12 +5,14 @@
  * after a report.
  */
 export const LBT_LEGAL = {
-  effectiveDate: "2026-10-03",
+  effectiveDate: "2026-10-04",
   contactEmail: process.env.NEXT_PUBLIC_LBT_CONTACT_EMAIL || "hello@lowbatterytown.com",
   tokenHours: 24,
   chatHours: 24,
   reportDays: 180,
   pairBlockHours: 24,
+  /** LBT_FEEDBACK_RETENTION_DAYS in edge/wrangler.jsonc and backend settings. */
+  feedbackDays: 365,
 } as const;
 
 const FACTS: Record<string, string> = {
@@ -18,6 +20,7 @@ const FACTS: Record<string, string> = {
   chatHours: String(LBT_LEGAL.chatHours),
   reportDays: String(LBT_LEGAL.reportDays),
   pairBlockHours: String(LBT_LEGAL.pairBlockHours),
+  feedbackDays: String(LBT_LEGAL.feedbackDays),
 };
 
 /**

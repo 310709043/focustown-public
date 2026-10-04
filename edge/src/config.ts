@@ -16,6 +16,11 @@ export interface Env {
   LBT_SESSION_SECONDS?: string;
   LBT_GUEST_TOKEN_TTL_HOURS?: string;
   LBT_REPORT_RETENTION_DAYS?: string;
+  LBT_FEEDBACK_RETENTION_DAYS?: string;
+  /** Apps Script web app URL (https://script.google.com/macros/s/…/exec); feedback is only stored when unset. */
+  FEEDBACK_SHEET_URL?: string;
+  /** Secret: shared with the Apps Script, which rejects requests without it. */
+  FEEDBACK_SHEET_TOKEN?: string;
 }
 
 /** Abuse limits, same numbers as the FastAPI backend's settings. */
@@ -24,6 +29,7 @@ export const LIMITS = {
   wsConnectPerIpPerMin: 30,
   messagesPerGuestPerMin: 30,
   reportsPerGuestPerHour: 5,
+  feedbackPerIpPerHour: 5,
 } as const;
 
 /** How often the Durable Object sweeps while anyone is waiting or chatting. */
@@ -50,3 +56,4 @@ export function townConfig(env: Env): TownConfig {
 
 export const tokenTtlHours = (env: Env) => int(env.LBT_GUEST_TOKEN_TTL_HOURS, 24);
 export const retentionDays = (env: Env) => int(env.LBT_REPORT_RETENTION_DAYS, 180);
+export const feedbackRetentionDays = (env: Env) => int(env.LBT_FEEDBACK_RETENTION_DAYS, 365);

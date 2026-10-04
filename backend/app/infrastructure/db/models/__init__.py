@@ -3,6 +3,7 @@ from app.infrastructure.db.models.announcement import AnnouncementORM
 from app.infrastructure.db.models.feedback import FeedbackSubmissionORM
 from app.infrastructure.db.models.focus_session import FocusSessionORM
 from app.infrastructure.db.models.friendship import FriendshipORM
+from app.infrastructure.db.models.lbt_feedback import LbtFeedbackORM
 from app.infrastructure.db.models.lbt_report import LbtReportORM
 from app.infrastructure.db.models.leaderboard_snapshot import LeaderboardSnapshotORM
 from app.infrastructure.db.models.match import MatchORM
@@ -40,6 +41,7 @@ __all__ = [
     "FeedbackSubmissionORM",
     "FocusSessionORM",
     "FriendshipORM",
+    "LbtFeedbackORM",
     "LbtReportORM",
     "LeaderboardSnapshotORM",
     "MatchAgendaItemORM",
