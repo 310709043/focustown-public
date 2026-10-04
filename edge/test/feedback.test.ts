@@ -130,7 +130,7 @@ describe("forwardToSheet", () => {
     expect(await forwardToSheet(env.DB, "https://script.google.com/macros/s/x/exec", "t", rec, fake)).toBe(true);
     expect(calls).toEqual([
       { url: "https://script.google.com/macros/s/x/exec", method: "POST", redirect: "manual" },
-      { url: "https://script.googleusercontent.com/macros/echo?x=1", method: "GET", redirect: "follow" },
+      { url: "https://script.googleusercontent.com/macros/echo?x=1", method: "GET", redirect: "manual" },
     ]);
   });
 
@@ -139,8 +139,8 @@ describe("forwardToSheet", () => {
       throw new Error("network down");
     }) as unknown as typeof fetch;
     const refused = (async () => Response.json({ ok: false }, { status: 200 })) as unknown as typeof fetch;
-    expect(await forwardToSheet(env.DB, "https://script.google.com/x", "t", record, boom)).toBe(false);
-    expect(await forwardToSheet(env.DB, "https://script.google.com/x", "t", record, refused)).toBe(false);
+    expect(await forwardToSheet(env.DB, "https://script.google.com/macros/s/x/exec", "t", record, boom)).toBe(false);
+    expect(await forwardToSheet(env.DB, "https://script.google.com/macros/s/x/exec", "t", record, refused)).toBe(false);
   });
 });
 

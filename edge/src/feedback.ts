@@ -3,6 +3,7 @@
  * owner's Google Sheet (an Apps Script web app, see scripts/feedback-sheet.gs).
  * Same rules and table as the FastAPI backend's lbt feedback.
  */
+import { boundedJson } from "./security";
 import { cleanText, InputError } from "./rules";
 
 export const FEEDBACK_MAX = 1000;
@@ -139,12 +140,21 @@ export async function forwardToSheet(
   f: FeedbackRecord,
   fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
-  if (!url || !token || !url.startsWith("https://")) {
+  const validUrl = (value: string | undefined, host: string, path: RegExp) => {
+    if (!value) return false;
+    try {
+      const u = new URL(value);
+      return u.protocol === "https:" && u.hostname === host && !u.port && !u.username && !u.password && path.test(u.pathname);
+    } catch { return false; }
+  };
+  if (!token || !validUrl(url, "script.google.com", /^\/macros\/s\/[^/]+\/exec$/)) {
     console.log(JSON.stringify({ event: "lbt_feedback_sheet_skipped", id: f.id, reason: "not_configured" }));
     return false;
   }
   try {
-    let res = await fetcher(url, {
+    const signal = AbortSignal.timeout(10_000);
+    let res = await fetcher(url!, {
+      signal,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -160,16 +170,17 @@ export async function forwardToSheet(
       redirect: "manual",
     });
     const location = res.headers.get("Location");
-    if (res.status >= 300 && res.status < 400 && location?.startsWith("https://")) {
-      res = await fetcher(location, { method: "GET", redirect: "follow" });
+    if (res.status >= 300 && res.status < 400 && validUrl(location ?? undefined, "script.googleusercontent.com", /^\/macros\/echo$/)) {
+      await res.body?.cancel();
+      res = await fetcher(location!, { method: "GET", redirect: "manual", signal });
     }
-    const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+    const body = (await boundedJson(res, 4096)) as { ok?: boolean } | null;
     const ok = res.ok && body?.ok === true;
     if (ok) await db.prepare("UPDATE lbt_feedback SET sheet_sent = 1 WHERE id = ?").bind(f.id).run();
     else console.log(JSON.stringify({ event: "lbt_feedback_sheet_failed", id: f.id, status: res.status, ok: body?.ok ?? null }));
     return ok;
-  } catch (err) {
-    console.log(JSON.stringify({ event: "lbt_feedback_sheet_failed", id: f.id, error: String(err) }));
+  } catch {
+    console.log(JSON.stringify({ event: "lbt_feedback_sheet_failed", id: f.id, error: "upstream_failed" }));
     return false;
   }
 }

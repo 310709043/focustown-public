@@ -132,3 +132,33 @@ curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"status":"reviewed"}' 
 
 Guests are anonymous and a new guest token is free, so there is no account to
 ban: a report already ends the chat and keeps the pair apart for 24 h.
+
+## Security hardening
+
+The admin console exchanges `ADMIN_TOKEN` for a Secure, HttpOnly, SameSite=Strict,
+host-only cookie lasting 12 hours. Logout revokes that session server-side.
+Changing `ADMIN_TOKEN` invalidates existing sessions and unconsumed companion
+tickets; it does not terminate an already-established socket. Reload the admin
+console after deploying this upgrade: it removes the legacy cached password.
+Use a password manager to generate a unique administrator password of at least
+20 characters. Set it interactively with `pnpm exec wrangler secret put ADMIN_TOKEN`;
+never put it in a file, shell argument, GitHub comment or chat. CLI bearer access
+remains available; failed guesses share the per-IP login limit (10 / 15 minutes).
+Cookie sessions that are already authenticated remain usable during a lockout.
+
+Companion tickets are five-minute, purpose-separated JWTs signed with strong
+server secret material, rather than with the administrator password alone.
+Guest JWTs only travel in WebSocket subprotocols or Authorization headers, never
+in query strings. Cross-origin browser writes and socket handshakes are rejected.
+CORS is not bot protection: non-browser clients can omit or forge Origin.
+
+JSON requests are bounded to 16 KiB including chunked bodies, inbound frames
+to 8 KiB and 120 frames per guest/minute, and live sockets to two per guest.
+Existing message/token/report/feedback limits also apply. Spreadsheet forwarding
+only posts to Apps Script and follows a single approved Google echo redirect;
+it has a ten-second timeout, a bounded response and sanitized failure logs.
+SQL uses parameter bindings, and user text is rendered as text in both consoles.
+
+Both Workers disable workers.dev and preview URLs. CI scans dependencies;
+Dependabot proposes updates targeting develop. See
+`docs/security/lbt-security-review-2026-10-04.md` for verification and limitations.
