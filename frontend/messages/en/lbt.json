@@ -11,11 +11,15 @@
   "topbar": {
     "guide": "Town guide",
     "languageAria": "Change language",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "support": "Support"
   },
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
     "coordinate": "Streetlamp No. 07 · Good night",
+    "coordinateDawn": "Streetlamp No. 07 · Good morning",
+    "coordinateDay": "Streetlamp No. 07 · Good afternoon",
+    "coordinateDusk": "Streetlamp No. 07 · Good evening",
     "kicker": "A town for people running low on battery",
     "titleTop": "How many bars",
     "titleEm": "are left today?",
@@ -47,8 +51,10 @@
       "promise1": "You chat with one stranger only",
       "promise2": "After 7 minutes, extend only if you both want to",
       "promise3": "When you want to go, just say good night",
-      "support": "Light a lamp for the town",
-      "supportNote": "Chatting is free · no payments are taken yet"
+      "support": "Support the town",
+      "supportNote": "Free chat · optional one-time support",
+      "supportTitle": "Keep the town glowing",
+      "supportBody": "Built by one independent creator. Your optional support helps with hosting and improvements. Chat stays free."
     },
     "online": "{online} in town right now",
     "onlineDemo": "{online} viewing this prototype right now",
@@ -56,7 +62,8 @@
     "closed": "The lamps aren't lit yet. Open hours: {hours}",
     "adult": "I am 18 or older",
     "adultHint": "During the beta, only adults can join.",
-    "adultHintPolicies": "By entering you agree to the <terms>terms</terms> and <guidelines>community guidelines</guidelines> and have read the <privacy>privacy policy</privacy>."
+    "adultHintPolicies": "By entering you agree to the <terms>terms</terms> and <guidelines>community guidelines</guidelines> and have read the <privacy>privacy policy</privacy>.",
+    "openGreeting": "The lights are on. Come sit a while."
   },
   "energy": {
     "low": {
@@ -120,12 +127,15 @@
   "waiting": {
     "eyebrow": "A LITTLE SPACE BETWEEN HELLO AND HELLO",
     "titleTop": "The lamp is on.",
+    "titleTopDawn": "Almost morning.",
+    "titleTopDay": "It's still light out.",
+    "titleTopDusk": "The lamp just came on.",
     "titleBottom": "Waiting for someone to walk over.",
     "yourEnergy": "Your battery is {energy}.",
     "breathe": "Take a slow breath. No need to prepare an opening line.",
     "cancel": "Back to the street corner",
     "townNow": "{online} in town right now, {waiting} waiting.",
-    "longWait": "When few people are around, it can take a little longer. You can also head back and try later.",
+    "longWait": "We understand wanting someone to talk to. Meeting someone may take a little time.",
     "offline": "Can't reach the town right now. Reconnecting…"
   },
   "chat": {
@@ -187,7 +197,7 @@
     "bodyBottom": "Come back and sit for a while whenever you feel like talking.",
     "again": "Meet someone else",
     "home": "Back to the town entrance",
-    "support": "Enjoying this? You can light a lamp with a one-time contribution",
+    "support": "Enjoyed meeting someone? Light a lamp for the town",
     "reason": {
       "left": "You said good night.",
       "partner_left": "They said good night.",
@@ -239,14 +249,15 @@
     "support": {
       "eyebrow": "Voluntary · pay once",
       "title": "Light a lamp for the town",
-      "intro": "If you like it here, you can choose a one-time amount. Chat and matching are the same for everyone, and supporting doesn't unlock anything extra.",
-      "legend": "Choose a one-time amount",
-      "totalLabel": "This time",
+      "intro": "If you enjoy the town, you can support it through Buy Me a Coffee. Chat and matching stay free and the same for everyone; support unlocks no extra benefits.",
+      "totalLabel": "Each contribution",
       "once": "Pay once · no automatic renewal · supporting is optional",
-      "usage": "Contributions are planned for running the site and handling reports. The live payment page will list the operator, a contact address, and payment and refund terms.",
-      "disclosure": "Payments are not open in the prototype and no payment details are collected.",
-      "unavailable": "Payments not open yet",
-      "checkout": "Go to one-time payment · {amount}"
+      "usage": "Support helps with hosting, improvements and safety management. Choose the number of Powers on the support page and check the total before paying.",
+      "disclosure": "Charged in US dollars. Your bank determines currency conversion and any additional fees. Buy Me a Coffee handles payment details; the town does not collect card numbers or share your conversations with it.",
+      "checkout": "Support on Buy Me a Coffee",
+      "operator": "LowBatteryTown is run by an independent creator. Contact:",
+      "refund": "For mistaken payments or refund requests, contact us or Buy Me a Coffee with the transaction ID. The platform refund policy applies.",
+      "refundLink": "Read the refund policy ↗"
     },
     "feedback": {
       "eyebrow": "Feedback box",
@@ -403,7 +414,7 @@
         {
           "h": "Voluntary support",
           "p": [
-            "\"Light a lamp\" is a one-off, voluntary contribution (NT$60 / 150 / 300). Nothing recurs and free chatting doesn't change. Payments are not open yet; before they open we will publish the operator's details and payment/refund terms."
+            "Light a lamp is voluntary, one-time support through Buy Me a Coffee. Each Power costs US$3; choose the quantity on the support page. Payments are in US dollars, with currency conversion and fees determined by your bank. There is no automatic renewal and free chat and matching are unchanged. LowBatteryTown is run by an independent creator. Buy Me a Coffee handles payment details. For mistaken payments or refund requests, contact us using the email below or through Buy Me a Coffee with the transaction ID. Its refund policy applies (https://help.buymeacoffee.com/en/articles/8722330-buy-me-a-coffee-refund-policy)."
           ]
         },
         {
@@ -519,5 +530,27 @@
         "a": "You can leave at any time or report the conversation. Reporting ends the chat, saves its transcript for review and prevents the pair from matching again for {pairBlockHours} hours. The town is not counselling or an emergency service: for someone to listen, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in immediate danger call 110 or 119."
       }
     ]
+  },
+  "music": {
+    "play": "Play music",
+    "pause": "Pause music",
+    "hint": "Tap to hum",
+    "volume": "Volume",
+    "levels": {
+      "0": "Quiet",
+      "1": "Medium",
+      "2": "Loud"
+    }
+  },
+  "cues": {
+    "arrived": "Someone's here",
+    "invited": "The town host invites you",
+    "messages": "({count}) new",
+    "extend": "They'd like 7 more minutes",
+    "sound": "Chime",
+    "on": "on",
+    "off": "off",
+    "waitingOn": "Feel free to switch tabs. A soft chime and the tab title will tell you when someone arrives.",
+    "waitingOff": "Chime is off. The tab title will tell you when someone arrives."
   }
 }

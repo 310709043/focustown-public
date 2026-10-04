@@ -8,6 +8,7 @@
 import { DurableObject } from "cloudflare:workers";
 
 import { type Env, IDLE_SWEEP_MS, LIMITS, SWEEP_MS, retentionDays, townConfig } from "./config";
+import { MAX_FRAME_BYTES } from "./security";
 import { saveReport } from "./reports";
 import { activeSuspensions, moderateReport } from "./moderation";
 import { InputError } from "./rules";
@@ -90,13 +91,35 @@ export class TownObject extends DurableObject<Env> {
   }
 
   /** Counts a guest-token request from `ip`; false once the hourly limit is used up. */
-  allowGuest(ip: string): Promise<boolean> {
-    return this.store.hit(`guest:ip:${ip}`, LIMITS.guestPerIpPerHour, 3600_000, Date.now());
+  async allowGuest(ip: string): Promise<boolean> {
+    const allowed = await this.store.hit(`guest:ip:${ip}`, LIMITS.guestPerIpPerHour, 3600_000, Date.now());
+    await this.ensureAlarm();
+    return allowed;
   }
 
   /** Counts a feedback submission from `ip`; false once the hourly limit is used up. */
-  allowFeedback(ip: string): Promise<boolean> {
-    return this.store.hit(`feedback:ip:${ip}`, LIMITS.feedbackPerIpPerHour, 3600_000, Date.now());
+  async allowFeedback(ip: string): Promise<boolean> {
+    const allowed = await this.store.hit(`feedback:ip:${ip}`, LIMITS.feedbackPerIpPerHour, 3600_000, Date.now());
+    await this.ensureAlarm();
+    return allowed;
+  }
+
+  adminSessionRevoked(fingerprint: string) {
+    return this.store.adminSessionRevoked(fingerprint, Date.now());
+  }
+  async revokeAdminSession(fingerprint: string) {
+    await this.store.revokeAdminSession(fingerprint, Date.now() + 12 * 3600_000);
+    await this.ensureAlarm();
+  }
+
+  adminLoginBlocked(ip: string) {
+    return this.store.limited(`admin:ip:${ip}`, 10, Date.now());
+  }
+
+  async allowAdminLogin(ip: string): Promise<boolean> {
+    const allowed = await this.store.hit(`admin:ip:${ip}`, 10, 15 * 60_000, Date.now());
+    await this.ensureAlarm();
+    return allowed;
   }
 
   async report(guestId: string, reason: string, note: unknown): Promise<ReportResult> {
@@ -124,17 +147,28 @@ export class TownObject extends DurableObject<Env> {
     if (!guestId || request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
       return new Response("expected websocket", { status: 426 });
     }
-    if (guestId === COMPANION_ID && this.ctx.getWebSockets(COMPANION_ID).some((ws) => ws.readyState === WebSocket.OPEN)) {
-      return new Response("companion already connected", { status: 409 });
-    }
     const { 0: client, 1: server } = new WebSocketPair();
+    // One administrator console at a time, and the newest one wins: a tab
+    // left on duty or a phone that went to sleep (its socket can linger)
+    // must never lock the operator out. The old console stops on 4409.
+    if (!(await this.store.hit(`ws:ip:${ip}`, LIMITS.wsConnectPerIpPerMin, 60_000, Date.now())) ||
+        (guestId !== COMPANION_ID && this.ctx.getWebSockets(guestId).filter(ws => ws.readyState === WebSocket.OPEN).length >= 2)) {
+      server.accept();
+      server.close(4429, "slow down");
+      await this.ensureAlarm();
+      return new Response(null, { status: 101, webSocket: client, headers: protocol ? { "Sec-WebSocket-Protocol": protocol } : undefined });
+    }
+    const replaced = guestId === COMPANION_ID ? this.ctx.getWebSockets(COMPANION_ID) : [];
     this.ctx.acceptWebSocket(server, [guestId]);
+    for (const old of replaced) {
+      try {
+        old.close(4409, "replaced");
+      } catch {
+        /* already closed */
+      }
+    }
     const headers = protocol ? { "Sec-WebSocket-Protocol": protocol } : undefined;
 
-    if (!(await this.store.hit(`ws:ip:${ip}`, LIMITS.wsConnectPerIpPerMin, 60_000, Date.now()))) {
-      server.close(4429, "slow down");
-      return new Response(null, { status: 101, webSocket: client, headers });
-    }
     await this.town.connect(guestId);
     await this.ensureAlarm();
     return new Response(null, { status: 101, webSocket: client, headers });
@@ -142,7 +176,16 @@ export class TownObject extends DurableObject<Env> {
 
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
     const guestId = this.ctx.getTags(ws)[0];
-    if (!guestId || typeof message !== "string") return;
+    if (!guestId) return;
+    if (typeof message !== "string" || message.length > MAX_FRAME_BYTES ||
+        new TextEncoder().encode(message).byteLength > MAX_FRAME_BYTES) {
+      ws.close(1009, "invalid or oversized frame");
+      return;
+    }
+    if (!(await this.store.hit(`frame:${guestId}`, 120, 60_000, Date.now()))) {
+      ws.close(4429, "slow down");
+      return;
+    }
     let data: unknown;
     try {
       data = JSON.parse(message);

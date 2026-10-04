@@ -15,6 +15,7 @@ import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { routing, type Locale } from "@/i18n/routing";
 import { fontVariables } from "@/lib/fonts";
 import { BRAND, BRAND_ZH, jsonLd, SITE_URL } from "@/lib/lbt/site";
+import { TOWN_TIME_BOOT } from "@/lib/lbt/townTime";
 
 function isSupportedLocale(value: string): value is Locale {
   return (routing.locales as readonly string[]).includes(value);
@@ -144,7 +145,13 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: "lbt.meta" });
 
   return (
-    <html lang={locale} className={fontVariables}>
+    // suppressHydrationWarning: the boot script below sets data-lbt-time /
+    // data-lbt-week on <html> before React hydrates.
+    <html lang={locale} className={fontVariables} suppressHydrationWarning>
+      <head>
+        {/* Static code, no user input: picks the town's time of day before first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: TOWN_TIME_BOOT }} />
+      </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           {/* JSON-LD: the site and the organisation behind it (brand name + logo in results). */}

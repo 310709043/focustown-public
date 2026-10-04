@@ -71,8 +71,6 @@ export type LbtModal =
   | { type: "feedback" }
   | { type: "timeUp" };
 
-export type SupportAmount = 60 | 150 | 300;
-
 export type ConnectionState = "idle" | "connecting" | "open" | "offline";
 
 /** Town status shown on the home and waiting screens. Never invented. */

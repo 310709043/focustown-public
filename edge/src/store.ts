@@ -53,6 +53,7 @@ export const TRANSCRIPT_MAX_LINES = 400;
 
 const K = {
   companionInvite: "companion:invite",
+  adminRevoked: "admin:revoked",
   online: "online", // Record<guestId, lastSeenMs>
   queue: "queue", // Waiting[]
   active: "active", // conversationId[]
@@ -77,6 +78,15 @@ export class TownStore {
   }
   async clearCompanionInvite() {
     await this.kv.delete(K.companionInvite);
+  }
+
+  async revokeAdminSession(fingerprint: string, until: number) {
+    const revoked = await this.map<number>(K.adminRevoked);
+    revoked[fingerprint] = until;
+    await this.kv.put(K.adminRevoked, revoked);
+  }
+  async adminSessionRevoked(fingerprint: string, now: number) {
+    return ((await this.map<number>(K.adminRevoked))[fingerprint] ?? 0) > now;
   }
 
   private async map<T>(key: string): Promise<Record<string, T>> {
@@ -179,13 +189,16 @@ export class TownStore {
     await this.purgeClosed();
     const blocks = await this.map<number>(K.blocks);
     await this.kv.put(K.blocks, Object.fromEntries(Object.entries(blocks).filter(([, u]) => u > now)));
+    const revoked = await this.map<number>(K.adminRevoked);
+    await this.kv.put(K.adminRevoked, Object.fromEntries(Object.entries(revoked).filter(([, until]) => until > now)));
     const limits = await this.map<{ count: number; resetAt: number }>(K.limits);
     await this.kv.put(K.limits, Object.fromEntries(Object.entries(limits).filter(([, l]) => l.resetAt > now)));
   }
   async hasPendingWork(): Promise<{ live: boolean; expiring: boolean }> {
     const live = (await this.listWaiting()).length > 0 || (await this.activeConversationIds()).length > 0;
     const expiring =
-      Object.keys(await this.map(K.closed)).length > 0 || Object.keys(await this.map(K.online)).length > 0;
+      Object.keys(await this.map(K.closed)).length > 0 || Object.keys(await this.map(K.online)).length > 0 ||
+      Object.keys(await this.map(K.limits)).length > 0 || Object.keys(await this.map(K.adminRevoked)).length > 0;
     return { live, expiring };
   }
 
@@ -228,6 +241,11 @@ export class TownStore {
       else if (b === guestId) out.add(a);
     }
     return out;
+  }
+
+  async limited(key: string, limit: number, now: number): Promise<boolean> {
+    const entry = (await this.map<{ count: number; resetAt: number }>(K.limits))[key];
+    return !!entry && entry.resetAt > now && entry.count >= limit;
   }
 
   /** Fixed-window counter. True when this hit is within `limit`. */

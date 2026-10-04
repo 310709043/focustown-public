@@ -97,7 +97,7 @@ In `/admin`, click **開始陪聊值班**, then invite a visitor from the waitin
 The visitor sees an explicit companion invitation and can accept or
 keep waiting. Invitations expire after 60 seconds; normal visitor matching
 continues and cancels an offer if it finds a partner first. One administrator
-socket, one pending invitation or one conversation at a time. Before inviting, select the fixed persona **男生 · 小辟穀** or **女生 · 打辟穀**.
+socket, one pending invitation or one conversation at a time. The newest console takes over (the old one closes with 4409), and duty survives a same-tab reload. Before inviting, select the fixed persona **男生 · 小辟穀** or **女生 · 打辟穀**.
 The visitor sees that nickname and a neutral companion label, without the
 administrator role; the internal report record retains the privileged role for
 safety review. The invitation snapshots the chosen persona through acceptance
@@ -166,3 +166,33 @@ This is not a permanent person/device ban: new anonymous codes and browsers
 can bypass it; existing guest credentials expire after 24 hours. No new IP or
 device fingerprint linkage is collected. `actioned` remains a review status;
 only the dedicated moderation form actually restricts matching.
+
+## Security hardening
+
+The admin console exchanges `ADMIN_TOKEN` for a Secure, HttpOnly, SameSite=Strict,
+host-only cookie lasting 12 hours. Logout revokes that session server-side.
+Changing `ADMIN_TOKEN` invalidates existing sessions and unconsumed companion
+tickets; it does not terminate an already-established socket. Reload the admin
+console after deploying this upgrade: it removes the legacy cached password.
+Use a password manager to generate a unique administrator password of at least
+20 characters. Set it interactively with `pnpm exec wrangler secret put ADMIN_TOKEN`;
+never put it in a file, shell argument, GitHub comment or chat. CLI bearer access
+remains available; failed guesses share the per-IP login limit (10 / 15 minutes).
+Cookie sessions that are already authenticated remain usable during a lockout.
+
+Companion tickets are five-minute, purpose-separated JWTs signed with strong
+server secret material, rather than with the administrator password alone.
+Guest JWTs only travel in WebSocket subprotocols or Authorization headers, never
+in query strings. Cross-origin browser writes and socket handshakes are rejected.
+CORS is not bot protection: non-browser clients can omit or forge Origin.
+
+JSON requests are bounded to 16 KiB including chunked bodies, inbound frames
+to 8 KiB and 120 frames per guest/minute, and live sockets to two per guest.
+Existing message/token/report/feedback limits also apply. Spreadsheet forwarding
+only posts to Apps Script and follows a single approved Google echo redirect;
+it has a ten-second timeout, a bounded response and sanitized failure logs.
+SQL uses parameter bindings, and user text is rendered as text in both consoles.
+
+Both Workers disable workers.dev and preview URLs. CI scans dependencies;
+Dependabot proposes updates targeting develop. See
+`docs/security/lbt-security-review-2026-10-04.md` for verification and limitations.

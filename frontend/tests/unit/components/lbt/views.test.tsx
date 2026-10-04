@@ -111,12 +111,28 @@ describe("HomeView", () => {
     expect((transport.calls[0].arg as { nickname: string }).nickname).toBe("月".repeat(12));
   });
 
-  test("shows the real head count when there is one", () => {
-    act(() => store().setTown({ online: 12, waiting: 3, open: true, hours: "" }));
+  test("shows the real head count at the threshold of 20", () => {
+    act(() => store().setTown({ online: 20, waiting: 3, open: true, hours: "" }));
 
     render(<HomeView />);
 
-    expect(screen.getByText('lbt.home.online({"online":12})')).toBeInTheDocument();
+    expect(screen.getByText('lbt.home.online({"online":20})')).toBeInTheDocument();
+  });
+
+  test.each([0, 1, 19])("shows a greeting without online or waiting counts below 20 (%i)", (online) => {
+    act(() => store().setTown({ online, waiting: 1, open: true, hours: "" }));
+    render(<HomeView />);
+    expect(screen.getByText("lbt.home.openGreeting")).toBeInTheDocument();
+    expect(screen.queryByText(/lbt\.home\.online\(/)).not.toBeInTheDocument();
+    expect(document.querySelector(".town-count-waiting")).toBeNull();
+  });
+
+  test("returns to the greeting as the real count drops below 20", () => {
+    act(() => store().setTown({ online: 21, waiting: 1, open: true, hours: "" }));
+    render(<HomeView />);
+    expect(screen.getByText('lbt.home.online({"online":21})')).toBeInTheDocument();
+    act(() => store().setTown({ online: 19, waiting: 1, open: true, hours: "" }));
+    expect(screen.getByText("lbt.home.openGreeting")).toBeInTheDocument();
   });
 
   test("shows no head count without a real number", () => {
@@ -140,6 +156,7 @@ describe("HomeView", () => {
 
     render(<HomeView />);
 
+    expect(screen.queryByText("lbt.home.openGreeting")).not.toBeInTheDocument();
     expect([
       (screen.getByRole("button", { name: /lbt\.home\.start/ }) as HTMLButtonElement).disabled,
       screen.getByText('lbt.home.closed({"hours":"21:00-24:00"})') !== null,
@@ -285,7 +302,8 @@ describe("LbtApp", () => {
     fireEvent.click(screen.getByRole("button", { name: "lbt.end.home" }));
 
     expect({ waiting, chat, reason, view: store().view }).toEqual({
-      waiting: "lbt.waiting.titleToplbt.waiting.titleBottom",
+      // one first line per time of day; CSS shows the current one
+      waiting: "lbt.waiting.titleTopDawnlbt.waiting.titleTopDaylbt.waiting.titleTopDusklbt.waiting.titleToplbt.waiting.titleBottom",
       chat: true,
       reason: true,
       view: "home",

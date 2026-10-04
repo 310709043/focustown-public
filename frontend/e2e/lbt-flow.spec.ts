@@ -161,25 +161,45 @@ test.describe("LowBatteryTown chat (simulated)", () => {
   });
 });
 
-test.describe("LowBatteryTown support dialog", () => {
-  test("offers three one-time amounts but keeps payment off", async ({ page }) => {
+test.describe("LowBatteryTown music", () => {
+  test("the battery starts and stops the music; the header switch follows", async ({ page }) => {
     await page.goto(HOME);
-    const trigger = page.getByRole("button", { name: /替小鎮點燈/ });
-    await trigger.click();
+    const battery = page.getByRole("button", { name: "播放音樂" }).first();
+    await expect(page.getByRole("button", { name: /點電池哼歌/ })).toBeVisible();
+    await battery.click();
+    await expect(page.locator(".battery-display")).toHaveClass(/is-singing/);
+    await expect(page.getByRole("radiogroup", { name: "音量" }).getByRole("radio")).toHaveCount(3);
+    await expect(page.locator(".music-pill")).toHaveAttribute("aria-pressed", "true");
+    await page.locator(".music-pill").click();
+    await expect(page.locator(".battery-display")).not.toHaveClass(/is-singing/);
+  });
+});
+
+test.describe("LowBatteryTown support dialog", () => {
+  test("one-time support on the creator's page; nothing is charged here", async ({ page }) => {
+    // Never leave the test environment: answer the external page locally.
+    await page.context().route("https://buymeacoffee.com/**", (route) =>
+      route.fulfill({ status: 200, contentType: "text/html", body: "<title>support</title>" }),
+    );
+    await page.goto(HOME);
+    await page.getByRole("button", { name: /贊助小鎮/ }).click();
 
     const dialog = page.getByRole("dialog", { name: "替小鎮點一盞燈" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("radio")).toHaveCount(3);
-    await expect(dialog.locator(".support-total strong")).toHaveText("NT$60");
-    await dialog.getByText("NT$300").click();
-    await expect(dialog.locator(".support-total strong")).toHaveText("NT$300");
-    await expect(dialog.getByRole("button", { name: /付款尚未開放/ })).toBeDisabled();
+    await expect(dialog.getByRole("radio")).toHaveCount(0);
+    await expect(dialog.locator(".support-total strong")).toHaveText("1 Power · US$3");
     await expect(dialog).toContainText("不自動續扣");
+    await expect(dialog.getByRole("link", { name: /退款政策/ })).toHaveAttribute("target", "_blank");
+
+    const popup = page.waitForEvent("popup");
+    await dialog.getByRole("button", { name: /前往 Buy Me a Coffee 贊助/ }).click();
+    expect((await popup).url()).toContain("buymeacoffee.com/lowbatterytown");
+    await expect(dialog).toBeHidden();
   });
 
   test("Escape closes it and focus returns to the trigger", async ({ page }) => {
     await page.goto(HOME);
-    const trigger = page.getByRole("button", { name: /替小鎮點燈/ });
+    const trigger = page.getByRole("button", { name: /贊助小鎮/ });
     await trigger.focus();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("dialog")).toBeVisible();
@@ -190,7 +210,7 @@ test.describe("LowBatteryTown support dialog", () => {
 
   test("Tab stays inside the dialog", async ({ page }) => {
     await page.goto(HOME);
-    await page.getByRole("button", { name: /替小鎮點燈/ }).click();
+    await page.getByRole("button", { name: /贊助小鎮/ }).click();
     const dialog = page.getByRole("dialog");
     for (let i = 0; i < 8; i += 1) {
       await page.keyboard.press("Tab");

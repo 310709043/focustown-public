@@ -1,8 +1,8 @@
 /**
  * The LowBatteryTown admin console, served by this Worker at /admin.
  *
- * One self-contained page: sign in with ADMIN_TOKEN (kept in sessionStorage
- * for the tab only), see live numbers, read reports with their transcripts
+ * One self-contained page: exchange ADMIN_TOKEN for an HttpOnly session cookie,
+ * see live numbers and reports with their transcripts
  * and set their status. Report content is user-written, so the script
  * builds every node with textContent and never uses innerHTML; the CSP
  * allows only this page's own nonce'd script and style.
@@ -57,7 +57,8 @@ ${COMPANION_STYLE}
 
 const SCRIPT = `
 "use strict";
-const KEY = "lbt.admin.token";
+try { sessionStorage.removeItem("lbt.admin.token"); } catch {}
+let signedIn = true;
 const REASONS = {harassment:"騷擾",sexual:"性相關內容",minor:"疑似未成年",spam:"廣告／詐騙",self_harm:"自傷風險",other:"其他"};
 const STATUSES = {open:"待處理",reviewed:"已檢視",actioned:"已處理",dismissed:"駁回"};
 const ENERGY = {1:"快沒電了",2:"還有一點",3:"想說說話"};
@@ -78,11 +79,11 @@ function el(tag, attrs, ...kids) {
   for (const k of kids) n.append(k);
   return n;
 }
-const token = () => { try { return sessionStorage.getItem(KEY); } catch { return null; } };
+const token = () => signedIn;
 const fmt = (iso) => new Date(iso).toLocaleString("zh-TW", {timeZone:"Asia/Taipei", hour12:false});
 
 async function api(path, opts) {
-  const res = await fetch(path, {...opts, headers: {"Authorization": "Bearer " + token(), "Content-Type": "application/json"}});
+  const res = await fetch(path, {...opts, credentials: "same-origin", headers: {"Content-Type": "application/json"}});
   if (res.status === 401) { signOut("管理密碼不正確或已失效。"); throw new Error("unauthorized"); }
   if (!res.ok) { const body = await res.json().catch(() => null); throw new Error(body?.error?.code || "HTTP " + res.status); }
   return res.status === 204 ? null : res.json();
@@ -90,7 +91,8 @@ async function api(path, opts) {
 
 function signOut(message) {
   stopCompanion();
-  try { sessionStorage.removeItem(KEY); } catch {}
+  signedIn = false;
+  fetch("/api/v1/admin/lbt/logout", {method:"POST", credentials:"same-origin"}).catch(() => {});
   showLogin(message || "");
 }
 
@@ -103,8 +105,15 @@ function showLogin(message) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!input.value.trim()) return;
-    try { sessionStorage.setItem(KEY, input.value.trim()); } catch {}
-    try { await render(); } catch {}
+    const password = input.value;
+    input.value = "";
+    try {
+      const res = await fetch("/api/v1/admin/lbt/login", {method:"POST", credentials:"same-origin",
+        headers:{"Content-Type":"application/json"}, body:JSON.stringify({password})});
+      if (!res.ok) { err.textContent = res.status === 429 ? "登入嘗試太多，請十五分鐘後再試。" : "管理密碼不正確或暫時無法登入。"; return; }
+      signedIn = true;
+      await render();
+    } catch { err.textContent = "無法連線，請稍後再試。"; }
   });
   app.replaceChildren(form);
   input.focus();
@@ -288,5 +297,7 @@ export function adminPageHeaders(nonce: string, origin = "https://api.lowbattery
     "Referrer-Policy": "no-referrer",
     "Cache-Control": "no-store",
     "X-Robots-Tag": "noindex, nofollow",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   };
 }

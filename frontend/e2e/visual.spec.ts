@@ -64,10 +64,11 @@ test.describe("visual regression — canonical pages @ 924×540", () => {
   // `/` is the LowBatteryTown home. Capture it through the scripted demo
   // transport: the live route opens a WebSocket whose reconnect notices
   // would make the screenshot timing-dependent. No splash on this surface.
+  // The town follows the visitor's clock, so pin it to a weekday night.
   test("home /zh-TW/demo", async ({ page }) => {
     await mockApi(page, UNAUTH_MOCKS);
 
-    await page.goto("/zh-TW/demo");
+    await page.goto("/zh-TW/demo?time=night&week=weekday");
     await expect(page.locator(".lbt .home-view")).toBeVisible({ timeout: 10_000 });
     await page.addStyleTag({ content: DISABLE_ANIMATIONS_CSS });
     await page.waitForTimeout(SETTLE_MS);

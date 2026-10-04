@@ -408,104 +408,6 @@
   opacity: 0.98;
   pointer-events: none;
 }
-.lbt .skyline {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 105px;
-  display: flex;
-  align-items: flex-end;
-  gap: 9px;
-  opacity: 0.8;
-}
-.lbt .building {
-  display: block;
-  background: #101a2e;
-  position: relative;
-  flex: 1;
-}
-.lbt .building:before {
-  content: "";
-  position: absolute;
-  width: 5px;
-  height: 7px;
-  background: var(--lamp);
-  left: 25%;
-  top: 22px;
-  box-shadow:
-    20px 0 0 rgba(248, 215, 121, 0.58),
-    0 23px 0 rgba(248, 215, 121, 0.42),
-    20px 23px 0 rgba(248, 215, 121, 0.35);
-  border-radius: 1px;
-}
-.lbt .b1 {
-  height: 49px;
-}
-.lbt .b2 {
-  height: 66px;
-}
-.lbt .b3 {
-  height: 91px;
-}
-.lbt .b4 {
-  height: 55px;
-}
-.lbt .b5 {
-  height: 73px;
-}
-.lbt .b6 {
-  height: 92px;
-}
-.lbt .b7 {
-  height: 51px;
-}
-.lbt .b3:after,
-.lbt .b6:after {
-  content: "";
-  position: absolute;
-  left: 30%;
-  bottom: 100%;
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-bottom: 16px solid #101a2e;
-}
-.lbt .streetlamp {
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  width: 3px;
-  height: 64px;
-  background: #52637e;
-}
-.lbt .streetlamp:before {
-  content: "";
-  position: absolute;
-  width: 15px;
-  height: 11px;
-  left: -6px;
-  top: -7px;
-  background: var(--lamp);
-  border-radius: 9px 9px 3px 3px;
-  box-shadow: 0 0 18px 7px rgba(248, 215, 121, 0.2);
-}
-.lbt .lamp1 {
-  left: 13%;
-}
-.lbt .lamp2 {
-  left: 82%;
-  height: 83px;
-}
-.lbt .moon {
-  position: absolute;
-  right: 17%;
-  bottom: 97px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--lamp);
-  box-shadow: 0 0 31px 9px rgba(248, 215, 121, 0.2);
-}
 .lbt .side-rail {
   display: flex;
   flex-direction: column;
@@ -1264,12 +1166,6 @@
     margin-top: -44px;
     height: 110px;
   }
-  .lbt .skyline {
-    height: 88px;
-  }
-  .lbt .moon {
-    bottom: 80px;
-  }
   .lbt .side-rail {
     grid-template-columns: 1fr;
   }
@@ -1399,36 +1295,6 @@
 }
 .lbt .energy-option.selected {
   animation: lbt-option-arrive 0.32s ease-out;
-}
-.lbt .streetlamp:after {
-  content: "";
-  position: absolute;
-  left: -17px;
-  top: -24px;
-  width: 37px;
-  height: 37px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(248, 215, 121, 0.46),
-    rgba(248, 215, 121, 0) 70%
-  );
-  pointer-events: none;
-  animation: lbt-lamp-breathe 4.6s ease-in-out infinite alternate;
-}
-.lbt .lamp2:after {
-  animation-delay: -2.4s;
-}
-.lbt .building:before {
-  animation: lbt-window-twinkle 6s ease-in-out infinite alternate;
-}
-.lbt .b2:before,
-.lbt .b5:before {
-  animation-delay: -2.4s;
-}
-.lbt .b3:before,
-.lbt .b7:before {
-  animation-delay: -4.3s;
 }
 .lbt .waiting-lamp:after {
   animation: lbt-lantern-breathe 2.8s ease-in-out infinite alternate;
@@ -3036,3 +2902,1701 @@
 .lbt .companion-actions .primary-button { width: auto; margin: 0; padding: 12px 18px; }
 .lbt .companion-actions button:disabled { opacity: .6; cursor: wait; }
 .lbt .companion-disclosure { font-size: 13px; line-height: 1.6; margin-top: 6px; color: var(--lamp); }
+
+/* ==========================================================================
+   Town time: dawn / day / dusk / night, weekday city or weekend lane.
+   <html data-lbt-time data-lbt-week> is set before first paint by the boot
+   script (lib/lbt/townTime.ts). Night is the original look; the other
+   times recolour the stage, the page ground and the street, and change
+   what moves. Scoped to the app (.lbt-app), not the policy pages.
+   ========================================================================== */
+
+.lbt-app {
+  --ground: var(--night);
+  --ground-ink: var(--paper);
+  --ground-soft: #73839d;
+  --ground-line: var(--line);
+  --ground-link: var(--mist);
+  --ground-muted: var(--mist);
+  --hero-topline: var(--subtle);
+  --pill: var(--lamp);
+  --pill-line: rgba(248, 215, 121, 0.28);
+  --hero-ink: var(--paper);
+  --hero-soft: var(--mist);
+  --hero-accent: var(--lamp);
+  --hero-kicker: var(--lamp);
+  --sun: #f6e2a6;
+  --moon: #efe6c8;
+  --cloud: #f4f3ee;
+  --sun-op: 0;
+  --moon-op: 1;
+  --star-op: 1;
+  --cloud-op: 0;
+  /* street */
+  --tw-far: #18223a;
+  --tw-tone1: #18233b;
+  --tw-tone2: #1b2740;
+  --tw-tone3: #162137;
+  --tw-edge: #2a3753;
+  --tw-win: #0f1729;
+  --tw-lit: #e9c46e;
+  --tw-grille: #22304b;
+  --tw-ac: #25314b;
+  --tw-tank: #1e2942;
+  --tw-tin: #1d2841;
+  --tw-sign: #6d3b36;
+  --tw-sign-text: #d9b6a7;
+  --tw-shutter: #1c2640;
+  --tw-note: #a99f8c;
+  --tw-shop: #f1cd72;
+  --tw-plant: #22323a;
+  --tw-pot: #2a3048;
+  --tw-cloth-a: #2e3954;
+  --tw-cloth-b: #29344e;
+  --tw-wire: #2b3856;
+  --tw-pole: #52637e;
+  --tw-bulb: #ffe9a8;
+  --tw-beam: 0.22;
+  --tw-ground: #0e1626;
+  --tw-cat: #070b15;
+  --tw-bus: #2b5793;
+  --tw-plate: #1c263f;
+  --tw-plate-text: #f8d779;
+}
+
+html[data-lbt-time="day"] .lbt-app {
+  --ground-link: #1f2a44;
+  --ground-muted: var(--ground-soft);
+  --hero-topline: var(--hero-soft);
+  --ground: #e7eae6;
+  --ground-ink: #1f2a44;
+  --ground-soft: #5b6680;
+  --ground-line: rgba(31, 42, 68, 0.14);
+  --pill: #a8462f;
+  --pill-line: rgba(168, 70, 47, 0.32);
+  --sky-a: #cbd9df;
+  --sky-b: #dbe3e2;
+  --sky-c: #e7e4d9;
+  --hero-ink: #1f2a44;
+  --hero-soft: #4b5872;
+  --hero-accent: #c0502f;
+  --hero-kicker: #a8462f;
+  --sun-op: 1;
+  --moon-op: 0;
+  --star-op: 0;
+  --cloud-op: 0.92;
+  --tw-far: #c8d1cf;
+  --tw-tone1: #e7e0d3;
+  --tw-tone2: #d8dcd5;
+  --tw-tone3: #e1d6c5;
+  --tw-edge: #6a7183;
+  --tw-win: #b7c6cb;
+  --tw-lit: #b7c6cb;
+  --tw-grille: #6a7183;
+  --tw-ac: #f2efe8;
+  --tw-tank: #9ea9ad;
+  --tw-tin: #b8bfc3;
+  --tw-sign: #c8553d;
+  --tw-sign-text: #fff7ea;
+  --tw-shutter: #a7abae;
+  --tw-note: #f8f2e2;
+  --tw-shop: #5a5f6b;
+  --tw-plant: #7d9874;
+  --tw-pot: #bf7a53;
+  --tw-cloth-a: #f0a98e;
+  --tw-cloth-b: #8db0c7;
+  --tw-wire: #4a5163;
+  --tw-pole: #59617a;
+  --tw-bulb: #d5d7d9;
+  --tw-beam: 0;
+  --tw-ground: #bdb5a6;
+  --tw-cat: #3e4049;
+  --tw-bus: #2f6db5;
+  --tw-plate: #f3efe6;
+  --tw-plate-text: #c8553d;
+}
+
+html[data-lbt-time="dusk"] .lbt-app {
+  --ground-link: #2a2238;
+  --ground-muted: var(--ground-soft);
+  --hero-topline: var(--hero-soft);
+  --ground: #efe2d8;
+  --ground-ink: #2a2238;
+  --ground-soft: #6b5a66;
+  --ground-line: rgba(42, 34, 56, 0.14);
+  --pill: #8f3a28;
+  --pill-line: rgba(143, 58, 40, 0.32);
+  --sky-a: #c1909a;
+  --sky-b: #e0a690;
+  --sky-c: #eec19e;
+  --hero-ink: #2a2238;
+  --hero-soft: #4d3e4d;
+  --hero-accent: #9a3a26;
+  --hero-kicker: #8f3a28;
+  --sun: #f8cf93;
+  --cloud: #f3c3ab;
+  --sun-op: 1;
+  --moon-op: 0;
+  --star-op: 0;
+  --cloud-op: 0.6;
+  --tw-far: #ad7d84;
+  --tw-tone1: #7d6a80;
+  --tw-tone2: #705f77;
+  --tw-tone3: #86728a;
+  --tw-edge: #40354f;
+  --tw-win: #5e5071;
+  --tw-lit: #f5c66e;
+  --tw-grille: #40354f;
+  --tw-ac: #8d7d93;
+  --tw-tank: #6a5b72;
+  --tw-tin: #7a6a80;
+  --tw-sign: #d65a3c;
+  --tw-sign-text: #fff4e2;
+  --tw-shutter: #5c5066;
+  --tw-note: #e9d9c4;
+  --tw-shop: #f5c66e;
+  --tw-plant: #5c6a5d;
+  --tw-pot: #8a5a4b;
+  --tw-cloth-a: #d9907c;
+  --tw-cloth-b: #6e88a2;
+  --tw-wire: #3d3349;
+  --tw-pole: #3d3349;
+  --tw-bulb: #ffe3a1;
+  --tw-beam: 0.14;
+  --tw-ground: #5c4f60;
+  --tw-cat: #2a2332;
+  --tw-bus: #3f5f95;
+  --tw-plate: #e9ddd0;
+  --tw-plate-text: #9a3a26;
+}
+
+html[data-lbt-time="dawn"] .lbt-app {
+  --ground-link: #262a44;
+  --ground-muted: var(--ground-soft);
+  --hero-topline: var(--hero-soft);
+  --ground: #e8e5eb;
+  --ground-ink: #262a44;
+  --ground-soft: #5f6380;
+  --ground-line: rgba(38, 42, 68, 0.14);
+  --pill: #9a4636;
+  --pill-line: rgba(154, 70, 54, 0.3);
+  --sky-a: #adafcb;
+  --sky-b: #d8c3c4;
+  --sky-c: #edd8c5;
+  --hero-ink: #262a44;
+  --hero-soft: #4c5276;
+  --hero-accent: #ac4536;
+  --hero-kicker: #9a4636;
+  --sun: #f6d6a8;
+  --cloud: #f1dcd2;
+  --sun-op: 1;
+  --moon-op: 0.35;
+  --star-op: 0;
+  --cloud-op: 0.55;
+  --tw-far: #b0b0c4;
+  --tw-tone1: #9a98b0;
+  --tw-tone2: #8d8ba5;
+  --tw-tone3: #a4a1b8;
+  --tw-edge: #4b4a66;
+  --tw-win: #7a7898;
+  --tw-lit: #f3cf86;
+  --tw-grille: #4b4a66;
+  --tw-ac: #b2b0c4;
+  --tw-tank: #8a889f;
+  --tw-tin: #9a98ae;
+  --tw-sign: #c9604a;
+  --tw-sign-text: #fff4e8;
+  --tw-shutter: #7b7990;
+  --tw-note: #ece6dc;
+  --tw-shop: #6e6b80;
+  --tw-plant: #6f7f74;
+  --tw-pot: #9a6f62;
+  --tw-cloth-a: #e3a796;
+  --tw-cloth-b: #8098b5;
+  --tw-wire: #4b4a66;
+  --tw-pole: #4b4a66;
+  --tw-bulb: #ffe6b0;
+  --tw-beam: 0.1;
+  --tw-ground: #8c889a;
+  --tw-cat: #34324a;
+  --tw-bus: #4a66a0;
+  --tw-plate: #ece8ee;
+  --tw-plate-text: #ac4536;
+}
+
+/* ---- greeting under the lamp, one per time of day ---- */
+.lbt .by-time { display: none; }
+html:not([data-lbt-time]) .lbt .by-time.t-night,
+html[data-lbt-time="dawn"] .lbt .by-time.t-dawn,
+html[data-lbt-time="day"] .lbt .by-time.t-day,
+html[data-lbt-time="dusk"] .lbt .by-time.t-dusk,
+html[data-lbt-time="night"] .lbt .by-time.t-night {
+  display: inline;
+}
+
+/* ---- page ground and chrome (night keeps the original rules) ---- */
+.lbt.lbt-app {
+  background: var(--ground);
+  transition: background-color 1.2s ease;
+}
+.lbt-app .topbar {
+  border-bottom-color: var(--ground-line);
+}
+.lbt-app .brand,
+.lbt-app .topbar .text-button,
+.lbt-app .footer .text-button {
+  color: var(--ground-ink);
+}
+.lbt-app .locale-toggle {
+  border-color: var(--ground-line);
+}
+.lbt-app .locale-toggle button:not([aria-pressed="true"]) {
+  color: var(--ground-muted);
+}
+.lbt-app .topbar .text-button span,
+.lbt-app .footer .text-button span {
+  color: var(--pill);
+}
+.lbt-app .prototype-pill {
+  color: var(--pill);
+  border-color: var(--pill-line);
+}
+.lbt-app .prototype-pill .prototype-dot {
+  background: var(--pill);
+}
+.lbt-app .footer {
+  color: var(--ground-soft);
+}
+.lbt-app .footer-links a {
+  color: var(--ground-link);
+}
+html[data-lbt-time="day"] .lbt-app .selection-card,
+html[data-lbt-time="dusk"] .lbt-app .selection-card,
+html[data-lbt-time="dawn"] .lbt-app .selection-card {
+  box-shadow: 0 18px 44px rgba(31, 42, 68, 0.12);
+}
+
+/* ---- the stage becomes the sky ---- */
+html[data-lbt-time="day"] .lbt-app .main-stage,
+html[data-lbt-time="dusk"] .lbt-app .main-stage,
+html[data-lbt-time="dawn"] .lbt-app .main-stage {
+  background: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 58%, var(--sky-c) 100%);
+  border-color: var(--ground-line);
+}
+.lbt-app .main-stage .hero-copy h1 {
+  color: var(--hero-ink);
+}
+.lbt-app .main-stage .hero-copy h1 em {
+  color: var(--hero-accent);
+}
+.lbt-app .main-stage .hero-kicker {
+  color: var(--hero-kicker);
+}
+.lbt-app .main-stage .hero-subtitle {
+  color: var(--hero-soft);
+}
+.lbt-app .main-stage .stage-topline {
+  color: var(--hero-topline);
+}
+html[data-lbt-time="day"] .lbt-app .town-count,
+html[data-lbt-time="dusk"] .lbt-app .town-count,
+html[data-lbt-time="dawn"] .lbt-app .town-count {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--ground-line);
+  color: var(--hero-ink);
+}
+
+/* ---- sky layer ---- */
+.lbt .town-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lbt .sky-sun {
+  position: absolute;
+  right: 16%;
+  top: 14%;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--sun);
+  opacity: var(--sun-op);
+  transition: opacity 1.5s ease, top 1.5s ease, right 1.5s ease, background-color 1.5s ease;
+}
+html[data-lbt-time="dusk"] .lbt .sky-sun {
+  top: auto;
+  bottom: 24%;
+  right: 24%;
+  width: 64px;
+  height: 64px;
+}
+html[data-lbt-time="dawn"] .lbt .sky-sun {
+  top: auto;
+  bottom: 22%;
+  right: auto;
+  left: 54%;
+  width: 46px;
+  height: 46px;
+}
+.lbt .sky-moon {
+  position: absolute;
+  right: 15%;
+  top: 12%;
+  width: 44px;
+  height: 44px;
+  fill: var(--moon);
+  opacity: var(--moon-op);
+  transition: opacity 1.5s ease;
+}
+html[data-lbt-time="dawn"] .lbt .sky-moon {
+  right: 10%;
+  top: 8%;
+  width: 30px;
+  height: 30px;
+}
+.lbt .sky-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #e9edf6;
+  opacity: var(--star-op);
+  transition: opacity 1.5s ease;
+}
+.lbt .sky-star.s1 { left: 58%; top: 10%; }
+.lbt .sky-star.s2 { left: 70%; top: 30%; }
+.lbt .sky-star.s3 { left: 90%; top: 22%; }
+.lbt .sky-star.s4 { left: 64%; top: 46%; width: 1.5px; height: 1.5px; }
+.lbt .sky-star.s5 { left: 94%; top: 52%; width: 1.5px; height: 1.5px; }
+.lbt .sky-cloud {
+  position: absolute;
+  width: 120px;
+  height: auto;
+  fill: var(--cloud);
+  opacity: var(--cloud-op);
+  transition: opacity 1.5s ease, fill 1.5s ease;
+}
+.lbt .sky-cloud.c1 { left: 44%; top: 20%; }
+.lbt .sky-cloud.c2 { left: 72%; top: 34%; width: 84px; }
+
+/* ---- the street ---- */
+.lbt .townscape .tw-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.lbt .tw-street {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  overflow: visible;
+}
+html:not([data-lbt-week="weekend"]) .lbt .tw-weekday,
+html[data-lbt-week="weekend"] .lbt .tw-weekend {
+  display: block;
+}
+.lbt .tw-hand {
+  filter: url(#tw-hand-filter);
+}
+.lbt .tw-far { fill: var(--tw-far); }
+.lbt .tw-block { stroke: var(--tw-edge); stroke-width: 1.2; }
+.lbt .tw-tone1 { fill: var(--tw-tone1); }
+.lbt .tw-tone2 { fill: var(--tw-tone2); }
+.lbt .tw-tone3 { fill: var(--tw-tone3); }
+.lbt .tw-edge { fill: none; stroke: var(--tw-edge); stroke-width: 1.4; }
+.lbt .tw-win {
+  fill: var(--tw-win);
+  transition: fill 1.2s ease;
+}
+.lbt .tw-win:nth-of-type(3n) { transition-delay: 0.35s; }
+.lbt .tw-win:nth-of-type(4n + 1) { transition-delay: 0.7s; }
+html[data-lbt-time="night"] .lbt .tw-win.l1,
+html[data-lbt-time="night"] .lbt .tw-win.l2,
+html[data-lbt-time="dusk"] .lbt .tw-win.l1,
+html[data-lbt-time="dawn"] .lbt .tw-win.l1 {
+  fill: var(--tw-lit);
+}
+.lbt .tw-grille { stroke: var(--tw-grille); stroke-width: 1; }
+.lbt .tw-grille-sheet { opacity: 0.8; }
+html[data-lbt-time="night"] .lbt .tw-grille-sheet { opacity: 0.55; }
+.lbt .tw-ac { fill: var(--tw-ac); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-tank { fill: var(--tw-tank); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-tin { fill: var(--tw-tin); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-sign { fill: var(--tw-sign); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-sign-text {
+  fill: var(--tw-sign-text);
+  font: 900 13px var(--display);
+  text-anchor: middle;
+}
+.lbt .tw-shutter { fill: var(--tw-shutter); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-note { fill: var(--tw-note); }
+.lbt .tw-shop { fill: var(--tw-shop); transition: fill 1.2s ease; }
+.lbt .tw-plant { fill: var(--tw-plant); }
+.lbt .tw-pot { fill: var(--tw-pot); }
+.lbt .tw-wire { fill: none; stroke: var(--tw-wire); stroke-width: 1; }
+.lbt .tw-pole-line { fill: none; stroke: var(--tw-edge); stroke-width: 2; }
+.lbt .tw-cloth-a { fill: var(--tw-cloth-a); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-cloth-b { fill: var(--tw-cloth-b); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-pole { fill: none; stroke: var(--tw-pole); stroke-width: 5; stroke-linecap: round; }
+.lbt .tw-pole-thin { fill: var(--tw-pole); }
+.lbt .tw-lamp-head { fill: var(--tw-pole); }
+.lbt .tw-bulb { fill: var(--tw-bulb); transition: fill 1.2s ease; }
+.lbt .tw-beam {
+  fill: var(--tw-bulb);
+  opacity: var(--tw-beam);
+  transition: opacity 1.5s ease;
+}
+.lbt .tw-plate { fill: var(--tw-plate); stroke: var(--tw-edge); stroke-width: 0.8; }
+.lbt .tw-plate-text {
+  fill: var(--tw-plate-text);
+  font: 700 9px var(--font-quicksand), var(--display);
+  text-anchor: middle;
+}
+.lbt .tw-bus-sign { fill: var(--tw-bus); }
+.lbt .tw-bus-mark { fill: #f4f1ea; opacity: 0.9; }
+.lbt .tw-shelter { fill: var(--tw-pole); }
+.lbt .tw-ground { fill: var(--tw-ground); }
+.lbt .tw-cat { fill: var(--tw-cat); }
+.lbt .tw-cat-tail { fill: none; stroke: var(--tw-cat); stroke-width: 2.4; stroke-linecap: round; }
+
+/* who is out when: laundry comes in at night, the cat moves to the lamp */
+.lbt .tw-cat-lamp,
+html[data-lbt-time="night"] .lbt .tw-cat-roof,
+html[data-lbt-time="night"] .lbt .tw-laundry {
+  display: none;
+}
+html[data-lbt-time="night"] .lbt .tw-cat-lamp {
+  display: inline;
+}
+
+/* ---- motion: one quiet thing at a time ---- */
+@keyframes lbt-cloud-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-90px); }
+}
+@keyframes lbt-lamp-breathe {
+  0%, 100% { opacity: calc(var(--tw-beam) * 0.82); }
+  50% { opacity: var(--tw-beam); }
+}
+@keyframes lbt-window-out {
+  0%, 70% { fill: var(--tw-lit); }
+  72%, 90% { fill: var(--tw-win); }
+  92%, 100% { fill: var(--tw-lit); }
+}
+@keyframes lbt-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+@keyframes lbt-sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+@keyframes lbt-cat-breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.06); }
+}
+html[data-lbt-time="day"] .lbt .sky-cloud,
+html[data-lbt-time="dawn"] .lbt .sky-cloud {
+  animation: lbt-cloud-drift 80s ease-in-out infinite alternate;
+}
+.lbt .sky-cloud.c2 {
+  animation-duration: 110s;
+  animation-delay: -30s;
+}
+html[data-lbt-time="night"] .lbt .tw-beam {
+  animation: lbt-lamp-breathe 7s ease-in-out infinite;
+}
+html[data-lbt-time="night"] .lbt .tw-weekday g:nth-of-type(4) .tw-win.l1:first-of-type,
+html[data-lbt-time="night"] .lbt .tw-weekend g:nth-of-type(4) .tw-win.l1:first-of-type {
+  animation: lbt-window-out 17s steps(1, end) infinite;
+}
+html[data-lbt-time="night"] .lbt .sky-star.s2,
+html[data-lbt-time="night"] .lbt .sky-star.s4 {
+  animation: lbt-twinkle 5s ease-in-out infinite;
+}
+html[data-lbt-time="night"] .lbt .sky-star.s4 {
+  animation-delay: -2.5s;
+}
+.lbt .tw-laundry {
+  transform-box: view-box;
+  transform-origin: 640px 110px;
+}
+html[data-lbt-time="day"] .lbt .tw-laundry,
+html[data-lbt-time="dusk"] .lbt .tw-laundry {
+  animation: lbt-sway 6s ease-in-out infinite;
+}
+html[data-lbt-time="dusk"] .lbt .tw-laundry {
+  animation-duration: 8s;
+}
+.lbt .tw-cat-roof {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+html[data-lbt-time="day"] .lbt .tw-cat-roof {
+  animation: lbt-cat-breathe 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lbt .town-sky *,
+  .lbt .townscape *,
+  .lbt.lbt-app {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---- sizes: below the desktop layout the street stays hidden (the stage
+   keeps its compact proportions); phones keep a small sun or moon ---- */
+@media (max-width: 610px) {
+  .lbt .home-grid > .main-stage {
+    padding-bottom: 14px;
+  }
+  .lbt .home-grid > .main-stage .townscape,
+  .lbt .sky-cloud,
+  .lbt .sky-star {
+    display: none;
+  }
+  .lbt .sky-sun,
+  html[data-lbt-time] .lbt .sky-sun {
+    top: 12px;
+    bottom: auto;
+    right: 14px;
+    left: auto;
+    width: 22px;
+    height: 22px;
+  }
+  .lbt .sky-moon,
+  html[data-lbt-time] .lbt .sky-moon {
+    top: 10px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* ---- intro animation by time of day: by day the sun rises behind the B ---- */
+html[data-lbt-time="day"] .lbt .lbt-intro {
+  color: #1f2a44;
+  background:
+    radial-gradient(70vmax 46vmax at 50% 112%, rgba(255, 222, 160, 0.4), transparent 70%),
+    linear-gradient(180deg, #cbd9df 0%, #dbe3e2 55%, #e7e4d9 100%);
+}
+html[data-lbt-time="dusk"] .lbt .lbt-intro {
+  color: #2a2238;
+  background:
+    radial-gradient(70vmax 46vmax at 50% 112%, rgba(248, 190, 120, 0.45), transparent 70%),
+    linear-gradient(180deg, #c1909a 0%, #e0a690 55%, #eec19e 100%);
+}
+html[data-lbt-time="dawn"] .lbt .lbt-intro {
+  color: #262a44;
+  background:
+    radial-gradient(70vmax 46vmax at 50% 112%, rgba(246, 214, 168, 0.45), transparent 70%),
+    linear-gradient(180deg, #adafcb 0%, #d8c3c4 55%, #edd8c5 100%);
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-stars,
+html[data-lbt-time="dusk"] .lbt .lbt-intro-stars,
+html[data-lbt-time="dawn"] .lbt .lbt-intro-stars {
+  display: none;
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-tagline,
+html[data-lbt-time="dusk"] .lbt .lbt-intro-tagline,
+html[data-lbt-time="dawn"] .lbt .lbt-intro-tagline {
+  color: inherit;
+  opacity: 0.78;
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-charge {
+  fill: #ef9a74;
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-glow,
+html[data-lbt-time="dawn"] .lbt .lbt-intro-glow,
+html[data-lbt-time="dusk"] .lbt .lbt-intro-glow {
+  width: 30vmin;
+  height: 30vmin;
+  background: radial-gradient(circle, #fbe7b0 0 47%, rgba(251, 231, 176, 0.38) 49%, transparent 70%);
+  animation-name: lbt-intro-sunrise;
+  animation-duration: 1.9s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+html[data-lbt-time="dusk"] .lbt .lbt-intro-glow {
+  background: radial-gradient(circle, #f8c88c 0 47%, rgba(248, 200, 140, 0.4) 49%, transparent 70%);
+}
+html[data-lbt-time="dawn"] .lbt .lbt-intro-glow {
+  background: radial-gradient(circle, #f7d9ae 0 47%, rgba(247, 217, 174, 0.4) 49%, transparent 70%);
+}
+@keyframes lbt-intro-sunrise {
+  0% { opacity: 0; transform: translate(-50%, -8%) scale(0.85); }
+  35% { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -78%) scale(1); }
+}
+/* ==========================================================================
+   Waiting, chat and end: one screen at every size, and the time of day.
+   Night keeps the original colours; dawn / day / dusk get the sky (waiting,
+   end) or paper panels (chat). Only the chat log scrolls.
+   ========================================================================== */
+
+/* ---- layout: the view fills the window under the top bar ---- */
+.lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) {
+  height: 100dvh;
+  min-height: 0;
+}
+.lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) .topbar {
+  height: 64px;
+  flex-shrink: 0;
+}
+.lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) .footer {
+  padding: 10px 0 12px;
+  flex-shrink: 0;
+}
+.lbt .waiting-view,
+.lbt .end-view {
+  flex: 1;
+  min-height: 0;
+  padding: clamp(10px, 2.4vh, 28px) 0;
+}
+.lbt .waiting-card,
+.lbt .end-card {
+  position: relative;
+  overflow: hidden auto;
+  min-height: 0;
+  max-height: 100%;
+  height: min(640px, 100%);
+  padding: clamp(22px, 5vh, 60px) clamp(18px, 4vw, 40px);
+  scrollbar-width: none;
+}
+.lbt .waiting-card > :not(.town-sky),
+.lbt .end-card > :not(.town-sky) {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.lbt .waiting-lamp {
+  height: clamp(84px, 17vh, 155px);
+  margin-bottom: clamp(10px, 3.4vh, 35px);
+}
+.lbt .waiting-lamp:before {
+  height: calc(100% - 29px);
+}
+.lbt .waiting-card h1,
+.lbt .end-card h1 {
+  font-size: clamp(30px, min(5vw, 6.4vh), 62px);
+  margin: clamp(6px, 1.8vh, 17px) 0;
+}
+.lbt .waiting-progress {
+  margin: clamp(16px, 4.4vh, 44px) auto clamp(10px, 2.4vh, 24px);
+}
+.lbt .end-moon {
+  width: clamp(64px, 12vh, 110px);
+  height: clamp(64px, 12vh, 110px);
+  font-size: clamp(40px, 7.6vh, 72px);
+  margin-bottom: clamp(10px, 2.8vh, 28px);
+}
+.lbt .end-moon .end-sun {
+  width: 72%;
+  height: 72%;
+  fill: var(--sun, #f6d58a);
+}
+.lbt .end-actions {
+  margin-top: clamp(14px, 3.4vh, 35px);
+}
+/* the sky sits behind the card; the end card's own icon is its sun/moon */
+.lbt .waiting-card .town-sky,
+.lbt .end-card .town-sky {
+  border-radius: inherit;
+}
+.lbt .end-card .sky-sun,
+.lbt .end-card .sky-moon {
+  display: none;
+}
+
+.lbt .chat-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(10px, 2vh, 23px) 0;
+}
+.lbt .chat-shell {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+}
+.lbt .chat-main {
+  min-height: 0;
+}
+.lbt .chat-messages {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+.lbt .chat-aside {
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+@media (max-width: 850px) {
+  .lbt .chat-main {
+    min-height: 0;
+  }
+}
+@media (max-width: 610px) {
+  .lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) .topbar {
+    height: 58px;
+  }
+  /* the chat is the whole screen on a phone; the policies stay one tap away
+     on every other screen */
+  .lbt .site-shell:has(> .chat-view) .footer {
+    display: none;
+  }
+  .lbt .chat-view {
+    padding: 8px 0 10px;
+  }
+  .lbt .chat-shell,
+  .lbt .chat-main {
+    min-height: 0;
+  }
+  .lbt .chat-messages {
+    max-height: none;
+  }
+  .lbt .waiting-card,
+  .lbt .end-card {
+    min-height: 0;
+    height: 100%;
+    padding: clamp(18px, 4vh, 35px) 20px;
+  }
+  .lbt .waiting-card h1,
+  .lbt .end-card h1 {
+    font-size: clamp(28px, min(10vw, 5.4vh), 43px);
+  }
+  .lbt .waiting-card > p:not(.eyebrow),
+  .lbt .end-card > p:not(.eyebrow) {
+    line-height: 1.75;
+  }
+}
+/* Landscape phones and tiny windows: let the page scroll instead of
+   squeezing the chat log to nothing. */
+@media (max-height: 520px) {
+  .lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) {
+    height: auto;
+    min-height: 100%;
+  }
+  .lbt .waiting-card,
+  .lbt .end-card {
+    height: auto;
+    max-height: none;
+  }
+  .lbt .chat-messages {
+    min-height: 240px;
+  }
+}
+
+/* ---- colours for dawn / day / dusk ---- */
+html[data-lbt-time="day"] .lbt-app {
+  --panel: #f9f4eb;
+  --panel-2: #f0ebe1;
+  --bubble-other: #e2e9ed;
+}
+html[data-lbt-time="dusk"] .lbt-app {
+  --panel: #fbf3ec;
+  --panel-2: #f3e7de;
+  --bubble-other: #efded5;
+}
+html[data-lbt-time="dawn"] .lbt-app {
+  --panel: #f8f4f3;
+  --panel-2: #eeeaec;
+  --bubble-other: #e5e2ed;
+}
+
+/* waiting + end: the card is the sky of the hour */
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) {
+  background: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 58%, var(--sky-c) 100%);
+  border-color: var(--ground-line);
+  color: var(--hero-ink);
+  box-shadow: 0 18px 44px rgba(31, 42, 68, 0.1);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) h1 {
+  color: var(--hero-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) .eyebrow {
+  color: var(--hero-kicker);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .end-card) > p:not(.eyebrow),
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-town, .waiting-long, .town-count-waiting) {
+  color: var(--hero-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card strong, .waiting-offline, .end-reason, .end-support-button, .companion-disclosure) {
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.waiting-card, .companion-invitation) .text-button {
+  color: var(--hero-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-progress {
+  background: rgba(31, 42, 68, 0.14);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-progress span {
+  background: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-lamp:before {
+  background: var(--tw-pole);
+}
+/* by day the lamp is off: an unlit head, no glow, no breathing */
+:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-lamp:after {
+  background: var(--tw-pole);
+  box-shadow: none;
+  animation: none;
+  opacity: 0.9;
+}
+/* at dusk it has just come on: warm, a softer glow */
+[data-lbt-time="dusk"] .lbt.lbt-app .waiting-lamp:after {
+  background: #f5c66e;
+  box-shadow: 0 0 40px 18px rgba(245, 198, 110, 0.3);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .end-moon {
+  background: rgba(255, 255, 255, 0.4);
+}
+[data-lbt-time="dusk"] .lbt.lbt-app .end-moon .end-sun {
+  fill: #f2a66f;
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .end-card .secondary-button {
+  border-color: var(--ground-line);
+  color: var(--hero-ink);
+  background: rgba(255, 255, 255, 0.35);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .end-card .secondary-button:hover {
+  border-color: var(--hero-accent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .companion-invitation {
+  background: rgba(255, 255, 255, 0.62);
+  border-color: var(--hero-accent);
+  color: var(--hero-ink);
+}
+
+/* chat: paper panels, the same family as the home form */
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-main, .chat-aside) {
+  background: var(--panel);
+  border-color: var(--ground-line);
+  color: var(--ground-ink);
+  box-shadow: 0 18px 44px rgba(31, 42, 68, 0.1);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-header, .chat-bottom, .self-profile, .aside-divider) {
+  border-color: var(--ground-line);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-header h1, .partner-profile h1, .self-profile strong, .chat-aside h2, .chat-aside > strong) {
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.chat-header p, .chat-header .profile-pace, .profile-prefix, .self-profile, .message-sender, .prompt-row, .chat-bottom > p, .chat-bottom > p button, .chat-aside > p, .chat-aside .extend-hint, .aside-help) {
+  color: var(--ground-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .self-profile {
+  background: var(--panel-2);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.profile-energy, .session-timer, .leave-button span, .prompt-row button, .system-note span, .chat-main .small-label, .chat-aside .small-label, .chat-aside .eyebrow) {
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .leave-button {
+  border-color: var(--ground-line);
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .leave-button:hover {
+  border-color: var(--hero-accent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .system-note {
+  background: var(--panel-2);
+  color: var(--ground-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.message.other .bubble, .typing-indicator) {
+  background: var(--bubble-other);
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .typing-indicator span {
+  background: var(--ground-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .message.other .avatar {
+  background: #8a95a8;
+  color: #fff;
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .composer {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ground-line);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .composer input {
+  color: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .composer button {
+  background: var(--ground-ink);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .aside-lamp {
+  border-color: color-mix(in srgb, var(--hero-accent) 28%, transparent);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app :is(.extend-button, .mobile-extend-button) {
+  border-color: color-mix(in srgb, var(--hero-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--hero-accent) 7%, transparent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .extend-button:hover {
+  background: color-mix(in srgb, var(--hero-accent) 13%, transparent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .extend-banner {
+  border-color: color-mix(in srgb, var(--hero-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--hero-accent) 8%, transparent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .extend-banner button {
+  background: var(--hero-accent);
+  color: #fff;
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .chat-offline {
+  background: color-mix(in srgb, var(--hero-accent) 10%, transparent);
+  color: var(--hero-accent);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .topic-card {
+  box-shadow: 0 8px 22px rgba(31, 42, 68, 0.12);
+}
+
+/* sky inside the cards: keep the sun and clouds clear of the copy */
+.lbt .waiting-card .sky-sun,
+html[data-lbt-time] .lbt .waiting-card .sky-sun {
+  top: 9%;
+  bottom: auto;
+  right: 13%;
+  left: auto;
+  width: clamp(30px, 6vh, 48px);
+  height: clamp(30px, 6vh, 48px);
+}
+html[data-lbt-time="dusk"] .lbt .waiting-card .sky-sun {
+  top: 15%;
+  right: 16%;
+}
+html[data-lbt-time="dawn"] .lbt .waiting-card .sky-sun {
+  top: 19%;
+  right: 20%;
+}
+.lbt .waiting-card .sky-moon,
+html[data-lbt-time] .lbt .waiting-card .sky-moon {
+  top: 9%;
+  right: 13%;
+  width: clamp(26px, 5vh, 40px);
+  height: clamp(26px, 5vh, 40px);
+}
+.lbt .waiting-card .sky-cloud.c1 {
+  left: 7%;
+  top: 6%;
+}
+.lbt .waiting-card .sky-cloud.c2 {
+  left: 62%;
+  top: 15%;
+}
+.lbt .end-card .sky-cloud {
+  display: none;
+}
+/* phones: the card is the screen; the footer waits below it */
+@media (max-width: 610px) {
+  .lbt .site-shell:has(> .waiting-view, > .end-view) {
+    height: auto;
+    min-height: 100%;
+  }
+  .lbt .waiting-view,
+  .lbt .end-view {
+    flex: none;
+    height: calc(100dvh - 58px);
+  }
+}
+
+/* the cards size to their content, up to the window; spacing follows the
+   window height so nothing is clipped */
+.lbt .waiting-card,
+.lbt .end-card {
+  height: auto;
+  min-height: min(600px, 100%);
+  padding: clamp(18px, 4.2vh, 60px) clamp(18px, 4vw, 40px);
+}
+.lbt .waiting-card h1,
+.lbt .end-card h1 {
+  font-size: clamp(28px, min(5vw, 5.8vh), 62px);
+}
+.lbt .end-moon {
+  width: clamp(56px, 10vh, 110px);
+  height: clamp(56px, 10vh, 110px);
+  font-size: clamp(34px, 6.4vh, 72px);
+}
+.lbt .end-actions .secondary-button,
+.lbt .end-actions .primary-button {
+  min-height: clamp(42px, 6.4vh, 50px);
+}
+/* chat aside on short windows: drop the ornament, tighten the rhythm;
+   the crisis lines (aside-help) always stay in view */
+@media (max-height: 820px) {
+  .lbt .chat-aside {
+    padding: clamp(16px, 3vh, 31px) 22px;
+  }
+  .lbt .aside-lamp {
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
+    margin: 4px 0 clamp(10px, 2.4vh, 31px);
+  }
+  .lbt .chat-aside h2 {
+    font-size: clamp(19px, 3vh, 26px);
+    margin: 8px 0;
+  }
+  .lbt .chat-aside > p {
+    line-height: 1.7;
+  }
+  .lbt .aside-divider {
+    margin: clamp(12px, 2.6vh, 30px) 0;
+  }
+  .lbt .chat-aside > strong {
+    margin: 6px 0 clamp(10px, 2.4vh, 28px);
+  }
+  .lbt .aside-help {
+    margin-top: 10px;
+  }
+}
+@media (max-height: 660px) {
+  .lbt .aside-lamp,
+  .lbt .chat-aside > p:not(.extend-hint):not(.aside-help) {
+    display: none;
+  }
+}
+.lbt .waiting-card,
+.lbt .end-card {
+  scrollbar-width: thin;
+}
+@media (max-height: 640px) {
+  .lbt .waiting-card > p:not(.eyebrow),
+  .lbt .end-card > p:not(.eyebrow) {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .lbt .end-moon {
+    width: 48px;
+    height: 48px;
+    font-size: 30px;
+  }
+  .lbt .waiting-card h1,
+  .lbt .end-card h1 {
+    font-size: clamp(26px, 5.4vh, 34px);
+    line-height: 1.2;
+  }
+  .lbt .end-actions {
+    gap: 8px;
+  }
+}
+@media (max-height: 560px) {
+  .lbt .waiting-card .eyebrow,
+  .lbt .end-card .eyebrow {
+    display: none;
+  }
+}
+
+/* Optional support remains easy to find, without interrupting a conversation. */
+.lbt .support-pill {
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.lbt .support-pill:hover,
+.lbt .support-pill:focus-visible {
+  background: rgba(248, 215, 121, 0.08);
+  border-color: var(--lamp);
+}
+.lbt .support-pill:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 3px;
+}
+.lbt .support-invitation {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+.lbt .support-invitation h3 {
+  font-size: 15px;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.lbt .support-invitation > p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+.lbt .support-lamp {
+  color: var(--peach);
+  display: block;
+  margin-bottom: 8px;
+}
+.lbt .support-lamp-light {
+  opacity: 0.65;
+  animation: lbt-support-light 200ms ease-out;
+}
+@keyframes lbt-support-light {
+  from { opacity: 0; }
+  to { opacity: 0.65; }
+}
+@media (max-width: 610px) {
+  .lbt .topbar,
+  .lbt .site-shell:has(.home-view) .topbar {
+    height: auto;
+    min-height: 88px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .lbt .topbar-actions {
+    width: 100%;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .lbt .support-pill,
+  .lbt .feedback-pill {
+    min-height: 36px;
+    font-size: 12px;
+  }
+  .lbt .home-grid > .side-rail .how-card .support-note {
+    display: block;
+    margin-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lbt .support-lamp-light { animation: none; }
+}
+
+/* ==========================================================================
+   Support has its own card in the info row, so the rules card stays short
+   and the stage above keeps its height.
+   ========================================================================== */
+.lbt .side-card.support-card {
+  border-top: 1px solid var(--line);
+  margin-top: 0;
+  padding: 30px;
+}
+.lbt .support-card h3 {
+  color: var(--paper);
+}
+.lbt .support-card > p:not(.support-note) {
+  color: var(--mist);
+}
+.lbt .support-card .support-note {
+  font-size: 11px;
+  color: #92a4be;
+  margin: 8px 0 0;
+}
+/* tablets: the support card takes the full row under the two cards */
+@media (max-width: 850px) {
+  .lbt .side-rail .support-card {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 610px) {
+  .lbt .side-card.support-card {
+    padding: 22px 20px;
+  }
+}
+
+/* desktop one-screen layout */
+@media (min-width: 960px) and (min-height: 620px) {
+  .lbt .home-grid > .side-rail .support-card {
+    padding: 14px 20px;
+  }
+  .lbt .home-grid > .side-rail .support-card h3 {
+    font-size: 15px;
+    margin: 0 0 6px;
+  }
+  .lbt .home-grid > .side-rail .support-card > p:not(.support-note) {
+    font-size: 12px;
+    line-height: 1.65;
+    margin: 0 0 8px;
+  }
+  .lbt .home-grid > .side-rail .support-card .support-note {
+    display: inline;
+    margin-left: 10px;
+  }
+  /* narrower desktops: the battery card spans both rows; rules on top,
+     a slim support card (link + note) under them */
+  .lbt .home-grid > .side-rail {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-areas:
+      "battery how"
+      "battery support";
+    gap: 12px 16px;
+  }
+  .lbt .home-grid > .side-rail .battery-card {
+    grid-area: battery;
+  }
+  .lbt .home-grid > .side-rail .how-card {
+    grid-area: how;
+    padding-bottom: 10px;
+  }
+  .lbt .home-grid > .side-rail .how-card ol {
+    margin-bottom: 0;
+  }
+  .lbt .home-grid > .side-rail .support-card {
+    grid-area: support;
+    padding: 10px 20px;
+    border-radius: 16px;
+  }
+  .lbt .home-grid > .side-rail .support-card h3,
+  .lbt .home-grid > .side-rail .support-card > p:not(.support-note) {
+    display: none;
+  }
+}
+/* wide desktops: three cards side by side, the support card in full */
+@media (min-width: 1350px) and (min-height: 620px) {
+  .lbt .home-grid > .side-rail {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "battery how support";
+    gap: 16px;
+  }
+  .lbt .home-grid > .side-rail .how-card {
+    padding-bottom: 16px;
+  }
+  .lbt .home-grid > .side-rail .support-card {
+    padding: 16px 20px;
+    border-radius: 20px;
+  }
+  .lbt .home-grid > .side-rail .support-card h3,
+  .lbt .home-grid > .side-rail .support-card > p:not(.support-note) {
+    display: block;
+  }
+  .lbt .home-grid > .side-rail .support-card .support-note {
+    display: block;
+    margin-left: 0;
+  }
+}
+@media (min-width: 960px) and (max-width: 1349px) and (min-height: 620px) {
+  .lbt .home-grid > .side-rail {
+    row-gap: 10px;
+  }
+  .lbt .home-grid > .side-rail .how-card {
+    padding-top: 12px;
+    padding-bottom: 8px;
+  }
+  .lbt .home-grid > .side-rail .how-card ol {
+    margin-top: 4px;
+  }
+  .lbt .home-grid > .side-rail .how-card li p {
+    margin: 5px 0;
+  }
+  .lbt .home-grid > .side-rail .support-card {
+    padding: 7px 18px;
+  }
+}
+/* the copy always clears the street: the street is a little shorter on short
+   windows and the copy's bottom padding is at least the street's height */
+@media (min-width: 960px) and (min-height: 620px) {
+  .lbt .home-grid > .main-stage .townscape {
+    height: clamp(56px, 12vh, 140px);
+  }
+  .lbt .home-grid > .main-stage .hero-copy {
+    padding-bottom: max(clamp(56px, 11vh, 110px), calc(clamp(56px, 12vh, 140px) + 6px));
+  }
+}
+@media (min-width: 960px) and (max-width: 1100px) and (min-height: 620px) and (max-height: 700px) {
+  .lbt .home-grid > .side-rail .battery-card > p {
+    display: none;
+  }
+}
+/* when the stage is too short for both the copy and the street (small or
+   short windows), the copy wins and the street steps out */
+@media (min-width: 960px) and (min-height: 620px) {
+  .lbt .home-grid > .main-stage {
+    container: lbt-stage / size;
+  }
+}
+@container lbt-stage (max-height: 340px) {
+  .lbt .home-grid > .main-stage .townscape {
+    display: none;
+  }
+  .lbt .home-grid > .main-stage .hero-copy {
+    padding-bottom: 18px;
+  }
+}
+@container lbt-stage (max-height: 340px) {
+  .lbt .home-grid > .main-stage .hero-kicker,
+  .lbt .home-grid > .main-stage .stage-topline {
+    display: none;
+  }
+  .lbt .home-grid > .main-stage h1 {
+    font-size: clamp(28px, 14cqh, 52px);
+  }
+  .lbt .home-grid > .main-stage .hero-subtitle {
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+}
+
+/* Phones: one header row again (wordmark, 贊助, 意見箱, language), so the
+   form starts where it used to; it wraps only if a phone is too narrow. */
+@media (max-width: 610px) {
+  .lbt .topbar,
+  .lbt .site-shell:has(.home-view) .topbar,
+  .lbt .site-shell:has(> .waiting-view, > .chat-view, > .end-view) .topbar {
+    height: auto;
+    min-height: 58px;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding: 9px 0;
+  }
+  .lbt .topbar-actions {
+    width: auto;
+    margin-left: auto;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .lbt .wordmark {
+    font-size: 18px;
+  }
+  .lbt .support-pill,
+  .lbt .feedback-pill {
+    min-height: 32px;
+    padding: 0 9px;
+    gap: 5px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+  .lbt .locale-toggle button {
+    min-width: 32px;
+    min-height: 30px;
+    padding: 0 7px;
+  }
+}
+/* too narrow for four items in one row: the header's 贊助 pill steps aside
+   (the support card on the home page and the end screen still offer it) */
+@media (max-width: 389px) {
+  .lbt .topbar .support-pill {
+    display: none;
+  }
+}
+@media (max-width: 429px) {
+  html[lang="en"] .lbt .topbar .support-pill {
+    display: none;
+  }
+}
+/* tablets: the battery card on the left spans both rows; rules and support
+   stack on the right, so neither column is left half empty */
+@media (min-width: 611px) and (max-width: 850px) {
+  .lbt .side-rail {
+    grid-template-areas:
+      "battery how"
+      "battery support";
+    align-items: stretch;
+  }
+  .lbt .side-rail .battery-card {
+    grid-area: battery;
+  }
+  .lbt .side-rail .how-card {
+    grid-area: how;
+    min-height: 0;
+  }
+  .lbt .side-rail .how-card ol {
+    margin-bottom: 0;
+  }
+  .lbt .side-rail .support-card {
+    grid-area: support;
+    grid-column: auto;
+  }
+}
+
+/* ==========================================================================
+   Music: the battery is the switch and sings along; three signal bars set
+   the volume; a small header switch keeps it reachable from every screen.
+   ========================================================================== */
+.lbt .side-card-top {
+  align-items: center;
+  gap: 10px;
+}
+.lbt .side-card-top .music-hint,
+.lbt .side-card-top .music-volume-wrap {
+  margin-left: auto;
+}
+.lbt .music-hint {
+  border: 1px dashed rgba(248, 215, 121, 0.42);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lamp);
+  padding: 0 9px;
+  font: inherit;
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lbt .music-hint:hover {
+  border-style: solid;
+}
+.lbt .music-volume-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lamp);
+}
+.lbt .music-volume-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+.lbt .music-volume {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+}
+.lbt .music-volume button {
+  width: 11px;
+  height: 18px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: flex-end;
+  cursor: pointer;
+}
+.lbt .music-volume button span {
+  display: block;
+  width: 100%;
+  border-radius: 2px;
+  background: #3f5170;
+  transition: background-color 0.2s ease;
+}
+.lbt .music-volume button:nth-child(1) span { height: 6px; }
+.lbt .music-volume button:nth-child(2) span { height: 11px; }
+.lbt .music-volume button:nth-child(3) span { height: 16px; }
+.lbt .music-volume button.on span {
+  background: var(--lamp);
+}
+.lbt .music-hint:focus-visible,
+.lbt .music-volume button:focus-visible,
+.lbt .music-pill:focus-visible,
+.lbt .battery-music-button:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 3px;
+}
+
+/* the battery itself is the button */
+.lbt .battery-music-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 142px;
+  height: 186px;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  border: 0;
+  border-radius: 18px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.lbt .battery-music-button:hover ~ .battery-character .battery-body {
+  border-color: #d3deec;
+}
+
+/* singing */
+.lbt .sing-mouth {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 5px);
+  width: calc(9px + var(--amp, 0) * 4px);
+  height: calc(2px + var(--amp, 0) * 9px);
+  transform: translate(-50%, -50%);
+  border-radius: 50% 50% 46% 46%;
+  background: #334158;
+  box-shadow: inset 0 -2px 0 #b5584a;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.lbt .sing-cheeks {
+  left: calc(50% - 22px);
+  top: calc(50% + 1px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.lbt .battery-display.is-singing .sing-mouth {
+  opacity: 1;
+}
+.lbt .battery-display.is-singing .sing-cheeks {
+  opacity: 0.75;
+}
+.lbt .battery-display.is-singing .battery-face .battery-mouth,
+.lbt .battery-display.is-singing .battery-face .battery-cheeks {
+  opacity: 0 !important;
+  animation: none;
+}
+.lbt .battery-display.is-singing .battery-eyes {
+  animation: none;
+}
+.lbt .battery-display.is-singing .battery-eyes i {
+  width: 7px;
+  height: 6px;
+  background: none;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  transform: none;
+  animation: none;
+}
+.lbt .battery-display.is-singing .battery-character {
+  animation: lbt-sing-sway 1.6s ease-in-out infinite;
+}
+.lbt .battery-display.is-singing .battery-body {
+  transform: translateY(calc(var(--amp, 0) * -3px));
+}
+.lbt .battery-display.is-singing .battery-sleep-mark,
+.lbt .battery-display.is-singing .battery-spark {
+  opacity: 0;
+}
+.lbt .battery-note {
+  position: absolute;
+  left: calc(50% + 40px + var(--x, 0px));
+  top: 46px;
+  z-index: 1;
+  color: var(--lamp);
+  font-size: 17px;
+  pointer-events: none;
+  animation: lbt-note-rise 2.4s ease-out forwards;
+}
+@keyframes lbt-sing-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+@keyframes lbt-note-rise {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-8deg) scale(0.7); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx, 24px), -48px) rotate(10deg) scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lbt .battery-display.is-singing .battery-character {
+    animation: none;
+  }
+  .lbt .battery-note {
+    display: none;
+  }
+}
+
+/* header switch */
+.lbt .music-pill {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid rgba(248, 215, 121, 0.28);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--lamp);
+  cursor: pointer;
+}
+.lbt-app .music-pill {
+  color: var(--pill);
+  border-color: var(--pill-line);
+}
+.lbt .music-pill[aria-pressed="true"] {
+  border-color: currentColor;
+}
+.lbt .music-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.lbt .music-eq i {
+  display: block;
+  width: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+.lbt .music-eq i:nth-child(1) { height: 5px; }
+.lbt .music-eq i:nth-child(2) { height: 10px; }
+.lbt .music-eq i:nth-child(3) { height: 7px; }
+.lbt .music-pill[aria-pressed="true"] .music-eq i {
+  animation: lbt-eq 0.9s ease-in-out infinite;
+}
+.lbt .music-pill[aria-pressed="true"] .music-eq i:nth-child(2) { animation-delay: -0.3s; }
+.lbt .music-pill[aria-pressed="true"] .music-eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes lbt-eq {
+  0%, 100% { height: 3px; }
+  50% { height: 12px; }
+}
+/* phones: the header switch appears once music has been started, and takes
+   the 贊助 pill's place (support stays on the home card and the end screen) */
+@media (max-width: 610px) {
+  .lbt .music-pill {
+    display: none;
+    width: 32px;
+    height: 32px;
+  }
+  .lbt .music-pill.is-started {
+    display: inline-grid;
+  }
+  .lbt .topbar:has(.music-pill.is-started) .support-pill {
+    display: none;
+  }
+}
+@media (max-width: 389px) {
+  .lbt .wordmark {
+    font-size: 17px;
+  }
+}
+
+/* ==========================================================================
+   Attention cues: the 提示音 switch on the waiting card and under the chat.
+   ========================================================================== */
+.lbt .chime-toggle {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lbt .chime-toggle > span:first-child {
+  margin-right: 4px;
+}
+.lbt .chime-toggle[aria-pressed="false"] {
+  opacity: 0.75;
+}
+.lbt .chime-toggle:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 3px;
+}
+.lbt .waiting-cue {
+  max-width: 30em;
+  margin: 0 auto clamp(8px, 1.8vh, 16px);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--mist);
+}
+.lbt .waiting-cue .chime-toggle {
+  color: var(--lamp);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-cue {
+  color: var(--hero-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-cue .chime-toggle {
+  color: var(--hero-accent);
+}
+.lbt .chat-bottom-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (max-height: 640px) {
+  .lbt .waiting-cue {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}

@@ -60,3 +60,21 @@ Sitemaps and metadata do not guarantee indexing or a ranking position.
 Browser check: `pnpm exec playwright test e2e/lbt-seo.spec.ts`. When checking
 a deployed site, set `PLAYWRIGHT_NO_SERVER=1` and `PLAYWRIGHT_BASE_URL` to its
 origin; `NEXT_PUBLIC_SITE_URL` must match the value used for that build.
+
+## Security deployment
+
+`pnpm cf:build` also generates `.open-next/csp-hashes.json` with route allowances
+and the optional analytics initializer hash. The Cloudflare entry stamps a fresh
+nonce onto trusted React-generated scripts after OpenNext renders the response,
+then sends matching CSP and private/no-store headers. This removes script
+`unsafe-inline` on the twelve LowBatteryTown home, demo, guide and policy pages while
+retaining Next.js prerendering and hydration. Never render user-controlled HTML
+or scripts: this edge nonce transform trusts the application's generated HTML.
+Analytics initialization uses the same script generator at render and build time.
+Style attributes still require `style-src unsafe-inline`; legacy/dynamic pages
+retain their existing CSP. Do not skip CSP metadata generation before deployment.
+
+Use pnpm 9.15.9 for this frontend. Dependency overrides intentionally pin patched
+transitive versions; the lockfile must be installed with `--frozen-lockfile`. CI
+blocks high/critical runtime dependency findings. An unfixed development-only
+`braces` advisory is documented in the security review.
