@@ -120,10 +120,14 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
             <Wordmark />
           </Link>
           <div className="topbar-actions">
-            <span className="prototype-pill">
-              <span className="prototype-dot" />
-              {storeMode === "demo" ? t("topbar.prototype") : t("topbar.beta")}
-            </span>
+            <button
+              type="button"
+              className="prototype-pill feedback-pill"
+              onClick={() => openModal({ type: "feedback" })}
+            >
+              <span className="prototype-dot" aria-hidden="true" />
+              {t("topbar.feedback")}
+            </button>
             <LocaleToggle />
             <button
               type="button"
@@ -148,9 +152,6 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
             <Link href="/policies/privacy">{t("policy.nav.privacy")}</Link>
             <Link href="/policies/terms">{t("policy.nav.terms")}</Link>
             <Link href="/policies/guidelines">{t("policy.nav.guidelines")}</Link>
-            <button type="button" className="footer-link-button" onClick={() => openModal({ type: "feedback" })}>
-              {t("footer.feedback")}
-            </button>
           </nav>
           <button
             type="button"

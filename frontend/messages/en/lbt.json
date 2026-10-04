@@ -9,10 +9,9 @@
     "homeAria": "LowBatteryTown, back to the home page"
   },
   "topbar": {
-    "prototype": "Prototype",
     "guide": "Town guide",
     "languageAria": "Change language",
-    "beta": "Beta"
+    "feedback": "Feedback"
   },
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
@@ -280,8 +279,7 @@
   "footer": {
     "left": "LowBatteryTown · a town still being imagined",
     "right": "Prototype demo: matching and messages are simulated and not connected to real people.",
-    "rightLive": "Beta: please be kind. You can say good night or report at any time.",
-    "feedback": "Feedback"
+    "rightLive": "Beta: please be kind. You can say good night or report at any time."
   },
   "notice": {
     "closed": "The lamps aren't lit yet. Please come back during open hours.",

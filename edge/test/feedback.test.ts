@@ -114,6 +114,26 @@ describe("forwardToSheet", () => {
     expect(row?.sheet_sent).toBe(1);
   });
 
+  test("follows the Apps Script 302 with a GET to the echo URL", async () => {
+    await env.DB.prepare(
+      "INSERT INTO lbt_feedback (id, category, message, status, created_at) VALUES ('f-redirect', 'idea', 'x', 'new', '2026-10-04T00:00:00.000Z')",
+    ).run();
+    const calls: { url: string; method: string; redirect?: string }[] = [];
+    const fake = (async (url: string, init: RequestInit) => {
+      calls.push({ url, method: init.method ?? "GET", redirect: init.redirect });
+      if (calls.length === 1) {
+        return new Response(null, { status: 302, headers: { Location: "https://script.googleusercontent.com/macros/echo?x=1" } });
+      }
+      return Response.json({ ok: true });
+    }) as unknown as typeof fetch;
+    const rec = { ...record, id: "f-redirect" };
+    expect(await forwardToSheet(env.DB, "https://script.google.com/macros/s/x/exec", "t", rec, fake)).toBe(true);
+    expect(calls).toEqual([
+      { url: "https://script.google.com/macros/s/x/exec", method: "POST", redirect: "manual" },
+      { url: "https://script.googleusercontent.com/macros/echo?x=1", method: "GET", redirect: "follow" },
+    ]);
+  });
+
   test("a failing sheet never throws", async () => {
     const boom = (async () => {
       throw new Error("network down");
