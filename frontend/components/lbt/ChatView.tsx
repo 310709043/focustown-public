@@ -8,6 +8,7 @@ import { formatClock } from "@/lib/lbt/format";
 import { remainingSeconds, useLbtStore } from "@/lib/lbt/sessionStore";
 import type { ChatLine } from "@/lib/lbt/types";
 
+import { ChimeToggle } from "./ChimeToggle";
 import { Notice } from "./Notice";
 
 const bars = (level: number) => "▮".repeat(level);
@@ -39,7 +40,8 @@ export function ChatView() {
   const messagesRef = useRef<HTMLDivElement>(null);
 
   // The demo partner's name is localised here; a real partner's is theirs.
-  const partnerName = simulated || !partner ? t("partner.name") : partner.nickname;
+  const partnerName =
+    simulated || !partner ? t("partner.name") : partner.nickname;
   const selfId = ENERGY_ID[energy];
   const partnerEnergy = partner?.energy ?? 2;
   const partnerId = ENERGY_ID[partnerEnergy];
@@ -66,7 +68,9 @@ export function ChatView() {
     inputRef.current?.focus();
   };
 
-  const systemText = (code: Extract<ChatLine, { kind: "system" }>["code"]): string => {
+  const systemText = (
+    code: Extract<ChatLine, { kind: "system" }>["code"],
+  ): string => {
     if (code === "energyShown") {
       return t("chat.system.energyShown", {
         energy: t(`energy.${selfId}.name`),
@@ -76,16 +80,23 @@ export function ChatView() {
     return t(`chat.system.${code}`);
   };
 
-  const partnerText = (line: Extract<ChatLine, { kind: "partner" }>): string => {
+  const partnerText = (
+    line: Extract<ChatLine, { kind: "partner" }>,
+  ): string => {
     if (line.text !== undefined) return line.text;
     if (line.ref?.type === "reply") return t(`replies.${line.ref.id}`);
-    return t(`partner.opener.${preference}.${energy === 1 ? "low" : "normal"}`, {
-      nickname,
-      partner: partnerName,
-    });
+    return t(
+      `partner.opener.${preference}.${energy === 1 ? "low" : "normal"}`,
+      {
+        nickname,
+        partner: partnerName,
+      },
+    );
   };
 
-  const extendLabel = extendMine ? t("chat.aside.extendPending") : t("chat.aside.extend");
+  const extendLabel = extendMine
+    ? t("chat.aside.extendPending")
+    : t("chat.aside.extend");
   const extendHint = extendMine
     ? simulated
       ? t("chat.aside.hintPending")
@@ -99,20 +110,32 @@ export function ChatView() {
           <div className="chat-header">
             <div className="partner-profile">
               <span className="small-label">
-                {partner?.role === "admin" ? t("companion.label") : simulated ? t("chat.partnerLabel") : t("chat.partnerLabelLive")}
+                {partner?.role === "admin"
+                  ? t("companion.label")
+                  : simulated
+                    ? t("chat.partnerLabel")
+                    : t("chat.partnerLabelLive")}
               </span>
               <h1 tabIndex={-1}>
-                <span className="profile-prefix">{t("chat.partnerPrefix")}</span>
+                <span className="profile-prefix">
+                  {t("chat.partnerPrefix")}
+                </span>
                 <span>{partnerName}</span>
               </h1>
               <p className="partner-details">
                 <span className="profile-energy">
                   {`${bars(partnerEnergy)} ${t(`energy.${partnerId}.name`)}`}
                 </span>
-                {partner ? <span>{t(`preference.${partner.preference}`)}</span> : null}
+                {partner ? (
+                  <span>{t(`preference.${partner.preference}`)}</span>
+                ) : null}
               </p>
               <p className="profile-pace">{t(`energy.${partnerId}.pace`)}</p>
-              {partner?.role === "admin" ? <p className="companion-disclosure">{t("companion.chatDisclosure")}</p> : null}
+              {partner?.role === "admin" ? (
+                <p className="companion-disclosure">
+                  {t("companion.chatDisclosure")}
+                </p>
+              ) : null}
             </div>
             <div className="chat-header-actions">
               <span className="session-timer" aria-label={t("chat.timerAria")}>
@@ -125,7 +148,9 @@ export function ChatView() {
                 disabled={extendMine}
                 onClick={extend}
               >
-                {extendMine ? t("chat.extendMobilePending") : t("chat.extendMobile")}
+                {extendMine
+                  ? t("chat.extendMobilePending")
+                  : t("chat.extendMobile")}
               </button>
               <button type="button" className="leave-button" onClick={leave}>
                 {t("chat.leave")} <span aria-hidden="true">↗</span>
@@ -186,7 +211,11 @@ export function ChatView() {
               ),
             )}
             {typing ? (
-              <div className="typing-indicator" role="status" aria-label={t("chat.typing")}>
+              <div
+                className="typing-indicator"
+                role="status"
+                aria-label={t("chat.typing")}
+              >
                 <span aria-hidden="true" />
                 <span aria-hidden="true" />
                 <span aria-hidden="true" />
@@ -235,21 +264,35 @@ export function ChatView() {
                 maxLength={MESSAGE_MAX}
                 autoComplete="off"
                 disabled={timeUp}
-                placeholder={timeUp ? t("chat.composerTimeUp") : t("chat.composerPlaceholder")}
+                placeholder={
+                  timeUp
+                    ? t("chat.composerTimeUp")
+                    : t("chat.composerPlaceholder")
+                }
                 onChange={(event) => {
                   setDraft(event.target.value);
                   if (event.target.value) notifyTyping();
                 }}
               />
-              <button type="submit" aria-label={t("chat.send")} disabled={timeUp}>
+              <button
+                type="submit"
+                aria-label={t("chat.send")}
+                disabled={timeUp}
+              >
                 ↑
               </button>
             </form>
             <p>
               {t("chat.privacy")}
-              <button type="button" onClick={() => openModal({ type: "report" })}>
-                {t("chat.report")}
-              </button>
+              <span className="chat-bottom-actions">
+                <ChimeToggle />
+                <button
+                  type="button"
+                  onClick={() => openModal({ type: "report" })}
+                >
+                  {t("chat.report")}
+                </button>
+              </span>
             </p>
           </div>
         </section>
@@ -268,8 +311,14 @@ export function ChatView() {
           <div className="aside-divider" />
           <span className="small-label">{t("chat.aside.energyLabel")}</span>
           <strong>{t(`energy.${selfId}.name`)}</strong>
-          <button type="button" className="extend-button" disabled={extendMine} onClick={extend}>
-            {extendLabel} {extendMine ? null : <span aria-hidden="true">＋</span>}
+          <button
+            type="button"
+            className="extend-button"
+            disabled={extendMine}
+            onClick={extend}
+          >
+            {extendLabel}{" "}
+            {extendMine ? null : <span aria-hidden="true">＋</span>}
           </button>
           <p className="extend-hint">{extendHint}</p>
           <p className="aside-help">{t("chat.aside.help")}</p>
