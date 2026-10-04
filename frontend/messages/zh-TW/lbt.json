@@ -16,6 +16,9 @@
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
     "coordinate": "第 07 號街燈 · 晚安",
+    "coordinateDawn": "第 07 號街燈 · 早安",
+    "coordinateDay": "第 07 號街燈 · 午安",
+    "coordinateDusk": "第 07 號街燈 · 傍晚好",
     "kicker": "一座給低電量的人停靠的小鎮",
     "titleTop": "今天還剩",
     "titleEm": "幾格電？",

@@ -408,104 +408,6 @@
   opacity: 0.98;
   pointer-events: none;
 }
-.lbt .skyline {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 105px;
-  display: flex;
-  align-items: flex-end;
-  gap: 9px;
-  opacity: 0.8;
-}
-.lbt .building {
-  display: block;
-  background: #101a2e;
-  position: relative;
-  flex: 1;
-}
-.lbt .building:before {
-  content: "";
-  position: absolute;
-  width: 5px;
-  height: 7px;
-  background: var(--lamp);
-  left: 25%;
-  top: 22px;
-  box-shadow:
-    20px 0 0 rgba(248, 215, 121, 0.58),
-    0 23px 0 rgba(248, 215, 121, 0.42),
-    20px 23px 0 rgba(248, 215, 121, 0.35);
-  border-radius: 1px;
-}
-.lbt .b1 {
-  height: 49px;
-}
-.lbt .b2 {
-  height: 66px;
-}
-.lbt .b3 {
-  height: 91px;
-}
-.lbt .b4 {
-  height: 55px;
-}
-.lbt .b5 {
-  height: 73px;
-}
-.lbt .b6 {
-  height: 92px;
-}
-.lbt .b7 {
-  height: 51px;
-}
-.lbt .b3:after,
-.lbt .b6:after {
-  content: "";
-  position: absolute;
-  left: 30%;
-  bottom: 100%;
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-bottom: 16px solid #101a2e;
-}
-.lbt .streetlamp {
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  width: 3px;
-  height: 64px;
-  background: #52637e;
-}
-.lbt .streetlamp:before {
-  content: "";
-  position: absolute;
-  width: 15px;
-  height: 11px;
-  left: -6px;
-  top: -7px;
-  background: var(--lamp);
-  border-radius: 9px 9px 3px 3px;
-  box-shadow: 0 0 18px 7px rgba(248, 215, 121, 0.2);
-}
-.lbt .lamp1 {
-  left: 13%;
-}
-.lbt .lamp2 {
-  left: 82%;
-  height: 83px;
-}
-.lbt .moon {
-  position: absolute;
-  right: 17%;
-  bottom: 97px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--lamp);
-  box-shadow: 0 0 31px 9px rgba(248, 215, 121, 0.2);
-}
 .lbt .side-rail {
   display: flex;
   flex-direction: column;
@@ -1264,12 +1166,6 @@
     margin-top: -44px;
     height: 110px;
   }
-  .lbt .skyline {
-    height: 88px;
-  }
-  .lbt .moon {
-    bottom: 80px;
-  }
   .lbt .side-rail {
     grid-template-columns: 1fr;
   }
@@ -1399,36 +1295,6 @@
 }
 .lbt .energy-option.selected {
   animation: lbt-option-arrive 0.32s ease-out;
-}
-.lbt .streetlamp:after {
-  content: "";
-  position: absolute;
-  left: -17px;
-  top: -24px;
-  width: 37px;
-  height: 37px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(248, 215, 121, 0.46),
-    rgba(248, 215, 121, 0) 70%
-  );
-  pointer-events: none;
-  animation: lbt-lamp-breathe 4.6s ease-in-out infinite alternate;
-}
-.lbt .lamp2:after {
-  animation-delay: -2.4s;
-}
-.lbt .building:before {
-  animation: lbt-window-twinkle 6s ease-in-out infinite alternate;
-}
-.lbt .b2:before,
-.lbt .b5:before {
-  animation-delay: -2.4s;
-}
-.lbt .b3:before,
-.lbt .b7:before {
-  animation-delay: -4.3s;
 }
 .lbt .waiting-lamp:after {
   animation: lbt-lantern-breathe 2.8s ease-in-out infinite alternate;
@@ -3036,3 +2902,647 @@
 .lbt .companion-actions .primary-button { width: auto; margin: 0; padding: 12px 18px; }
 .lbt .companion-actions button:disabled { opacity: .6; cursor: wait; }
 .lbt .companion-disclosure { font-size: 13px; line-height: 1.6; margin-top: 6px; color: var(--lamp); }
+
+/* ==========================================================================
+   Town time: dawn / day / dusk / night, weekday city or weekend lane.
+   <html data-lbt-time data-lbt-week> is set before first paint by the boot
+   script (lib/lbt/townTime.ts). Night is the original look; the other
+   times recolour the stage, the page ground and the street, and change
+   what moves. Scoped to the app (.lbt-app), not the policy pages.
+   ========================================================================== */
+
+.lbt-app {
+  --ground: var(--night);
+  --ground-ink: var(--paper);
+  --ground-soft: #73839d;
+  --ground-line: var(--line);
+  --ground-link: var(--mist);
+  --ground-muted: var(--mist);
+  --hero-topline: var(--subtle);
+  --pill: var(--lamp);
+  --pill-line: rgba(248, 215, 121, 0.28);
+  --hero-ink: var(--paper);
+  --hero-soft: var(--mist);
+  --hero-accent: var(--lamp);
+  --hero-kicker: var(--lamp);
+  --sun: #f6e2a6;
+  --moon: #efe6c8;
+  --cloud: #f4f3ee;
+  --sun-op: 0;
+  --moon-op: 1;
+  --star-op: 1;
+  --cloud-op: 0;
+  /* street */
+  --tw-far: #18223a;
+  --tw-tone1: #18233b;
+  --tw-tone2: #1b2740;
+  --tw-tone3: #162137;
+  --tw-edge: #2a3753;
+  --tw-win: #0f1729;
+  --tw-lit: #e9c46e;
+  --tw-grille: #22304b;
+  --tw-ac: #25314b;
+  --tw-tank: #1e2942;
+  --tw-tin: #1d2841;
+  --tw-sign: #6d3b36;
+  --tw-sign-text: #d9b6a7;
+  --tw-shutter: #1c2640;
+  --tw-note: #a99f8c;
+  --tw-shop: #f1cd72;
+  --tw-plant: #22323a;
+  --tw-pot: #2a3048;
+  --tw-cloth-a: #2e3954;
+  --tw-cloth-b: #29344e;
+  --tw-wire: #2b3856;
+  --tw-pole: #52637e;
+  --tw-bulb: #ffe9a8;
+  --tw-beam: 0.22;
+  --tw-ground: #0e1626;
+  --tw-cat: #070b15;
+  --tw-bus: #2b5793;
+  --tw-plate: #1c263f;
+  --tw-plate-text: #f8d779;
+}
+
+html[data-lbt-time="day"] .lbt-app {
+  --ground-link: #1f2a44;
+  --ground-muted: var(--ground-soft);
+  --hero-topline: var(--hero-soft);
+  --ground: #e7eae6;
+  --ground-ink: #1f2a44;
+  --ground-soft: #5b6680;
+  --ground-line: rgba(31, 42, 68, 0.14);
+  --pill: #a8462f;
+  --pill-line: rgba(168, 70, 47, 0.32);
+  --sky-a: #cbd9df;
+  --sky-b: #dbe3e2;
+  --sky-c: #e7e4d9;
+  --hero-ink: #1f2a44;
+  --hero-soft: #4b5872;
+  --hero-accent: #c0502f;
+  --hero-kicker: #a8462f;
+  --sun-op: 1;
+  --moon-op: 0;
+  --star-op: 0;
+  --cloud-op: 0.92;
+  --tw-far: #c8d1cf;
+  --tw-tone1: #e7e0d3;
+  --tw-tone2: #d8dcd5;
+  --tw-tone3: #e1d6c5;
+  --tw-edge: #6a7183;
+  --tw-win: #b7c6cb;
+  --tw-lit: #b7c6cb;
+  --tw-grille: #6a7183;
+  --tw-ac: #f2efe8;
+  --tw-tank: #9ea9ad;
+  --tw-tin: #b8bfc3;
+  --tw-sign: #c8553d;
+  --tw-sign-text: #fff7ea;
+  --tw-shutter: #a7abae;
+  --tw-note: #f8f2e2;
+  --tw-shop: #5a5f6b;
+  --tw-plant: #7d9874;
+  --tw-pot: #bf7a53;
+  --tw-cloth-a: #f0a98e;
+  --tw-cloth-b: #8db0c7;
+  --tw-wire: #4a5163;
+  --tw-pole: #59617a;
+  --tw-bulb: #d5d7d9;
+  --tw-beam: 0;
+  --tw-ground: #bdb5a6;
+  --tw-cat: #3e4049;
+  --tw-bus: #2f6db5;
+  --tw-plate: #f3efe6;
+  --tw-plate-text: #c8553d;
+}
+
+html[data-lbt-time="dusk"] .lbt-app {
+  --ground-link: #2a2238;
+  --ground-muted: var(--ground-soft);
+  --hero-topline: var(--hero-soft);
+  --ground: #efe2d8;
+  --ground-ink: #2a2238;
+  --ground-soft: #6b5a66;
+  --ground-line: rgba(42, 34, 56, 0.14);
+  --pill: #8f3a28;
+  --pill-line: rgba(143, 58, 40, 0.32);
+  --sky-a: #c1909a;
+  --sky-b: #e0a690;
+  --sky-c: #eec19e;
+  --hero-ink: #2a2238;
+  --hero-soft: #4d3e4d;
+  --hero-accent: #9a3a26;
+  --hero-kicker: #8f3a28;
+  --sun: #f8cf93;
+  --cloud: #f3c3ab;
+  --sun-op: 1;
+  --moon-op: 0;
+  --star-op: 0;
+  --cloud-op: 0.6;
+  --tw-far: #ad7d84;
+  --tw-tone1: #7d6a80;
+  --tw-tone2: #705f77;
+  --tw-tone3: #86728a;
+  --tw-edge: #40354f;
+  --tw-win: #5e5071;
+  --tw-lit: #f5c66e;
+  --tw-grille: #40354f;
+  --tw-ac: #8d7d93;
+  --tw-tank: #6a5b72;
+  --tw-tin: #7a6a80;
+  --tw-sign: #d65a3c;
+  --tw-sign-text: #fff4e2;
+  --tw-shutter: #5c5066;
+  --tw-note: #e9d9c4;
+  --tw-shop: #f5c66e;
+  --tw-plant: #5c6a5d;
+  --tw-pot: #8a5a4b;
+  --tw-cloth-a: #d9907c;
+  --tw-cloth-b: #6e88a2;
+  --tw-wire: #3d3349;
+  --tw-pole: #3d3349;
+  --tw-bulb: #ffe3a1;
+  --tw-beam: 0.14;
+  --tw-ground: #5c4f60;
+  --tw-cat: #2a2332;
+  --tw-bus: #3f5f95;
+  --tw-plate: #e9ddd0;
+  --tw-plate-text: #9a3a26;
+}
+
+html[data-lbt-time="dawn"] .lbt-app {
+  --ground-link: #262a44;
+  --ground-muted: var(--ground-soft);
+  --hero-topline: var(--hero-soft);
+  --ground: #e8e5eb;
+  --ground-ink: #262a44;
+  --ground-soft: #5f6380;
+  --ground-line: rgba(38, 42, 68, 0.14);
+  --pill: #9a4636;
+  --pill-line: rgba(154, 70, 54, 0.3);
+  --sky-a: #adafcb;
+  --sky-b: #d8c3c4;
+  --sky-c: #edd8c5;
+  --hero-ink: #262a44;
+  --hero-soft: #4c5276;
+  --hero-accent: #ac4536;
+  --hero-kicker: #9a4636;
+  --sun: #f6d6a8;
+  --cloud: #f1dcd2;
+  --sun-op: 1;
+  --moon-op: 0.35;
+  --star-op: 0;
+  --cloud-op: 0.55;
+  --tw-far: #b0b0c4;
+  --tw-tone1: #9a98b0;
+  --tw-tone2: #8d8ba5;
+  --tw-tone3: #a4a1b8;
+  --tw-edge: #4b4a66;
+  --tw-win: #7a7898;
+  --tw-lit: #f3cf86;
+  --tw-grille: #4b4a66;
+  --tw-ac: #b2b0c4;
+  --tw-tank: #8a889f;
+  --tw-tin: #9a98ae;
+  --tw-sign: #c9604a;
+  --tw-sign-text: #fff4e8;
+  --tw-shutter: #7b7990;
+  --tw-note: #ece6dc;
+  --tw-shop: #6e6b80;
+  --tw-plant: #6f7f74;
+  --tw-pot: #9a6f62;
+  --tw-cloth-a: #e3a796;
+  --tw-cloth-b: #8098b5;
+  --tw-wire: #4b4a66;
+  --tw-pole: #4b4a66;
+  --tw-bulb: #ffe6b0;
+  --tw-beam: 0.1;
+  --tw-ground: #8c889a;
+  --tw-cat: #34324a;
+  --tw-bus: #4a66a0;
+  --tw-plate: #ece8ee;
+  --tw-plate-text: #ac4536;
+}
+
+/* ---- greeting under the lamp, one per time of day ---- */
+.lbt .by-time { display: none; }
+html:not([data-lbt-time]) .lbt .by-time.t-night,
+html[data-lbt-time="dawn"] .lbt .by-time.t-dawn,
+html[data-lbt-time="day"] .lbt .by-time.t-day,
+html[data-lbt-time="dusk"] .lbt .by-time.t-dusk,
+html[data-lbt-time="night"] .lbt .by-time.t-night {
+  display: inline;
+}
+
+/* ---- page ground and chrome (night keeps the original rules) ---- */
+.lbt.lbt-app {
+  background: var(--ground);
+  transition: background-color 1.2s ease;
+}
+.lbt-app .topbar {
+  border-bottom-color: var(--ground-line);
+}
+.lbt-app .brand,
+.lbt-app .topbar .text-button,
+.lbt-app .footer .text-button {
+  color: var(--ground-ink);
+}
+.lbt-app .locale-toggle {
+  border-color: var(--ground-line);
+}
+.lbt-app .locale-toggle button:not([aria-pressed="true"]) {
+  color: var(--ground-muted);
+}
+.lbt-app .topbar .text-button span,
+.lbt-app .footer .text-button span {
+  color: var(--pill);
+}
+.lbt-app .prototype-pill {
+  color: var(--pill);
+  border-color: var(--pill-line);
+}
+.lbt-app .prototype-pill .prototype-dot {
+  background: var(--pill);
+}
+.lbt-app .footer {
+  color: var(--ground-soft);
+}
+.lbt-app .footer-links a {
+  color: var(--ground-link);
+}
+html[data-lbt-time="day"] .lbt-app .selection-card,
+html[data-lbt-time="dusk"] .lbt-app .selection-card,
+html[data-lbt-time="dawn"] .lbt-app .selection-card {
+  box-shadow: 0 18px 44px rgba(31, 42, 68, 0.12);
+}
+
+/* ---- the stage becomes the sky ---- */
+html[data-lbt-time="day"] .lbt-app .main-stage,
+html[data-lbt-time="dusk"] .lbt-app .main-stage,
+html[data-lbt-time="dawn"] .lbt-app .main-stage {
+  background: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 58%, var(--sky-c) 100%);
+  border-color: var(--ground-line);
+}
+.lbt-app .main-stage .hero-copy h1 {
+  color: var(--hero-ink);
+}
+.lbt-app .main-stage .hero-copy h1 em {
+  color: var(--hero-accent);
+}
+.lbt-app .main-stage .hero-kicker {
+  color: var(--hero-kicker);
+}
+.lbt-app .main-stage .hero-subtitle {
+  color: var(--hero-soft);
+}
+.lbt-app .main-stage .stage-topline {
+  color: var(--hero-topline);
+}
+html[data-lbt-time="day"] .lbt-app .town-count,
+html[data-lbt-time="dusk"] .lbt-app .town-count,
+html[data-lbt-time="dawn"] .lbt-app .town-count {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--ground-line);
+  color: var(--hero-ink);
+}
+
+/* ---- sky layer ---- */
+.lbt .town-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lbt .sky-sun {
+  position: absolute;
+  right: 16%;
+  top: 14%;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--sun);
+  opacity: var(--sun-op);
+  transition: opacity 1.5s ease, top 1.5s ease, right 1.5s ease, background-color 1.5s ease;
+}
+html[data-lbt-time="dusk"] .lbt .sky-sun {
+  top: auto;
+  bottom: 24%;
+  right: 24%;
+  width: 64px;
+  height: 64px;
+}
+html[data-lbt-time="dawn"] .lbt .sky-sun {
+  top: auto;
+  bottom: 22%;
+  right: auto;
+  left: 54%;
+  width: 46px;
+  height: 46px;
+}
+.lbt .sky-moon {
+  position: absolute;
+  right: 15%;
+  top: 12%;
+  width: 44px;
+  height: 44px;
+  fill: var(--moon);
+  opacity: var(--moon-op);
+  transition: opacity 1.5s ease;
+}
+html[data-lbt-time="dawn"] .lbt .sky-moon {
+  right: 10%;
+  top: 8%;
+  width: 30px;
+  height: 30px;
+}
+.lbt .sky-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #e9edf6;
+  opacity: var(--star-op);
+  transition: opacity 1.5s ease;
+}
+.lbt .sky-star.s1 { left: 58%; top: 10%; }
+.lbt .sky-star.s2 { left: 70%; top: 30%; }
+.lbt .sky-star.s3 { left: 90%; top: 22%; }
+.lbt .sky-star.s4 { left: 64%; top: 46%; width: 1.5px; height: 1.5px; }
+.lbt .sky-star.s5 { left: 94%; top: 52%; width: 1.5px; height: 1.5px; }
+.lbt .sky-cloud {
+  position: absolute;
+  width: 120px;
+  height: auto;
+  fill: var(--cloud);
+  opacity: var(--cloud-op);
+  transition: opacity 1.5s ease, fill 1.5s ease;
+}
+.lbt .sky-cloud.c1 { left: 44%; top: 20%; }
+.lbt .sky-cloud.c2 { left: 72%; top: 34%; width: 84px; }
+
+/* ---- the street ---- */
+.lbt .townscape .tw-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.lbt .tw-street {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  overflow: visible;
+}
+html:not([data-lbt-week="weekend"]) .lbt .tw-weekday,
+html[data-lbt-week="weekend"] .lbt .tw-weekend {
+  display: block;
+}
+.lbt .tw-hand {
+  filter: url(#tw-hand-filter);
+}
+.lbt .tw-far { fill: var(--tw-far); }
+.lbt .tw-block { stroke: var(--tw-edge); stroke-width: 1.2; }
+.lbt .tw-tone1 { fill: var(--tw-tone1); }
+.lbt .tw-tone2 { fill: var(--tw-tone2); }
+.lbt .tw-tone3 { fill: var(--tw-tone3); }
+.lbt .tw-edge { fill: none; stroke: var(--tw-edge); stroke-width: 1.4; }
+.lbt .tw-win {
+  fill: var(--tw-win);
+  transition: fill 1.2s ease;
+}
+.lbt .tw-win:nth-of-type(3n) { transition-delay: 0.35s; }
+.lbt .tw-win:nth-of-type(4n + 1) { transition-delay: 0.7s; }
+html[data-lbt-time="night"] .lbt .tw-win.l1,
+html[data-lbt-time="night"] .lbt .tw-win.l2,
+html[data-lbt-time="dusk"] .lbt .tw-win.l1,
+html[data-lbt-time="dawn"] .lbt .tw-win.l1 {
+  fill: var(--tw-lit);
+}
+.lbt .tw-grille { stroke: var(--tw-grille); stroke-width: 1; }
+.lbt .tw-grille-sheet { opacity: 0.8; }
+html[data-lbt-time="night"] .lbt .tw-grille-sheet { opacity: 0.55; }
+.lbt .tw-ac { fill: var(--tw-ac); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-tank { fill: var(--tw-tank); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-tin { fill: var(--tw-tin); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-sign { fill: var(--tw-sign); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-sign-text {
+  fill: var(--tw-sign-text);
+  font: 900 13px var(--display);
+  text-anchor: middle;
+}
+.lbt .tw-shutter { fill: var(--tw-shutter); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-note { fill: var(--tw-note); }
+.lbt .tw-shop { fill: var(--tw-shop); transition: fill 1.2s ease; }
+.lbt .tw-plant { fill: var(--tw-plant); }
+.lbt .tw-pot { fill: var(--tw-pot); }
+.lbt .tw-wire { fill: none; stroke: var(--tw-wire); stroke-width: 1; }
+.lbt .tw-pole-line { fill: none; stroke: var(--tw-edge); stroke-width: 2; }
+.lbt .tw-cloth-a { fill: var(--tw-cloth-a); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-cloth-b { fill: var(--tw-cloth-b); stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-pole { fill: none; stroke: var(--tw-pole); stroke-width: 5; stroke-linecap: round; }
+.lbt .tw-pole-thin { fill: var(--tw-pole); }
+.lbt .tw-lamp-head { fill: var(--tw-pole); }
+.lbt .tw-bulb { fill: var(--tw-bulb); transition: fill 1.2s ease; }
+.lbt .tw-beam {
+  fill: var(--tw-bulb);
+  opacity: var(--tw-beam);
+  transition: opacity 1.5s ease;
+}
+.lbt .tw-plate { fill: var(--tw-plate); stroke: var(--tw-edge); stroke-width: 0.8; }
+.lbt .tw-plate-text {
+  fill: var(--tw-plate-text);
+  font: 700 9px var(--font-quicksand), var(--display);
+  text-anchor: middle;
+}
+.lbt .tw-bus-sign { fill: var(--tw-bus); }
+.lbt .tw-bus-mark { fill: #f4f1ea; opacity: 0.9; }
+.lbt .tw-shelter { fill: var(--tw-pole); }
+.lbt .tw-ground { fill: var(--tw-ground); }
+.lbt .tw-cat { fill: var(--tw-cat); }
+.lbt .tw-cat-tail { fill: none; stroke: var(--tw-cat); stroke-width: 2.4; stroke-linecap: round; }
+
+/* who is out when: laundry comes in at night, the cat moves to the lamp */
+.lbt .tw-cat-lamp,
+html[data-lbt-time="night"] .lbt .tw-cat-roof,
+html[data-lbt-time="night"] .lbt .tw-laundry {
+  display: none;
+}
+html[data-lbt-time="night"] .lbt .tw-cat-lamp {
+  display: inline;
+}
+
+/* ---- motion: one quiet thing at a time ---- */
+@keyframes lbt-cloud-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-90px); }
+}
+@keyframes lbt-lamp-breathe {
+  0%, 100% { opacity: calc(var(--tw-beam) * 0.82); }
+  50% { opacity: var(--tw-beam); }
+}
+@keyframes lbt-window-out {
+  0%, 70% { fill: var(--tw-lit); }
+  72%, 90% { fill: var(--tw-win); }
+  92%, 100% { fill: var(--tw-lit); }
+}
+@keyframes lbt-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+@keyframes lbt-sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+@keyframes lbt-cat-breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.06); }
+}
+html[data-lbt-time="day"] .lbt .sky-cloud,
+html[data-lbt-time="dawn"] .lbt .sky-cloud {
+  animation: lbt-cloud-drift 80s ease-in-out infinite alternate;
+}
+.lbt .sky-cloud.c2 {
+  animation-duration: 110s;
+  animation-delay: -30s;
+}
+html[data-lbt-time="night"] .lbt .tw-beam {
+  animation: lbt-lamp-breathe 7s ease-in-out infinite;
+}
+html[data-lbt-time="night"] .lbt .tw-weekday g:nth-of-type(4) .tw-win.l1:first-of-type,
+html[data-lbt-time="night"] .lbt .tw-weekend g:nth-of-type(4) .tw-win.l1:first-of-type {
+  animation: lbt-window-out 17s steps(1, end) infinite;
+}
+html[data-lbt-time="night"] .lbt .sky-star.s2,
+html[data-lbt-time="night"] .lbt .sky-star.s4 {
+  animation: lbt-twinkle 5s ease-in-out infinite;
+}
+html[data-lbt-time="night"] .lbt .sky-star.s4 {
+  animation-delay: -2.5s;
+}
+.lbt .tw-laundry {
+  transform-box: view-box;
+  transform-origin: 640px 110px;
+}
+html[data-lbt-time="day"] .lbt .tw-laundry,
+html[data-lbt-time="dusk"] .lbt .tw-laundry {
+  animation: lbt-sway 6s ease-in-out infinite;
+}
+html[data-lbt-time="dusk"] .lbt .tw-laundry {
+  animation-duration: 8s;
+}
+.lbt .tw-cat-roof {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+html[data-lbt-time="day"] .lbt .tw-cat-roof {
+  animation: lbt-cat-breathe 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lbt .town-sky *,
+  .lbt .townscape *,
+  .lbt.lbt-app {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---- sizes: the street band on tablets, the sky on phones ---- */
+@media (max-width: 959px), (max-height: 619px) {
+  .lbt .home-grid > .main-stage {
+    padding-bottom: 116px;
+  }
+  .lbt .home-grid > .main-stage .townscape {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 104px;
+    margin: 0;
+    z-index: 1;
+  }
+}
+@media (max-width: 610px) {
+  .lbt .home-grid > .main-stage {
+    padding-bottom: 14px;
+  }
+  .lbt .home-grid > .main-stage .townscape,
+  .lbt .sky-cloud,
+  .lbt .sky-star {
+    display: none;
+  }
+  .lbt .sky-sun,
+  html[data-lbt-time] .lbt .sky-sun {
+    top: 12px;
+    bottom: auto;
+    right: 14px;
+    left: auto;
+    width: 22px;
+    height: 22px;
+  }
+  .lbt .sky-moon,
+  html[data-lbt-time] .lbt .sky-moon {
+    top: 10px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* ---- intro animation by time of day: by day the sun rises behind the B ---- */
+html[data-lbt-time="day"] .lbt .lbt-intro {
+  color: #1f2a44;
+  background:
+    radial-gradient(70vmax 46vmax at 50% 112%, rgba(255, 222, 160, 0.4), transparent 70%),
+    linear-gradient(180deg, #cbd9df 0%, #dbe3e2 55%, #e7e4d9 100%);
+}
+html[data-lbt-time="dusk"] .lbt .lbt-intro {
+  color: #2a2238;
+  background:
+    radial-gradient(70vmax 46vmax at 50% 112%, rgba(248, 190, 120, 0.45), transparent 70%),
+    linear-gradient(180deg, #c1909a 0%, #e0a690 55%, #eec19e 100%);
+}
+html[data-lbt-time="dawn"] .lbt .lbt-intro {
+  color: #262a44;
+  background:
+    radial-gradient(70vmax 46vmax at 50% 112%, rgba(246, 214, 168, 0.45), transparent 70%),
+    linear-gradient(180deg, #adafcb 0%, #d8c3c4 55%, #edd8c5 100%);
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-stars,
+html[data-lbt-time="dusk"] .lbt .lbt-intro-stars,
+html[data-lbt-time="dawn"] .lbt .lbt-intro-stars {
+  display: none;
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-tagline,
+html[data-lbt-time="dusk"] .lbt .lbt-intro-tagline,
+html[data-lbt-time="dawn"] .lbt .lbt-intro-tagline {
+  color: inherit;
+  opacity: 0.78;
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-charge {
+  fill: #ef9a74;
+}
+html[data-lbt-time="day"] .lbt .lbt-intro-glow,
+html[data-lbt-time="dawn"] .lbt .lbt-intro-glow,
+html[data-lbt-time="dusk"] .lbt .lbt-intro-glow {
+  width: 30vmin;
+  height: 30vmin;
+  background: radial-gradient(circle, #fbe7b0 0 47%, rgba(251, 231, 176, 0.38) 49%, transparent 70%);
+  animation-name: lbt-intro-sunrise;
+  animation-duration: 1.9s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+html[data-lbt-time="dusk"] .lbt .lbt-intro-glow {
+  background: radial-gradient(circle, #f8c88c 0 47%, rgba(248, 200, 140, 0.4) 49%, transparent 70%);
+}
+html[data-lbt-time="dawn"] .lbt .lbt-intro-glow {
+  background: radial-gradient(circle, #f7d9ae 0 47%, rgba(247, 217, 174, 0.4) 49%, transparent 70%);
+}
+@keyframes lbt-intro-sunrise {
+  0% { opacity: 0; transform: translate(-50%, -8%) scale(0.85); }
+  35% { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -78%) scale(1); }
+}

@@ -16,6 +16,9 @@
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
     "coordinate": "Streetlamp No. 07 · Good night",
+    "coordinateDawn": "Streetlamp No. 07 · Good morning",
+    "coordinateDay": "Streetlamp No. 07 · Good afternoon",
+    "coordinateDusk": "Streetlamp No. 07 · Good evening",
     "kicker": "A town for people running low on battery",
     "titleTop": "How many bars",
     "titleEm": "are left today?",
