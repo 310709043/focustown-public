@@ -231,10 +231,27 @@ describe("authenticated companion sockets", () => {
   test("offsite origins cannot connect to administrator socket", async () => {
     expect((await SELF.fetch(`${BASE}${path}`,{headers:{Upgrade:"websocket",Origin:"https://evil.example"}})).status).toBe(403);
   });
-  test("operator cannot take over another live admin socket", async () => {
+  test("a new administrator console takes over the old one", async () => {
     const first=await companion(); await first.next("lbt.idle");
-    const duplicate=await SELF.fetch(`${BASE}${path}`,{headers:{Upgrade:"websocket","Sec-WebSocket-Protocol":`bearer.${await ticket()}`}});
-    expect(duplicate.status).toBe(409);first.ws.close();
+    const second=await companion(); await second.next("lbt.idle");
+    expect(await first.closed).toBe(4409);
+    expect((await SELF.fetch(`${BASE}/api/v1/lbt/status`)).status).toBe(200);
+    second.ws.close();
+  });
+  test("taking over keeps the operator's open conversation", async () => {
+    const operator=await companion(),visitor=await connect(await guest());
+    visitor.send({type:"join",profile:LISTEN,adult:true}); await visitor.next("lbt.waiting");
+    const list=await SELF.fetch(`${BASE}/api/v1/admin/lbt/waiting`,{headers:auth});
+    const id=(await list.json() as {items:{guest_id:string}[]}).items[0]!.guest_id;
+    operator.send({type:"companion_invite",guest_id:id}); const invite=await visitor.next("lbt.companion_invite");
+    visitor.send({type:"companion_answer",id:invite.id,accept:true}); await visitor.next("lbt.matched"); await operator.next("lbt.matched");
+    operator.send({type:"message",text:"還在嗎"}); await visitor.next("lbt.message");
+    const next=await companion(); const replay=await next.next("lbt.matched");
+    expect(replay.partner).toEqual(expect.objectContaining({nickname:LISTEN.nickname}));
+    expect((await next.next("lbt.message")).text).toBe("還在嗎");
+    expect(await operator.closed).toBe(4409);
+    expect(visitor.frames.some(f=>f.type==="lbt.ended")).toBe(false);
+    next.send({type:"leave"}); await visitor.next("lbt.ended"); visitor.ws.close(); next.ws.close();
   });
   test("real sockets require visitor consent, relay both ways, extend mutually and leave", async () => {
     const operator=await companion(),visitor=await connect(await guest());
