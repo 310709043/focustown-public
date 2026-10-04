@@ -129,6 +129,18 @@
   font-size: 12px;
   letter-spacing: 0.09em;
 }
+.lbt .feedback-pill {
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.lbt .feedback-pill:hover,
+.lbt .feedback-pill:focus-visible {
+  border-color: rgba(248, 215, 121, 0.6);
+  background: rgba(248, 215, 121, 0.08);
+}
 .lbt .prototype-dot {
   width: 6px;
   height: 6px;
@@ -2502,21 +2514,12 @@
   gap: 14px;
 }
 .lbt .footer-links a,
-.lbt .footer-links .footer-link-button,
 .lbt .adult-check small a {
   color: var(--mist);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.lbt .footer-links .footer-link-button {
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  cursor: pointer;
-}
 .lbt .footer-links a:hover,
-.lbt .footer-links .footer-link-button:hover,
 .lbt .adult-check small a:hover {
   color: var(--lamp);
 }

@@ -9,10 +9,9 @@
     "homeAria": "LowBatteryTown 回到首頁"
   },
   "topbar": {
-    "prototype": "互動原型",
     "guide": "小鎮指南",
     "languageAria": "切換語言",
-    "beta": "測試版"
+    "feedback": "意見箱"
   },
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
@@ -279,8 +278,7 @@
   "footer": {
     "left": "LowBatteryTown · 一個正在發想中的小鎮",
     "right": "原型示範：配對與訊息為模擬內容，尚未連接真人服務。",
-    "rightLive": "測試版：請友善聊天，不舒服時可以隨時說晚安或檢舉。",
-    "feedback": "意見箱"
+    "rightLive": "測試版：請友善聊天，不舒服時可以隨時說晚安或檢舉。"
   },
   "notice": {
     "closed": "街燈還沒亮，請在開放時間再來。",
