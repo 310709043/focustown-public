@@ -4545,3 +4545,58 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
     font-size: 17px;
   }
 }
+
+/* ==========================================================================
+   Attention cues: the 提示音 switch on the waiting card and under the chat.
+   ========================================================================== */
+.lbt .chime-toggle {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lbt .chime-toggle > span:first-child {
+  margin-right: 4px;
+}
+.lbt .chime-toggle[aria-pressed="false"] {
+  opacity: 0.75;
+}
+.lbt .chime-toggle:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 3px;
+}
+.lbt .waiting-cue {
+  max-width: 30em;
+  margin: 0 auto clamp(8px, 1.8vh, 16px);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--mist);
+}
+.lbt .waiting-cue .chime-toggle {
+  color: var(--lamp);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-cue {
+  color: var(--hero-soft);
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-cue .chime-toggle {
+  color: var(--hero-accent);
+}
+.lbt .chat-bottom-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (max-height: 640px) {
+  .lbt .waiting-cue {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}

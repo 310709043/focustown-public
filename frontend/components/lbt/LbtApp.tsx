@@ -21,6 +21,7 @@ import { IntroSplash } from "./IntroSplash";
 import { LocaleToggle } from "./LocaleToggle";
 import { ModalHost } from "./ModalHost";
 import { HeaderMusicButton, useMusicLifecycle } from "./MusicControls";
+import { useAttentionCues } from "./useAttentionCues";
 import { WaitingView } from "./WaitingView";
 
 import "./lbt.css";
@@ -55,6 +56,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
 
   const transportRef = useRef<LbtTransport | null>(null);
   useMusicLifecycle();
+  useAttentionCues();
 
   // The boot script set the time of day before paint; keep it current while
   // the page stays open (dusk falls, the weekend starts).
