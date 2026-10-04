@@ -3465,11 +3465,32 @@ html[data-lbt-time="day"] .lbt .tw-cat-roof {
     z-index: 1;
   }
 }
+/* Phones: a short street strip under the one-line subtitle, zoomed in on
+   the middle of the street (lamp 07, the laundry, the shuttered shop) so
+   the weekend lane still reads at this size. */
 @media (max-width: 610px) {
   .lbt .home-grid > .main-stage {
-    padding-bottom: 14px;
+    padding-bottom: 66px;
   }
-  .lbt .home-grid > .main-stage .townscape,
+  .lbt .home-grid > .main-stage .townscape {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60px;
+    margin: 0;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .lbt .home-grid > .main-stage .townscape .tw-street {
+    inset: auto;
+    left: 50%;
+    bottom: 0;
+    width: 480px;
+    height: 80px;
+    margin-left: -240px;
+  }
   .lbt .sky-cloud,
   .lbt .sky-star {
     display: none;
@@ -3545,4 +3566,45 @@ html[data-lbt-time="dawn"] .lbt .lbt-intro-glow {
   0% { opacity: 0; transform: translate(-50%, -8%) scale(0.85); }
   35% { opacity: 1; }
   100% { opacity: 1; transform: translate(-50%, -78%) scale(1); }
+}
+
+/* The one-line subtitle only exists on phones. */
+.lbt .hero-subtitle .subtitle-short {
+  display: none;
+}
+@media (max-width: 610px) {
+  .lbt .hero-subtitle .subtitle-long {
+    display: none;
+  }
+  .lbt .hero-subtitle .subtitle-short {
+    display: inline;
+  }
+}
+
+/* Short phones (Safari with its bars, ~390x664): win back the street
+   strip's height so "走進小鎮" stays in the first screen. */
+@media (max-width: 610px) and (max-height: 700px) {
+  .lbt .site-shell:has(.home-view) .topbar {
+    height: 52px;
+  }
+  .lbt .home-grid {
+    padding-top: 6px;
+  }
+  .lbt .home-grid > .main-stage {
+    padding-top: 10px;
+  }
+  .lbt .home-grid > .selection-card {
+    padding-top: 12px;
+  }
+  .lbt .home-grid > .selection-card .nickname-field {
+    margin-bottom: 9px;
+    padding-bottom: 9px;
+  }
+}
+/* English wraps the title onto two lines; on short phones the strip and
+   the button win over the subtitle. */
+@media (max-width: 610px) and (max-height: 700px) {
+  html[lang="en"] .lbt .home-grid > .main-stage .hero-subtitle {
+    display: none;
+  }
 }
