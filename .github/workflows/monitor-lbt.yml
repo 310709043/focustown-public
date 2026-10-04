@@ -1,0 +1,27 @@
+name: LowBatteryTown health
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+  pull_request:
+    paths: ["scripts/*lbt-health.py", ".github/workflows/monitor-lbt.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lbt-health-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test checks
+        run: python3 scripts/test-lbt-health.py
+      - name: Check production
+        if: github.event_name != 'pull_request'
+        run: python3 scripts/check-lbt-health.py

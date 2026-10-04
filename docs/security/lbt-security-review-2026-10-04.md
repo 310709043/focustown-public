@@ -1,5 +1,10 @@
 # LowBatteryTown security review — 2026-10-04
 
+Historical snapshot. [2026-10-05 operations verification](../operations-lowbatterytown.md)
+supersedes the ended-chat retention and automatic-deployment status below:
+ordinary ended chats now clear immediately, and frontend automatic deployment
+is working. API CI still needs the deployment token's D1 permission.
+
 Scope: the currently deployed Cloudflare frontend, anonymous chat Worker,
 admin console, Durable Object/D1 access, Google Sheet forwarding, dependency
 lockfiles and Cloudflare CI. The retired AWS/Lightsail and FastAPI deployment
