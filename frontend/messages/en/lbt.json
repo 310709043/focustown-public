@@ -124,6 +124,9 @@
   "waiting": {
     "eyebrow": "A LITTLE SPACE BETWEEN HELLO AND HELLO",
     "titleTop": "The lamp is on.",
+    "titleTopDawn": "Almost morning.",
+    "titleTopDay": "It's still light out.",
+    "titleTopDusk": "The lamp just came on.",
     "titleBottom": "Waiting for someone to walk over.",
     "yourEnergy": "Your battery is {energy}.",
     "breathe": "Take a slow breath. No need to prepare an opening line.",
