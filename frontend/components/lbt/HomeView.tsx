@@ -232,14 +232,18 @@ export function HomeView() {
                 </li>
               ))}
             </ol>
-            <button
-              type="button"
-              className="support-link"
-              onClick={() => openModal({ type: "support" })}
-            >
-              {t("home.side.support")} <span aria-hidden="true">↗</span>
-            </button>
-            <p className="support-note">{t("home.side.supportNote")}</p>
+            <div className="support-invitation">
+              <h3>{t("home.side.supportTitle")}</h3>
+              <p>{t("home.side.supportBody")}</p>
+              <button
+                type="button"
+                className="support-link"
+                onClick={() => openModal({ type: "support" })}
+              >
+                {t("home.side.support")} <span aria-hidden="true">↗</span>
+              </button>
+              <p className="support-note">{t("home.side.supportNote")}</p>
+            </div>
           </div>
         </aside>
       </div>

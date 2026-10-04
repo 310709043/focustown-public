@@ -11,7 +11,8 @@
   "topbar": {
     "guide": "Town guide",
     "languageAria": "Change language",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "support": "Support"
   },
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
@@ -51,8 +52,10 @@
       "promise1": "You chat with one stranger only",
       "promise2": "After 7 minutes, extend only if you both want to",
       "promise3": "When you want to go, just say good night",
-      "support": "Light a lamp for the town",
-      "supportNote": "Free chat · optional one-time support"
+      "support": "Support the town",
+      "supportNote": "Free chat · optional one-time support",
+      "supportTitle": "Keep the town glowing",
+      "supportBody": "Built by one independent creator. Your optional support helps with hosting and improvements. Chat stays free."
     },
     "online": "{online} in town right now",
     "onlineDemo": "{online} viewing this prototype right now",
@@ -191,7 +194,7 @@
     "bodyBottom": "Come back and sit for a while whenever you feel like talking.",
     "again": "Meet someone else",
     "home": "Back to the town entrance",
-    "support": "Enjoying this? You can light a lamp with a one-time contribution",
+    "support": "Enjoyed meeting someone? Light a lamp for the town",
     "reason": {
       "left": "You said good night.",
       "partner_left": "They said good night.",
@@ -247,7 +250,7 @@
       "once": "Pay once · no automatic renewal · supporting is optional",
       "usage": "Support helps with hosting, improvements and safety management. Choose the number of Powers on the support page and check the total before paying.",
       "disclosure": "Charged in US dollars. Your bank determines currency conversion and any additional fees. Buy Me a Coffee handles payment details; the town does not collect card numbers or share your conversations with it.",
-      "checkout": "Support on Buy Me a Coffee ↗",
+      "checkout": "Support on Buy Me a Coffee",
       "operator": "LowBatteryTown is run by an independent creator. Contact:",
       "refund": "For mistaken payments or refund requests, contact us or Buy Me a Coffee with the transaction ID. The platform refund policy applies.",
       "refundLink": "Read the refund policy ↗"

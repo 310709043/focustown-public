@@ -26,6 +26,10 @@ export function SupportModal() {
       onConfirm={confirm}
       onClose={closeModal}
     >
+      <svg className="support-lamp" viewBox="0 0 40 44" width="40" height="44" aria-hidden="true" focusable="false">
+        <path d="M20 41V10M12 41h16M11 10h18L25 3H15Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path className="support-lamp-light" d="M14 13h12l5 17H9Z" fill="var(--lamp)" />
+      </svg>
       <p>{t("intro")}</p>
       <div className="support-total">
         <span>{t("totalLabel")}</span>

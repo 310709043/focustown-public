@@ -3608,3 +3608,76 @@ html[data-lbt-time="dawn"] .lbt .lbt-intro-glow {
     display: none;
   }
 }
+
+/* Optional support remains easy to find, without interrupting a conversation. */
+.lbt .support-pill {
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.lbt .support-pill:hover,
+.lbt .support-pill:focus-visible {
+  background: rgba(248, 215, 121, 0.08);
+  border-color: var(--lamp);
+}
+.lbt .support-pill:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 3px;
+}
+.lbt .support-invitation {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+.lbt .support-invitation h3 {
+  font-size: 15px;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.lbt .support-invitation > p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+.lbt .support-lamp {
+  color: var(--peach);
+  display: block;
+  margin-bottom: 8px;
+}
+.lbt .support-lamp-light {
+  opacity: 0.65;
+  animation: lbt-support-light 200ms ease-out;
+}
+@keyframes lbt-support-light {
+  from { opacity: 0; }
+  to { opacity: 0.65; }
+}
+@media (max-width: 610px) {
+  .lbt .topbar,
+  .lbt .site-shell:has(.home-view) .topbar {
+    height: auto;
+    min-height: 88px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .lbt .topbar-actions {
+    width: 100%;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .lbt .support-pill,
+  .lbt .feedback-pill {
+    min-height: 36px;
+    font-size: 12px;
+  }
+  .lbt .home-grid > .side-rail .how-card .support-note {
+    display: block;
+    margin-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lbt .support-lamp-light { animation: none; }
+}
