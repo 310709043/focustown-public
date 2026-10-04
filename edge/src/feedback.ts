@@ -127,6 +127,10 @@ export async function purgeFeedback(db: D1Database, cutoffIso: string): Promise<
  * Append the feedback to the owner's Google Sheet. Apps Script web apps can't
  * read request headers, so the shared token travels in the body. Never throws:
  * the D1 row is the record, the sheet is a convenience.
+ *
+ * Apps Script answers the POST with a 302 to script.googleusercontent.com,
+ * which only serves GET; the redirect is followed by hand as a GET so it never
+ * depends on how the runtime rewrites redirected POSTs.
  */
 export async function forwardToSheet(
   db: D1Database,
@@ -135,9 +139,12 @@ export async function forwardToSheet(
   f: FeedbackRecord,
   fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
-  if (!url || !token || !url.startsWith("https://")) return false;
+  if (!url || !token || !url.startsWith("https://")) {
+    console.log(JSON.stringify({ event: "lbt_feedback_sheet_skipped", id: f.id, reason: "not_configured" }));
+    return false;
+  }
   try {
-    const res = await fetcher(url, {
+    let res = await fetcher(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -150,11 +157,16 @@ export async function forwardToSheet(
         page: sheetSafe(f.page),
         locale: f.locale ?? "",
       }),
-      redirect: "follow",
+      redirect: "manual",
     });
-    const ok = res.ok && ((await res.json().catch(() => null)) as { ok?: boolean } | null)?.ok === true;
+    const location = res.headers.get("Location");
+    if (res.status >= 300 && res.status < 400 && location?.startsWith("https://")) {
+      res = await fetcher(location, { method: "GET", redirect: "follow" });
+    }
+    const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+    const ok = res.ok && body?.ok === true;
     if (ok) await db.prepare("UPDATE lbt_feedback SET sheet_sent = 1 WHERE id = ?").bind(f.id).run();
-    else console.log(JSON.stringify({ event: "lbt_feedback_sheet_failed", id: f.id, status: res.status }));
+    else console.log(JSON.stringify({ event: "lbt_feedback_sheet_failed", id: f.id, status: res.status, ok: body?.ok ?? null }));
     return ok;
   } catch (err) {
     console.log(JSON.stringify({ event: "lbt_feedback_sheet_failed", id: f.id, error: String(err) }));
