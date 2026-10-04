@@ -132,6 +132,13 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
           <div className="topbar-actions">
             <button
               type="button"
+              className="prototype-pill support-pill"
+              onClick={() => openModal({ type: "support" })}
+            >
+              <span aria-hidden="true">🪫</span> {t("topbar.support")}
+            </button>
+            <button
+              type="button"
               className="prototype-pill feedback-pill"
               onClick={() => openModal({ type: "feedback" })}
             >

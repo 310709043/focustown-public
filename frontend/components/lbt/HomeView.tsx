@@ -229,6 +229,12 @@ export function HomeView() {
                 </li>
               ))}
             </ol>
+          </div>
+          {/* Its own card, so the rules card (and the whole info row) keeps
+              its height and the stage above is not squeezed. */}
+          <div className="side-card support-card support-invitation">
+            <h3>{t("home.side.supportTitle")}</h3>
+            <p>{t("home.side.supportBody")}</p>
             <button
               type="button"
               className="support-link"

@@ -11,7 +11,8 @@
   "topbar": {
     "guide": "小鎮指南",
     "languageAria": "切換語言",
-    "feedback": "意見箱"
+    "feedback": "意見箱",
+    "support": "贊助"
   },
   "home": {
     "eyebrow": "OPEN WHEN YOU NEED A LITTLE COMPANY",
@@ -50,8 +51,10 @@
       "promise1": "只和一位陌生人聊天",
       "promise2": "7 分鐘後，雙方願意再延長",
       "promise3": "想走的時候，說聲晚安就好",
-      "support": "替小鎮點燈",
-      "supportNote": "聊天免費 · 目前不收款"
+      "support": "贊助小鎮",
+      "supportNote": "聊天免費 · 自願單次支持",
+      "supportTitle": "讓小鎮繼續亮著",
+      "supportBody": "一個人打造的小鎮。你的自願支持，幫助網站維運與持續改善。聊天一直免費。"
     },
     "online": "此刻 {online} 人在小鎮",
     "onlineDemo": "此刻 {online} 人開著這個原型",
@@ -59,7 +62,8 @@
     "closed": "街燈還沒亮。開放時間：{hours}",
     "adult": "我已年滿 18 歲",
     "adultHint": "測試期間只開放成年人使用。",
-    "adultHintPolicies": "走進小鎮即表示你同意<terms>使用條款</terms>與<guidelines>社群守則</guidelines>，並了解<privacy>隱私權政策</privacy>。"
+    "adultHintPolicies": "走進小鎮即表示你同意<terms>使用條款</terms>與<guidelines>社群守則</guidelines>，並了解<privacy>隱私權政策</privacy>。",
+    "openGreeting": "街燈亮著，歡迎來坐坐"
   },
   "energy": {
     "low": {
@@ -131,7 +135,7 @@
     "breathe": "先深呼吸一下，不急著準備開場白。",
     "cancel": "先回到街口",
     "townNow": "此刻 {online} 人在小鎮，{waiting} 人在等。",
-    "longWait": "人比較少的時候，可能要多等一下。也可以先回街口，晚點再來。",
+    "longWait": "想找人說說話的心情，我們懂。相遇可能需要一點時間。",
     "offline": "暫時連不上小鎮，正在重新連線…"
   },
   "chat": {
@@ -193,7 +197,7 @@
     "bodyBottom": "下次想說話時，隨時回來坐一下。",
     "again": "再遇見一個人",
     "home": "回到小鎮入口",
-    "support": "喜歡這裡？可以單次點燈支持",
+    "support": "喜歡這次相遇？替小鎮點一盞燈",
     "reason": {
       "left": "你說了晚安。",
       "partner_left": "對方說了晚安。",
@@ -244,14 +248,15 @@
     "support": {
       "eyebrow": "自願支持 · 只付一次",
       "title": "替小鎮點一盞燈",
-      "intro": "如果你喜歡這裡，可以自選一次支持金額。聊天和配對對每個人都一樣，支持不會帶來額外權益。",
-      "legend": "選擇單次支持金額",
-      "totalLabel": "這次支持",
+      "intro": "如果你喜歡這裡，歡迎透過 Buy Me a Coffee 替小鎮點燈。聊天和配對對每個人都一樣，支持不會帶來額外權益。",
+      "totalLabel": "每份支持",
       "once": "只付一次 · 不自動續扣 · 可選擇不支持",
-      "usage": "支持款預計用於網站運作與檢舉處理。正式收款頁會列明營運者、聯絡方式、付款與退款說明。",
-      "disclosure": "原型尚未開放付款，也不會收集付款資料。",
-      "unavailable": "付款尚未開放",
-      "checkout": "前往單次付款 · {amount}"
+      "usage": "支持款用於網站維運、功能改善與安全管理。你可以在贊助頁選擇 Power 份數，付款前請確認總額。",
+      "disclosure": "以美元計價，實際台幣扣款依發卡銀行匯率及相關費用為準。付款由 Buy Me a Coffee 處理，小鎮不收集卡號，也不會將聊天內容交給收款平台。",
+      "checkout": "前往 Buy Me a Coffee 贊助",
+      "operator": "LowBatteryTown 由獨立創作者營運。聯絡：",
+      "refund": "誤付或退款問題，請附交易編號聯絡我們或 Buy Me a Coffee；依平台政策處理。",
+      "refundLink": "查看退款政策 ↗"
     },
     "feedback": {
       "eyebrow": "意見箱",
@@ -406,7 +411,7 @@
         {
           "h": "自願支持",
           "p": [
-            "「替小鎮點燈」是單次、自願的支持（NT$60／150／300），不會自動扣款，也不會改變免費聊天與配對。目前尚未開放付款；開放前我們會公布營運者資訊與付款、退款說明。"
+            "「替小鎮點燈」透過 Buy Me a Coffee 提供自願、單次支持，每份 Power 為 US$3，可在贊助頁選擇份數。以美元計價，實際台幣扣款依發卡銀行匯率及相關費用為準；不自動續扣，也不改變免費聊天與配對。LowBatteryTown 由獨立創作者營運，付款資料由 Buy Me a Coffee 處理。誤付或退款問題請附交易編號透過本頁聯絡信箱或 Buy Me a Coffee 聯絡我們，依平台退款政策處理（https://help.buymeacoffee.com/en/articles/8722330-buy-me-a-coffee-refund-policy）。"
           ]
         },
         {

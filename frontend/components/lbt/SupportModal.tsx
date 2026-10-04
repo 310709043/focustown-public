@@ -1,65 +1,48 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
-import { DEFAULT_SUPPORT_AMOUNT, SUPPORT_AMOUNTS } from "@/lib/lbt/constants";
+import { LBT_LEGAL } from "@/lib/lbt/legal";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
-import { getCheckoutUrl } from "@/lib/lbt/support";
-import type { SupportAmount } from "@/lib/lbt/types";
+import { SUPPORT_PAGE_URL, SUPPORT_REFUND_URL } from "@/lib/lbt/support";
 
 import { LbtModal } from "./LbtModal";
 
-/**
- * "Light a lamp for the town": a single voluntary payment of NT$60 / 150 /
- * 300. Checkout stays disabled until SUPPORT_CHECKOUT_LINKS holds approved
- * provider links (lib/lbt/support.ts). No payment data is collected here.
- */
+/** Voluntary support on the creator's external page; no payment data is collected here. */
 export function SupportModal() {
   const t = useTranslations("lbt.modal.support");
   const closeModal = useLbtStore((s) => s.closeModal);
-  const [amount, setAmount] = useState<SupportAmount>(DEFAULT_SUPPORT_AMOUNT);
-
-  const checkoutUrl = getCheckoutUrl(amount);
-  const label = `NT$${amount}`;
 
   const confirm = () => {
+    window.open(SUPPORT_PAGE_URL, "_blank", "noopener,noreferrer");
     closeModal();
-    if (checkoutUrl) window.open(checkoutUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
     <LbtModal
       eyebrow={t("eyebrow")}
       title={t("title")}
-      confirmLabel={checkoutUrl ? t("checkout", { amount: label }) : t("unavailable")}
-      confirmDisabled={!checkoutUrl}
+      confirmLabel={t("checkout")}
       onConfirm={confirm}
       onClose={closeModal}
     >
+      <svg className="support-lamp" viewBox="0 0 40 44" width="40" height="44" aria-hidden="true" focusable="false">
+        <path d="M20 41V10M12 41h16M11 10h18L25 3H15Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path className="support-lamp-light" d="M14 13h12l5 17H9Z" fill="var(--lamp)" />
+      </svg>
       <p>{t("intro")}</p>
-      <fieldset className="support-amounts">
-        <legend>{t("legend")}</legend>
-        {SUPPORT_AMOUNTS.map((value) => (
-          <label key={value} className="support-choice">
-            <input
-              type="radio"
-              name="support-amount"
-              value={value}
-              checked={amount === value}
-              onChange={() => setAmount(value)}
-            />
-            <span>{`NT$${value}`}</span>
-          </label>
-        ))}
-      </fieldset>
       <div className="support-total">
         <span>{t("totalLabel")}</span>
-        <strong>{label}</strong>
+        <strong>1 Power · US$3</strong>
       </div>
       <p className="support-once">{t("once")}</p>
       <p>{t("usage")}</p>
       <p className="support-disclosure">{t("disclosure")}</p>
+      <p>{t("operator")} <a href={`mailto:${LBT_LEGAL.contactEmail}`}>{LBT_LEGAL.contactEmail}</a></p>
+      <p>
+        {t("refund")} {" "}
+        <a href={SUPPORT_REFUND_URL} target="_blank" rel="noopener noreferrer">{t("refundLink")}</a>
+      </p>
     </LbtModal>
   );
 }
