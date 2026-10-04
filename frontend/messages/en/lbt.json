@@ -527,5 +527,16 @@
         "a": "You can leave at any time or report the conversation. Reporting ends the chat, saves its transcript for review and prevents the pair from matching again for {pairBlockHours} hours. The town is not counselling or an emergency service: for someone to listen, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in immediate danger call 110 or 119."
       }
     ]
+  },
+  "music": {
+    "play": "Play music",
+    "pause": "Pause music",
+    "hint": "Tap to hum",
+    "volume": "Volume",
+    "levels": {
+      "0": "Quiet",
+      "1": "Medium",
+      "2": "Loud"
+    }
   }
 }

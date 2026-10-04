@@ -16,6 +16,7 @@ import { useLbtStore } from "@/lib/lbt/sessionStore";
 import { onRadioGroupKeyDown } from "@/lib/lbt/useRadioArrowKeys";
 
 import { BatteryCharacter } from "./BatteryCharacter";
+import { MusicVolume } from "./MusicControls";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { TownSky, Townscape } from "./Townscape";
@@ -207,6 +208,7 @@ export function HomeView() {
           <div className="side-card battery-card">
             <div className="side-card-top">
               <span>{t("home.side.statusLabel")}</span>
+              <MusicVolume />
               <span className="utility-number">{`0${energy} / 03`}</span>
             </div>
             <BatteryCharacter energy={energy} />
