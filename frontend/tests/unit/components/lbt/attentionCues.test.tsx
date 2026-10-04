@@ -14,7 +14,7 @@ import { useLbtStore } from "@/lib/lbt/sessionStore";
 import type { ChatLine } from "@/lib/lbt/types";
 
 const BASE = "LowBatteryTown";
-let player: ChimePlayer & { play: ReturnType<typeof vi.fn> };
+let player: ChimePlayer & { play: ReturnType<typeof vi.fn<ChimePlayer["play"]>> };
 let away = false;
 
 function partnerLine(id: string): ChatLine {
