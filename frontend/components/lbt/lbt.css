@@ -2246,7 +2246,20 @@
 
 /* Very small phones (e.g. 320px): let the header wrap instead of clipping
    the language toggle. */
-@media (max-width: 360px) {
+/* Narrow phones: the feedback pill drops its lamp dot and tightens so the
+   longer English label fits beside the wordmark and the locale toggle. */
+@media (max-width: 430px) {
+  .lbt .feedback-pill {
+    gap: 0;
+    padding: 6px 9px;
+    letter-spacing: 0.02em;
+  }
+  .lbt .feedback-pill .prototype-dot {
+    display: none;
+  }
+}
+
+@media (max-width: 374px) {
   .lbt .topbar {
     height: auto;
     min-height: 70px;
