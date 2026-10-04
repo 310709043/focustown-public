@@ -44,6 +44,9 @@ test("host invites, visitor chooses, both chat and extend, then leave", async ({
     await expect(input).toHaveValue("保留未送出的草稿");
     await admin.getByRole("button", { name: "說聲晚安，結束陪聊", exact: true }).click();
     await expect(visitor.getByText("對方說了晚安。", { exact: true })).toBeVisible();
+    await expect(visitor.locator(".message, .partner-profile")).toHaveCount(0);
+    await expect(admin.locator(".companion-line")).toHaveCount(0);
+    await expect(admin.getByRole("heading", { name: "正在和「陪聊驗收訪客」聊天", exact: true, includeHidden: true })).toHaveCount(0);
     await admin.getByRole("button", { name: "結束陪聊值班", exact: true }).click();
     await expect(admin.getByRole("button", { name: "開始陪聊值班", exact: true })).toBeVisible();
   } finally {

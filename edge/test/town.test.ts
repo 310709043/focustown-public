@@ -240,15 +240,16 @@ describe("leaving", () => {
     ]);
   });
 
-  test("closes the conversation but keeps it readable for a day", async () => {
+  test("leaving immediately deletes messages, profiles, votes and both mappings", async () => {
     const cid = await pair();
+    await town.sendMessage("g_a", "private message");
+    await town.extend("g_a");
     await town.leave("g_b");
     expect([
-      await store.activeConversationIds(),
-      await store.conversationIdOf("g_a"),
-      await store.lastConversationIdOf("g_a", now + CFG.keepClosedMs - 1),
-      await store.lastConversationIdOf("g_a", now + CFG.keepClosedMs),
-    ]).toEqual([[], null, cid, null]);
+      await store.activeConversationIds(), await store.conversationIdOf("g_a"),
+      await store.conversationIdOf("g_b"), await store.getConversation(cid),
+      await store.transcript(cid), await store.extendVotes(cid),
+    ]).toEqual([[], null, null, null, [], []]);
   });
 
   test("leaving from the waiting room dequeues", async () => {
@@ -296,11 +297,33 @@ describe("reports", () => {
     ]);
   });
 
-  test("still work after the conversation ended", async () => {
+  test("reject reports after the conversation ended", async () => {
     await pair();
     await town.leave("g_b");
-    await town.report("g_a", "sexual", null);
-    expect(reports.length).toBe(1);
+    await expectCode(town.report("g_a", "sexual", null), "no_conversation");
+    expect(reports).toEqual([]);
+  });
+
+  test("saves evidence before deleting the live copy", async () => {
+    const cid = await pair();
+    await town.sendMessage("g_a", "evidence");
+    await town.report("g_a", "spam", "check");
+    expect(reports[0]?.transcript[0]?.text).toBe("evidence");
+    expect(reports[0]?.reporterProfile).toEqual(LISTEN);
+    expect([await store.getConversation(cid), await store.transcript(cid)]).toEqual([null, []]);
+  });
+
+  test("a failed evidence save leaves the chat available for retry", async () => {
+    const cid = await pair();
+    await town.sendMessage("g_a", "evidence");
+    town = new Town({ store, send: (guest, frame) => sent.push({ guest, frame }),
+      now: () => now, newId: () => "failed-report", config: CFG,
+      saveReport: async () => { throw new Error("database unavailable"); },
+    });
+    await expect(town.report("g_a", "spam", "")).rejects.toThrow("database unavailable");
+    expect(await store.conversationIdOf("g_a")).toBe(cid);
+    expect((await store.transcript(cid))[0]?.text).toBe("evidence");
+    expect(frames("g_a", "lbt.ended")).toEqual([]);
   });
 
   test("reported pairs are not paired again", async () => {
@@ -324,11 +347,13 @@ describe("reports", () => {
 
 describe("sweep", () => {
   test("ends a conversation past grace as timeout", async () => {
-    await pair();
+    const cid = await pair();
+    await town.sendMessage("g_a", "private timeout");
     now += CFG.sessionMs + CFG.graceMs;
     for (const g of ["g_a", "g_b"]) await store.touchOnline(g, now);
     await town.sweep();
     expect(frames("g_a", "lbt.ended").map((f) => f.reason)).toEqual(["timeout"]);
+    expect([await store.getConversation(cid), await store.transcript(cid)]).toEqual([null, []]);
   });
 
   test("keeps a conversation inside grace", async () => {
@@ -340,7 +365,8 @@ describe("sweep", () => {
   });
 
   test("ends a conversation when one side vanished", async () => {
-    await pair();
+    const cid = await pair();
+    await town.sendMessage("g_a", "private disconnect");
     now += CFG.offlineAfterMs + 1000;
     await store.touchOnline("g_b", now);
     await town.sweep();
@@ -348,6 +374,7 @@ describe("sweep", () => {
       "partner_disconnected",
       "left",
     ]);
+    expect([await store.getConversation(cid), await store.transcript(cid)]).toEqual([null, []]);
   });
 
   test("drops absent waiters", async () => {
@@ -357,13 +384,41 @@ describe("sweep", () => {
     expect(await store.listWaiting()).toEqual([]);
   });
 
-  test("forgets closed conversations and their transcripts after a day", async () => {
+  test("a restart finishes an interrupted deletion without restoring chat data", async () => {
+    const kv = new MemoryKV();
+    store = new TownStore(kv);
+    town = build();
     const cid = await pair();
-    await town.sendMessage("g_a", "hi");
-    await town.leave("g_a");
-    now += CFG.keepClosedMs;
+    await town.sendMessage("g_a", "private interrupted deletion");
+    const remove = kv.delete.bind(kv);
+    kv.delete = async (key) => {
+      if (key === `lines:${cid}`) throw new Error("storage interrupted");
+      return remove(key);
+    };
+    await expect(town.leave("g_a")).rejects.toThrow("storage interrupted");
+    kv.delete = remove;
+    store = new TownStore(kv);
+    await store.purgeClosed();
+    expect([await store.getConversation(cid), await store.transcript(cid),
+      await store.conversationIdOf("g_a"), await store.conversationIdOf("g_b"),
+      await store.activeConversationIds()]).toEqual([null, [], null, null, []]);
+  });
+
+  test("purges old retention data without waiting for its old deadline", async () => {
+    const kv = new MemoryKV();
+    store = new TownStore(kv);
+    town = build();
+    const active = await pair();
+    const c = await store.getConversation(active);
+    await kv.put("conv:old", { ...c, id: "old" });
+    await kv.put("lines:old", [{ text: "old private data" }]);
+    await kv.put("votes:old", ["g_old"]);
+    await kv.put("closed", { old: now + 24 * 3600_000 });
+    await kv.put("last", { g_old: { value: "old", until: now + 24 * 3600_000 } });
     await town.sweep();
-    expect([await store.getConversation(cid), await store.transcript(cid)]).toEqual([null, []]);
+    expect([await store.getConversation("old"), await store.transcript("old"), await store.extendVotes("old")]).toEqual([null, [], []]);
+    expect(kv.data.has("last")).toBe(false);
+    expect(await store.getConversation(active)).toEqual(c);
   });
 });
 

@@ -204,6 +204,15 @@ describe("createLiveTransport", () => {
     });
   });
 
+  test("leaving discards offline messages before reconnect", async () => {
+    const transport = await started();
+    transport.send("private unsent message");
+    transport.extend();
+    transport.leave();
+    FakeSocket.instances[0].open();
+    expect(FakeSocket.instances[0].sent.map((frame) => JSON.parse(frame))).toEqual([{ type: "leave" }]);
+  });
+
   test("typing is dropped rather than queued while offline", async () => {
     const transport = await started();
     transport.typing();

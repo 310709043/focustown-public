@@ -106,3 +106,18 @@ curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"status":"reviewed"}' 
 
 Guests are anonymous and a new guest token is free, so there is no account to
 ban: a report already ends the chat and keeps the pair apart for 24 h.
+
+## Chat data retention
+
+Cloudflare live chat messages and both pairing profiles are deleted when either
+participant leaves, the session expires (after its existing extension grace),
+or the reconnect window expires. Browsers clear their chat on the end/idle
+event; an offline browser reconciles on reconnect. Old 24-hour closed-chat
+records are purged on Durable Object activation and sweeps. Reports must be
+submitted during the chat: D1 stores the evidence before the live copy is
+deleted. Report evidence retains the configured 180-day default and daily
+purge; pair blocks last 24 hours. Guest credentials, presence, abuse counters
+and provider technical logs follow their separate lifetimes. Application
+deletion is not a promise of instant erasure from provider recovery backups or
+other users' screenshots. This policy applies to `edge/`, not the retired AWS
+backend.

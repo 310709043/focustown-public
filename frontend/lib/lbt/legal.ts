@@ -1,13 +1,12 @@
 /**
  * Facts the LowBatteryTown policy pages state. Keep the numbers in step
- * with the backend: LBT_GUEST_TOKEN_TTL_HOURS, the 24 h Redis TTL on
- * closed conversations, and LBT_REPORT_RETENTION_DAYS.
+ * with the Cloudflare API: LBT_GUEST_TOKEN_TTL_HOURS and
+ * LBT_REPORT_RETENTION_DAYS. Ordinary ended chats are deleted immediately.
  */
 export const LBT_LEGAL = {
-  effectiveDate: "2026-10-03",
+  effectiveDate: "2026-10-04",
   contactEmail: process.env.NEXT_PUBLIC_LBT_CONTACT_EMAIL || "hello@lowbatterytown.com",
   tokenHours: 24,
-  chatHours: 24,
   reportDays: 180,
 } as const;
 

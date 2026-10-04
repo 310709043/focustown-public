@@ -25,7 +25,6 @@ export interface TownConfig {
   graceMs: number;
   relaxAfterMs: number;
   offlineAfterMs: number;
-  keepClosedMs: number;
   blockMs: number;
   openHours: OpenHours | null;
   timeZone: string;
@@ -37,7 +36,6 @@ export const DEFAULT_CONFIG: TownConfig = {
   graceMs: 60_000,
   relaxAfterMs: 30_000,
   offlineAfterMs: 45_000,
-  keepClosedMs: 24 * 3600_000,
   blockMs: 24 * 3600_000,
   openHours: null,
   timeZone: "Asia/Taipei",
@@ -317,8 +315,7 @@ export class Town {
     if (!(REPORT_REASONS as readonly string[]).includes(reason)) throw new InputError("invalid_reason");
     if (!this.deps.saveReport) throw new Error("report storage not wired");
     const now = this.deps.now();
-    const id =
-      (await this.store.conversationIdOf(guestId)) ?? (await this.store.lastConversationIdOf(guestId, now));
+    const id = await this.store.conversationIdOf(guestId);
     const c = id ? await this.store.getConversation(id) : null;
     if (!c || (c.guestA !== guestId && c.guestB !== guestId)) throw new InputError("no_conversation");
     const partner = partnerOf(c, guestId);
@@ -402,7 +399,7 @@ export class Town {
   }
 
   private async close(c: Conversation, reasons: Record<string, string>) {
-    await this.store.closeConversation(c, this.deps.now() + this.cfg.keepClosedMs);
+    await this.store.closeConversation(c);
     for (const [g, reason] of Object.entries(reasons)) this.deps.send(g, { type: "lbt.ended", reason });
   }
 

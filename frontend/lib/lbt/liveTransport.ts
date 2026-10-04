@@ -226,6 +226,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
         return;
       }
       const event = mapServerFrame(frame, now());
+      if (event?.type === "ended" || event?.type === "idle") outbox.length = 0;
       if (event) emit(event);
     };
     ws.onerror = () => {
@@ -275,7 +276,10 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     send: (text) => send({ type: "message", text }, { queue: true }),
     typing: () => send({ type: "typing" }, { queue: false }),
     extend: () => send({ type: "extend" }, { queue: true }),
-    leave: () => send({ type: "leave" }, { queue: true }),
+    leave: () => {
+      outbox.length = 0;
+      send({ type: "leave" }, { queue: true });
+    },
     async report(reason: ReportReason, note: string) {
       const token = await guestToken();
       const res = await fetcher(`${api}/api/v1/lbt/reports`, {

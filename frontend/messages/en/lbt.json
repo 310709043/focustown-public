@@ -152,7 +152,7 @@
     "composerPlaceholder": "Say something here…",
     "composerTimeUp": "Time's up. You can extend or say good night.",
     "send": "Send message",
-    "privacy": "Please don't share phone numbers, addresses or other private details.",
+    "privacy": "Chats are cleared when they end. Submit reports before leaving.",
     "report": "Report conversation",
     "system": {
       "met": "You met under the street lamp. You have 7 minutes to start, and you can stay longer together.",
@@ -205,12 +205,12 @@
       "eyebrow": "Town guide",
       "title": "Just sit for a while.",
       "body": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time. This page is an interactive prototype, and matching and replies are simulated by the program.",
-      "bodyLive": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time and report anything that makes you uncomfortable. During the beta only adults can join. Conversations are deleted 24 hours after they end; reported ones are kept for review."
+      "bodyLive": "Pick today's social battery, then chat with a stranger for 7 minutes. If you both want to, you can stay longer. You can leave any time and report anything that makes you uncomfortable. During the beta only adults can join. Ordinary chats and both profiles are deleted when the conversation ends, and the chat screen is cleared. Submit reports before the conversation ends; report evidence is kept for 180 days for review."
     },
     "report": {
       "eyebrow": "Safety note",
       "title": "Report conversation",
-      "intro": "What happened? Sending this ends the conversation and you won't be paired again.",
+      "intro": "Submit your report before the conversation ends. A successful report ends the chat and keeps the necessary conversation and profiles for 180 days for review. You will not be paired again for 24 hours.",
       "introDemo": "Prototype demo: there is no real conversation here, so nothing is sent.",
       "legend": "Choose a reason",
       "reasons": {
@@ -297,7 +297,7 @@
           "p": [
             "Anonymous guest code: issued to your browser when you enter, kept in the browser's localStorage and valid for {tokenHours} hours, so a refresh or dropped connection can rejoin your chat.",
             "Nickname, social battery and chat intent: shown to the person you are paired with.",
-            "Messages: relayed to the other person in real time. After a chat ends they are kept for up to {chatHours} hours for reconnects and reports, then deleted automatically.",
+            "Messages and pairing profiles: temporarily stored during an active chat for reconnects. When either person leaves, the session expires or the reconnect window runs out, they are immediately deleted from application chat storage and cleared from browsers that receive the end event. Reports cannot be submitted after the chat ends.",
             "IP address: used only for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
             "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
@@ -313,7 +313,7 @@
         {
           "h": "Where it lives",
           "p": [
-            "The service runs on Amazon Web Services (Tokyo region) behind Cloudflare, so data may be processed outside Taiwan."
+            "Cloudflare provides computing and data storage, and data may be processed outside Taiwan. Deletion above refers to application chat storage. Infrastructure backup or recovery systems may have separate retention periods; deletion does not mean all technical records disappear at the same instant."
           ]
         },
         {
@@ -482,7 +482,7 @@
       },
       {
         "q": "Does anonymous mean no records? Can screenshots be prevented?",
-        "a": "Anonymous means no real-name registration, not zero data retention. Ordinary conversations are kept for 24 hours after ending. Reported transcripts are kept for 180 days for review. A website cannot reliably prevent screenshots or someone taking a photo. Avoid sharing names, phone numbers, addresses or other identifying information. See the privacy policy for details."
+        "a": "When an ordinary chat ends, the application immediately deletes its messages and both pairing profiles, and clears browsers that receive the end event. Evidence reported during a chat is kept for 180 days for review. Anonymous guest tokens, abuse-prevention counters and technical logs follow separate rules in the privacy policy. A website cannot reliably prevent screenshots or photos. Avoid sharing names, phone numbers, addresses or other identifying information."
       },
       {
         "q": "What if someone harasses me or makes me uncomfortable?",

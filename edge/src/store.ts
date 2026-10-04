@@ -4,7 +4,8 @@
  * scripts: a read-modify-write here can't interleave with another one.
  *
  * Everything is kept as a handful of JSON values under fixed keys plus
- * per-conversation keys, and nothing outlives a day.
+ * per-conversation keys. Ended chat content is deleted immediately; only
+ * short-lived presence and abuse-prevention counters remain.
  */
 import type { Profile, Waiting } from "./rules";
 import type { CompanionInvite } from "./companion";
@@ -50,16 +51,14 @@ export class MemoryKV implements KV {
 
 export const TRANSCRIPT_MAX_LINES = 400;
 
-type Expiring<T> = { value: T; until: number };
-
 const K = {
   companionInvite: "companion:invite",
   online: "online", // Record<guestId, lastSeenMs>
   queue: "queue", // Waiting[]
   active: "active", // conversationId[]
-  closed: "closed", // Record<conversationId, untilMs>
+  closed: "closed", // Legacy retention entries / interrupted deletion markers
   current: "current", // Record<guestId, conversationId>
-  last: "last", // Record<guestId, Expiring<conversationId>>
+  last: "last", // Legacy post-chat report lookup, removed during upgrade
   blocks: "blocks", // Record<"a|b" sorted, untilMs>
   limits: "limits", // Record<key, { count, resetAt }>
   conv: (id: string) => `conv:${id}`,
@@ -135,42 +134,49 @@ export class TownStore {
   async conversationIdOf(guestId: string): Promise<string | null> {
     return (await this.map<string>(K.current))[guestId] ?? null;
   }
-  async lastConversationIdOf(guestId: string, now: number): Promise<string | null> {
-    const entry = (await this.map<Expiring<string>>(K.last))[guestId];
-    return entry && entry.until > now ? entry.value : null;
-  }
   async activeConversationIds(): Promise<string[]> {
     return (await this.kv.get<string[]>(K.active)) ?? [];
   }
-  /** End a conversation; it and its transcript stay readable (for reports) until `until`. */
-  async closeConversation(c: Conversation, until: number) {
-    const active = await this.activeConversationIds();
-    await this.kv.put(K.active, active.filter((id) => id !== c.id));
+  /** Delete live chat data before notifying either browser that it ended. */
+  async closeConversation(c: Conversation) {
+    // Keep a cleanup marker until deletion completes, so a restart can retry.
+    const closed = await this.map<number>(K.closed);
+    closed[c.id] = 0;
+    await this.kv.put(K.closed, closed);
+    await this.kv.delete(K.conv(c.id));
+    await this.kv.delete(K.lines(c.id));
+    await this.kv.delete(K.votes(c.id));
     const current = await this.map<string>(K.current);
-    const last = await this.map<Expiring<string>>(K.last);
     for (const g of [c.guestA, c.guestB]) {
       if (current[g] === c.id) delete current[g];
-      last[g] = { value: c.id, until };
     }
     await this.kv.put(K.current, current);
-    await this.kv.put(K.last, last);
-    const closed = await this.map<number>(K.closed);
-    closed[c.id] = until;
+    await this.kv.put(K.active, (await this.activeConversationIds()).filter((id) => id !== c.id));
+    delete closed[c.id];
     await this.kv.put(K.closed, closed);
-    await this.kv.delete(K.votes(c.id));
   }
-  /** Drop closed conversations, transcripts and other entries past their time. */
-  async pruneExpired(now: number) {
+
+  /** Upgrade cleanup: purge old 24-hour transcripts and interrupted deletions. */
+  async purgeClosed() {
     const closed = await this.map<number>(K.closed);
-    for (const [id, until] of Object.entries(closed)) {
-      if (until > now) continue;
+    const ids = new Set(Object.keys(closed));
+    for (const id of ids) {
       await this.kv.delete(K.conv(id));
       await this.kv.delete(K.lines(id));
-      delete closed[id];
+      await this.kv.delete(K.votes(id));
     }
-    await this.kv.put(K.closed, closed);
-    const last = await this.map<Expiring<string>>(K.last);
-    await this.kv.put(K.last, Object.fromEntries(Object.entries(last).filter(([, e]) => e.until > now)));
+    if (ids.size) {
+      const current = await this.map<string>(K.current);
+      await this.kv.put(K.current, Object.fromEntries(Object.entries(current).filter(([, id]) => !ids.has(id))));
+      await this.kv.put(K.active, (await this.activeConversationIds()).filter((id) => !ids.has(id)));
+    }
+    await this.kv.delete(K.last);
+    await this.kv.delete(K.closed);
+  }
+
+  /** Purge ended chats immediately and expire abuse-prevention counters. */
+  async pruneExpired(now: number) {
+    await this.purgeClosed();
     const blocks = await this.map<number>(K.blocks);
     await this.kv.put(K.blocks, Object.fromEntries(Object.entries(blocks).filter(([, u]) => u > now)));
     const limits = await this.map<{ count: number; resetAt: number }>(K.limits);

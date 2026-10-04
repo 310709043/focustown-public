@@ -412,13 +412,48 @@ describe("ending", () => {
     expect(store().now).toBe(frozen);
   });
 
-  test("an open report dialog stays over the end screen", () => {
+  test("an unsent report closes when the conversation ends", () => {
     inChat();
     store().openModal({ type: "report" });
+    transport.emit({ type: "ended", reason: "partner_left" });
+    expect(store().modal).toBeNull();
+  });
 
+  test("a report already sending can finish after the end event", async () => {
+    inChat();
+    store().openModal({ type: "report" });
+    const pending = store().report("spam", "ads");
     transport.emit({ type: "ended", reason: "reported" });
-
     expect(store().modal).toEqual({ type: "report" });
+    await expect(pending).resolves.toBe("sent");
+    expect(store().reportPending).toBe(false);
+    expect([store().partner, store().lines]).toEqual([null, []]);
+  });
+
+  test("a failed in-flight report clears its draft dialog if the chat ended", async () => {
+    inChat();
+    store().openModal({ type: "report" });
+    transport.reportResult = new Error("report_500");
+    const pending = store().report("spam", "private draft");
+    transport.emit({ type: "ended", reason: "partner_left" });
+    await expect(pending).rejects.toThrow("report_500");
+    expect(store().modal).toBeNull();
+    expect(store().reportPending).toBe(false);
+  });
+
+  test.each(["partner_left", "timeout", "partner_disconnected"] as const)("%s clears chat data and ignores late messages", (reason) => {
+    inChat();
+    transport.emit({ type: "message", id: "secret", from: "partner", text: "private" });
+    transport.emit({ type: "ended", reason });
+    transport.emit({ type: "message", id: "late", from: "partner", text: "late private" });
+    expect([store().partner, store().lines]).toEqual([null, []]);
+  });
+
+  test("reports cannot start after leaving", async () => {
+    inChat();
+    store().leave();
+    expect([store().partner, store().lines]).toEqual([null, []]);
+    await expect(store().report("spam", "")).rejects.toThrow("no_conversation");
   });
 
   test("idle during a chat means it ended while we were away", () => {

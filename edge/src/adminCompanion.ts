@@ -38,7 +38,8 @@ function companionSend(frame) {
 function companionReset() {
   companionSession = null; companionPending = null; companionMine = false; companionOther = false;
   companionMessages.clear(); companionLog.replaceChildren(); companionChat.hidden = true;
-  companionDraft.value = "";
+  companionDraft.value = ""; companionTitle.textContent = "";
+  companionEndsAt = 0;
 }
 function stopCompanion() {
   onDuty = false; clearTimeout(companionReconnect); clearInterval(companionTimer);

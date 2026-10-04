@@ -23,6 +23,8 @@ export class TownObject extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.store = new TownStore(ctx.storage);
+    // Finish old retention/deletion work before accepting events after an upgrade.
+    void ctx.blockConcurrencyWhile(() => this.store.purgeClosed());
     this.town = new Town({
       store: this.store,
       send: (guestId, frame) => this.send(guestId, frame),

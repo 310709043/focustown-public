@@ -15,7 +15,6 @@ interface Section {
 
 const FACTS: Record<string, string> = {
   tokenHours: String(LBT_LEGAL.tokenHours),
-  chatHours: String(LBT_LEGAL.chatHours),
   reportDays: String(LBT_LEGAL.reportDays),
 };
 

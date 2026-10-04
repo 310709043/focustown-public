@@ -59,6 +59,7 @@ interface LbtData {
   topicId: TopicId | null;
   topicCursor: number;
   modal: LbtModal | null;
+  reportPending: boolean;
   endReason: EndReason | null;
   /** Machine-readable notice (error code) shown inline; null when none. */
   notice: string | null;
@@ -116,6 +117,7 @@ const INITIAL: LbtData = {
   topicId: null,
   topicCursor: 0,
   modal: null,
+  reportPending: false,
   endReason: null,
   notice: null,
   timeUpShown: false,
@@ -172,6 +174,9 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     clearTimeout(typingClear);
     set((s) => ({
       view: "end",
+      lines: [],
+      partner: null,
+      simulated: false,
       companionInvitation: null,
       companionAnswering: false,
       endReason: reason,
@@ -181,8 +186,8 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       topicId: null,
       endsAt: null,
       waitingSince: null,
-      // A report confirmation stays open over the end screen.
-      modal: s.modal?.type === "report" ? s.modal : null,
+      // Only a report already being submitted can finish over the end screen.
+      modal: s.reportPending && s.modal?.type === "report" ? s.modal : null,
     }));
   };
 
@@ -362,6 +367,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       stopClock();
       set({
         view: "home",
+        lines: [],
         companionInvitation: null,
         companionAnswering: false,
         endsAt: null,
@@ -404,8 +410,16 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     },
 
     async report(reason, note) {
-      if (!transport) return "simulated";
-      return transport.report(reason, note);
+      if (get().view !== "chat" || get().reportPending) throw new Error("no_conversation");
+      set({ reportPending: true });
+      try {
+        return transport ? await transport.report(reason, note) : "simulated";
+      } catch (error) {
+        if (get().view !== "chat" && get().modal?.type === "report") set({ modal: null });
+        throw error;
+      } finally {
+        set({ reportPending: false });
+      }
     },
 
     drawTopic() {
