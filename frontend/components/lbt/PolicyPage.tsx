@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/routing";
-import { LBT_LEGAL, POLICY_SLUGS, type PolicySlug } from "@/lib/lbt/legal";
+import { fillLegalFacts, LBT_LEGAL, POLICY_SLUGS, type PolicySlug } from "@/lib/lbt/legal";
 import { lbtFontVariables } from "@/lib/lbtFonts";
 
 import { Wordmark } from "./BrandMark";
@@ -11,17 +11,6 @@ import "./lbt.css";
 interface Section {
   h: string;
   p: string[];
-}
-
-const FACTS: Record<string, string> = {
-  tokenHours: String(LBT_LEGAL.tokenHours),
-  chatHours: String(LBT_LEGAL.chatHours),
-  reportDays: String(LBT_LEGAL.reportDays),
-};
-
-/** Fill `{name}` placeholders from LBT_LEGAL; the copy is ours, not user input. */
-function fill(text: string): string {
-  return text.replace(/\{(\w+)\}/g, (match, key: string) => FACTS[key] ?? match);
 }
 
 /** Privacy policy, terms and community guidelines for LowBatteryTown. */
@@ -58,11 +47,11 @@ export async function PolicyPage({ locale, slug }: { locale: string; slug: Polic
               {section.p.length > 1 ? (
                 <ul>
                   {section.p.map((line) => (
-                    <li key={line}>{fill(line)}</li>
+                    <li key={line}>{fillLegalFacts(line)}</li>
                   ))}
                 </ul>
               ) : (
-                <p>{fill(section.p[0] ?? "")}</p>
+                <p>{fillLegalFacts(section.p[0] ?? "")}</p>
               )}
             </section>
           ))}

@@ -1,7 +1,8 @@
 /**
  * Facts the LowBatteryTown policy pages state. Keep the numbers in step
  * with the backend: LBT_GUEST_TOKEN_TTL_HOURS, the 24 h Redis TTL on
- * closed conversations, and LBT_REPORT_RETENTION_DAYS.
+ * closed conversations, LBT_REPORT_RETENTION_DAYS and the pair block
+ * after a report.
  */
 export const LBT_LEGAL = {
   effectiveDate: "2026-10-03",
@@ -9,7 +10,23 @@ export const LBT_LEGAL = {
   tokenHours: 24,
   chatHours: 24,
   reportDays: 180,
+  pairBlockHours: 24,
 } as const;
+
+const FACTS: Record<string, string> = {
+  tokenHours: String(LBT_LEGAL.tokenHours),
+  chatHours: String(LBT_LEGAL.chatHours),
+  reportDays: String(LBT_LEGAL.reportDays),
+  pairBlockHours: String(LBT_LEGAL.pairBlockHours),
+};
+
+/**
+ * Fill `{name}` placeholders in policy and guide copy from LBT_LEGAL, so the
+ * numbers live in one place. The copy is ours, not user input.
+ */
+export function fillLegalFacts(text: string): string {
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => FACTS[key] ?? match);
+}
 
 export const POLICY_SLUGS = ["privacy", "terms", "guidelines"] as const;
 export type PolicySlug = (typeof POLICY_SLUGS)[number];

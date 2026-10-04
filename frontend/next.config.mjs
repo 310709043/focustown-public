@@ -28,6 +28,10 @@ const staticSecurityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // app/global-not-found.tsx: unmatched URLs, since there is no app/layout.tsx.
+    globalNotFound: true,
+  },
   output: "standalone",
   images: {
     // Serve modern formats (avif, webp) for browsers that support them.
