@@ -124,3 +124,22 @@ and provider technical logs follow their separate lifetimes. Application
 deletion is not a promise of instant erasure from provider recovery backups or
 other users' screenshots. This policy applies to `edge/`, not the retired AWS
 backend.
+
+## Reviewed anonymous-code restrictions
+
+After reviewing a report in `/admin`, submit a reason and suspend its reported
+guest code for 24 hours or 7 days. An active restriction can be revoked from the
+report that last applied it, with a reason. Every restriction/revocation and
+report-status change has append-only history, retained with the report for the
+configured 180 days. D1 batches atomically save the restriction, audit entry and
+report status. The town caches active restrictions on activation; moderation
+RPCs serialize updates with socket events. Restricted codes are removed from
+queues/invitations, active chats end, and join/companion/reconnect paths enforce
+the restriction until expiry. The daily purge removes expired restrictions and
+old reports (history cascades with the report). Apply migration
+`0002_lbt_moderation.sql` before deploying this API version.
+
+This is not a permanent person/device ban: new anonymous codes and browsers
+can bypass it; existing guest credentials expire after 24 hours. No new IP or
+device fingerprint linkage is collected. `actioned` remains a review status;
+only the dedicated moderation form actually restricts matching.

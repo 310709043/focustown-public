@@ -542,3 +542,16 @@ describe("reports, topics and dialogs", () => {
     });
   });
 });
+
+
+describe("reviewed matching restriction", () => {
+  test("a suspended join returns home and shows the restriction", () => {
+    walkIn(); transport.emit({type:"error",code:"guest_suspended"});
+    expect([store().view,store().notice]).toEqual(["home","guest_suspended"]);
+  });
+  test("a reviewed active chat clears all partner data", () => {
+    inChat(); transport.emit({type:"message",id:"private",from:"partner",text:"private"});
+    transport.emit({type:"ended",reason:"suspended"});
+    expect([store().view,store().endReason,store().partner,store().lines]).toEqual(["end","suspended",null,[]]);
+  });
+});

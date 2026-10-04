@@ -195,7 +195,8 @@
       "timeout": "Time's up. This conversation ends here for now.",
       "partner_disconnected": "They left town, so the conversation has ended.",
       "reported": "Thank you for telling us. We'll review the conversation, and you won't be paired again.",
-      "unknown": "This conversation has ended."
+      "unknown": "This conversation has ended.",
+      "suspended": "Matching has been suspended for this anonymous guest code, and this chat has ended."
     }
   },
   "modal": {
@@ -269,7 +270,8 @@
     "wait_interrupted": "The connection dropped and the wait was cancelled. You can walk in again.",
     "report_failed": "The report didn't go through. Check your connection and try again.",
     "generic": "Something went wrong. Please try again.",
-    "invite_unavailable": "The invitation has ended. You can keep waiting."
+    "invite_unavailable": "The invitation has ended. You can keep waiting.",
+    "guest_suspended": "Matching is temporarily suspended for this anonymous guest code. You can join again when the restriction expires."
   },
   "policy": {
     "nav": {
@@ -301,7 +303,8 @@
             "IP address: used only for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
             "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
-            "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser."
+            "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser.",
+            "Safety review: an anonymous guest code can be suspended from matching for 24 hours or 7 days after report review. Restrictions expire; reasons, durations and revocation history are retained with report evidence for {reportDays} days. No device fingerprint or real-identity profile is created."
           ]
         },
         {

@@ -125,7 +125,7 @@ const INITIAL: LbtData = {
 };
 
 /** Codes that mean "you can't be in the waiting room right now". */
-const SEND_HOME = new Set(["closed", "age_required", "nickname_required", "invalid_energy", "invalid_preference"]);
+const SEND_HOME = new Set(["closed", "age_required", "nickname_required", "invalid_energy", "invalid_preference", "guest_suspended"]);
 
 /** Seconds left in the current window (full window outside a chat). */
 export function remainingSeconds(state: Pick<LbtData, "endsAt" | "now">): number {

@@ -19,6 +19,7 @@ const END_REASONS: readonly EndReason[] = [
   "timeout",
   "partner_disconnected",
   "reported",
+  "suspended",
 ];
 
 interface StoredToken {

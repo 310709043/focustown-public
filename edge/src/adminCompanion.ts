@@ -23,6 +23,7 @@ let companionChat, companionTitle, companionClock, companionExtend, dutyButton, 
 let companionNickname = "小辟穀";
 const companionMessages = new Set();
 const COMPANION_ERRORS = {
+  guest_suspended:"這個陪聊代碼已暫停配對，請先完成檢舉審查或等候限制到期。",
   invalid_companion_identity:"請選擇男生或女生陪聊身分。",
   companion_busy:"請先結束目前的邀請或對話。", not_waiting:"這位使用者已離開等待區。",
   pair_blocked:"這位使用者暫時無法與管理員配對。", slow_down:"請稍等，避免重複邀請或傳訊。",

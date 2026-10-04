@@ -28,7 +28,8 @@ export type EndReason =
   | "partner_left"
   | "timeout"
   | "partner_disconnected"
-  | "reported";
+  | "reported"
+  | "suspended";
 
 export type ReportReason =
   | "harassment"

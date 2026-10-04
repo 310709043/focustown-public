@@ -65,6 +65,7 @@ export interface TownDeps {
   newId: () => string;
   saveReport?: (record: ReportRecord) => Promise<void>;
   config: TownConfig;
+  suspendedUntil?: (guestId: string) => number | null;
 }
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -96,6 +97,11 @@ export class Town {
   async connect(guestId: string) {
     const now = this.deps.now();
     await this.store.touchOnline(guestId, now);
+    if (this.suspended(guestId)) {
+      await this.restrict(guestId);
+      this.deps.send(guestId, { type: "lbt.error", code: "guest_suspended" });
+      return;
+    }
     const c = await this.current(guestId);
     if (c) {
       this.deps.send(guestId, this.matchedFrame(c, guestId, now));
@@ -144,6 +150,7 @@ export class Town {
 
   async join(guestId: string, rawProfile: unknown, adult: boolean) {
     if (guestId === COMPANION_ID) throw new InputError("admin_cannot_queue");
+    this.requireAllowed(guestId);
     if (adult !== true) throw new InputError("age_required");
     const now = this.deps.now();
     if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
@@ -165,6 +172,8 @@ export class Town {
     const profile = companionProfile(identity);
     if (!profile) throw new InputError("invalid_companion_identity");
     if (typeof target !== "string") throw new InputError("not_waiting");
+    this.requireAllowed(COMPANION_ID);
+    this.requireAllowed(target);
     const now = this.deps.now();
     if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
     if (await this.current(COMPANION_ID)) throw new InputError("companion_busy");
@@ -183,6 +192,8 @@ export class Town {
   }
 
   async answerCompanion(guestId: string, id: unknown, accept: boolean) {
+    this.requireAllowed(guestId);
+    this.requireAllowed(COMPANION_ID);
     const invite = await this.store.companionInvite();
     if (!invite || invite.id !== id || invite.guestId !== guestId) throw new InputError("invite_unavailable");
     const now = this.deps.now();
@@ -227,6 +238,8 @@ export class Town {
   /** Pair everyone who can be paired right now; returns pairs made. */
   async pairWaiting(): Promise<number> {
     const now = this.deps.now();
+    const queued = await this.store.listWaiting();
+    for (const w of queued) if (this.suspended(w.guestId)) await this.restrict(w.guestId);
     const pool = (await this.store.listWaiting()).sort((a, b) => a.joinedAt - b.joinedAt);
     const taken = new Set<string>();
     let made = 0;
@@ -281,6 +294,7 @@ export class Town {
   }
 
   async typing(guestId: string) {
+    this.requireAllowed(guestId);
     const c = await this.current(guestId);
     if (c) this.deps.send(partnerOf(c, guestId), { type: "lbt.typing" });
   }
@@ -363,6 +377,8 @@ export class Town {
     for (const id of await this.store.activeConversationIds()) {
       const c = await this.store.getConversation(id);
       if (!c) continue;
+      const restricted = [c.guestA, c.guestB].find((g) => this.suspended(g));
+      if (restricted) { await this.restrict(restricted); continue; }
       if (now >= c.endsAt + this.cfg.graceMs) {
         await this.close(c, { [c.guestA]: "timeout", [c.guestB]: "timeout" });
         continue;
@@ -387,6 +403,21 @@ export class Town {
     await this.pairWaiting();
   }
 
+  /** Remove a reviewed guest from queue/invitations and end any active chat. */
+  async restrict(guestId: string) {
+    await this.cancelCompanionFor(guestId, "cancelled");
+    await this.store.dequeue(guestId);
+    const c = await this.current(guestId);
+    if (c) await this.close(c, { [guestId]: "suspended", [partnerOf(c, guestId)]: "partner_left" });
+  }
+
+  private suspended(guestId: string) {
+    return (this.deps.suspendedUntil?.(guestId) ?? 0) > this.deps.now();
+  }
+  private requireAllowed(guestId: string) {
+    if (this.suspended(guestId)) throw new InputError("guest_suspended");
+  }
+
   // ── helpers ────────────────────────────────────────────────────────
 
   private async current(guestId: string): Promise<Conversation | null> {
@@ -395,8 +426,11 @@ export class Town {
   }
 
   private async require(guestId: string): Promise<Conversation> {
+    this.requireAllowed(guestId);
     const c = await this.current(guestId);
     if (!c) throw new InputError("no_conversation");
+    const partner = partnerOf(c, guestId);
+    if (this.suspended(partner)) { await this.restrict(partner); throw new InputError("no_conversation"); }
     return c;
   }
 

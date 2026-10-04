@@ -19,6 +19,7 @@ let sent: { guest: string; frame: Frame }[];
 let reports: ReportRecord[];
 let store: TownStore;
 let town: Town;
+let suspensions: Map<string, number>;
 
 function build(config: TownConfig = CFG) {
   let seq = 0;
@@ -29,6 +30,7 @@ function build(config: TownConfig = CFG) {
     newId: () => `id-${++seq}`,
     saveReport: async (r) => void reports.push(r),
     config,
+    suspendedUntil: (id) => suspensions.get(id) ?? null,
   });
 }
 
@@ -36,6 +38,7 @@ beforeEach(() => {
   now = T0;
   sent = [];
   reports = [];
+  suspensions = new Map();
   store = new TownStore(new MemoryKV());
   town = build();
 });
@@ -451,5 +454,46 @@ describe("reconnect and status", () => {
     await store.touchOnline("g_old", now - CFG.offlineAfterMs - 1000);
     await town.join("g_a", LISTEN, true);
     expect(await town.status()).toEqual({ online: 1, waiting: 1, open: true, hours: "" });
+  });
+});
+
+
+describe("reviewed restrictions", () => {
+  test("restricted codes cannot join, while other visitors remain unaffected", async () => {
+    suspensions.set("g_a", now + 86400000);
+    await expectCode(town.join("g_a", LISTEN, true), "guest_suspended");
+    await town.join("g_b", STORY, true);
+    expect((await store.listWaiting()).map(w => w.guestId)).toEqual(["g_b"]);
+    now += 86400000;
+    await town.join("g_a", LISTEN, true);
+    expect(await store.conversationIdOf("g_a")).not.toBeNull();
+  });
+  test("review removes pending offers and prevents new companion invitations", async () => {
+    await town.connect("admin:companion");
+    await town.join("g_a", LISTEN, true);
+    await town.inviteCompanion("g_a");
+    suspensions.set("g_a", now + 86400000);
+    await expectCode(town.answerCompanion("g_a", (await store.companionInvite())!.id, true), "guest_suspended");
+    await town.restrict("g_a");
+    expect([await store.companionInvite(), await store.listWaiting()]).toEqual([null, []]);
+    await expectCode(town.inviteCompanion("g_a"), "guest_suspended");
+  });
+  test("review ends an active conversation, deletes its content and blocks reconnect replay", async () => {
+    const cid = await pair(); await town.sendMessage("g_b", "private");
+    suspensions.set("g_b", now + 86400000);
+    await town.restrict("g_b");
+    expect(frames("g_b", "lbt.ended")[0]?.reason).toBe("suspended");
+    expect([await store.getConversation(cid),await store.transcript(cid)]).toEqual([null,[]]);
+    sent=[]; await town.connect("g_b");
+    expect(frames("g_b").map(f=>[f.type,f.code])).toEqual([["lbt.error","guest_suspended"]]);
+  });
+  test("pairing and the sweep enforce a restriction even before cleanup completes", async () => {
+    const cid = await pair(); suspensions.set("g_b",now+86400000);
+    await town.sweep(); expect(await store.getConversation(cid)).toBeNull();
+    await town.join("g_a",LISTEN,true);
+    await store.enqueue({guestId:"g_b",profile:{...STORY,preference:"story"},joinedAt:now});
+    await town.pairWaiting();
+    expect(await store.conversationIdOf("g_b")).toBeNull();
+    expect((await store.listWaiting()).map(w=>w.guestId)).toEqual(["g_a"]);
   });
 });

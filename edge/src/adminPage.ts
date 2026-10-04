@@ -15,7 +15,11 @@ const STYLE = `
 --mist:#bdc8dc;--subtle:#8291ae;--lamp:#f8d779;--peach:#f4b49d;--mint:#b6d6c4;--red:#f08c8c}
 *{box-sizing:border-box;margin:0}
 body{background:var(--night);color:var(--paper);font:15px/1.6 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif}
-button,input{font:inherit;color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+.review{display:grid;gap:8px;margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.review select,.review textarea{background:var(--night);border:1px solid var(--line);border-radius:8px;padding:8px}
+.review textarea{width:100%;resize:vertical}
+.review-history{margin-top:12px;display:grid;gap:6px}
 .wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:18px;border-bottom:1px solid var(--line)}
 h1{font-size:20px;letter-spacing:-.01em}h1 span{color:var(--peach)}
@@ -77,7 +81,7 @@ const fmt = (iso) => new Date(iso).toLocaleString("zh-TW", {timeZone:"Asia/Taipe
 async function api(path, opts) {
   const res = await fetch(path, {...opts, headers: {"Authorization": "Bearer " + token(), "Content-Type": "application/json"}});
   if (res.status === 401) { signOut("管理密碼不正確或已失效。"); throw new Error("unauthorized"); }
-  if (!res.ok) throw new Error("HTTP " + res.status);
+  if (!res.ok) { const body = await res.json().catch(() => null); throw new Error(body?.error?.code || "HTTP " + res.status); }
   return res.status === 204 ? null : res.json();
 }
 
@@ -112,6 +116,47 @@ function person(label, p) {
     el("strong", {text: p.nickname || "?"}), " · " + (ENERGY[p.energy] || p.energy) + " · " + (PREF[p.preference] || p.preference));
 }
 
+function reviewForm(r) {
+  const prefix = "review-" + r.id;
+  const reason = el("textarea", {id:prefix+"-reason", rows:"2", maxlength:"500", required:"", "aria-label":"處理原因", autocomplete:"off"});
+  const days = el("select", {id:prefix+"-days", "aria-label":"暫停期限"},
+    el("option", {value:"1", text:"24 小時"}), el("option", {value:"7", text:"7 天"}));
+  const submit = el("button", {class:"btn primary", type:"submit", "data-action":"suspend", text:"審查後暫停配對"});
+  const revoke = el("button", {class:"btn", type:"submit", "data-action":"revoke", text:"解除暫停配對"});
+  const error = el("p", {class:"err", role:"alert"});
+  const current = r.suspension_expires_at
+    ? "目前暫停至 " + fmt(r.suspension_expires_at) + "；原因：" + r.suspension_reason
+    : "目前沒有生效中的暫停配對。";
+  const form = el("form", {class:"review"},
+    el("strong", {text:"審查處置"}), el("p", {class:"meta", text:current}),
+    el("p", {class:"meta", text:"請先查看訊息證據。只限制此匿名訪客代碼；換瀏覽器或重新取得代碼可能繞過。標記狀態不等於停權。"}),
+    el("label", {for:prefix+"-days", text:"暫停期限"}), days,
+    el("label", {for:prefix+"-reason", text:"處理原因（暫停或解除均必填）"}), reason,
+    el("div", {class:"actions"}, submit, ...(r.suspension_report_id === r.id ? [revoke] : [])), error);
+  let busy = false;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    if (!reason.value.trim()) { error.textContent = "請填寫處理原因。"; reason.focus(); return; }
+    busy = true; submit.disabled = true; revoke.disabled = true; error.textContent = "";
+    const action = event.submitter?.dataset.action || "suspend";
+    try {
+      await api("/api/v1/admin/lbt/reports/" + encodeURIComponent(r.id) + "/moderation", {
+        method:"POST", body:JSON.stringify({action, days:Number(days.value), reason:reason.value.trim()})});
+      if (filter !== "all") filter = "actioned";
+      await render();
+    } catch (err) { error.textContent = err.message === "report_expires_too_soon" ? "檢舉即將到資料保留期限，請選較短限制；限制不能超過證據保留期限。" : "處置未完成，請重新整理確認目前限制及紀錄後再試。"; }
+    finally { busy = false; submit.disabled = false; revoke.disabled = false; }
+  });
+  const labels = {suspend:"暫停配對",revoke:"解除限制",status:"狀態更新"};
+  const history = el("div", {class:"review-history", "aria-label":"處理歷程"}, el("strong", {text:"最近的處理歷程（最多 50 筆）"}));
+  for (const a of r.actions || []) history.append(el("p", {class:"meta", text:
+    fmt(a.created_at) + " · " + (labels[a.action] || a.action) + " · " + (STATUSES[a.status] || a.status) +
+    (a.expires_at ? " · 到期 " + fmt(a.expires_at) : "") + (a.reason ? " · " + a.reason : "") }));
+  if (!r.actions?.length) history.append(el("p", {class:"meta", text:"尚無處理紀錄。"}));
+  return el("div", {}, form, history);
+}
+
 function reportCard(r) {
   const chat = el("div", {class:"chat", "aria-label":"對話紀錄"});
   if (!r.transcript.length) chat.append(el("p", {class:"meta", text:"（這段對話沒有訊息）"}));
@@ -133,7 +178,7 @@ function reportCard(r) {
       el("span", {class:"meta", text: fmt(r.created_at) + " · 檢舉 " + r.id.slice(0, 8)})),
     el("div", {class:"people"}, person("檢舉人", r.reporter_profile), person("被檢舉人", r.reported_profile)),
     r.note ? el("p", {class:"note", text: "補充說明：" + r.note}) : "",
-    chat, actions);
+    chat, actions, reviewForm(r));
 }
 
 async function render() {

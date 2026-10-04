@@ -7,8 +7,9 @@
  */
 import { DurableObject } from "cloudflare:workers";
 
-import { type Env, IDLE_SWEEP_MS, LIMITS, SWEEP_MS, townConfig } from "./config";
+import { type Env, IDLE_SWEEP_MS, LIMITS, SWEEP_MS, retentionDays, townConfig } from "./config";
 import { saveReport } from "./reports";
+import { activeSuspensions, moderateReport } from "./moderation";
 import { InputError } from "./rules";
 import { TownStore } from "./store";
 import { COMPANION_ID } from "./companion";
@@ -18,13 +19,20 @@ export type ReportResult = { ok: true; id: string } | { ok: false; status: 422 |
 
 export class TownObject extends DurableObject<Env> {
   private readonly store: TownStore;
+  private readonly suspensions = new Map<string, number>();
   private readonly town: Town;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.store = new TownStore(ctx.storage);
     // Finish old retention/deletion work before accepting events after an upgrade.
-    void ctx.blockConcurrencyWhile(() => this.store.purgeClosed());
+    void ctx.blockConcurrencyWhile(async () => {
+      await this.store.purgeClosed();
+      for (const ban of await activeSuspensions(env.DB, Date.now())) {
+        this.suspensions.set(ban.guest_id, Date.parse(ban.expires_at));
+        await this.town.restrict(ban.guest_id);
+      }
+    });
     this.town = new Town({
       store: this.store,
       send: (guestId, frame) => this.send(guestId, frame),
@@ -32,6 +40,26 @@ export class TownObject extends DurableObject<Env> {
       newId: () => crypto.randomUUID(),
       saveReport: (record) => saveReport(env.DB, record),
       config: townConfig(env),
+      suspendedUntil: (guestId) => this.suspensions.get(guestId) ?? null,
+    });
+  }
+
+  async moderate(reportId: string, body: unknown) {
+    // Serialize review and its cache update with socket events; D1 is authoritative.
+    return this.ctx.blockConcurrencyWhile(async () => {
+      try {
+        const result = await moderateReport(this.env.DB, reportId, body, Date.now(), retentionDays(this.env));
+        if (result.expiresAt) {
+          this.suspensions.set(result.guestId, Date.parse(result.expiresAt));
+          await this.town.restrict(result.guestId);
+          this.send(result.guestId, { type: "lbt.error", code: "guest_suspended" });
+        } else this.suspensions.delete(result.guestId);
+        await this.ensureAlarm();
+        return { ok: true as const, expires_at: result.expiresAt };
+      } catch (err) {
+        if (err instanceof InputError) return { ok: false as const, code: err.code };
+        throw err;
+      }
     });
   }
 
