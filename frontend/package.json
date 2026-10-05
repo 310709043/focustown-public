@@ -28,7 +28,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^3.23.8",
-    "zustand": "^5.0.1"
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@mediapipe/tasks-vision": "^0.10.35",
