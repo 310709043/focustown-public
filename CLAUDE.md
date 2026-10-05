@@ -190,7 +190,7 @@ Auth endpoints are rate-limited via `IRateLimiter` (Redis-backed in prod, `Memor
 - **State**: per-feature Zustand stores in `frontend/lib/state/` (`authStore`, `timerStore`, `sceneStore`, `matchStore`). Don't add one mega-store.
 - **API transport**: `frontend/lib/api/client.ts` is the only place that touches `fetch`. It auto-attaches the bearer token from `tokenStore`, transparently retries once with a refreshed token on 401, normalizes error shape into `ApiError`. Endpoint wrappers live in `lib/api/endpoints.ts` and consume **generated** types from `lib/api/types.gen.ts`.
 - **WebSocket transport**: `lib/ws/client.ts` is a singleton with exponential-backoff reconnect. Components subscribe via `useRealtime((msg) => {...})` — they never touch `WebSocket` directly.
-- **Scene system**: `lib/data/scenes.ts` defines each scene's gradients/opacity tokens; `useSceneStore` cycles through `SCENE_ORDER`. Scene-aware components (`Sky`, `StarsLayer`, `Moon`, `WeatherBadge`) just read `current` from the store. Adding a new scene = add one entry to both `SCENES` and `SCENE_ORDER`, no component changes.
+- **Scene system**: `lib/data/scenes.ts` defines each scene's gradients/opacity tokens; `useSceneStore` cycles through `SCENE_ORDER`. Scene-aware components (`Sky`, `StarsLayer`, …) just read `current` from the store. Adding a new scene = add one entry to both `SCENES` and `SCENE_ORDER`, no component changes.
 
 ### What lives at the root vs in services
 
