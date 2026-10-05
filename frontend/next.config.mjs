@@ -28,6 +28,10 @@ const staticSecurityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  // Next 16's dev-tools button sits on every page in `next dev` (never in
+  // production builds); it adds a focusable "Open Next.js Dev Tools"
+  // button that e2e locators and focus-order checks trip over.
+  devIndicators: false,
   experimental: {
     // app/global-not-found.tsx: unmatched URLs, since there is no app/layout.tsx.
     globalNotFound: true,

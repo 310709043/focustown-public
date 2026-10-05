@@ -200,9 +200,13 @@ test.describe("LowBatteryTown support dialog", () => {
   test("Escape closes it and focus returns to the trigger", async ({ page }) => {
     await page.goto(HOME);
     const trigger = page.getByRole("button", { name: /贊助小鎮/ });
-    await trigger.focus();
-    await page.keyboard.press("Enter");
-    await expect(page.getByRole("dialog")).toBeVisible();
+    // A key press before hydration does nothing (next dev hydrates slowly
+    // under Turbopack), so retry until the page answers.
+    await expect(async () => {
+      await trigger.focus();
+      await page.keyboard.press("Enter");
+      await expect(page.getByRole("dialog")).toBeVisible({ timeout: 1000 });
+    }).toPass();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
     await expect(trigger).toBeFocused();
