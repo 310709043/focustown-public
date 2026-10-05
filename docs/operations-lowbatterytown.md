@@ -7,8 +7,9 @@ owner is `310709043`; use the owner's xiangyi10200 identity for other services.
 Do not deploy to a different account or commit credentials.
 
 Merged into develop: security #31, ended-chat deletion/moderation #18,
-TypeScript/lockfile repair #32, operations #38, React types #41 and the tested
-user-event update #43. Deployment and health checks are operational.
+TypeScript/lockfile repair #32, operations #38, React types #41, the tested
+user-event update #43, Node types #45 and coordinated Node/React/jsdom #46.
+Deployment and health checks are operational.
 
 Verified on 2026-10-05 (Asia/Taipei):
 
@@ -146,8 +147,11 @@ end-to-end encrypted and cannot prevent screenshots.
 
 Cloudflare account MFA is enabled (confirmed through the account API).
 Google account MFA is enabled (verified in xiangyi10200's security settings).
-GitHub/payment-account MFA remain unverified; old-token revocation is verified.
-Reauthentication or MFA enrollment must be completed by the owner.
+GitHub MFA remains unverified because its browser session needs owner sign-in.
+Buy Me a Coffee MFA is **not enabled** (the account shows its activation prompt);
+its authenticator setup entry is open for the owner to finish. Old-token
+revocation is verified. Reauthentication or MFA enrollment must be completed by
+the owner; never capture authenticator QR secrets or recovery codes.
 The admin password was rotated by the owner; no new password was shared here.
 
 ## Payments and customer contact
@@ -172,7 +176,7 @@ edit permission; never claim successful receipt based only on DNS or rule state.
 
 ## Dependency maintenance
 
-The separate coordinated PR #46 updates `react` and `react-dom` together to
+The merged coordinated PR #46 updates `react` and `react-dom` together to
 19.3.0; the one-package PR #42 failed because React DOM remained 19.2.7. A local
 paired React check passed typecheck, lint, 607 unit tests, 17 LowBatteryTown
 browser tests and the Cloudflare build (1947.66 KiB gzip). The operations PR
@@ -185,7 +189,7 @@ Defer standalone major migrations until a dedicated compatibility change:
   ESLint configuration, routing and the OpenNext deployment together, with CI.
 - jsdom #44: all test environments failed in undici with
   `webidl.util.markAsUncloneable is not a function`; PR #46 coordinates jsdom 30
-  with Node 22 in CI. Require its full CI before deployment.
+  with Node 22 in CI. Its build and full browser CI passed before merge.
 - Node types #45 was merged concurrently after CI passed. Preserve that change;
   future type majors need runtime review to avoid relying on APIs unavailable
   in the Node 22 deployment environment.
