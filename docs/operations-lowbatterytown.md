@@ -142,10 +142,14 @@ submitted before leaving; evidence remains 180 days. Feedback remains 30 days
 Google Sheet copies require a separate retention/access policy. The actual
 LowBatteryTown Sheet was checked: general access is **Restricted**, with only
 xiangyi10200 as owner. Both D1 and Apps Script are configured for 30 days.
-The Google Sheet daily `purgeOld` trigger at 03:00–04:00 GMT+08, with
-immediate failure notification, is prepared but not saved: the owner must confirm
-the permanent deletion of expired rows before activation. Do not mark retention
-automation complete until the trigger appears and an execution succeeds.
+The owner approved permanent deletion and activation on 2026-10-05. The Google
+Sheet daily `purgeOld` trigger is **enabled**, runs the saved Head code at
+03:00–04:00 GMT+08, and sends immediate failure notifications. The saved code
+was reloaded and verified as `RETENTION_DAYS = 30` before activation. A manual
+`purgeOld` execution completed successfully at 22:45:16 GMT+08 on 2026-10-05;
+one time-driven trigger is present, and its saved settings were re-opened and
+checked. The first automatic overnight run has not yet occurred. The script
+does not return a deleted-row count, so no count is claimed.
 Anonymous-code
 restrictions do not stop a person creating a new identity. This service is not
 end-to-end encrypted and cannot prevent screenshots.
