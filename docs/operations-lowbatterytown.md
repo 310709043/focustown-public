@@ -13,9 +13,9 @@ Deployment and health checks are operational.
 
 Verified on 2026-10-05 (Asia/Taipei):
 
-- GitHub frontend deployment succeeded on develop `9f85cd4`: run `37310653916`.
-- API GitHub deployment succeeded: run `37218987281`, Worker version
-  `83f0cd17-634f-4f70-b3a9-33a28f11fc1e`; remote migrations are applied.
+- GitHub frontend deployment succeeded on develop `8a289a2`: run `37315606812`.
+- API GitHub deployment succeeded on develop `228bc30`: run `37316435753`;
+  all 231 API tests passed and remote migrations are applied.
 - `/healthz` is healthy; public chat status and the updated privacy page respond.
   The admin HTML includes moderation and companion duty controls.
 - Feedback test `07e52750-8c15-43ec-b1db-8d0611a09dd4` returned 201 and its D1
@@ -48,9 +48,13 @@ branch), and can be dispatched manually. Failure marks the Actions run failed;
 the owner must enable GitHub Actions failure notifications for email alerts.
 GitHub may delay scheduled runs: this is basic availability monitoring, not a
 guaranteed real-time pager, billing monitor or end-to-end pairing check.
-Failure email delivery is not yet verified. Enable GitHub Settings →
-Notifications → System → Actions → Email → Only notify for failed workflows on
-the owner's account; do not create an outage on the public website to test it.
+Failure email delivery was verified in the owner's xiangyi10200 Gmail inbox:
+the notification linked to the intentional probe `37316830637`. The subsequent
+normal health run `37316964880` passed. This proves delivery for that account;
+it does not prove notifications for another account, every workflow or billing.
+When configuring a replacement account, use GitHub Settings → Notifications →
+System → Actions → Email → Only notify for failed workflows; do not create an
+outage on the public website to test it.
 After enabling those preferences, dispatch `monitor-lbt.yml` with
 `test_failure_alert=true`. That explicitly labelled manual probe exits with a
 failure without calling production. Confirm the notification arrives in the
@@ -147,7 +151,8 @@ end-to-end encrypted and cannot prevent screenshots.
 
 Cloudflare account MFA is enabled (confirmed through the account API).
 Google account MFA is enabled (verified in xiangyi10200's security settings).
-GitHub MFA remains unverified because its browser session needs owner sign-in.
+GitHub MFA remains unverified because its browser session needs owner sign-in;
+its existing Actions failure-email delivery is verified independently.
 Buy Me a Coffee MFA is **not enabled** (the account shows its activation prompt);
 its authenticator setup entry is open for the owner to finish. Old-token
 revocation is verified. Reauthentication or MFA enrollment must be completed by
