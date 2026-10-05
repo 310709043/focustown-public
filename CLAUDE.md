@@ -68,7 +68,7 @@ Standalone (for hot-reload speed):
 # backend (Python 3.12)
 cd backend && pip install -e ".[dev]" && alembic upgrade head && uvicorn app.main:app --reload
 
-# frontend (Node 20 + pnpm)
+# frontend (Node 22 + pnpm)
 cd frontend && pnpm install && pnpm dev
 ```
 
