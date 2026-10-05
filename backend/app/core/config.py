@@ -203,7 +203,7 @@ class Settings(BaseSettings):
     # Feedback box: per-IP limit, retention (the privacy page states it) and
     # the optional Google Sheet copy (Apps Script web app URL + shared token).
     lbt_feedback_per_ip_per_hour: int = 5
-    lbt_feedback_retention_days: int = Field(default=365, ge=1)
+    lbt_feedback_retention_days: int = Field(default=30, ge=1)
     feedback_sheet_url: str = ""
     feedback_sheet_token: str = ""
 

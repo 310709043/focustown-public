@@ -161,3 +161,10 @@ async def test_repo_purges_entries_past_cutoff(repo: InMemoryLbtFeedbackRepo) ->
     repo.rows["old"] = replace(repo.rows[kept], id="old", created_at=T0 - timedelta(days=400))
     assert await repo.delete_older_than(T0 - timedelta(days=365)) == 1
     assert list(repo.rows) == [kept]
+
+
+def test_default_retention_matches_the_privacy_policy() -> None:
+    # frontend/lib/lbt/legal.ts feedbackDays and edge/wrangler.jsonc say 30.
+    from app.core.config import Settings
+
+    assert Settings.model_fields["lbt_feedback_retention_days"].default == 30
