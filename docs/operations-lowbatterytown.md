@@ -137,11 +137,12 @@ the subsequent D1 inventory contained only the production `lbt` database.
 
 Ended ordinary chat messages and profiles are removed immediately from the
 application's chat store, and the browser clears chat state. Reports must be
-submitted before leaving; evidence remains 180 days. Feedback remains 365 days.
+submitted before leaving; evidence remains 180 days. Feedback remains 30 days
+(owner-approved on 2026-10-05).
 Google Sheet copies require a separate retention/access policy. The actual
 LowBatteryTown Sheet was checked: general access is **Restricted**, with only
-xiangyi10200 as owner. The deployed Apps Script uses `RETENTION_DAYS = 365`, but
-has **zero triggers**. A daily `purgeOld` trigger at 03:00–04:00 GMT+08, with
+xiangyi10200 as owner. Both D1 and Apps Script are configured for 30 days.
+The Google Sheet daily `purgeOld` trigger at 03:00–04:00 GMT+08, with
 immediate failure notification, is prepared but not saved: the owner must confirm
 the permanent deletion of expired rows before activation. Do not mark retention
 automation complete until the trigger appears and an execution succeeds.

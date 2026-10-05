@@ -18,7 +18,7 @@ var SHEET_NAME = "意見箱";
 var HEADER = ["時間", "類型", "內容", "回覆信箱", "頁面", "語言", "編號"];
 var CATEGORY = { idea: "建議", bug: "問題回報", other: "其他" };
 /** Keep in step with LBT_FEEDBACK_RETENTION_DAYS and feedbackDays in frontend/lib/lbt/legal.ts. */
-var RETENTION_DAYS = 365;
+var RETENTION_DAYS = 30;
 
 function doPost(e) {
   var expected = PropertiesService.getScriptProperties().getProperty("FEEDBACK_SHEET_TOKEN");

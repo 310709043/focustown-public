@@ -73,7 +73,7 @@ background when both secrets are set:
 1. Open the sheet → Extensions → Apps Script, paste `scripts/feedback-sheet.gs`.
 2. Script properties: `FEEDBACK_SHEET_TOKEN` = a long random value.
 3. Run `setup` once: it creates the sheet and a daily trigger (`purgeOld`) that
-   deletes rows older than `RETENTION_DAYS` (365), so the sheet copy expires
+   deletes rows older than `RETENTION_DAYS` (30), so the sheet copy expires
    with the D1 row as the privacy policy promises.
 4. Deploy → Web app (Execute as: Me, Who has access: Anyone) → copy the `/exec` URL.
 5. `npx wrangler secret put FEEDBACK_SHEET_URL` (the URL) and

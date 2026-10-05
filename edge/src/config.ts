@@ -56,4 +56,4 @@ export function townConfig(env: Env): TownConfig {
 
 export const tokenTtlHours = (env: Env) => int(env.LBT_GUEST_TOKEN_TTL_HOURS, 24);
 export const retentionDays = (env: Env) => int(env.LBT_REPORT_RETENTION_DAYS, 180);
-export const feedbackRetentionDays = (env: Env) => int(env.LBT_FEEDBACK_RETENTION_DAYS, 365);
+export const feedbackRetentionDays = (env: Env) => int(env.LBT_FEEDBACK_RETENTION_DAYS, 30);

@@ -215,11 +215,15 @@ describe("admin feedback review", () => {
   });
 
   test("the daily cron purges feedback past retention", async () => {
-    await env.DB.prepare(
-      "INSERT INTO lbt_feedback (id, category, message, status, created_at) VALUES ('old-f', 'idea', 'x', 'new', '2020-01-01T00:00:00.000Z')",
-    ).run();
+    const now = Date.now();
+    for (const [id, days] of [["old-f", 31], ["recent-f", 29]] as const) {
+      await env.DB.prepare(
+        "INSERT INTO lbt_feedback (id, category, message, status, created_at) VALUES (?, 'idea', 'x', 'new', ?)",
+      ).bind(id, new Date(now - days * 86400000).toISOString()).run();
+    }
     const { default: worker } = await import("../src/index");
     await worker.scheduled({ cron: "17 19 * * *", scheduledTime: Date.now(), noRetry() {} } as ScheduledController, env, {} as ExecutionContext);
     expect(await env.DB.prepare("SELECT id FROM lbt_feedback WHERE id = 'old-f'").first()).toBeNull();
+    expect(await env.DB.prepare("SELECT id FROM lbt_feedback WHERE id = 'recent-f'").first()).not.toBeNull();
   });
 });
