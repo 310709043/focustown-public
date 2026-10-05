@@ -15,8 +15,11 @@ import { seedAuthTokens } from "./helpers/session";
  * user only ever sees the "waiting" branch; once the backend pairs them,
  * the page auto-accepts and routes into /focus/{matchId}. These specs
  * verify (a) the waiting branch renders, (b) Cancel calls cancelQueue.
- * The end-to-end auto-navigate is covered by
- * ``match-to-room-full-flow.spec.ts``.
+ * The end-to-end auto-navigate is covered by the mocked
+ * ``match-to-room-flow.spec.ts`` / ``match-to-room-realtime.spec.ts``
+ * specs. (The full-stack ``match-to-room-full-flow.spec.ts`` and its
+ * nightly ``e2e.yml`` suite were retired — they exercised legacy Focus
+ * Town code and had timed out on every run since August.)
  */
 test.describe("MatchModal — waiting branch", () => {
   test.beforeEach(async ({ page }) => {
