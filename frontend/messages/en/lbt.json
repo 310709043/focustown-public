@@ -2,7 +2,7 @@
   "meta": {
     "title": "LowBatteryTown – Anonymous One-on-One Chat, No Sign-up",
     "description": "Social battery low but still want to talk? Pick how much energy you have and chat one-on-one with a real person for 7 minutes, anonymously and without signing up. Leave whenever you like. 18+.",
-    "keywords": "LowBatteryTown,low social battery,anonymous chat,one-on-one chat,talk to a stranger,low-pressure chat,no sign-up chat",
+    "keywords": "LowBatteryTown,low social battery,social battery,anonymous chat,anonymous chat room,one-on-one chat,talk to a stranger,someone to talk to,low-pressure chat,no sign-up chat",
     "ogAlt": "LowBatteryTown: a deep-blue night town with street lamps and an expressive animated battery"
   },
   "brand": {
@@ -552,5 +552,135 @@
     "off": "off",
     "waitingOn": "Feel free to switch tabs. A soft chime and the tab title will tell you when someone arrives.",
     "waitingOff": "Chime is off. The tab title will tell you when someone arrives."
+  },
+  "articles": {
+    "listTitle": "Further reading",
+    "breadcrumb": "Town guide",
+    "updated": "Updated {date}",
+    "cta": "Ready? Walk into the town",
+    "items": {
+      "social-battery": {
+        "nav": "What is a social battery?",
+        "title": "What Is a Social Battery? Being Around People When Yours Is Low",
+        "description": "Social battery is an everyday way to describe how much energy talking to people takes. Why it drains, how to look after yourself when it is low, and what to do when you still want to talk.",
+        "intro": "After a day full of people you may just want to lie down and answer nobody. People call that running out of social battery. This page explains what it means, why it drains, and lower-effort ways to be around people when it is low.",
+        "sections": [
+          {
+            "h": "What is a social battery?",
+            "p": [
+              "Social battery is an everyday metaphor for the energy that interaction takes. Conversations, meetings and dinners use some of it; quiet time alone or doing something you enjoy slowly recharges it.",
+              "It is not a medical term and there is no standard way to measure it. Capacity, drain and recharge differ from person to person, and from day to day."
+            ]
+          },
+          {
+            "h": "Why does it run out so fast?",
+            "p": [
+              "Common reasons: meeting many people in one day, having to stay polite or perform, noisy places, too little sleep, or already having something on your mind.",
+              "Introverts may tire sooner, but extroverts run low too. A low battery does not mean you dislike people; it means you need a rest."
+            ]
+          },
+          {
+            "h": "Looking after yourself when it is low",
+            "li": [
+              "Take some time without replying to anyone. Turning notifications off is fine.",
+              "If you worry people will misread you, a short line helps: “I’m tired today and need some quiet. I’m not upset with you.”",
+              "When you do want company, choose low-pressure forms: short, one-on-one, no performing, easy to end.",
+              "If low mood or tiredness lasts a long time and affects sleep, work or daily life, talk to a doctor or counsellor. In Taiwan, 1925 (24 h) and 1995 Lifeline are there if you want someone to listen."
+            ]
+          },
+          {
+            "h": "Low battery, but still want to talk?",
+            "p": [
+              "Sometimes you want to talk without the energy to keep up a relationship, or without worrying people you know. LowBatteryTown was made for those moments.",
+              "Pick nearly empty, a little left or ready to talk, and your partner sees your battery and knows your pace. Chat one-on-one with a real person for 7 minutes, anonymously and without signing up. It continues only if you both extend, and you can say good night whenever you like. The beta is for people aged 18 or older."
+            ]
+          }
+        ]
+      },
+      "cant-sleep": {
+        "nav": "Can’t sleep, want to talk",
+        "title": "Can’t Sleep and Want Someone to Talk To? A Few Things to Try at Night",
+        "description": "Awake at night and want to talk? Slow your body down, reach someone you trust, or chat anonymously with a real person for a few minutes. With 24-hour support lines in Taiwan.",
+        "intro": "Late at night, when everything goes quiet, the things you had no time to think about during the day come back. Wanting someone to talk to is normal, not a weakness. Here are a few things to try, and who you can talk to.",
+        "sections": [
+          {
+            "h": "Slow your body down first",
+            "li": [
+              "Dim the screen, or put the phone down for a few minutes.",
+              "If you have been lying awake for a long time, get up for some warm water or sit somewhere else until you feel sleepy.",
+              "Write down what keeps going round in your head and leave it for tomorrow.",
+              "Breathe in slowly and out even more slowly, a few times.",
+              "If poor sleep has lasted weeks and affects your days, talk to a doctor."
+            ]
+          },
+          {
+            "h": "Who can you talk to?",
+            "li": [
+              "A friend or family member you trust: just send a message. They may be asleep, and a reply tomorrow is fine.",
+              "If you need someone to really listen: in Taiwan, 1925 is free and open 24 hours, and you can also call 1995 Lifeline.",
+              "If you don’t want to worry anyone you know and just want a few words with someone: an anonymous chat with a stranger can help."
+            ]
+          },
+          {
+            "h": "Seven minutes with a real person at LowBatteryTown",
+            "p": [
+              "LowBatteryTown is free, one-on-one anonymous chat with no sign-up. Choose a nickname, your social battery and how you want to chat, and you are paired with another real person who is waiting. The beta is for people aged 18 or older.",
+              "Fewer people may be around late at night, and a match needs another real person to be waiting, so it may not be instant. You can cancel waiting at any time. A chat lasts 7 minutes, continues only if you both extend, and you can say good night when you are ready to sleep."
+            ]
+          },
+          {
+            "h": "Keep yourself safe while chatting",
+            "p": [
+              "Don’t share your name, phone number, address, school, workplace or social accounts. If a chat feels wrong, leave or report it.",
+              "The town is not counselling or an emergency service. If you are in immediate danger, call 110 or 119."
+            ]
+          }
+        ]
+      },
+      "anonymous-chat-safety": {
+        "nav": "Anonymous chat safety",
+        "title": "Is Anonymous Chat Safe? Six Things to Know Before Talking to Strangers",
+        "description": "Before chatting with strangers anonymously: protecting personal details, requests to move platforms, leaving and reporting, what anonymity does not erase, and where to get help.",
+        "intro": "Anonymity makes it easier to say what you really feel, but you also don’t know who is on the other side. These six points apply to any anonymous or stranger chat site, with notes on how LowBatteryTown handles each.",
+        "sections": [
+          {
+            "h": "1. Don’t share details that identify you",
+            "p": [
+              "Your name, phone number, address, school or workplace, social accounts and photos can all lead someone to you. LowBatteryTown masks links, e-mail addresses, @handles and phone numbers in messages on the server, but the best protection is not to share them at all."
+            ]
+          },
+          {
+            "h": "2. Pause if someone hurries you to another platform",
+            "p": [
+              "Being asked within minutes to add another messaging app, click a link, video call or send photos deserves a second thought. You can say no without explaining."
+            ]
+          },
+          {
+            "h": "3. Leave when you are uncomfortable",
+            "p": [
+              "You don’t owe a stranger a conversation. In the town you can say good night and leave at any moment, no reason needed."
+            ]
+          },
+          {
+            "h": "4. Report harassment",
+            "p": [
+              "Reporting during a chat ends it immediately, keeps that transcript for {reportDays} days for review, and stops the two of you from being paired again for {pairBlockHours} hours."
+            ]
+          },
+          {
+            "h": "5. Anonymous does not mean nothing is kept",
+            "p": [
+              "When an ordinary chat ends, the town deletes its messages and pairing details, but no website can reliably stop the other person taking screenshots or photos. Only say what you would be fine with someone seeing."
+            ]
+          },
+          {
+            "h": "6. A chat site is not counselling or emergency help",
+            "p": [
+              "For someone to listen, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in immediate danger call 110 or 119. The LowBatteryTown beta is for people aged 18 or older."
+            ]
+          }
+        ]
+      }
+    }
   }
 }

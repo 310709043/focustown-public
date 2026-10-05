@@ -10,7 +10,9 @@ for (const locale of ["zh-TW", "en"]) {
     expect(await response.text()).toContain(locale === "zh-TW" ? "匿名聊天指南" : "Anonymous Chat Guide");
     await page.goto(`/${locale}/guide`);
     await expect(page.locator("main h1")).toHaveCount(1);
-    await expect(page.locator("main section h2")).toHaveCount(7);
+    // Seven answers, then the links to the guide articles.
+    await expect(page.locator("main section h2")).toHaveCount(8);
+    await expect(page.locator('main .article-links a')).toHaveCount(3);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}/${locale}/guide`);
     for (const language of ["zh-TW", "en"]) {
       await expect(page.locator(`link[hreflang="${language}"]`)).toHaveAttribute("href", `${origin}/${language}/guide`);
@@ -22,6 +24,24 @@ for (const locale of ["zh-TW", "en"]) {
     const data = await page.locator('script[type="application/ld+json"]').allTextContents();
     expect(data.length).toBeGreaterThan(0);
     for (const entry of data) expect(() => JSON.parse(entry)).not.toThrow();
+    expect(data.join("")).toContain('"FAQPage"');
+  });
+
+  test(`${locale}: guide articles are indexable, server-rendered and linked`, async ({ page, request }) => {
+    const path = `/${locale}/guide/social-battery`;
+    const response = await request.get(path);
+    expect(response.ok()).toBeTruthy();
+    expect(await response.text()).toContain(locale === "zh-TW" ? "社交電量是什麼" : "What Is a Social Battery");
+    await page.goto(path);
+    await expect(page.locator("main h1")).toHaveCount(1);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}${path}`);
+    await expect(page.locator('meta[name="robots"]')).not.toHaveAttribute("content", /noindex/);
+    await expect(page.locator(`main a[href="/${locale}/guide"]`)).toHaveCount(1);
+    await expect(page.locator("main .article-links a")).toHaveCount(2);
+    const data = (await page.locator('script[type="application/ld+json"]').allTextContents()).join("");
+    expect(data).toContain('"Article"');
+    expect(data).toContain('"BreadcrumbList"');
+    expect((await request.get(`/${locale}/guide/not-an-article`)).status()).toBe(404);
   });
 }
 
@@ -29,12 +49,16 @@ test("home links to the guide and demo stays out of search", async ({ page, requ
   await page.goto("/zh-TW");
   await expect(page.locator('footer a[href="/zh-TW/guide"]')).toHaveCount(1);
   await expect(page.locator('meta[name="description"]')).not.toHaveAttribute("content", /模擬|互動原型/);
+  const homeData = (await page.locator('script[type="application/ld+json"]').allTextContents()).join("");
+  expect(homeData).toContain('"WebApplication"');
+  expect(homeData).not.toContain("aggregateRating");
   await page.goto("/zh-TW/demo");
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   const sitemap = await request.get("/sitemap.xml");
   const xml = await sitemap.text();
   expect(xml).toContain(`${origin}/zh-TW/guide`);
   expect(xml).toContain(`${origin}/en/guide`);
+  expect(xml).toContain(`${origin}/zh-TW/guide/cant-sleep`);
   expect(xml).not.toContain("/demo");
   const robots = await request.get("/robots.txt");
   expect(await robots.text()).not.toContain("Disallow: /_next/");

@@ -4600,3 +4600,31 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
     line-height: 1.5;
   }
 }
+
+/* Guide articles: breadcrumb above the title, links to the other articles below. */
+.lbt .policy-crumbs {
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.lbt .policy-crumbs a {
+  color: var(--mist);
+}
+.lbt .policy-crumbs a::after {
+  content: " /";
+  color: var(--subtle);
+}
+.lbt .policy-crumbs a:hover,
+.lbt .article-links a:hover {
+  color: var(--lamp);
+}
+.lbt .policy .article-links ul {
+  list-style: none;
+  padding-left: 0;
+}
+.lbt .article-links a {
+  color: var(--paper);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 4px;
+}

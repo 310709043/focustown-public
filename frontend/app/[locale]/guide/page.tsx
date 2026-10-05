@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { Wordmark } from "@/components/lbt/BrandMark";
+import { ArticleLinks, GuideShell } from "@/components/lbt/GuideShell";
 import { Link, routing } from "@/i18n/routing";
-import { fillLegalFacts, POLICY_SLUGS } from "@/lib/lbt/legal";
-import { BRAND } from "@/lib/lbt/site";
-import { lbtFontVariables } from "@/lib/lbtFonts";
-import "@/components/lbt/lbt.css";
+import { ARTICLE_SLUGS } from "@/lib/lbt/articles";
+import { fillLegalFacts } from "@/lib/lbt/legal";
+import { BRAND, jsonLd, SITE_URL } from "@/lib/lbt/site";
 
 type Params = Promise<{ locale: string }>;
 
@@ -39,27 +38,49 @@ export default async function GuidePage({ params }: { params: Params }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "lbt" });
-  const questions = t.raw("guide.questions") as { q: string; a: string }[];
+  const questions = (t.raw("guide.questions") as { q: string; a: string }[]).map(({ q, a }) => ({
+    q,
+    a: fillLegalFacts(a),
+  }));
   return (
-    <div className={`lbt ${lbtFontVariables}`}>
-      <div className="site-shell">
-        <header className="topbar">
-          <Link className="brand" href="/" aria-label={t("brand.homeAria")}><Wordmark /></Link>
-          <nav className="policy-nav" aria-label={t("policy.nav.aria")}>
-            {POLICY_SLUGS.map((slug) => (
-              <Link key={slug} href={`/policies/${slug}`}>{t(`policy.nav.${slug}`)}</Link>
-            ))}
-          </nav>
-        </header>
-        <main className="policy">
-          <h1>{t("guide.title")}</h1>
-          <p className="policy-intro">{t("guide.intro")}</p>
-          {questions.map(({ q, a }) => <section key={q}><h2>{q}</h2><p>{fillLegalFacts(a)}</p></section>)}
-          <p className="policy-contact">
-            <Link className="text-button" href="/">{t("policy.nav.home")} <span aria-hidden="true">↗</span></Link>
-          </p>
-        </main>
-      </div>
-    </div>
+    <GuideShell>
+      {/* FAQPage mirrors the visible answers word for word. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "FAQPage",
+                inLanguage: locale,
+                mainEntity: questions.map(({ q, a }) => ({
+                  "@type": "Question",
+                  name: q,
+                  acceptedAnswer: { "@type": "Answer", text: a },
+                })),
+              },
+              {
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: BRAND, item: `${SITE_URL}/${locale}` },
+                  { "@type": "ListItem", position: 2, name: t("guide.title"), item: `${SITE_URL}/${locale}/guide` },
+                ],
+              },
+            ],
+          }),
+        }}
+      />
+      <h1>{t("guide.title")}</h1>
+      <p className="policy-intro">{t("guide.intro")}</p>
+      {questions.map(({ q, a }) => <section key={q}><h2>{q}</h2><p>{a}</p></section>)}
+      <ArticleLinks
+        title={t("articles.listTitle")}
+        items={ARTICLE_SLUGS.map((slug) => ({ slug, label: t(`articles.items.${slug}.nav`) }))}
+      />
+      <p className="policy-contact">
+        <Link className="text-button" href="/">{t("policy.nav.home")} <span aria-hidden="true">↗</span></Link>
+      </p>
+    </GuideShell>
   );
 }
