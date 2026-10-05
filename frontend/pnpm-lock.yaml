@@ -52,8 +52,8 @@ importers:
         version: 5.0.13(@types/react@19.3.0)(react@19.3.0)
     devDependencies:
       '@mediapipe/tasks-vision':
-        specifier: ^0.10.35
-        version: 0.10.35
+        specifier: ^1.0.1
+        version: 1.0.1
       '@opennextjs/cloudflare':
         specifier: ^1.20.7
         version: 1.20.8(next@15.5.27(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(wrangler@4.147.0(@types/node@26.6.4))
@@ -1200,8 +1200,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@mediapipe/tasks-vision@0.10.35':
-    resolution: {integrity: sha512-HOvadwVRE6JC+45nyYhmnywnr5h/J8KZvOeUNVOG9q/0875pZgItznFB9bRTvLc264YSJqiZ1NsIpCStJw/egg==}
+  '@mediapipe/tasks-vision@1.0.1':
+    resolution: {integrity: sha512-rvRE2FmAZ6ZxKSw7wq+e+jQDpN3t1B/tD2mJz9SmAzb1msoDkd4dMoE4wAh8Z30Um0PQwLiHr9QtomhmXk3aUQ==}
 
   '@mswjs/interceptors@0.41.9':
     resolution: {integrity: sha512-VVPPgHyQ6ShqnrmDWuxjmUIsO9gWyOZFmuOfLd9LfBGQJwZfy0gvv9pbHSJuoFNIYC7ZDX9aoFwowjcdSC4E8w==}
@@ -2406,8 +2406,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  acorn@8.18.0:
-    resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
+  acorn@8.19.0:
+    resolution: {integrity: sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -6219,7 +6219,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@mediapipe/tasks-vision@0.10.35': {}
+  '@mediapipe/tasks-vision@1.0.1': {}
 
   '@mswjs/interceptors@0.41.9':
     dependencies:
@@ -7424,9 +7424,9 @@ snapshots:
       mime-types: 3.0.2
       negotiator: 1.0.0
 
-  acorn-import-phases@1.0.4(acorn@8.18.0):
+  acorn-import-phases@1.0.4(acorn@8.19.0):
     dependencies:
-      acorn: 8.18.0
+      acorn: 8.19.0
     optional: true
 
   acorn-jsx@5.3.2(acorn@8.16.0):
@@ -7435,7 +7435,7 @@ snapshots:
 
   acorn@8.16.0: {}
 
-  acorn@8.18.0:
+  acorn@8.19.0:
     optional: true
 
   agent-base@7.1.4: {}
@@ -9889,7 +9889,7 @@ snapshots:
   terser@5.48.0:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.18.0
+      acorn: 8.19.0
       commander: 2.20.3
       source-map-support: 0.5.21
     optional: true
@@ -10160,8 +10160,8 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.18.0
-      acorn-import-phases: 1.0.4(acorn@8.18.0)
+      acorn: 8.19.0
+      acorn-import-phases: 1.0.4(acorn@8.19.0)
       browserslist: 4.29.3
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.26.0
