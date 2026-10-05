@@ -1,6 +1,6 @@
-FROM node:20-alpine AS base
-# Pin pnpm to v9 (latest series compatible with Node 20). corepack's default
-# resolves to pnpm 11.x which requires Node 22+ and breaks on this base.
+FROM node:22-alpine AS base
+# Pin pnpm to v9 to match the lockfile format (pnpm-lock.yaml v9); corepack's
+# default would resolve to a newer major and rewrite the lockfile.
 RUN npm install -g pnpm@9
 WORKDIR /app
 
@@ -51,7 +51,7 @@ ENV NODE_ENV=production
 RUN pnpm build
 
 # Runner: minimal image with only the standalone server output.
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
