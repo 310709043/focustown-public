@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
+    inputs:
+      test_failure_alert:
+        description: "Intentional failure to test the owner's Actions notification delivery"
+        type: boolean
+        required: false
+        default: false
   pull_request:
     paths: ["scripts/*lbt-health.py", ".github/workflows/monitor-lbt.yml"]
 
@@ -23,5 +29,10 @@ jobs:
       - name: Test checks
         run: python3 scripts/test-lbt-health.py
       - name: Check production
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && inputs.test_failure_alert != true
         run: python3 scripts/check-lbt-health.py
+      - name: Intentional notification delivery test
+        if: github.event_name == 'workflow_dispatch' && inputs.test_failure_alert == true
+        run: |
+          echo "::error::Owner-requested notification delivery test. No production outage was created."
+          exit 1

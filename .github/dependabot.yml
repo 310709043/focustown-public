@@ -6,6 +6,24 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      react-runtime:
+        patterns: [react, react-dom]
+      react-types:
+        patterns: ['@types/react', '@types/react-dom']
+      next-framework:
+        patterns: [next, eslint-config-next]
+    # Framework/test-environment migrations need coordinated changes. Keep
+    # minor and patch updates enabled; review Node type majors with the runtime.
+    ignore:
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: eslint-config-next
+        update-types: [version-update:semver-major]
+      - dependency-name: jsdom
+        update-types: [version-update:semver-major]
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
   - package-ecosystem: npm
     directory: /edge
     target-branch: develop
