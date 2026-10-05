@@ -4,7 +4,7 @@
  * LBT_REPORT_RETENTION_DAYS. Ordinary ended chats are deleted immediately.
  */
 export const LBT_LEGAL = {
-  effectiveDate: "2026-10-04",
+  effectiveDate: "2026-10-05",
   contactEmail: process.env.NEXT_PUBLIC_LBT_CONTACT_EMAIL || "hello@lowbatterytown.com",
   tokenHours: 24,
   reportDays: 180,
@@ -12,7 +12,7 @@ export const LBT_LEGAL = {
   suspensionHours: 24,
   suspensionDays: 7,
   /** LBT_FEEDBACK_RETENTION_DAYS in edge/wrangler.jsonc and backend settings. */
-  feedbackDays: 365,
+  feedbackDays: 30,
 } as const;
 
 const FACTS: Record<string, string> = {
