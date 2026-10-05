@@ -1,5 +1,13 @@
 # Phase 10 — Verification Results
 
+> **Retired (2026-10-05).** The live verification suite described here —
+> `frontend/e2e/match-to-room-full-flow.spec.ts`, `tests/load/match_queue.js`,
+> `tests/chaos/*`, and the `.github/workflows/e2e.yml` workflow — has been
+> removed. It exercised the legacy Focus Town match-to-room flow and had
+> timed out on every run since August; the live product is now
+> LowBatteryTown. This document is kept only as a historical record of the
+> numbers captured at the time. The re-run procedure below no longer works.
+
 Captures the actually-measured numbers from running the Phase 10
 verification surface (Playwright two-user spec, k6 100-VU load test,
 three chaos drills). The numbers below come from running each drill
