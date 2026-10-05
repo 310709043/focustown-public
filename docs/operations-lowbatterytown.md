@@ -115,6 +115,11 @@ Verified 2026-10-05: 100 guests / 50 pairs, 120 seconds, 10 reconnects,
 1,200 received partner messages, setup 3.743 seconds, p50 208 ms / p95 256 ms.
 Both temporary Worker and D1 were removed. These bounded checks do not establish
 a guaranteed capacity, multi-region performance, or a long-duration soak SLO.
+The final runner also passed the same 100-guest/120-second scenario: setup
+14.896 seconds, 10 reconnects, 1,200 partner messages, p50 367 ms / p95 492 ms.
+Startup needed four HTTP retries and four WebSocket handshake retries, which
+are reported separately rather than hidden. Worker/D1 cleanup and the final D1
+inventory were verified.
 Larger attempts did **not** pass: new workers.dev routes returned intermittent
 HTTP/WebSocket 404s; one 500-guest attempt reached 460 paired guests before a
 test-client network failure. Do not count these as verified 300/500 capacity.
@@ -167,10 +172,11 @@ edit permission; never claim successful receipt based only on DNS or rule state.
 
 ## Dependency maintenance
 
-The React update in this follow-up changes `react` and `react-dom` together to
-19.3.0; the one-package PR #42 failed because React DOM remained 19.2.7. Local
-validation passed typecheck, lint, 607 unit tests, 17 LowBatteryTown browser
-tests and the Cloudflare build. Dependabot now groups the two runtime packages,
+The separate coordinated PR #46 updates `react` and `react-dom` together to
+19.3.0; the one-package PR #42 failed because React DOM remained 19.2.7. A local
+paired React check passed typecheck, lint, 607 unit tests, 17 LowBatteryTown
+browser tests and the Cloudflare build (1947.66 KiB gzip). The operations PR
+does not duplicate PR #46's package changes. Dependabot groups the two runtime packages,
 the two React type packages, and Next with eslint-config-next.
 
 Defer standalone major migrations until a dedicated compatibility change:
@@ -178,9 +184,11 @@ Defer standalone major migrations until a dedicated compatibility change:
 - Next #34: Next 16 removes `next lint`; the current lint command failed. Upgrade
   ESLint configuration, routing and the OpenNext deployment together, with CI.
 - jsdom #44: all test environments failed in undici with
-  `webidl.util.markAsUncloneable is not a function`; keep jsdom 25 until repaired.
-- Node types #45: CI passed, but Node 26 types do not match deployment's Node 22;
-  stay on current Node 22 types to avoid describing unsupported runtime APIs.
+  `webidl.util.markAsUncloneable is not a function`; PR #46 coordinates jsdom 30
+  with Node 22 in CI. Require its full CI before deployment.
+- Node types #45 was merged concurrently after CI passed. Preserve that change;
+  future type majors need runtime review to avoid relying on APIs unavailable
+  in the Node 22 deployment environment.
 
 Major version updates for these packages are deferred in Dependabot; minor and
 patch updates remain enabled. Review security alerts separately rather than
