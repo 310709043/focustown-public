@@ -32,6 +32,16 @@ function litFor(i: number): Lit {
   return "";
 }
 
+/**
+ * A handful of windows live a little at night (fixed per window, no
+ * randomness): "lf-on" someone comes home, "lf-off" someone goes to bed,
+ * "lf-tv" the blue flicker of a television.
+ */
+const LIFE: Record<number, string> = { 3: "lf-on", 11: "lf-off", 19: "lf-tv", 27: "lf-on lf-late" };
+function lifeFor(i: number): string {
+  return LIFE[(i * 13 + 5) % 41] ?? "";
+}
+
 function windows(b: Block, key: string, padX: number, padTop: number, gap: number, grille = false) {
   const cw = (b.w - padX * 2 - gap * (b.cols - 1)) / b.cols;
   const ch = Math.min(cw * 1.2, (GROUND - b.top - padTop - 18 - gap * (b.rows - 1)) / b.rows);
@@ -39,7 +49,7 @@ function windows(b: Block, key: string, padX: number, padTop: number, gap: numbe
   for (let r = 0; r < b.rows; r += 1) {
     for (let c = 0; c < b.cols; c += 1) {
       const i = r * b.cols + c + b.x;
-      const lit = litFor(i);
+      const lit = `${litFor(i)} ${lifeFor(i)}`.trim();
       const x = b.x + padX + c * (cw + gap);
       const y = b.top + padTop + r * (ch + gap);
       out.push(<rect key={`${key}-${r}-${c}`} className={`tw-win ${lit}`.trim()} x={x} y={y} width={cw} height={ch} />);
@@ -76,6 +86,12 @@ function StreetLamp({ x }: { x: number }) {
       <path className="tw-pole" d={`M${x} ${GROUND}V104c0-18 12-26 30-26`} />
       <path className="tw-lamp-head" d={`M${x + 24} 72h32c3 0 5 2 4 5l-2 7h-36l-2-7c-1-3 1-5 4-5z`} />
       <ellipse className="tw-bulb" cx={x + 40} cy={85} rx={13} ry={3} />
+      {/* moths circling the bulb at night */}
+      <g className="tw-moths">
+        <circle className="tw-moth m1" cx={x + 40} cy={98} r={1.4} />
+        <circle className="tw-moth m2" cx={x + 40} cy={98} r={1.1} />
+        <circle className="tw-moth m3" cx={x + 40} cy={98} r={1.2} />
+      </g>
       <rect className="tw-plate" x={x - 7} y={136} width={14} height={18} rx={2} />
       <text className="tw-plate-text" x={x} y={149}>
         07
@@ -107,6 +123,17 @@ function WeekdayStreet() {
         <rect className="tw-shelter" x={338} y={150} width={28} height={4} />
         <rect className="tw-pole-thin" x={340} y={154} width={2} height={36} />
         <rect className="tw-pole-thin" x={362} y={154} width={2} height={36} />
+      </g>
+      {/* the last bus home: crosses the street now and then at night */}
+      <g className="tw-bus">
+        <rect className="tw-bus-body" x={0} y={160} width={96} height={27} rx={5} />
+        {[8, 26, 44, 62].map((wx) => (
+          <rect key={wx} className="tw-bus-win" x={wx} y={165} width={14} height={9} rx={1.5} />
+        ))}
+        <rect className="tw-bus-win" x={80} y={165} width={10} height={14} rx={1.5} />
+        <circle className="tw-bus-wheel" cx={20} cy={187} r={4.5} />
+        <circle className="tw-bus-wheel" cx={76} cy={187} r={4.5} />
+        <rect className="tw-bus-light" x={93} y={178} width={3} height={4} rx={1} />
       </g>
       <StreetLamp x={750} />
       <rect className="tw-ground" x={0} y={GROUND} width={1200} height={10} />
@@ -195,6 +222,7 @@ export function TownSky() {
   return (
     <div className="town-sky" aria-hidden="true">
       <span className="sky-sun" />
+      <span className="sky-moon-glow" />
       <svg className="sky-moon" viewBox="0 0 40 40" focusable="false">
         <path d="M24 4a17 17 0 1 0 12 26A14 14 0 1 1 24 4z" />
       </svg>
@@ -203,6 +231,25 @@ export function TownSky() {
       <span className="sky-star s3" />
       <span className="sky-star s4" />
       <span className="sky-star s5" />
+      <span className="sky-star s6" />
+      <span className="sky-star s7" />
+      <span className="sky-star s8" />
+      <span className="sky-star s9" />
+      <span className="sky-star s10" />
+      <span className="sky-star s11" />
+      <span className="sky-meteor m1" />
+      <span className="sky-meteor m2" />
+      <span className="sky-plane" />
+      {/* birds: a pair by morning, a few by day, a flock heading home at dusk */}
+      <svg className="sky-birds b1" viewBox="0 0 60 24" focusable="false">
+        <path className="bird w1" d="M2 12q5-6 9 0q4-6 9 0" />
+        <path className="bird w2" d="M26 6q4-5 8 0q4-5 8 0" />
+        <path className="bird w3" d="M40 17q4-5 7 0q3-5 7 0" />
+      </svg>
+      <svg className="sky-birds b2" viewBox="0 0 60 24" focusable="false">
+        <path className="bird w2" d="M4 10q4-5 8 0q4-5 8 0" />
+        <path className="bird w1" d="M30 16q4-5 7 0q3-5 7 0" />
+      </svg>
       <svg className="sky-cloud c1" viewBox="0 0 120 34" focusable="false">
         <path d="M8 26h104a6 6 0 0 1 0 8H8a6 6 0 0 1 0-8zM30 16h52a5 5 0 0 1 0 10H30a5 5 0 0 1 0-10z" />
       </svg>
