@@ -274,6 +274,49 @@ describe("createLiveTransport", () => {
     expect(FakeSocket.instances[1].protocols).toEqual(["bearer.tok-2"]);
   });
 
+  test("coming back online reconnects at once instead of waiting out the backoff", async () => {
+    await started();
+    FakeSocket.instances[0].open();
+    // Several failed tries: the next one would be many seconds away.
+    for (let i = 0; i < 4; i += 1) {
+      FakeSocket.instances[FakeSocket.instances.length - 1].serverClose(1006);
+      await vi.advanceTimersByTimeAsync(16_000);
+    }
+    FakeSocket.instances[FakeSocket.instances.length - 1].serverClose(1006);
+    const before = FakeSocket.instances.length;
+
+    window.dispatchEvent(new Event("online"));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(FakeSocket.instances.length).toBe(before + 1);
+  });
+
+  test("returning to the tab reconnects a dropped socket, and leaves a live one alone", async () => {
+    await started();
+    FakeSocket.instances[0].open();
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(FakeSocket.instances.length).toBe(1);
+
+    FakeSocket.instances[0].serverClose(1006);
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(FakeSocket.instances.length).toBe(2);
+  });
+
+  test("after stopping, waking the page does nothing", async () => {
+    await started();
+    FakeSocket.instances[0].open();
+    stop?.();
+    stop = undefined;
+
+    window.dispatchEvent(new Event("online"));
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(FakeSocket.instances.length).toBe(1);
+  });
+
   test("stopping closes the socket and never reconnects", async () => {
     await started();
     FakeSocket.instances[0].open();
