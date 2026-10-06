@@ -86,9 +86,15 @@ export class Town {
     return {
       online: await this.store.countOnline(now - this.cfg.offlineAfterMs),
       waiting: (await this.store.listWaiting()).length,
-      open: isOpen(now, this.cfg.openHours, this.cfg.timeZone),
+      open: await this.openNow(now),
       hours: this.cfg.hoursLabel,
     };
+  }
+
+  /** Open to new matching: within opening hours AND not in an admin
+   *  maintenance pause. Every entry point and the pairing pass gate on this. */
+  private async openNow(now: number): Promise<boolean> {
+    return isOpen(now, this.cfg.openHours, this.cfg.timeZone) && !(await this.store.maintenance());
   }
 
   // ── connection lifecycle ───────────────────────────────────────────
@@ -153,7 +159,7 @@ export class Town {
     this.requireAllowed(guestId);
     if (adult !== true) throw new InputError("age_required");
     const now = this.deps.now();
-    if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
+    if (!(await this.openNow(now))) throw new InputError("closed");
     const profile = parseProfile(rawProfile);
     if (await this.current(guestId)) throw new InputError("already_in_conversation");
     await this.store.touchOnline(guestId, now);
@@ -175,7 +181,7 @@ export class Town {
     this.requireAllowed(COMPANION_ID);
     this.requireAllowed(target);
     const now = this.deps.now();
-    if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) throw new InputError("closed");
+    if (!(await this.openNow(now))) throw new InputError("closed");
     if (await this.current(COMPANION_ID)) throw new InputError("companion_busy");
     const pending = await this.store.companionInvite();
     if (pending && pending.expiresAt > now) throw new InputError("companion_busy");
@@ -204,7 +210,7 @@ export class Town {
       throw new InputError("invite_unavailable");
     }
     if (!accept) return this.clearCompanion("declined");
-    if (!isOpen(now, this.cfg.openHours, this.cfg.timeZone)) {
+    if (!(await this.openNow(now))) {
       await this.clearCompanion("cancelled");
       throw new InputError("closed");
     }
@@ -238,6 +244,7 @@ export class Town {
   /** Pair everyone who can be paired right now; returns pairs made. */
   async pairWaiting(): Promise<number> {
     const now = this.deps.now();
+    if (await this.store.maintenance()) return 0;
     const queued = await this.store.listWaiting();
     for (const w of queued) if (this.suspended(w.guestId)) await this.restrict(w.guestId);
     const pool = (await this.store.listWaiting()).sort((a, b) => a.joinedAt - b.joinedAt);

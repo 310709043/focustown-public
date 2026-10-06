@@ -242,13 +242,22 @@ async function render() {
     el("header", {},
       el("h1", {}, "LowBattery", el("span", {text:"Town"}), " 後台"),
       el("div", {class:"actions"},
+        el("button", {class: "btn" + (o.maintenance ? " primary" : ""), type:"button",
+          text: o.maintenance ? "▶ 恢復配對" : "⏸ 暫停配對",
+          onclick: async (event) => {
+            const btn = event.currentTarget; btn.disabled = true;
+            try {
+              await api("/api/v1/admin/lbt/maintenance", {method:"POST", body: JSON.stringify({paused: !o.maintenance})});
+              await render();
+            } catch { btn.disabled = false; }
+          }}),
         el("button", {class:"btn", type:"button", text:"重新整理", onclick: () => render()}),
         el("button", {class:"btn", type:"button", text:"登出", onclick: () => signOut()}))),
     el("div", {class:"stats"},
       stat("目前在線", o.online), stat("等待配對", o.waiting), stat("進行中的對話", o.conversations),
       stat("待處理檢舉", o.reports.byStatus.open, o.reports.byStatus.open > 0), stat("24 小時內新檢舉", o.reports.last24h),
       stat("未讀意見", o.feedback.byStatus.new, o.feedback.byStatus.new > 0)),
-    el("p", {class:"meta", text: (o.open ? "小鎮開放中" : "小鎮休息中") + (o.hours ? "（" + o.hours + "）" : "（全天開放）") + " · 更新於 " + fmt(new Date().toISOString())}),
+    el("p", {class:"meta", text: (o.maintenance ? "⏸ 維護模式：已暫停配對" : (o.open ? "小鎮開放中" : "小鎮休息中")) + (o.hours ? "（" + o.hours + "）" : "（全天開放）") + " · 更新於 " + fmt(new Date().toISOString())}),
     getCompanionPanel(), el("h2", {text:"檢舉"}), tabs, reports,
     el("h2", {text:"意見箱"}), fbTabs, feedback);
   if (active && getCompanionPanel().contains(active)) active.focus({preventScroll:true});

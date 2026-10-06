@@ -54,6 +54,8 @@ export const TRANSCRIPT_MAX_LINES = 400;
 const K = {
   companionInvite: "companion:invite",
   adminRevoked: "admin:revoked",
+  maintenance: "maintenance", // boolean: admin paused all matching
+
   online: "online", // Record<guestId, lastSeenMs>
   queue: "queue", // Waiting[]
   active: "active", // conversationId[]
@@ -78,6 +80,15 @@ export class TownStore {
   }
   async clearCompanionInvite() {
     await this.kv.delete(K.companionInvite);
+  }
+
+  /** Admin maintenance pause: when true, no new matching happens. Durable. */
+  async maintenance(): Promise<boolean> {
+    return (await this.kv.get<boolean>(K.maintenance)) === true;
+  }
+  async setMaintenance(on: boolean) {
+    if (on) await this.kv.put(K.maintenance, true);
+    else await this.kv.delete(K.maintenance);
   }
 
   async revokeAdminSession(fingerprint: string, until: number) {

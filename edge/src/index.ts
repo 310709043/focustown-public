@@ -154,6 +154,11 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
     ]);
     return json(request, env, 200, { ...live, reports, feedback });
   }
+  if (request.method === "POST" && path === "/api/v1/admin/lbt/maintenance") {
+    const body = (await boundedJson(request)) as { paused?: unknown } | null;
+    if (typeof body?.paused !== "boolean") return error(request, env, 422, "invalid_maintenance");
+    return json(request, env, 200, await town(env).setMaintenance(body.paused));
+  }
   if (request.method === "GET" && path === "/api/v1/admin/lbt/reports") {
     const params = new URL(request.url).searchParams;
     const raw = params.get("status") ?? "open";
