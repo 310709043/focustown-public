@@ -45,11 +45,10 @@ describe("guide articles", () => {
     expect(fillLegalFacts(safety)).not.toMatch(/\{\w+\}/);
   });
 
-  test.each(bundles)("%s: crisis lines and 18+ stay in view", (_locale, items) => {
+  test.each(bundles)("%s: a crisis resource and 18+ stay in view", (_locale, items) => {
     for (const slug of ARTICLE_SLUGS) {
       const body = text(items[slug]);
-      expect(body).toContain("1925");
-      expect(body).toContain("1995");
+      expect(body).toContain("findahelpline.com");
       expect(body).toMatch(/18/);
     }
   });
