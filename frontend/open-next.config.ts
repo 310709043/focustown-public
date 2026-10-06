@@ -1,4 +1,10 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+import staticAssetsIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache";
 
-// These routes do not use ISR; no R2 cache or queue is required.
-export default defineCloudflareConfig();
+// Read build-time pages from the existing assets binding. In particular,
+// dynamicParams=false articles must find their prerendered entry at runtime.
+// No R2 cache, revalidation queue or additional paid storage is needed.
+export default defineCloudflareConfig({
+  incrementalCache: staticAssetsIncrementalCache,
+  enableCacheInterception: true,
+});

@@ -55,6 +55,11 @@ matching copy to both `messages/{zh-TW,en}/lbt.json`. The registry drives articl
 routes, internal links, and sitemap entries. Cite official sources for claims
 about other services, state that the town is independent, and avoid promises
 of instant matching, absolute privacy, or guaranteed search rankings.
+OpenNext reads prerendered articles from the static-assets incremental cache
+configured in `open-next.config.ts`; no R2 service is required. `cf:build`
+populates the cache into the assets directory before Wrangler deploys it.
+Also run the SEO browser check against `pnpm cf:preview` to catch Worker-only
+routing problems. CSP nonce metadata is derived from the built public routes.
 
 For Google Search Console, verify the `lowbatterytown.com` domain property,
 submit `https://www.lowbatterytown.com/sitemap.xml`, and inspect the Chinese
