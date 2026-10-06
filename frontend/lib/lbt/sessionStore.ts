@@ -283,7 +283,17 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         // The server has no session for us (e.g. it ended while we were
         // offline). Reconcile instead of showing a chat that is gone.
         if (state.view === "chat") toEnd(null);
-        else if (state.view === "waiting") set({ view: "home", waitingSince: null, companionInvitation: null, notice: "wait_interrupted" });
+        else if (state.view === "waiting") {
+          // Dropped from the queue — usually a disconnect longer than the
+          // server's offline window. Re-enqueue with the same choices so a
+          // flaky connection doesn't quietly cost the visitor their spot.
+          // If we can't (no nickname, town closed, not adult), send home.
+          if (state.nickname && state.adult && !(state.town && !state.town.open)) {
+            transport?.join({ nickname: state.nickname, energy: state.energy, preference: state.preference, adult: state.adult });
+          } else {
+            set({ view: "home", waitingSince: null, companionInvitation: null, notice: "wait_interrupted" });
+          }
+        }
         return;
       case "error":
         set({ notice: event.code, companionAnswering: false });
@@ -344,8 +354,11 @@ export const useLbtStore = create<LbtState>()((set, get) => {
 
     cancelWaiting() {
       clearTimeout(inviteExpiry);
-      transport?.cancel();
+      // Leave the waiting view FIRST: a transport's cancel can echo `idle`
+      // synchronously, and we must already be home so it isn't mistaken for a
+      // dropped-from-queue reconnect (which would re-enqueue us).
       set({ view: "home", waitingSince: null, companionInvitation: null, companionAnswering: false });
+      transport?.cancel();
     },
 
     answerCompanion(accept) {
@@ -362,9 +375,10 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     goHome() {
       clearTimeout(inviteExpiry);
       const { view } = get();
-      if (view === "chat") transport?.leave();
-      if (view === "waiting") transport?.cancel();
       stopClock();
+      // Go home FIRST, then tell the transport — a cancel/leave can echo an
+      // `idle` synchronously, and being home already keeps it from looking
+      // like a dropped-from-queue reconnect (which would re-enqueue us).
       set({
         view: "home",
         lines: [],
@@ -378,6 +392,8 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         extendMine: false,
         extendPartner: false,
       });
+      if (view === "chat") transport?.leave();
+      if (view === "waiting") transport?.cancel();
     },
 
     leave() {

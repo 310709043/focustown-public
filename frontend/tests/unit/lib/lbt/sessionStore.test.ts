@@ -464,8 +464,24 @@ describe("ending", () => {
     expect({ view: store().view, reason: store().endReason }).toEqual({ view: "end", reason: null });
   });
 
-  test("idle while waiting sends the visitor home with a notice", () => {
-    walkIn();
+  test("idle while waiting re-enqueues with the same choices", () => {
+    store().setEnergy(2);
+    store().setPreference("listen");
+    walkIn("小橘"); // first join
+
+    transport.emit({ type: "idle" }); // dropped from the queue (e.g. a long disconnect)
+
+    expect(store().view).toBe("waiting"); // stays put, not sent home
+    expect(transport.calls.filter((c) => c.op === "join").length).toBe(2);
+    expect(transport.calls.at(-1)).toEqual({
+      op: "join",
+      arg: { nickname: "小橘", energy: 2, preference: "listen", adult: true },
+    });
+  });
+
+  test("idle while waiting sends the visitor home when it can't re-enqueue", () => {
+    walkIn("小橘");
+    store().setTown({ online: 1, waiting: 0, open: false, hours: "21:00-24:00" });
 
     transport.emit({ type: "idle" });
 
@@ -473,6 +489,17 @@ describe("ending", () => {
       view: "home",
       notice: "wait_interrupted",
     });
+  });
+
+  test("an idle after cancelling the wait does not re-enqueue", () => {
+    walkIn("小橘");
+    store().cancelWaiting(); // leaves the waiting view before the transport can echo idle
+    const joins = transport.calls.filter((c) => c.op === "join").length;
+
+    transport.emit({ type: "idle" }); // a late echo must not drag us back in
+
+    expect(store().view).toBe("home");
+    expect(transport.calls.filter((c) => c.op === "join").length).toBe(joins);
   });
 
   test("again walks back in with the same nickname", () => {

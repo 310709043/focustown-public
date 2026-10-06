@@ -67,6 +67,13 @@ export const REPORT_NOTE_MAX = 500;
 
 /** Live transport timings. The backend treats 45 s of silence as gone. */
 export const HEARTBEAT_MS = 15_000;
+/**
+ * Grace before a dropped socket is surfaced as "offline" in the UI. Most
+ * reconnects (mobile hand-off, Wi-Fi blip, edge rebalancing) recover within
+ * ~1 s and replay the waiting/chat state, so holding the banner back this long
+ * keeps those invisible — the notice only appears for a genuinely stuck link.
+ */
+export const OFFLINE_GRACE_MS = 2500;
 export const STATUS_POLL_MS = 15_000;
 export const TYPING_THROTTLE_MS = 3000;
 export const PARTNER_TYPING_CLEAR_MS = 4000;

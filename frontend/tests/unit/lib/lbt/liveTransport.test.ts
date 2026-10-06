@@ -7,7 +7,7 @@
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { HEARTBEAT_MS } from "@/lib/lbt/constants";
+import { HEARTBEAT_MS, OFFLINE_GRACE_MS } from "@/lib/lbt/constants";
 import { createLiveTransport, mapServerFrame } from "@/lib/lbt/liveTransport";
 import type { TransportEvent } from "@/lib/lbt/transport";
 
@@ -255,7 +255,7 @@ describe("createLiveTransport", () => {
     FakeSocket.instances[0].open();
 
     FakeSocket.instances[0].serverClose(1006);
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(OFFLINE_GRACE_MS); // reconnect fires at ~1s; offline only after the grace
 
     expect([events.some((e) => e.type === "connection" && e.state === "offline"), FakeSocket.instances.length]).toEqual([
       true,
@@ -290,7 +290,7 @@ describe("createLiveTransport", () => {
     const transport = make();
     stop = transport.start((e) => events.push(e));
 
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(OFFLINE_GRACE_MS); // retry fires at ~1s; offline only after the grace
 
     expect([events.some((e) => e.type === "connection" && e.state === "offline"), FakeSocket.instances.length]).toEqual([
       true,
@@ -337,6 +337,34 @@ describe("createLiveTransport", () => {
     fetchImpl.mockResolvedValueOnce(okJson(guestBody)).mockResolvedValueOnce(okJson({}, 422));
 
     await expect(make().report("spam", "")).rejects.toThrow("report_422");
+  });
+
+  const offlineEvents = () => events.filter((e) => e.type === "connection" && (e as { state: string }).state === "offline");
+
+  test("a reconnect within the grace never surfaces offline", async () => {
+    await started();
+    FakeSocket.instances[0].open();
+    events.length = 0;
+
+    FakeSocket.instances[0].serverClose(1006); // a transient drop
+    await vi.advanceTimersByTimeAsync(1000); // reconnect backoff fires → socket[1]
+    FakeSocket.instances[1].open(); // recovered within the grace
+    await vi.advanceTimersByTimeAsync(OFFLINE_GRACE_MS); // past where offline would have fired
+
+    expect(offlineEvents()).toEqual([]);
+  });
+
+  test("a drop that does not recover surfaces offline only after the grace", async () => {
+    await started();
+    FakeSocket.instances[0].open();
+    events.length = 0;
+
+    FakeSocket.instances[0].serverClose(1006);
+    await vi.advanceTimersByTimeAsync(OFFLINE_GRACE_MS - 500);
+    expect(offlineEvents()).toEqual([]); // still within grace: stays calm
+
+    await vi.advanceTimersByTimeAsync(600); // cross the threshold
+    expect(offlineEvents().length).toBe(1);
   });
 });
 
