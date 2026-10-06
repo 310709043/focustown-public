@@ -491,6 +491,17 @@ describe("ending", () => {
     });
   });
 
+  test("an idle after cancelling the wait does not re-enqueue", () => {
+    walkIn("小橘");
+    store().cancelWaiting(); // leaves the waiting view before the transport can echo idle
+    const joins = transport.calls.filter((c) => c.op === "join").length;
+
+    transport.emit({ type: "idle" }); // a late echo must not drag us back in
+
+    expect(store().view).toBe("home");
+    expect(transport.calls.filter((c) => c.op === "join").length).toBe(joins);
+  });
+
   test("again walks back in with the same nickname", () => {
     inChat();
     store().leave();

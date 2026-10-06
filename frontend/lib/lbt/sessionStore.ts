@@ -354,8 +354,11 @@ export const useLbtStore = create<LbtState>()((set, get) => {
 
     cancelWaiting() {
       clearTimeout(inviteExpiry);
-      transport?.cancel();
+      // Leave the waiting view FIRST: a transport's cancel can echo `idle`
+      // synchronously, and we must already be home so it isn't mistaken for a
+      // dropped-from-queue reconnect (which would re-enqueue us).
       set({ view: "home", waitingSince: null, companionInvitation: null, companionAnswering: false });
+      transport?.cancel();
     },
 
     answerCompanion(accept) {
@@ -372,9 +375,10 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     goHome() {
       clearTimeout(inviteExpiry);
       const { view } = get();
-      if (view === "chat") transport?.leave();
-      if (view === "waiting") transport?.cancel();
       stopClock();
+      // Go home FIRST, then tell the transport — a cancel/leave can echo an
+      // `idle` synchronously, and being home already keeps it from looking
+      // like a dropped-from-queue reconnect (which would re-enqueue us).
       set({
         view: "home",
         lines: [],
@@ -388,6 +392,8 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         extendMine: false,
         extendPartner: false,
       });
+      if (view === "chat") transport?.leave();
+      if (view === "waiting") transport?.cancel();
     },
 
     leave() {
