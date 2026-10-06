@@ -4,6 +4,26 @@ import { ARTICLE_SLUGS } from "../lib/lbt/articles";
 const origin = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.lowbatterytown.com").replace(/\/+$/, "");
 
 for (const locale of ["zh-TW", "en"]) {
+  test(`${locale}: brand short names describe the same public website`, async ({ page }) => {
+    await page.goto(`/${locale}`);
+    await expect(page.locator("footer")).toContainText("LowBattery");
+    const entries = (await page.locator('script[type="application/ld+json"]').allTextContents())
+      .flatMap((entry) => {
+        const data = JSON.parse(entry);
+        return data["@graph"] ?? [data];
+      });
+    for (const type of ["WebSite", "Organization", "WebApplication"]) {
+      const entity = entries.find((entry) => entry["@type"] === type);
+      expect(entity.name).toBe("LowBatteryTown");
+      expect(entity.alternateName).toEqual(["低電量小鎮", "LowBattery", "低電量", "Low"]);
+    }
+    expect(entries.find((entry) => entry["@type"] === "WebSite").url).toBe(origin);
+    await page.goto(`/${locale}/guide`);
+    await expect(page.locator("main")).toContainText("LowBattery");
+    await expect(page.locator("main")).toContainText("低電量");
+    await expect(page.locator("main")).toContainText(locale === "zh-TW" ? "簡稱 LowBattery、低電量或 Low" : "also called LowBattery or Low");
+  });
+
   test(`${locale}: public guide, canonical and language alternatives`, async ({ page, request }) => {
     const response = await request.get(`/${locale}/guide`);
     expect(response.ok()).toBeTruthy();

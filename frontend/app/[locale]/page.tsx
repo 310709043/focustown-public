@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { LbtApp } from "@/components/lbt/LbtApp";
-import { BRAND, BRAND_ZH, jsonLd, SITE_URL } from "@/lib/lbt/site";
+import { BRAND, BRAND_ALIASES, jsonLd, SITE_URL } from "@/lib/lbt/site";
 import { lbtFontVariables } from "@/lib/lbtFonts";
 
 /**
@@ -26,7 +26,7 @@ export default async function HomePage({
             "@context": "https://schema.org",
             "@type": "WebApplication",
             name: BRAND,
-            alternateName: BRAND_ZH,
+            alternateName: BRAND_ALIASES,
             url: `${SITE_URL}/${locale}`,
             description: t("description"),
             inLanguage: locale,

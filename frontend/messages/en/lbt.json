@@ -288,7 +288,7 @@
     }
   },
   "footer": {
-    "left": "LowBatteryTown · a town still being imagined",
+    "left": "LowBatteryTown · also known as LowBattery",
     "right": "Prototype demo: matching and messages are simulated and not connected to real people.",
     "rightLive": "Beta: please be kind. You can say good night or report at any time."
   },
@@ -499,7 +499,7 @@
     "nav": "Anonymous chat guide",
     "title": "Anonymous Chat Guide and Frequently Asked Questions",
     "description": "Learn how free, no-sign-up anonymous chat works at LowBatteryTown: real-person matching, social battery, 7-minute conversations, waiting, privacy and reporting.",
-    "intro": "LowBatteryTown is a free, one-on-one anonymous chat website with no sign-up. Choose a nickname and your current social battery, then sit with someone who also wants to talk. You do not need to exchange contact details, and you can leave whenever you like.",
+    "intro": "LowBatteryTown, also called LowBattery or Low, is a free anonymous chat website for people with a low social battery. Its Chinese name is 低電量小鎮, shortened to 低電量. Here, low battery means the energy you have for talking and socialising. No sign-up is needed: choose a nickname and your current social battery, then sit one-on-one with someone who also wants to talk. You do not need to exchange contact details, and you can leave whenever you like.",
     "questions": [
       {
         "q": "Do I need an account or payment?",

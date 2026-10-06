@@ -67,6 +67,11 @@ and English home and guide URLs. Verification needs the owner's Google
 account; no verification token or access is bundled with the site. Track
 indexed pages, search impressions and clicks before judging SEO changes.
 Sitemaps and metadata do not guarantee indexing or a ranking position.
+The owner-approved short names (`LowBattery`, `低電量`, `Low`) are explained
+in both public guides; `BRAND_ALIASES` keeps structured identities consistent.
+Prioritize brand and chat queries, such as `lowbattery chat` and `低電量聊天室`.
+Broad words like `low` also refer to unrelated topics; aliases are naming
+signals, not a guarantee that those searches will return the town.
 
 Browser check: `pnpm exec playwright test e2e/lbt-seo.spec.ts`. When checking
 a deployed site, set `PLAYWRIGHT_NO_SERVER=1` and `PLAYWRIGHT_BASE_URL` to its
