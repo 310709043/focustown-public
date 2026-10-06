@@ -75,7 +75,16 @@ export class TownObject extends DurableObject<Env> {
     return {
       ...(await this.town.status()),
       conversations: (await this.store.activeConversationIds()).length,
+      maintenance: await this.store.maintenance(),
     };
+  }
+
+  /** Toggle the maintenance pause. Turning it off pairs the waiting backlog
+   *  right away instead of waiting for the next sweep. */
+  async setMaintenance(on: boolean): Promise<{ maintenance: boolean }> {
+    await this.store.setMaintenance(on);
+    if (!on) await this.town.pairWaiting();
+    return { maintenance: on };
   }
 
   /** Only queue profiles; never expose another pair's messages or active profiles. */

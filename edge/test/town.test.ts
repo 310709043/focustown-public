@@ -5,7 +5,7 @@
  */
 import { beforeEach, describe, expect, test } from "vitest";
 
-import { InputError } from "../src/rules";
+import { InputError, type Profile } from "../src/rules";
 import { MemoryKV, TownStore } from "../src/store";
 import { DEFAULT_CONFIG, type Frame, type ReportRecord, Town, type TownConfig } from "../src/town";
 
@@ -123,6 +123,35 @@ describe("joining", () => {
       await town.join(g, p, true);
     }
     expect((await store.activeConversationIds()).length).toBe(2);
+  });
+});
+
+describe("maintenance pause", () => {
+  test("blocks new joins while paused", async () => {
+    await store.setMaintenance(true);
+    await expectCode(town.join("g_a", LISTEN, true), "closed");
+  });
+
+  test("status reports closed while paused, open again after resume", async () => {
+    expect((await town.status()).open).toBe(true);
+    await store.setMaintenance(true);
+    expect((await town.status()).open).toBe(false);
+    await store.setMaintenance(false);
+    expect((await town.status()).open).toBe(true);
+  });
+
+  test("does not pair queued waiters while paused, pairs them after resume", async () => {
+    for (const [g, p] of [["g_a", LISTEN], ["g_b", STORY]] as const) {
+      await store.enqueue({ guestId: g, profile: p as Profile, joinedAt: now });
+      await store.touchOnline(g, now);
+    }
+    await store.setMaintenance(true);
+    expect(await town.pairWaiting()).toBe(0);
+    expect((await store.activeConversationIds()).length).toBe(0);
+
+    await store.setMaintenance(false);
+    expect(await town.pairWaiting()).toBe(1);
+    expect((await store.activeConversationIds()).length).toBe(1);
   });
 });
 

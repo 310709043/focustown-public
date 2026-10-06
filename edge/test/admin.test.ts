@@ -57,8 +57,34 @@ describe("overview API", () => {
       open: true,
       hours: "",
       conversations: 0,
+      maintenance: false,
       reports: { byStatus: { open: 1, reviewed: 0, actioned: 0, dismissed: 1 }, last24h: 1 },
       feedback: { byStatus: { new: 0, read: 0, done: 0 } },
     });
+  });
+});
+
+describe("maintenance API", () => {
+  const post = (body: unknown, headers: Record<string, string> = AUTH) =>
+    SELF.fetch(`${BASE}/api/v1/admin/lbt/maintenance`, { method: "POST", headers, body: JSON.stringify(body) });
+  const overview = async () =>
+    (await SELF.fetch(`${BASE}/api/v1/admin/lbt/overview`, { headers: AUTH })).json() as Promise<{ maintenance: boolean; open: boolean }>;
+
+  test("needs the admin token", async () => {
+    expect((await post({ paused: true }, {})).status).toBe(401);
+  });
+
+  test("rejects a non-boolean body", async () => {
+    expect((await post({ paused: "yes" })).status).toBe(422);
+  });
+
+  test("pausing closes the town in the overview, resuming reopens it", async () => {
+    const paused = await post({ paused: true });
+    expect([paused.status, await paused.json()]).toEqual([200, { maintenance: true }]);
+    expect(await overview()).toMatchObject({ maintenance: true, open: false });
+
+    const resumed = await post({ paused: false });
+    expect([resumed.status, await resumed.json()]).toEqual([200, { maintenance: false }]);
+    expect(await overview()).toMatchObject({ maintenance: false, open: true });
   });
 });
