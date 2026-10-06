@@ -9,6 +9,8 @@ export const SITE_URL = (
 
 export const BRAND = "LowBatteryTown";
 export const BRAND_ZH = "低電量小鎮";
+/** Owner-approved short names, also explained in the public chat guide. */
+export const BRAND_ALIASES = [BRAND_ZH, "LowBattery", "低電量", "Low"];
 
 /** Date the indexed pages last changed in substance (sitemap lastmod). */
 export const CONTENT_UPDATED = "2026-10-06";

@@ -14,7 +14,7 @@ import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { routing, type Locale } from "@/i18n/routing";
 import { fontVariables } from "@/lib/fonts";
-import { BRAND, BRAND_ZH, jsonLd, SITE_URL } from "@/lib/lbt/site";
+import { BRAND, BRAND_ALIASES, jsonLd, SITE_URL } from "@/lib/lbt/site";
 import { TOWN_TIME_BOOT } from "@/lib/lbt/townTime";
 
 function isSupportedLocale(value: string): value is Locale {
@@ -165,8 +165,8 @@ export default async function LocaleLayout({
                     "@type": "WebSite",
                     "@id": `${SITE_URL}/#website`,
                     name: BRAND,
-                    alternateName: BRAND_ZH,
-                    url: `${SITE_URL}/${locale}`,
+                    alternateName: BRAND_ALIASES,
+                    url: SITE_URL,
                     description: t("description"),
                     inLanguage: locale,
                     publisher: { "@id": `${SITE_URL}/#org` },
@@ -175,7 +175,7 @@ export default async function LocaleLayout({
                     "@type": "Organization",
                     "@id": `${SITE_URL}/#org`,
                     name: BRAND,
-                    alternateName: BRAND_ZH,
+                    alternateName: BRAND_ALIASES,
                     url: SITE_URL,
                     logo: `${SITE_URL}/brand/icon-512.png`,
                   },
