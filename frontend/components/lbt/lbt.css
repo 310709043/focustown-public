@@ -3440,6 +3440,253 @@ html[data-lbt-time="day"] .lbt .tw-cat-roof {
   animation: lbt-cat-breathe 4.5s ease-in-out infinite;
 }
 
+/* ---- night life: more stars, a shooting star now and then, a far plane,
+   a few windows that live, moths at lamp 07, the last bus (weekday) ----
+   Everything here is night-only and hidden at other times. */
+.lbt .sky-star.s6 { left: 8%; top: 8%; width: 1.5px; height: 1.5px; }
+.lbt .sky-star.s7 { left: 30%; top: 5%; }
+.lbt .sky-star.s8 { left: 46%; top: 30%; width: 1.5px; height: 1.5px; }
+.lbt .sky-star.s9 { left: 80%; top: 8%; width: 1.5px; height: 1.5px; }
+.lbt .sky-star.s10 { left: 52%; top: 58%; width: 1.5px; height: 1.5px; }
+.lbt .sky-star.s11 { left: 84%; top: 40%; }
+html[data-lbt-time="night"] .lbt .sky-star {
+  animation: lbt-twinkle 6s ease-in-out infinite;
+}
+html[data-lbt-time="night"] .lbt .sky-star.s1 { animation-delay: -1s; animation-duration: 7s; }
+html[data-lbt-time="night"] .lbt .sky-star.s3 { animation-delay: -4s; }
+html[data-lbt-time="night"] .lbt .sky-star.s5 { animation-delay: -2s; animation-duration: 8s; }
+html[data-lbt-time="night"] .lbt .sky-star.s6 { animation-delay: -3s; animation-duration: 9s; }
+html[data-lbt-time="night"] .lbt .sky-star.s7 { animation-delay: -5s; }
+html[data-lbt-time="night"] .lbt .sky-star.s8 { animation-delay: -0.5s; animation-duration: 5s; }
+html[data-lbt-time="night"] .lbt .sky-star.s9 { animation-delay: -6s; animation-duration: 7.5s; }
+html[data-lbt-time="night"] .lbt .sky-star.s10 { animation-delay: -2.5s; animation-duration: 6.5s; }
+html[data-lbt-time="night"] .lbt .sky-star.s11 { animation-delay: -4.5s; animation-duration: 8.5s; }
+
+.lbt .sky-moon-glow {
+  position: absolute;
+  right: calc(15% - 28px);
+  top: calc(12% - 28px);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 190, 0.22), rgba(255, 236, 190, 0) 68%);
+  opacity: 0;
+}
+html[data-lbt-time="night"] .lbt .sky-moon-glow {
+  animation: lbt-moon-glow 9s ease-in-out infinite;
+}
+@keyframes lbt-moon-glow {
+  0%, 100% { opacity: 0.55; transform: scale(0.94); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* a shooting star: a short streak, then a long quiet */
+.lbt .sky-meteor {
+  position: absolute;
+  width: 90px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 246, 220, 0), rgba(255, 246, 220, 0.95));
+  opacity: 0;
+  transform: rotate(-24deg);
+  transform-origin: 100% 50%;
+}
+.lbt .sky-meteor.m1 { left: 40%; top: 16%; }
+.lbt .sky-meteor.m2 { left: 68%; top: 6%; width: 70px; }
+html[data-lbt-time="night"] .lbt .sky-meteor.m1 {
+  animation: lbt-meteor 19s linear infinite;
+  animation-delay: 4s;
+}
+html[data-lbt-time="night"] .lbt .sky-meteor.m2 {
+  animation: lbt-meteor 31s linear infinite;
+  animation-delay: 14s;
+}
+@keyframes lbt-meteor {
+  0% { opacity: 0; transform: rotate(-24deg) translateX(0) scaleX(0.3); }
+  1% { opacity: 1; }
+  5% { opacity: 0; transform: rotate(-24deg) translateX(-220px) scaleX(1); }
+  100% { opacity: 0; transform: rotate(-24deg) translateX(-220px) scaleX(1); }
+}
+
+/* a far plane: one red light blinking across the sky */
+.lbt .sky-plane {
+  position: absolute;
+  left: -2%;
+  top: 22%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ff8a7a;
+  box-shadow: 0 0 6px 1px rgba(255, 138, 122, 0.6);
+  opacity: 0;
+}
+html[data-lbt-time="night"] .lbt .sky-plane {
+  animation: lbt-plane-cross 70s linear infinite, lbt-plane-blink 1.6s steps(1, end) infinite;
+  animation-delay: 6s, 0s;
+}
+@keyframes lbt-plane-cross {
+  0% { left: -2%; top: 24%; visibility: visible; }
+  60% { left: 102%; top: 14%; visibility: visible; }
+  60.01%, 100% { left: 102%; top: 14%; visibility: hidden; }
+}
+@keyframes lbt-plane-blink {
+  0% { opacity: 0.95; }
+  18% { opacity: 0.15; }
+}
+
+/* windows with a life: someone comes home, someone goes to bed, a TV */
+html[data-lbt-time="night"] .lbt .tw-win.lf-on { animation: lbt-life-on 23s steps(1, end) infinite; }
+html[data-lbt-time="night"] .lbt .tw-win.lf-on.lf-late { animation-duration: 37s; animation-delay: -11s; }
+html[data-lbt-time="night"] .lbt .tw-win.lf-off { animation: lbt-life-off 29s steps(1, end) infinite; animation-delay: -7s; }
+html[data-lbt-time="night"] .lbt .tw-win.lf-tv { animation: lbt-life-tv 2.4s steps(1, end) infinite; }
+html[data-lbt-time="night"] .lbt .tw-weekday .tw-win.lf-tv:nth-of-type(odd) { animation-duration: 3.1s; }
+@keyframes lbt-life-on {
+  0%, 45% { fill: var(--tw-win); }
+  46%, 100% { fill: var(--tw-lit); }
+}
+@keyframes lbt-life-off {
+  0%, 60% { fill: var(--tw-lit); }
+  61%, 100% { fill: var(--tw-win); }
+}
+@keyframes lbt-life-tv {
+  0% { fill: #7d9fd4; }
+  22% { fill: #a7bfe6; }
+  41% { fill: #6a8cc4; }
+  63% { fill: #b9caea; }
+  80% { fill: #8aa8da; }
+}
+
+/* moths around lamp 07 */
+.lbt .tw-moth {
+  fill: #fff4cf;
+  opacity: 0;
+  transform-box: view-box;
+}
+html[data-lbt-time="night"] .lbt .tw-moth { opacity: 0.85; }
+html[data-lbt-time="night"] .lbt .tw-moth.m1 { animation: lbt-moth-a 3.2s ease-in-out infinite; }
+html[data-lbt-time="night"] .lbt .tw-moth.m2 { animation: lbt-moth-b 4.1s ease-in-out infinite; }
+html[data-lbt-time="night"] .lbt .tw-moth.m3 { animation: lbt-moth-c 2.7s ease-in-out infinite; }
+@keyframes lbt-moth-a {
+  0%, 100% { transform: translate(-10px, -4px); }
+  25% { transform: translate(6px, -9px); }
+  50% { transform: translate(12px, 2px); }
+  75% { transform: translate(-2px, 6px); }
+}
+@keyframes lbt-moth-b {
+  0%, 100% { transform: translate(8px, 4px); }
+  30% { transform: translate(-6px, -8px); }
+  60% { transform: translate(-13px, 3px); }
+}
+@keyframes lbt-moth-c {
+  0%, 100% { transform: translate(2px, -11px); }
+  40% { transform: translate(14px, -3px); }
+  70% { transform: translate(-8px, 1px); }
+}
+
+/* the last bus: crosses left to right and pauses at the stop */
+.lbt .tw-bus { display: none; }
+html[data-lbt-time="night"] .lbt .tw-bus {
+  display: inline;
+  transform: translateX(-140px);
+  animation: lbt-bus-run 48s linear infinite;
+  animation-delay: 3s;
+}
+.lbt .tw-bus-body { fill: #2f4f80; stroke: var(--tw-edge); stroke-width: 1; }
+.lbt .tw-bus-win { fill: #f3d58a; }
+.lbt .tw-bus-wheel { fill: #0d1324; }
+.lbt .tw-bus-light { fill: #fff3c4; }
+@keyframes lbt-bus-run {
+  0% { transform: translateX(-140px); }
+  9% { transform: translateX(250px); }
+  15% { transform: translateX(250px); }
+  30% { transform: translateX(1320px); }
+  100% { transform: translateX(1320px); }
+}
+
+/* ---- dawn, day and dusk each get their own small life ----
+   dawn: the last stars fade, a pair of birds, a few windows wake up
+   day: birds cross, clouds drift (above), the bus runs often on weekdays
+   dusk: a flock flies home, the sun glows low, windows come on, commuters' bus */
+.lbt .sky-birds {
+  position: absolute;
+  width: 60px;
+  height: 24px;
+  left: -8%;
+  opacity: 0;
+  overflow: visible;
+}
+.lbt .sky-birds .bird {
+  fill: none;
+  stroke: var(--bird, #31405e);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: 50% 70%;
+  animation: lbt-wing 0.9s ease-in-out infinite;
+}
+.lbt .sky-birds .bird.w2 { animation-delay: -0.3s; animation-duration: 1s; }
+.lbt .sky-birds .bird.w3 { animation-delay: -0.6s; animation-duration: 0.8s; }
+.lbt .sky-birds.b1 { top: 12%; }
+.lbt .sky-birds.b2 { top: 16%; width: 44px; }
+@keyframes lbt-wing {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(-0.4); }
+}
+@keyframes lbt-birds-cross {
+  0% { left: -8%; opacity: 0.9; }
+  45% { left: 104%; opacity: 0.9; }
+  45.01%, 100% { left: 104%; opacity: 0; }
+}
+@keyframes lbt-birds-home {
+  0% { left: 104%; opacity: 0.9; transform: scaleX(-1) translateY(0); }
+  50% { left: -8%; opacity: 0.9; transform: scaleX(-1) translateY(-18px); }
+  50.01%, 100% { left: -8%; opacity: 0; transform: scaleX(-1) translateY(-18px); }
+}
+html[data-lbt-time="day"] .lbt .sky-birds.b1 { animation: lbt-birds-cross 34s linear infinite; animation-delay: 2s; }
+html[data-lbt-time="day"] .lbt .sky-birds.b2 { animation: lbt-birds-cross 52s linear infinite; animation-delay: 18s; }
+html[data-lbt-time="dawn"] .lbt .sky-birds.b2 { animation: lbt-birds-cross 40s linear infinite; animation-delay: 3s; }
+html[data-lbt-time="dusk"] .lbt .sky-birds { --bird: #4a3550; }
+html[data-lbt-time="dusk"] .lbt .sky-birds.b1 { animation: lbt-birds-home 30s linear infinite; animation-delay: 2s; }
+html[data-lbt-time="dusk"] .lbt .sky-birds.b2 { animation: lbt-birds-home 30s linear infinite; animation-delay: 5s; }
+
+/* dawn: the last stars fade in and out */
+html[data-lbt-time="dawn"] .lbt .sky-star.s1,
+html[data-lbt-time="dawn"] .lbt .sky-star.s3 {
+  animation: lbt-twinkle 7s ease-in-out infinite;
+}
+html[data-lbt-time="dawn"] .lbt .sky-star.s3 { animation-delay: -3s; }
+
+/* dusk: the low sun breathes */
+html[data-lbt-time="dusk"] .lbt .sky-sun {
+  animation: lbt-sun-glow 8s ease-in-out infinite;
+}
+@keyframes lbt-sun-glow {
+  0%, 100% { box-shadow: 0 0 18px 4px rgba(255, 170, 110, 0.25); }
+  50% { box-shadow: 0 0 34px 10px rgba(255, 170, 110, 0.45); }
+}
+
+/* windows: people come home at dusk, wake up at dawn */
+html[data-lbt-time="dusk"] .lbt .tw-win.lf-on,
+html[data-lbt-time="dawn"] .lbt .tw-win.lf-on { animation: lbt-life-on 26s steps(1, end) infinite; }
+html[data-lbt-time="dusk"] .lbt .tw-win.lf-tv { animation: lbt-life-on 31s steps(1, end) infinite; animation-delay: -9s; }
+html[data-lbt-time="dawn"] .lbt .tw-win.lf-off { animation: lbt-life-off 33s steps(1, end) infinite; }
+
+/* the bus runs all day on weekdays: often by day, the commute at dusk */
+html[data-lbt-time="day"] .lbt .tw-bus,
+html[data-lbt-time="dusk"] .lbt .tw-bus,
+html[data-lbt-time="dawn"] .lbt .tw-bus {
+  display: inline;
+  transform: translateX(-140px);
+  animation: lbt-bus-run 30s linear infinite;
+  animation-delay: 5s;
+}
+html[data-lbt-time="dusk"] .lbt .tw-bus { animation-duration: 24s; animation-delay: 2s; }
+html[data-lbt-time="dawn"] .lbt .tw-bus { animation-duration: 60s; }
+html[data-lbt-time="day"] .lbt .tw-bus-win,
+html[data-lbt-time="dawn"] .lbt .tw-bus-win { fill: #c9d8e2; }
+html[data-lbt-time="day"] .lbt .tw-bus-body { fill: #3f6aa8; }
+
 @media (prefers-reduced-motion: reduce) {
   .lbt .town-sky *,
   .lbt .townscape *,
@@ -3457,7 +3704,11 @@ html[data-lbt-time="day"] .lbt .tw-cat-roof {
   }
   .lbt .home-grid > .main-stage .townscape,
   .lbt .sky-cloud,
-  .lbt .sky-star {
+  .lbt .sky-star,
+  .lbt .sky-meteor,
+  .lbt .sky-plane,
+  .lbt .sky-birds,
+  .lbt .sky-moon-glow {
     display: none;
   }
   .lbt .sky-sun,
