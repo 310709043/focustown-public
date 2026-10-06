@@ -20,6 +20,7 @@ let reports: ReportRecord[];
 let store: TownStore;
 let town: Town;
 let suspensions: Map<string, number>;
+let conversationStarts: number;
 
 function build(config: TownConfig = CFG) {
   let seq = 0;
@@ -31,6 +32,7 @@ function build(config: TownConfig = CFG) {
     saveReport: async (r) => void reports.push(r),
     config,
     suspendedUntil: (id) => suspensions.get(id) ?? null,
+    onConversationStarted: async () => { conversationStarts += 1; },
   });
 }
 
@@ -38,6 +40,7 @@ beforeEach(() => {
   now = T0;
   sent = [];
   reports = [];
+  conversationStarts = 0;
   suspensions = new Map();
   store = new TownStore(new MemoryKV());
   town = build();
@@ -123,6 +126,11 @@ describe("joining", () => {
       await town.join(g, p, true);
     }
     expect((await store.activeConversationIds()).length).toBe(2);
+  });
+
+  test("each started conversation fires the usage-trend hook once", async () => {
+    await pair();
+    expect(conversationStarts).toBe(1);
   });
 });
 

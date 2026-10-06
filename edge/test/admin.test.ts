@@ -88,3 +88,26 @@ describe("maintenance API", () => {
     expect(await overview()).toMatchObject({ maintenance: false, open: true });
   });
 });
+
+describe("trends API", () => {
+  test("needs the admin token", async () => {
+    expect((await SELF.fetch(`${BASE}/api/v1/admin/lbt/trends`)).status).toBe(401);
+  });
+
+  test("returns a full window merging stored conversations with report/feedback counts", async () => {
+    // A day in the window that no other test touches (they use today / 2020),
+    // so the merged counts are deterministic even with shared storage.
+    const day = new Date(Date.now() - 5 * 86_400_000).toISOString().slice(0, 10);
+    await env.DB.prepare(`INSERT INTO lbt_daily_stats (date, conversations) VALUES (?, 4)`).bind(day).run();
+    await env.DB.prepare(
+      `INSERT INTO lbt_reports (id, conversation_id, reporter_guest_id, reported_guest_id, reason, transcript,
+         reporter_profile, reported_profile, status, created_at)
+       VALUES ('tr1','c','g_a','g_b','spam','[]','{}','{}','open', ?)`,
+    ).bind(`${day}T12:00:00.000Z`).run();
+
+    const res = await SELF.fetch(`${BASE}/api/v1/admin/lbt/trends?days=30`, { headers: AUTH });
+    const body = (await res.json()) as { items: { date: string; conversations: number; reports: number; feedback: number }[] };
+    expect([res.status, body.items.length]).toEqual([200, 30]);
+    expect(body.items.find((d) => d.date === day)).toEqual({ date: day, conversations: 4, reports: 1, feedback: 0 });
+  });
+});

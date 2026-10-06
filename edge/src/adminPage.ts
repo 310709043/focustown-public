@@ -51,6 +51,9 @@ h2{font-size:16px;margin:28px 0 12px;color:var(--lamp)}
 .status{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px}
 .empty{color:var(--subtle);padding:24px 0}
 .stats+.meta{margin-top:10px}
+.trend-chart{margin-top:12px;background:var(--night2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.trend-bars{display:flex;align-items:flex-end;gap:3px;height:84px}
+.trend-bar{flex:1;min-width:4px;background:var(--lamp);border-radius:3px 3px 0 0;opacity:.85}
 @media (max-width:600px){.people{grid-template-columns:1fr}}
 ${COMPANION_STYLE}
 `;
@@ -212,12 +215,29 @@ function feedbackCard(f) {
     actions);
 }
 
+function trendsSection(items) {
+  const max = Math.max(1, ...items.map((d) => d.conversations));
+  const total = items.reduce((t, d) => ({ c: t.c + d.conversations, r: t.r + d.reports, f: t.f + d.feedback }), { c: 0, r: 0, f: 0 });
+  const bars = el("div", {class:"trend-bars", "aria-hidden":"true"});
+  for (const d of items) {
+    bars.append(el("div", {class:"trend-bar", style:"height:" + Math.max(3, Math.round((d.conversations / max) * 100)) + "%",
+      title: d.date.slice(5) + "：對話 " + d.conversations + "　檢舉 " + d.reports + "　意見 " + d.feedback}));
+  }
+  return el("section", {"aria-label":"使用趨勢"},
+    el("h2", {text:"使用趨勢（近 30 天 · UTC）"}),
+    el("div", {class:"stats"},
+      stat("30 天對話", total.c), stat("30 天檢舉", total.r, total.r > 0), stat("30 天意見", total.f)),
+    el("div", {class:"trend-chart"}, bars),
+    el("p", {class:"meta", text:"每一長條是一天的對話數（滑過看當日檢舉／意見）。"}));
+}
+
 async function render() {
   if (!token()) return showLogin("");
-  const [o, list, fb] = await Promise.all([
+  const [o, list, fb, trends] = await Promise.all([
     api("/api/v1/admin/lbt/overview"),
     api("/api/v1/admin/lbt/reports?limit=100&status=" + (filter === "all" ? "all" : filter)),
     api("/api/v1/admin/lbt/feedback?limit=100&status=" + feedbackFilter),
+    api("/api/v1/admin/lbt/trends?days=30"),
   ]);
   const tabs = el("div", {class:"tabs", role:"group", "aria-label":"依狀態篩選"});
   for (const [s, label] of [...Object.entries(STATUSES), ["all", "全部"]]) {
@@ -258,6 +278,7 @@ async function render() {
       stat("待處理檢舉", o.reports.byStatus.open, o.reports.byStatus.open > 0), stat("24 小時內新檢舉", o.reports.last24h),
       stat("未讀意見", o.feedback.byStatus.new, o.feedback.byStatus.new > 0)),
     el("p", {class:"meta", text: (o.maintenance ? "⏸ 維護模式：已暫停配對" : (o.open ? "小鎮開放中" : "小鎮休息中")) + (o.hours ? "（" + o.hours + "）" : "（全天開放）") + " · 更新於 " + fmt(new Date().toISOString())}),
+    trendsSection(trends.items),
     getCompanionPanel(), el("h2", {text:"檢舉"}), tabs, reports,
     el("h2", {text:"意見箱"}), fbTabs, feedback);
   if (active && getCompanionPanel().contains(active)) active.focus({preventScroll:true});
