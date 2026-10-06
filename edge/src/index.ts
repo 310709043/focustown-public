@@ -28,6 +28,7 @@ import {
 } from "./feedback";
 import { InputError } from "./rules";
 import { REPORT_STATUSES, type ReportStatus, listReports, purgeReports, reportCounts, setReportStatus } from "./reports";
+import { listDailyTrends } from "./dailyStats";
 import { createAdminSession, verifyAdminSession, createCompanionToken, createGuestToken, newGuestId, verifyCompanionToken, verifyGuestToken } from "./token";
 import { COMPANION_ID } from "./companion";
 import { purgeExpiredSuspensions } from "./moderation";
@@ -158,6 +159,10 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
     const body = (await boundedJson(request)) as { paused?: unknown } | null;
     if (typeof body?.paused !== "boolean") return error(request, env, 422, "invalid_maintenance");
     return json(request, env, 200, await town(env).setMaintenance(body.paused));
+  }
+  if (request.method === "GET" && path === "/api/v1/admin/lbt/trends") {
+    const days = Number(new URL(request.url).searchParams.get("days")) || 30;
+    return json(request, env, 200, { items: await listDailyTrends(env.DB, Date.now(), days) });
   }
   if (request.method === "GET" && path === "/api/v1/admin/lbt/reports") {
     const params = new URL(request.url).searchParams;

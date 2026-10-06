@@ -66,6 +66,8 @@ export interface TownDeps {
   saveReport?: (record: ReportRecord) => Promise<void>;
   config: TownConfig;
   suspendedUntil?: (guestId: string) => number | null;
+  /** Bump the daily usage trend when a conversation starts (admin-only metric). */
+  onConversationStarted?: (now: number) => Promise<void>;
 }
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -284,6 +286,7 @@ export class Town {
       extensions: 0,
     };
     await this.store.saveConversation(c);
+    await this.deps.onConversationStarted?.(now);
     for (const g of [a.guestId, b.guestId]) this.deps.send(g, this.matchedFrame(c, g, now));
   }
 

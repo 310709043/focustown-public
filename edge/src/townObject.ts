@@ -10,6 +10,7 @@ import { DurableObject } from "cloudflare:workers";
 import { type Env, IDLE_SWEEP_MS, LIMITS, SWEEP_MS, retentionDays, townConfig } from "./config";
 import { MAX_FRAME_BYTES } from "./security";
 import { saveReport } from "./reports";
+import { recordConversation } from "./dailyStats";
 import { activeSuspensions, moderateReport } from "./moderation";
 import { InputError } from "./rules";
 import { TownStore } from "./store";
@@ -42,6 +43,7 @@ export class TownObject extends DurableObject<Env> {
       saveReport: (record) => saveReport(env.DB, record),
       config: townConfig(env),
       suspendedUntil: (guestId) => this.suspensions.get(guestId) ?? null,
+      onConversationStarted: (now) => recordConversation(env.DB, now),
     });
   }
 
