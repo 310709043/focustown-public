@@ -19,6 +19,11 @@ import { type Frame, Town } from "./town";
 
 export type ReportResult = { ok: true; id: string } | { ok: false; status: 422 | 429; code: string };
 
+/** Per-socket state kept across hibernation: when the client last spoke. */
+interface SocketMeta {
+  seen: number;
+}
+
 export class TownObject extends DurableObject<Env> {
   private readonly store: TownStore;
   private readonly suspensions = new Map<string, number>();
@@ -162,6 +167,7 @@ export class TownObject extends DurableObject<Env> {
     // One administrator console at a time, and the newest one wins: a tab
     // left on duty or a phone that went to sleep (its socket can linger)
     // must never lock the operator out. The old console stops on 4409.
+    if (guestId !== COMPANION_ID) this.closeStaleSockets(guestId, Date.now());
     if (!(await this.store.hit(`ws:ip:${ip}`, LIMITS.wsConnectPerIpPerMin, 60_000, Date.now())) ||
         (guestId !== COMPANION_ID && this.ctx.getWebSockets(guestId).filter(ws => ws.readyState === WebSocket.OPEN).length >= 2)) {
       server.accept();
@@ -171,6 +177,7 @@ export class TownObject extends DurableObject<Env> {
     }
     const replaced = guestId === COMPANION_ID ? this.ctx.getWebSockets(COMPANION_ID) : [];
     this.ctx.acceptWebSocket(server, [guestId]);
+    server.serializeAttachment({ seen: Date.now() } satisfies SocketMeta);
     for (const old of replaced) {
       try {
         old.close(4409, "replaced");
@@ -188,6 +195,7 @@ export class TownObject extends DurableObject<Env> {
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
     const guestId = this.ctx.getTags(ws)[0];
     if (!guestId) return;
+    ws.serializeAttachment({ seen: Date.now() } satisfies SocketMeta);
     if (typeof message !== "string" || message.length > MAX_FRAME_BYTES ||
         new TextEncoder().encode(message).byteLength > MAX_FRAME_BYTES) {
       ws.close(1009, "invalid or oversized frame");
@@ -243,6 +251,27 @@ export class TownObject extends DurableObject<Env> {
         return this.town.leave(guestId);
       default:
         return undefined;
+    }
+  }
+
+  /**
+   * A phone that sleeps or drops off Wi-Fi can leave its socket "open" here
+   * with nobody behind it. Two of those would refuse the visitor's next
+   * connection (the two-socket cap) and keep them on "reconnecting" until
+   * the platform noticed. Every live client sends a heartbeat every 15 s,
+   * so a socket silent for offlineAfterMs is gone: close it to make room.
+   */
+  private closeStaleSockets(guestId: string, now: number) {
+    const cutoff = now - townConfig(this.env).offlineAfterMs;
+    for (const ws of this.ctx.getWebSockets(guestId)) {
+      if (ws.readyState !== WebSocket.OPEN) continue;
+      const meta = ws.deserializeAttachment() as SocketMeta | null;
+      if (meta && meta.seen >= cutoff) continue;
+      try {
+        ws.close(4408, "stale");
+      } catch {
+        /* already closed */
+      }
     }
   }
 
