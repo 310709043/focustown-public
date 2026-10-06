@@ -1,4 +1,4 @@
-import { ENERGIES, HEARTBEAT_MS, PREFERENCES } from "./constants";
+import { ENERGIES, HEARTBEAT_MS, OFFLINE_GRACE_MS, PREFERENCES } from "./constants";
 import type { JoinRequest, LbtTransport, TransportEvent, TransportListener } from "./transport";
 import type { EndReason, PeerProfile, ReportReason, TownStatus } from "./types";
 
@@ -145,9 +145,18 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
   let attempt = 0;
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
+  let offlineTimer: ReturnType<typeof setTimeout> | undefined;
   const outbox: string[] = [];
 
   const emit = (event: TransportEvent) => listener?.(event);
+
+  /** Surface "offline" only after the grace, so quick reconnects stay silent. */
+  function scheduleOffline() {
+    clearTimeout(offlineTimer);
+    offlineTimer = setTimeout(() => {
+      if (running) emit({ type: "connection", state: "offline" });
+    }, OFFLINE_GRACE_MS);
+  }
 
   function readToken(): StoredToken | null {
     try {
@@ -202,7 +211,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     try {
       token = await guestToken();
     } catch {
-      emit({ type: "connection", state: "offline" });
+      scheduleOffline();
       scheduleReconnect(false);
       return;
     }
@@ -211,6 +220,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     socket = ws;
     ws.onopen = () => {
       attempt = 0;
+      clearTimeout(offlineTimer);
       emit({ type: "connection", state: "open" });
       while (outbox.length > 0 && ws.readyState === OPEN) ws.send(outbox.shift() as string);
       clearInterval(heartbeatTimer);
@@ -237,7 +247,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
       clearInterval(heartbeatTimer);
       if (socket === ws) socket = null;
       if (!running) return;
-      emit({ type: "connection", state: "offline" });
+      scheduleOffline();
       if (ev.code === 4401) forgetToken();
       scheduleReconnect(ev.code === 4429);
     };
@@ -263,6 +273,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
         listener = null;
         clearTimeout(reconnectTimer);
         clearInterval(heartbeatTimer);
+        clearTimeout(offlineTimer);
         outbox.length = 0;
         socket?.close(1000);
         socket = null;
