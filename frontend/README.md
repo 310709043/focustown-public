@@ -44,11 +44,17 @@ configuration is managed by this frontend workflow.
 
 ## Search visibility
 
-The indexable pages are the bilingual home, `/[locale]/guide` and the three
-LowBatteryTown policies. Demo and legacy routes keep `noindex`; private chats
+The indexable pages are the bilingual home, `/[locale]/guide`, its articles
+(including `/[locale]/guide/wootalk-alternative`), and the three LowBatteryTown
+policies. Demo and legacy routes keep `noindex`; private chats
 are never published as search content. The guide is server-rendered and linked
 from the home footer, with localized canonical, hreflang and sharing metadata.
 Update `CONTENT_UPDATED` in `lib/lbt/site.ts` when public content changes.
+Article slugs and publication/update dates live in `lib/lbt/articles.ts`; add
+matching copy to both `messages/{zh-TW,en}/lbt.json`. The registry drives article
+routes, internal links, and sitemap entries. Cite official sources for claims
+about other services, state that the town is independent, and avoid promises
+of instant matching, absolute privacy, or guaranteed search rankings.
 
 For Google Search Console, verify the `lowbatterytown.com` domain property,
 submit `https://www.lowbatterytown.com/sitemap.xml`, and inspect the Chinese

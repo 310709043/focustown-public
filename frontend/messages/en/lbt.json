@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "LowBatteryTown – Anonymous One-on-One Chat, No Sign-up",
-    "description": "Social battery low but still want to talk? Pick how much energy you have and chat one-on-one with a real person for 7 minutes, anonymously and without signing up. Leave whenever you like. 18+.",
+    "title": "Free Anonymous Chat, No Sign-up | LowBatteryTown",
+    "description": "LowBatteryTown is a free anonymous chat site with no sign-up. Choose your social battery and talk one-on-one with a real person for 7 minutes. Extend together or leave any time. Mobile and desktop. 18+.",
     "keywords": "LowBatteryTown,low social battery,social battery,anonymous chat,anonymous chat room,one-on-one chat,talk to a stranger,someone to talk to,low-pressure chat,no sign-up chat",
     "ogAlt": "LowBatteryTown: a deep-blue night town with street lamps and an expressive animated battery"
   },
@@ -503,7 +503,7 @@
     "questions": [
       {
         "q": "Do I need an account or payment?",
-        "a": "No account is needed and chatting is free. Use a nickname for this visit; payments are currently unavailable. The beta is for people aged 18 or older. Before entering, confirm the terms, community guidelines and privacy policy."
+        "a": "No account is needed and chatting is free. Use a nickname for this visit. Lighting a lamp through Buy Me a Coffee is voluntary, one-time support and does not affect matching or chat access. The beta is for people aged 18 or older. Before entering, confirm the terms, community guidelines and privacy policy."
       },
       {
         "q": "What does social battery mean?",
@@ -680,6 +680,73 @@
             ]
           }
         ]
+      },
+      "wootalk-alternative": {
+        "nav": "Looking for a WooTalk alternative?",
+        "title": "Looking for a WooTalk Alternative? Meet LowBatteryTown Anonymous Chat",
+        "description": "Looking for an anonymous chat site like WooTalk? Meet LowBatteryTown: free, no-sign-up, one-on-one chat with real people for 7 minutes. Learn about matching, waiting, privacy and reporting.",
+        "intro": "Want a few words with a stranger without filling out a dating profile? If you are looking for a site like WooTalk, LowBatteryTown offers another option: show your current social battery and start with a 7-minute conversation. LowBatteryTown is independent and is not affiliated with, endorsed by, or operated by WooTalk.",
+        "sections": [
+          {
+            "h": "Choose the kind of conversation you need",
+            "p": [
+              "When choosing an anonymous chat site, ask yourself: do you want to talk to a stranger or find someone through a shared topic? A long conversation or a short one before deciding? Read the rules on leaving, reporting and record retention too.",
+              "WooTalk’s official guide describes shared keywords that connect people using the same keyword. LowBatteryTown currently has no keyword matching. Instead, you choose your social battery and chat preference so the other person knows whether you want to reply slowly, listen or talk more."
+            ]
+          },
+          {
+            "h": "When might LowBatteryTown suit you?",
+            "li": [
+              "You are tired but still want a few words with a real person.",
+              "You want free anonymous chat with no sign-up or exchange of phone numbers or social accounts.",
+              "You do not know how to start and want your partner to know your social battery first.",
+              "You want to begin with 7 minutes, continue only if both people agree, and leave whenever you like."
+            ]
+          },
+          {
+            "h": "How do you start matching with a real person?",
+            "li": [
+              "Open the home page in your phone or computer browser and choose a nickname for this visit.",
+              "Choose your current social battery and chat preference. They describe your state, not your identity or a score.",
+              "Read the terms and privacy information, confirm you are 18 or older, then enter the town.",
+              "Wait for another suitable real person. Online visitors are not necessarily waiting, so an immediate match is not guaranteed. You can cancel waiting at any time.",
+              "Start with 7 minutes after matching. Say good night whenever you want to leave; continue only if both people agree to extend."
+            ]
+          },
+          {
+            "h": "Not sure what to say? Try one of these",
+            "li": [
+              "“Did anything small make you happy today?”",
+              "“My battery is low, so I might reply a little slowly.”",
+              "“Want to talk about your day, or something easy?”",
+              "“I’d like someone to listen for a bit. Do you have the energy?”"
+            ]
+          },
+          {
+            "h": "What should you know about records and safety?",
+            "p": [
+              "When an ordinary chat ends, the town deletes its messages and pairing details. If someone reports during the chat, evidence from that conversation is kept for {reportDays} days for review. Guest tokens and technical logs follow separate rules in the privacy policy.",
+              "Anonymity does not stop the other person taking screenshots or photos. Do not share your name, phone number, address, passwords or other identifying information. Leave or report harassment. The town has no image-sharing, voice or video chat features."
+            ]
+          },
+          {
+            "h": "When a short conversation is not what you need",
+            "p": [
+              "The town does not guarantee that someone is available immediately, and it does not help you find a partner after a chat has ended. If you need to stay in touch with a particular person or match by a shared topic keyword, consider a service that meets those needs.",
+              "Chatting is free. Lighting a lamp for the town is voluntary support and does not buy priority matching or extra chat access.",
+              "The town is not counselling or an emergency service. For someone to listen, call 1925 or 1995 Lifeline in Taiwan; in immediate danger call 110 or 119."
+            ]
+          }
+        ],
+        "sources": {
+          "heading": "Source",
+          "links": [
+            {
+              "label": "WooTalk official website and user guide",
+              "url": "https://wootalk.today/"
+            }
+          ]
+        }
       }
     }
   }

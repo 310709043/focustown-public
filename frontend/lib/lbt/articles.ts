@@ -8,6 +8,7 @@ export const ARTICLES = [
   { slug: "social-battery", published: "2026-10-05", updated: "2026-10-05" },
   { slug: "cant-sleep", published: "2026-10-05", updated: "2026-10-05" },
   { slug: "anonymous-chat-safety", published: "2026-10-05", updated: "2026-10-05" },
+  { slug: "wootalk-alternative", published: "2026-10-06", updated: "2026-10-06" },
 ] as const;
 
 export type ArticleSlug = (typeof ARTICLES)[number]["slug"];
@@ -24,4 +25,6 @@ export interface ArticleCopy {
   intro: string;
   /** Paragraphs (`p`) or a bulleted list (`li`). */
   sections: { h: string; p?: string[]; li?: string[] }[];
+  /** Public sources for factual references to other services. */
+  sources?: { heading: string; links: { label: string; url: string }[] };
 }

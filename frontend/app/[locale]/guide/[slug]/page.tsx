@@ -100,6 +100,16 @@ export default async function ArticlePage({ params }: { params: Params }) {
           {section.li ? <ul>{section.li.map((line) => <li key={line}>{fillLegalFacts(line)}</li>)}</ul> : null}
         </section>
       ))}
+      {copy.sources ? (
+        <section>
+          <h2>{copy.sources.heading}</h2>
+          <ul>
+            {copy.sources.links.map(({ label, url: sourceUrl }) => (
+              <li key={sourceUrl}><a href={sourceUrl}>{label}</a></li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <p className="policy-contact">
         <Link className="text-button" href="/">{t("articles.cta")} <span aria-hidden="true">↗</span></Link>
       </p>
@@ -107,4 +117,3 @@ export default async function ArticlePage({ params }: { params: Params }) {
     </GuideShell>
   );
 }
-
