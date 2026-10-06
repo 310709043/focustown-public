@@ -35,10 +35,9 @@ test.each([
 test.each([
   ["zh-TW", zh],
   ["en", en],
-])("%s guide keeps the crisis lines in view", (_locale, messages) => {
+])("%s guide keeps a crisis resource in view", (_locale, messages) => {
   const answers = messages.guide.questions.map((q) => q.a).join("\n");
-  expect(answers).toContain("1925");
-  expect(answers).toContain("1995");
+  expect(answers).toContain("findahelpline.com");
 });
 
 test.each([

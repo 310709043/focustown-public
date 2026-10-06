@@ -106,10 +106,11 @@ describe.each(bundles)("%s", (_locale, bundle) => {
     expect(keys.filter((key) => typeof lookup(bundle, key) !== "string")).toEqual([]);
   });
 
-  test("the crisis line appears in the report dialog and chat aside", () => {
+  test("a crisis resource appears in the report dialog and chat aside", () => {
     const texts = [lookup(bundle, "modal.report.help"), lookup(bundle, "chat.aside.help")];
 
-    expect(texts.every((text) => typeof text === "string" && text.includes("1925"))).toBe(true);
+    // Universal (not country-specific): point to an international helpline finder.
+    expect(texts.every((text) => typeof text === "string" && text.includes("findahelpline.com"))).toBe(true);
   });
 
   test("each policy page has a title, intro and sections", () => {
@@ -126,12 +127,12 @@ describe.each(bundles)("%s", (_locale, bundle) => {
     expect(missing).toEqual([]);
   });
 
-  test("terms and guidelines point to the crisis lines", () => {
+  test("terms and guidelines point to a crisis resource", () => {
     const texts = ["terms", "guidelines"].map((slug) =>
       JSON.stringify(lookup(bundle, `policy.${slug}.sections`)),
     );
 
-    expect(texts.every((text) => text.includes("1925") && text.includes("1995"))).toBe(true);
+    expect(texts.every((text) => text.includes("findahelpline.com"))).toBe(true);
   });
 
   test("every scripted topic and reply has text", () => {

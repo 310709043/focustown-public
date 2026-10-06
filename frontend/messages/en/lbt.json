@@ -181,7 +181,7 @@
       "hint": "Both of you need to agree.",
       "hintPending": "Prototype demo: the other side will agree.",
       "hintPendingLive": "Waiting for them to agree.",
-      "help": "Need professional support? In Taiwan: 1925 (24 h) or 1995 Lifeline."
+      "help": "Need someone to listen, or professional support? Find a helpline where you are at findahelpline.com."
     },
     "partnerLabelLive": "Streetlamp No. 07",
     "senderPartnerLive": "{name}",
@@ -237,7 +237,7 @@
       "sentTitle": "Received",
       "sentBody": "Thank you for looking out for the town. We'll review this conversation.",
       "sentBodyDemo": "Prototype demo: nothing was sent.",
-      "help": "If you or they are in danger, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in an emergency call 110 or 119."
+      "help": "If you or they are in danger, call your local emergency number; for someone to listen, find a local helpline at findahelpline.com."
     },
     "timeUp": {
       "eyebrow": "A note from the lamp",
@@ -408,7 +408,7 @@
         {
           "h": "Not professional help",
           "p": [
-            "The town is not counselling or medical care. In immediate danger call 110 or 119 (Taiwan); for someone to listen, call 1925 or 1995."
+            "The town is not counselling or medical care. In immediate danger, call your local emergency number; for someone to listen, find a local helpline at findahelpline.com."
           ]
         },
         {
@@ -474,7 +474,7 @@
         {
           "h": "If you need more support",
           "p": [
-            "In Taiwan, 1925 and 1995 answer around the clock; in immediate danger call 110 or 119."
+            "Many places have an around-the-clock helpline — find yours at findahelpline.com; in immediate danger, call your local emergency number."
           ]
         },
         {
@@ -527,7 +527,7 @@
       },
       {
         "q": "What if someone harasses me or makes me uncomfortable?",
-        "a": "You can leave at any time or report the conversation. Reporting ends the chat, saves its transcript for review and prevents the pair from matching again for {pairBlockHours} hours. The town is not counselling or an emergency service: for someone to listen, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in immediate danger call 110 or 119."
+        "a": "You can leave at any time or report the conversation. Reporting ends the chat, saves its transcript for review and prevents the pair from matching again for {pairBlockHours} hours. The town is not counselling or an emergency service: for someone to listen, find a local helpline at findahelpline.com; in immediate danger, call your local emergency number."
       }
     ]
   },
@@ -585,7 +585,7 @@
               "Take some time without replying to anyone. Turning notifications off is fine.",
               "If you worry people will misread you, a short line helps: “I’m tired today and need some quiet. I’m not upset with you.”",
               "When you do want company, choose low-pressure forms: short, one-on-one, no performing, easy to end.",
-              "If low mood or tiredness lasts a long time and affects sleep, work or daily life, talk to a doctor or counsellor. In Taiwan, 1925 (24 h) and 1995 Lifeline are there if you want someone to listen."
+              "If low mood or tiredness lasts a long time and affects sleep, work or daily life, talk to a doctor or counsellor. If you want someone to listen, find a local helpline at findahelpline.com."
             ]
           },
           {
@@ -600,7 +600,7 @@
       "cant-sleep": {
         "nav": "Can’t sleep, want to talk",
         "title": "Can’t Sleep and Want Someone to Talk To? A Few Things to Try at Night",
-        "description": "Awake at night and want to talk? Slow your body down, reach someone you trust, or chat anonymously with a real person for a few minutes. With 24-hour support lines in Taiwan.",
+        "description": "Awake at night and want to talk? Slow your body down, reach someone you trust, or chat anonymously with a real person for a few minutes. With a link to find 24-hour support lines wherever you are.",
         "intro": "Late at night, when everything goes quiet, the things you had no time to think about during the day come back. Wanting someone to talk to is normal, not a weakness. Here are a few things to try, and who you can talk to.",
         "sections": [
           {
@@ -617,7 +617,7 @@
             "h": "Who can you talk to?",
             "li": [
               "A friend or family member you trust: just send a message. They may be asleep, and a reply tomorrow is fine.",
-              "If you need someone to really listen: in Taiwan, 1925 is free and open 24 hours, and you can also call 1995 Lifeline.",
+              "If you need someone to really listen: find a free, 24-hour helpline where you are at findahelpline.com.",
               "If you don’t want to worry anyone you know and just want a few words with someone: an anonymous chat with a stranger can help."
             ]
           },
@@ -632,7 +632,7 @@
             "h": "Keep yourself safe while chatting",
             "p": [
               "Don’t share your name, phone number, address, school, workplace or social accounts. If a chat feels wrong, leave or report it.",
-              "The town is not counselling or an emergency service. If you are in immediate danger, call 110 or 119."
+              "The town is not counselling or an emergency service. If you are in immediate danger, call your local emergency number."
             ]
           }
         ]
@@ -676,7 +676,7 @@
           {
             "h": "6. A chat site is not counselling or emergency help",
             "p": [
-              "For someone to listen, call 1925 (Taiwan, 24 h) or 1995 Lifeline; in immediate danger call 110 or 119. The LowBatteryTown beta is for people aged 18 or older."
+              "For someone to listen, find a local helpline at findahelpline.com; in immediate danger, call your local emergency number. The LowBatteryTown beta is for people aged 18 or older."
             ]
           }
         ]
@@ -734,7 +734,7 @@
             "p": [
               "The town does not guarantee that someone is available immediately, and it does not help you find a partner after a chat has ended. If you need to stay in touch with a particular person or match by a shared topic keyword, consider a service that meets those needs.",
               "Chatting is free. Lighting a lamp for the town is voluntary support and does not buy priority matching or extra chat access.",
-              "The town is not counselling or an emergency service. For someone to listen, call 1925 or 1995 Lifeline in Taiwan; in immediate danger call 110 or 119."
+              "The town is not counselling or an emergency service. For someone to listen, find a local helpline at findahelpline.com; in immediate danger, call your local emergency number."
             ]
           }
         ],
