@@ -44,6 +44,12 @@ jobs:
         run: pnpm cf:build
       - name: Check worker bundle
         run: pnpm exec wrangler deploy --dry-run --outdir .open-next/dry-run
+      - name: Check indexable pages in the built Worker
+        run: |
+          pnpm exec wrangler dev --ip 127.0.0.1 --port 8788 > /tmp/lbt-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+          node scripts/check-cf-routes.mjs || { cat /tmp/lbt-preview.log; exit 1; }
       - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

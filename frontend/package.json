@@ -19,7 +19,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "qa": "pnpm build && pnpm start",
-    "cf:build": "opennextjs-cloudflare build && node scripts/build-csp.mjs",
+    "cf:build": "opennextjs-cloudflare build && opennextjs-cloudflare populateCache local && node scripts/build-csp.mjs",
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy": "pnpm cf:build && opennextjs-cloudflare deploy"
   },
