@@ -249,14 +249,14 @@
     "support": {
       "eyebrow": "自願支持 · 只付一次",
       "title": "替小鎮點一盞燈",
-      "intro": "如果你喜歡這裡，歡迎透過 Buy Me a Coffee 替小鎮點燈。聊天和配對對每個人都一樣，支持不會帶來額外權益。",
+      "intro": "喜歡這裡的話，可以透過 Buy Me a Coffee 支持小鎮。支持不會帶來額外的聊天權益。",
       "totalLabel": "每份支持",
-      "once": "只付一次 · 不自動續扣 · 可選擇不支持",
-      "usage": "支持款用於網站維運、功能改善與安全管理。你可以在贊助頁選擇 Power 份數，付款前請確認總額。",
-      "disclosure": "以美元計價，實際台幣扣款依發卡銀行匯率及相關費用為準。付款由 Buy Me a Coffee 處理，小鎮不收集卡號，也不會將聊天內容交給收款平台。",
+      "once": "只付一次 · 不自動續扣",
+      "usage": "款項用於網站維運、改善與安全。份數和總額在贊助頁選擇並確認。",
+      "disclosure": "以美元計價，台幣扣款依發卡銀行匯率與費用而定；付款由 Buy Me a Coffee 處理，小鎮不收集卡號。",
       "checkout": "前往 Buy Me a Coffee 贊助",
       "operator": "LowBatteryTown 由獨立創作者營運。聯絡：",
-      "refund": "誤付或退款問題，請附交易編號聯絡我們或 Buy Me a Coffee；依平台政策處理。",
+      "refund": "誤付或退款，請附交易編號聯絡我們或 Buy Me a Coffee，依平台政策處理。",
       "refundLink": "查看退款政策 ↗"
     },
     "feedback": {
