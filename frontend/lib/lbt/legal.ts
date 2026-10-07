@@ -4,7 +4,7 @@
  * LBT_REPORT_RETENTION_DAYS. Ordinary ended chats are deleted immediately.
  */
 export const LBT_LEGAL = {
-  effectiveDate: "2026-10-05",
+  effectiveDate: "2026-10-07",
   contactEmail: process.env.NEXT_PUBLIC_LBT_CONTACT_EMAIL || "hello@lowbatterytown.com",
   tokenHours: 24,
   reportDays: 180,
