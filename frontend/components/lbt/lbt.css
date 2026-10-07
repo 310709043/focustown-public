@@ -263,7 +263,7 @@
 }
 .lbt .selection-heading span {
   font-size: 13px;
-  color: #6e7990;
+  color: #56637a;
 }
 .lbt .selection-heading strong {
   font-size: 18px;
@@ -304,7 +304,7 @@
 }
 .lbt .energy-option small {
   font-size: 11px;
-  color: #718098;
+  color: #56637a;
   margin-top: 2px;
 }
 .lbt .energy-symbol {
@@ -340,7 +340,7 @@
 }
 .lbt .preference-row > span {
   display: block;
-  color: #6e7990;
+  color: #56637a;
   font-size: 12px;
   margin-bottom: 10px;
 }
@@ -392,7 +392,7 @@
 .lbt .selection-note {
   text-align: center;
   font-size: 11px;
-  color: #8190a4;
+  color: #56637a;
   margin: 12px 0 0;
 }
 .lbt .selection-note span {
@@ -550,7 +550,7 @@
   justify-content: space-between;
   gap: 15px;
   padding: 25px 0;
-  color: #73839d;
+  color: #8494ad;
   font-size: 11px;
 }
 .lbt .waiting-view,
@@ -1002,7 +1002,7 @@
 }
 .lbt .support-summary span {
   display: block;
-  color: #65738b;
+  color: #56637a;
   font-size: 12px;
   margin-top: 6px;
 }
@@ -1905,7 +1905,7 @@
 }
 .lbt .nickname-field label span {
   font-size: 11px;
-  color: #6e7990;
+  color: #56637a;
   font-weight: 500;
 }
 .lbt .nickname-field input {
@@ -1924,7 +1924,7 @@
 .lbt .nickname-field small {
   display: block;
   margin-top: 7px;
-  color: #68758a;
+  color: #56637a;
   font-size: 11px;
 }
 .lbt .selection-card .selection-heading {
@@ -1933,7 +1933,7 @@
 .lbt .energy-purpose {
   font-size: 12px;
   line-height: 1.65;
-  color: #65738b;
+  color: #56637a;
   margin: 0 0 14px;
 }
 .lbt .partner-profile {
@@ -2208,7 +2208,7 @@
 
 .lbt .adult-check small {
   grid-column: 2;
-  color: #6b7891;
+  color: #56637a;
   font-size: 12px;
   font-weight: 500;
 }
@@ -2365,7 +2365,7 @@
 }
 
 .lbt .report-note small {
-  color: #6b7891;
+  color: #56637a;
   font-size: 12px;
   font-weight: 500;
 }
@@ -2387,7 +2387,7 @@
 
 .lbt .crisis-help {
   margin-top: 6px;
-  color: #6b7891;
+  color: #56637a;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -2410,6 +2410,13 @@
   color: var(--mist);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+/* The 18+ hint sits on the light card: the policy links need a dark ink to be readable. */
+.lbt .adult-check small a {
+  color: #3f5f94;
+}
+.lbt .adult-check small a:hover {
+  color: #25314b;
 }
 .lbt .footer-links a:hover,
 .lbt .adult-check small a:hover {
@@ -2901,7 +2908,7 @@
     margin-bottom: 10px;
   }
   .lbt .home-grid > .selection-card .adult-check small {
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.5;
   }
   .lbt .home-grid > .selection-card .preference-row {
@@ -2934,7 +2941,7 @@
 .lbt-app {
   --ground: var(--night);
   --ground-ink: var(--paper);
-  --ground-soft: #73839d;
+  --ground-soft: #8494ad;
   --ground-line: var(--line);
   --ground-link: var(--mist);
   --ground-muted: var(--mist);
@@ -2999,7 +3006,7 @@ html[data-lbt-time="day"] .lbt-app {
   --sky-c: #e7e4d9;
   --hero-ink: #1f2a44;
   --hero-soft: #4b5872;
-  --hero-accent: #c0502f;
+  --hero-accent: #a8462a;
   --hero-kicker: #a8462f;
   --sun-op: 1;
   --moon-op: 0;
@@ -3759,7 +3766,7 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
 .lbt .sky-tag small {
   display: block;
   font-size: 11px;
-  color: #9a7b4f;
+  color: #7a5c33;
   letter-spacing: 0.06em;
 }
 .lbt .sky-tag b {
