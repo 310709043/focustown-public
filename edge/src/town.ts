@@ -15,6 +15,7 @@ import {
   maskContacts,
   parseProfile,
   pickPartner,
+  type Preference,
   type Waiting,
 } from "./rules";
 import type { Conversation, Line, TownStore } from "./store";
@@ -25,6 +26,10 @@ export interface TownConfig {
   sessionMs: number;
   graceMs: number;
   relaxAfterMs: number;
+  /** Tell the owner once a visitor has waited this long unpaired. */
+  alertAfterMs: number;
+  /** At most one owner alert per this gap. */
+  alertGapMs: number;
   offlineAfterMs: number;
   blockMs: number;
   openHours: OpenHours | null;
@@ -36,6 +41,8 @@ export const DEFAULT_CONFIG: TownConfig = {
   sessionMs: 420_000,
   graceMs: 60_000,
   relaxAfterMs: 30_000,
+  alertAfterMs: 20_000,
+  alertGapMs: 120_000,
   offlineAfterMs: 45_000,
   blockMs: 24 * 3600_000,
   openHours: null,
@@ -69,6 +76,8 @@ export interface TownDeps {
   suspendedUntil?: (guestId: string) => number | null;
   /** Bump the daily usage trend when a conversation starts (admin-only metric). */
   onConversationStarted?: (now: number) => Promise<void>;
+  /** "Someone is waiting" to the owner's phone (battery, intent and wait only). */
+  onLonelyWaiter?: (alert: { energy: number; preference: Preference; waitedMs: number }) => Promise<void>;
 }
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -412,6 +421,31 @@ export class Town {
     await this.store.pruneOnline(now - this.cfg.offlineAfterMs * 2);
     await this.store.pruneExpired(now);
     await this.pairWaiting();
+    await this.alertOwner(now);
+  }
+
+  /**
+   * After pairing: if someone has waited alertAfterMs with nobody to meet,
+   * tell the owner (once per visitor, at most once per alertGapMs), unless
+   * the companion console is already on duty and can see them.
+   */
+  private async alertOwner(now: number) {
+    if (!this.deps.onLonelyWaiter) return;
+    const waiting = await this.store.listWaiting();
+    const alerted = await this.store.alertedWaiters();
+    const live = new Set(waiting.map((w) => w.guestId));
+    const kept = Object.fromEntries(Object.entries(alerted).filter(([g]) => live.has(g)));
+    const due = waiting.find((w) => !(w.guestId in kept) && now - w.joinedAt >= this.cfg.alertAfterMs);
+    const onDuty = (await this.store.lastSeen(COMPANION_ID) ?? 0) >= now - this.cfg.offlineAfterMs;
+    const last = await this.store.lastOwnerAlert();
+    if (due && !onDuty && (last === null || now - last >= this.cfg.alertGapMs)) {
+      kept[due.guestId] = now;
+      await this.store.setLastOwnerAlert(now);
+      await this.store.setAlertedWaiters(kept);
+      await this.deps.onLonelyWaiter({ energy: due.profile.energy, preference: due.profile.preference, waitedMs: now - due.joinedAt });
+      return;
+    }
+    if (Object.keys(kept).length !== Object.keys(alerted).length) await this.store.setAlertedWaiters(kept);
   }
 
   /** Remove a reviewed guest from queue/invitations and end any active chat. */

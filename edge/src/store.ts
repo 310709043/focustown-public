@@ -52,6 +52,8 @@ export class MemoryKV implements KV {
 export const TRANSCRIPT_MAX_LINES = 400;
 
 const K = {
+  alertedWaiters: "alert:waiters",
+  lastOwnerAlert: "alert:last",
   companionInvite: "companion:invite",
   adminRevoked: "admin:revoked",
   maintenance: "maintenance", // boolean: admin paused all matching
@@ -98,6 +100,23 @@ export class TownStore {
   }
   async adminSessionRevoked(fingerprint: string, now: number) {
     return ((await this.map<number>(K.adminRevoked))[fingerprint] ?? 0) > now;
+  }
+
+  /** Waiters the owner has already been told about: guest id → alert time. */
+  async alertedWaiters(): Promise<Record<string, number>> {
+    return this.map<number>(K.alertedWaiters);
+  }
+
+  async setAlertedWaiters(value: Record<string, number>) {
+    await this.kv.put(K.alertedWaiters, value);
+  }
+
+  async lastOwnerAlert(): Promise<number | null> {
+    return (await this.kv.get<number>(K.lastOwnerAlert)) ?? null;
+  }
+
+  async setLastOwnerAlert(at: number) {
+    await this.kv.put(K.lastOwnerAlert, at);
   }
 
   private async map<T>(key: string): Promise<Record<string, T>> {

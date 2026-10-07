@@ -21,6 +21,10 @@ export interface Env {
   FEEDBACK_SHEET_URL?: string;
   /** Secret: shared with the Apps Script, which rejects requests without it. */
   FEEDBACK_SHEET_TOKEN?: string;
+  /** Secrets (optional): "someone is waiting" alerts to the owner, see ownerAlert.ts. */
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_CHAT_ID?: string;
+  DISCORD_WEBHOOK_URL?: string;
 }
 
 /** Abuse limits, same numbers as the FastAPI backend's settings. */

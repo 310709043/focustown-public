@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
+import { LIVE_COUNT_MIN } from "@/lib/lbt/constants";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 /**
@@ -15,7 +16,7 @@ export function TownCount() {
   const town = useLbtStore((s) => s.town);
   const mode = useLbtStore((s) => s.mode);
   if (!town || (mode === "live" && !town.open)) return null;
-  const showLiveCount = mode === "live" && town.online >= 20;
+  const showLiveCount = mode === "live" && town.online >= LIVE_COUNT_MIN;
   return (
     <p className="town-count" aria-live="polite">
       <span className="town-count-dot" aria-hidden="true" />

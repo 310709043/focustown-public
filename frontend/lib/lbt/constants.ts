@@ -79,3 +79,9 @@ export const TYPING_THROTTLE_MS = 3000;
 export const PARTNER_TYPING_CLEAR_MS = 4000;
 /** After this long in the waiting room, say plainly that it may take a while. */
 export const LONG_WAIT_MS = 45_000;
+
+/**
+ * Live head counts are shown only from this many people up: real numbers or
+ * none, and a near-empty count tells a visitor nothing useful.
+ */
+export const LIVE_COUNT_MIN = 20;
