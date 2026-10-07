@@ -24,6 +24,7 @@ from app.domain.repositories.realtime import IRealtimePublisher
 from app.domain.services.lbt_rules import (
     MESSAGE_MAX,
     LbtInputError,
+    avatar_pair,
     clean_text,
     is_open,
     mask_contacts,
@@ -364,8 +365,14 @@ class LbtService:
         return {
             "type": "lbt.matched",
             "conversation_id": conversation.id,
-            "me": conversation.profile_of(guest_id).to_dict(),
-            "partner": conversation.profile_of(partner).to_dict(),
+            "me": {
+                **conversation.profile_of(guest_id).to_dict(),
+                "avatar": _avatar_of(conversation, guest_id),
+            },
+            "partner": {
+                **conversation.profile_of(partner).to_dict(),
+                "avatar": _avatar_of(conversation, partner),
+            },
             **self._timing(conversation, now),
         }
 
@@ -378,3 +385,9 @@ class LbtService:
             "text": line.text,
             "at": line.at.isoformat(),
         }
+
+
+def _avatar_of(conversation: LbtConversation, guest_id: str) -> str:
+    """The battery-family avatar for one side, fixed per conversation."""
+    first, second = avatar_pair(conversation.id)
+    return first if guest_id == conversation.guest_a else second

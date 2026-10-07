@@ -141,7 +141,7 @@ describe("socket", () => {
     b.send({ type: "join", profile: STORY, adult: true });
     const matched = await a.next("lbt.matched");
     await b.next("lbt.matched");
-    expect(matched.partner).toEqual(STORY);
+    expect(matched.partner).toMatchObject(STORY);
 
     a.send({ type: "message", text: "嗨，加我 0912-345-678" });
     const got = await b.next("lbt.message");

@@ -7,6 +7,7 @@ import {
   TOPIC_IDS,
   TYPING_THROTTLE_MS,
 } from "./constants";
+import type { AvatarId } from "./avatars";
 import type { LbtTransport, TransportEvent } from "./transport";
 import type {
   ChatLine,
@@ -47,6 +48,8 @@ interface LbtData {
   connection: ConnectionState;
   town: TownStatus | null;
   partner: PeerProfile | null;
+  /** My battery-family avatar in the current chat (the partner's is on `partner`). */
+  selfAvatar: AvatarId | null;
   /** True when the partner is the demo script, never a person. */
   simulated: boolean;
   lines: ChatLine[];
@@ -107,6 +110,7 @@ const INITIAL: LbtData = {
   connection: "idle",
   town: null,
   partner: null,
+  selfAvatar: null,
   simulated: false,
   lines: [],
   endsAt: null,
@@ -176,6 +180,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       view: "end",
       lines: [],
       partner: null,
+      selfAvatar: null,
       simulated: false,
       companionInvitation: null,
       companionAnswering: false,
@@ -219,6 +224,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
           companionAnswering: false,
           view: "chat",
           partner: event.partner,
+          selfAvatar: event.me.avatar ?? null,
           simulated: event.simulated,
           nickname: event.me.nickname || state.nickname,
           endsAt: event.endsAt,
@@ -339,6 +345,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         nickname,
         lines: [],
         partner: null,
+        selfAvatar: null,
         endReason: null,
         notice: null,
         modal: null,
@@ -386,6 +393,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         companionAnswering: false,
         endsAt: null,
         partner: null,
+        selfAvatar: null,
         modal: null,
         topicId: null,
         waitingSince: null,

@@ -108,7 +108,8 @@ async def test_each_side_learns_the_other_profile_but_not_their_id(svc, pub):
     await pair(svc)
 
     matched = frames(pub, "g_a", "lbt.matched")[0]
-    assert (matched["partner"], "g_b" in str(matched)) == (
+    partner = {k: v for k, v in matched["partner"].items() if k != "avatar"}
+    assert (partner, "g_b" in str(matched)) == (
         {"nickname": "阿樹", "energy": 2, "preference": "story"},
         False,
     )
@@ -537,3 +538,16 @@ async def test_status_counts_recently_seen_guests_and_waiters(svc, store, clock)
     await svc.join("g_a", LISTEN, adult=True)
 
     assert await svc.status() == {"online": 2, "waiting": 1, "open": True, "hours": ""}
+
+
+
+async def test_both_sides_see_the_same_two_different_avatars(svc, pub):
+    await pair(svc)
+
+    for_a = frames(pub, "g_a", "lbt.matched")[0]
+    for_b = frames(pub, "g_b", "lbt.matched")[0]
+    assert for_a["me"]["avatar"] != for_a["partner"]["avatar"]
+    assert (for_a["me"]["avatar"], for_a["partner"]["avatar"]) == (
+        for_b["partner"]["avatar"],
+        for_b["me"]["avatar"],
+    )

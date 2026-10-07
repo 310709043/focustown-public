@@ -8,6 +8,7 @@ import { formatClock } from "@/lib/lbt/format";
 import { remainingSeconds, useLbtStore } from "@/lib/lbt/sessionStore";
 import type { ChatLine } from "@/lib/lbt/types";
 
+import { BatteryAvatar } from "./BatteryAvatar";
 import { ChimeToggle } from "./ChimeToggle";
 import { Notice } from "./Notice";
 
@@ -19,6 +20,7 @@ export function ChatView() {
   const preference = useLbtStore((s) => s.preference);
   const nickname = useLbtStore((s) => s.nickname);
   const partner = useLbtStore((s) => s.partner);
+  const selfAvatar = useLbtStore((s) => s.selfAvatar);
   const simulated = useLbtStore((s) => s.simulated);
   const remaining = useLbtStore(remainingSeconds);
   const lines = useLbtStore((s) => s.lines);
@@ -175,9 +177,13 @@ export function ChatView() {
             {lines.map((line) =>
               line.kind === "me" ? (
                 <div key={line.id} className="message me">
-                  <span className="avatar" aria-hidden="true">
-                    {t("chat.avatarMe")}
-                  </span>
+                  {selfAvatar ? (
+                    <BatteryAvatar avatar={selfAvatar} />
+                  ) : (
+                    <span className="avatar" aria-hidden="true">
+                      {t("chat.avatarMe")}
+                    </span>
+                  )}
                   <div className="message-content">
                     <span className="message-sender">
                       {t("chat.senderMe", { name: nickname })}
@@ -187,9 +193,13 @@ export function ChatView() {
                 </div>
               ) : line.kind === "partner" ? (
                 <div key={line.id} className="message other">
-                  <span className="avatar" aria-hidden="true">
-                    ✳
-                  </span>
+                  {partner?.avatar ? (
+                    <BatteryAvatar avatar={partner.avatar} />
+                  ) : (
+                    <span className="avatar" aria-hidden="true">
+                      ✳
+                    </span>
+                  )}
                   <div className="message-content">
                     <span className="message-sender">
                       {simulated
