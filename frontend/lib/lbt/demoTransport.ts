@@ -7,6 +7,7 @@ import {
   SESSION_SECONDS,
   WAIT_MS,
 } from "./constants";
+import { avatarPair } from "./avatars";
 import type { JoinRequest, LbtTransport, TransportListener } from "./transport";
 import type { Preference, TownStatus } from "./types";
 
@@ -80,18 +81,21 @@ export function createDemoTransport(options: DemoTransportOptions = {}): LbtTran
         inChat = true;
         replyCursor = 0;
         endsAt = now() + SESSION_SECONDS * 1000;
+        const [mine, theirs] = avatarPair(`demo-${now()}-${Math.random()}`);
         emit({
           type: "matched",
           me: {
             nickname: request.nickname,
             energy: request.energy,
             preference: request.preference,
+            avatar: mine,
           },
           // Name and copy come from the UI's localised demo partner.
           partner: {
             nickname: "",
             energy: DEMO_PARTNER_ENERGY,
             preference: COMPLEMENT[request.preference],
+            avatar: theirs,
           },
           simulated: true,
           endsAt,

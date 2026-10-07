@@ -268,3 +268,21 @@ def test_contacts_are_masked(text, expected):
 )
 def test_ordinary_text_is_left_alone(text):
     assert mask_contacts(text) == text
+
+
+def test_avatar_pair_is_two_different_avatars_and_stable() -> None:
+    from app.domain.services.lbt_rules import AVATAR_IDS, avatar_pair
+
+    for i in range(500):
+        a, b = avatar_pair(f"c_{i}")
+        assert a != b
+        assert a in AVATAR_IDS and b in AVATAR_IDS
+        assert avatar_pair(f"c_{i}") == (a, b)
+
+
+def test_avatar_pair_matches_the_edge_and_frontend_copies() -> None:
+    # Same vectors as edge/test/town.test.ts and the frontend avatars test.
+    from app.domain.services.lbt_rules import avatar_pair
+
+    assert avatar_pair("c_1") == ("flower", "headphones")
+    assert avatar_pair("8f6f3c1e-0a6b-4a52-9d55-3b2e1f0c9a77") == ("blanket", "scarf")

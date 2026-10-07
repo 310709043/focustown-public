@@ -3,6 +3,7 @@
  * backend/tests/unit/test_lbt_service.py; frames sent per guest are the
  * observable contract the frontend relies on.
  */
+import { AVATAR_IDS, avatarPair } from "../src/avatars";
 import { beforeEach, describe, expect, test } from "vitest";
 
 import { InputError, type Profile } from "../src/rules";
@@ -87,7 +88,19 @@ describe("joining", () => {
   test("each side learns the other's profile but not their id", async () => {
     await pair();
     const matched = frames("g_a", "lbt.matched")[0];
-    expect([matched?.partner, JSON.stringify(matched).includes("g_b")]).toEqual([STORY, false]);
+    expect([matched?.partner, JSON.stringify(matched).includes("g_b")]).toEqual([
+      { ...STORY, avatar: expect.any(String) },
+      false,
+    ]);
+  });
+
+  test("both sides see the same two avatars, never the same one twice", async () => {
+    await pair();
+    const forA = frames("g_a", "lbt.matched")[0] as unknown as { me: { avatar: string }; partner: { avatar: string }; conversation_id: string };
+    const forB = frames("g_b", "lbt.matched")[0] as unknown as typeof forA;
+    expect(forA.me.avatar).not.toBe(forA.partner.avatar);
+    expect([forA.me.avatar, forA.partner.avatar]).toEqual([forB.partner.avatar, forB.me.avatar]);
+    expect(AVATAR_IDS).toContain(forA.me.avatar);
   });
 
   test("the matched frame carries the server clock and end", async () => {
@@ -534,3 +547,24 @@ describe("reviewed restrictions", () => {
     expect((await store.listWaiting()).map(w=>w.guestId)).toEqual(["g_a"]);
   });
 });
+
+describe("avatarPair", () => {
+  test("two different avatars for any id, the same pair every time", () => {
+    for (let i = 0; i < 500; i += 1) {
+      const [a, b] = avatarPair(`c_${i}`);
+      expect(a).not.toBe(b);
+      expect(avatarPair(`c_${i}`)).toEqual([a, b]);
+    }
+  });
+
+  test("matches the frontend and FastAPI copies (fixed vectors)", () => {
+    expect(avatarPair("c_1")).toEqual(AVATAR_VECTORS.c_1);
+    expect(avatarPair("8f6f3c1e-0a6b-4a52-9d55-3b2e1f0c9a77")).toEqual(AVATAR_VECTORS.uuid);
+  });
+});
+
+/** Shared with frontend/tests and backend/tests: the three copies must agree. */
+const AVATAR_VECTORS = {
+  c_1: ["flower", "headphones"],
+  uuid: ["blanket", "scarf"],
+} as const;

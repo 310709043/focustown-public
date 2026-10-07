@@ -16,7 +16,7 @@ describe("human companion invitations", () => {
   test("only matches after explicit acceptance with server-labelled identity", async () => {
     const inv=await offer(); expect(await store.conversationIdOf(guest)).toBeNull(); expect(await store.listWaiting()).toHaveLength(1);
     await town.answerCompanion(guest,inv.id,true);
-    expect(frames(guest,"lbt.matched")[0]?.partner).toEqual({nickname:"小辟穀",energy:2,preference:"story",role:"companion"});
+    expect(frames(guest,"lbt.matched")[0]?.partner).toMatchObject({nickname:"小辟穀",energy:2,preference:"story",role:"companion"});
     expect(await store.conversationIdOf(guest)).toBe(await store.conversationIdOf(COMPANION_ID));
   });
   test("female identity stays fixed across invite, acceptance and reconnect", async () => {
@@ -25,7 +25,7 @@ describe("human companion invitations", () => {
     expect(frames(guest, "lbt.companion_invite")[0]?.nickname).toBe("打辟穀");
     await town.answerCompanion(guest, inv.id, true);
     await town.connect(guest);
-    expect(frames(guest, "lbt.matched").at(-1)?.partner).toEqual({nickname:"打辟穀",energy:2,preference:"story",role:"companion"});
+    expect(frames(guest, "lbt.matched").at(-1)?.partner).toMatchObject({nickname:"打辟穀",energy:2,preference:"story",role:"companion"});
     expect(JSON.stringify(frames(guest, "lbt.matched").at(-1))).not.toContain('"admin"');
     await town.report(guest, "spam", "check");
     expect(reports[0]?.reportedProfile).toMatchObject({nickname:"打辟穀",role:"admin"});

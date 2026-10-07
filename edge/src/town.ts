@@ -18,6 +18,7 @@ import {
   type Waiting,
 } from "./rules";
 import type { Conversation, Line, TownStore } from "./store";
+import { avatarPair } from "./avatars";
 import { COMPANION_ID, COMPANION_PROFILE, companionProfile, publicProfile, INVITE_MS, type CompanionInvite } from "./companion";
 
 export interface TownConfig {
@@ -457,8 +458,8 @@ export class Town {
     return {
       type: "lbt.matched",
       conversation_id: c.id,
-      me: publicProfile(profileOf(c, guestId)),
-      partner: publicProfile(profileOf(c, partnerOf(c, guestId))),
+      me: { ...publicProfile(profileOf(c, guestId)), avatar: avatarOf(c, guestId) },
+      partner: { ...publicProfile(profileOf(c, partnerOf(c, guestId))), avatar: avatarOf(c, partnerOf(c, guestId)) },
       ...this.timing(c, now),
     };
   }
@@ -468,6 +469,12 @@ export function partnerOf(c: Conversation, guestId: string): string {
   if (guestId === c.guestA) return c.guestB;
   if (guestId === c.guestB) return c.guestA;
   throw new Error("guest is not part of this conversation");
+}
+
+/** The battery-family avatar for one side, fixed per conversation. */
+function avatarOf(c: Conversation, guestId: string) {
+  const [a, b] = avatarPair(c.id);
+  return guestId === c.guestA ? a : b;
 }
 
 function profileOf(c: Conversation, guestId: string) {

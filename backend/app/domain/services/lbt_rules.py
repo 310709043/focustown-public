@@ -170,3 +170,42 @@ def is_open(now: datetime, hours: tuple[time, time] | None, tz: str) -> bool:
     if start < end:
         return start <= local < end
     return local >= start or local < end  # window crosses midnight
+
+
+# Battery-family chat avatars. Mirrors frontend/lib/lbt/avatars.ts and
+# edge/src/avatars.ts: keep the order and the hash identical so every
+# backend gives a conversation the same pair.
+AVATAR_IDS: tuple[str, ...] = (
+    "headphones",
+    "blanket",
+    "coffee",
+    "beanie",
+    "glasses",
+    "scarf",
+    "umbrella",
+    "cathood",
+    "flower",
+    "plug",
+)
+
+
+def _fnv1a(text: str) -> int:
+    h = 0x811C9DC5
+    for unit in _utf16_units(text):
+        h ^= unit
+        h = (h * 0x01000193) & 0xFFFFFFFF
+    return h
+
+
+def _utf16_units(text: str) -> list[int]:
+    raw = text.encode("utf-16-le")
+    return [raw[i] | (raw[i + 1] << 8) for i in range(0, len(raw), 2)]
+
+
+def avatar_pair(conversation_id: str) -> tuple[str, str]:
+    """Two different avatars for a conversation: (guest A's, guest B's)."""
+    h = _fnv1a(conversation_id)
+    n = len(AVATAR_IDS)
+    a = h % n
+    b = (a + 1 + (h // n) % (n - 1)) % n
+    return AVATAR_IDS[a], AVATAR_IDS[b]

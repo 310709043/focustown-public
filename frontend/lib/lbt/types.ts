@@ -1,5 +1,7 @@
 /** Shared types for the LowBatteryTown chat surface. */
 
+import type { AvatarId } from "./avatars";
+
 export type LbtView = "home" | "waiting" | "chat" | "end";
 
 /** `live` talks to the matching backend; `demo` is the labelled script. */
@@ -47,6 +49,8 @@ export interface PeerProfile {
   energy: Energy;
   preference: Preference;
   role?: "companion";
+  /** Battery-family avatar the server picked for this chat. */
+  avatar?: AvatarId;
 }
 
 export interface CompanionInvitation {

@@ -1,3 +1,4 @@
+import { isAvatarId } from "./avatars";
 import { ENERGIES, HEARTBEAT_MS, OFFLINE_GRACE_MS, PREFERENCES } from "./constants";
 import type { JoinRequest, LbtTransport, TransportEvent, TransportListener } from "./transport";
 import type { EndReason, PeerProfile, ReportReason, TownStatus } from "./types";
@@ -57,11 +58,17 @@ function safeStorage(): Pick<Storage, "getItem" | "setItem" | "removeItem"> | nu
 
 function toProfile(raw: unknown): PeerProfile | null {
   if (!raw || typeof raw !== "object") return null;
-  const { nickname, energy, preference, role } = raw as Record<string, unknown>;
+  const { nickname, energy, preference, role, avatar } = raw as Record<string, unknown>;
   if (typeof nickname !== "string") return null;
   if (!(ENERGIES as readonly unknown[]).includes(energy)) return null;
   if (!(PREFERENCES as readonly unknown[]).includes(preference)) return null;
-  return { nickname, energy, preference, ...((role === "companion" || role === "admin") ? { role: "companion" } : {}) } as PeerProfile;
+  return {
+    nickname,
+    energy,
+    preference,
+    ...((role === "companion" || role === "admin") ? { role: "companion" } : {}),
+    ...(isAvatarId(avatar) ? { avatar } : {}),
+  } as PeerProfile;
 }
 
 /** Server times → local `Date.now()` time, immune to client clock skew. */

@@ -760,6 +760,19 @@
 .lbt .message.me .avatar {
   background: #af8e7b;
 }
+/* battery-family avatars carry their own night background */
+.lbt .avatar.battery-avatar {
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  background: #1f2b48;
+  box-shadow: 0 0 0 1px rgba(174, 189, 209, 0.3), 0 2px 6px rgba(13, 19, 34, 0.25);
+}
+.lbt .avatar.battery-avatar svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .lbt .bubble {
   padding: 12px 16px;
   background: #30435e;
