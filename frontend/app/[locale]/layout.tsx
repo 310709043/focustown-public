@@ -55,6 +55,8 @@ export async function generateMetadata({
       .filter(Boolean),
     authors: [{ name: BRAND }],
     creator: BRAND,
+    // Google Search Console ownership (URL-prefix property for www). Public token.
+    verification: { google: "QuvCCXNukQD0XPg3g42ojiqZ_wLZ77n5yKKiRHdwuTA" },
     alternates: {
       canonical: `/${safe}`,
       languages: {
