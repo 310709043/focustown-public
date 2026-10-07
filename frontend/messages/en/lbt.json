@@ -249,14 +249,14 @@
     "support": {
       "eyebrow": "Voluntary · pay once",
       "title": "Light a lamp for the town",
-      "intro": "If you enjoy the town, you can support it through Buy Me a Coffee. Chat and matching stay free and the same for everyone; support unlocks no extra benefits.",
+      "intro": "Enjoying the town? You can support it through Buy Me a Coffee. Support unlocks no extra chat benefits.",
       "totalLabel": "Each contribution",
-      "once": "Pay once · no automatic renewal · supporting is optional",
-      "usage": "Support helps with hosting, improvements and safety management. Choose the number of Powers on the support page and check the total before paying.",
-      "disclosure": "Charged in US dollars. Your bank determines currency conversion and any additional fees. Buy Me a Coffee handles payment details; the town does not collect card numbers or share your conversations with it.",
+      "once": "Pay once · no automatic renewal",
+      "usage": "Goes to hosting, improvements and safety. Choose the quantity and confirm the total on the support page.",
+      "disclosure": "Charged in US dollars; your bank sets conversion and any fees. Buy Me a Coffee handles payment — the town never collects card numbers.",
       "checkout": "Support on Buy Me a Coffee",
       "operator": "LowBatteryTown is run by an independent creator. Contact:",
-      "refund": "For mistaken payments or refund requests, contact us or Buy Me a Coffee with the transaction ID. The platform refund policy applies.",
+      "refund": "Mistaken payment or refund? Contact us or Buy Me a Coffee with the transaction ID; the platform refund policy applies.",
       "refundLink": "Read the refund policy ↗"
     },
     "feedback": {
