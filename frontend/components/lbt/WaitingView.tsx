@@ -16,7 +16,6 @@ export function WaitingView() {
   const chimeOn = useChimeStore((s) => s.enabled);
   const energy = useLbtStore((s) => s.energy);
   const cancelWaiting = useLbtStore((s) => s.cancelWaiting);
-  const town = useLbtStore((s) => s.town);
   const mode = useLbtStore((s) => s.mode);
   const connection = useLbtStore((s) => s.connection);
   const waitingSince = useLbtStore((s) => s.waitingSince);
@@ -60,14 +59,6 @@ export function WaitingView() {
           <br />
           {t("waiting.breathe")}
         </p>
-        {mode === "live" && town ? (
-          <p className="waiting-town">
-            {t("waiting.townNow", {
-              online: town.online,
-              waiting: town.waiting,
-            })}
-          </p>
-        ) : null}
         {connection === "offline" ? (
           <p className="waiting-offline" role="status">
             {t("waiting.offline")}
