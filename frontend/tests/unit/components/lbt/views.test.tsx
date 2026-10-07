@@ -189,6 +189,18 @@ describe("WaitingView", () => {
     expect(screen.getByText("lbt.waiting.longWait")).toBeInTheDocument();
   });
 
+  test("no head count while waiting; it says the town is finding someone", () => {
+    act(() => {
+      store().setAdult(true);
+      store().startWaiting("小橘");
+      useLbtStore.setState({ mode: "live", town: { online: 24, waiting: 3, open: true, hours: "" } });
+    });
+    render(<WaitingView />);
+
+    expect(screen.getByText("lbt.waiting.searching")).toBeInTheDocument();
+    expect(screen.queryByText(/lbt\.waiting\.townNow/)).toBeNull();
+  });
+
   test("a dropped connection is shown", () => {
     act(() => {
       store().setAdult(true);

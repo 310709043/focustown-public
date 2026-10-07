@@ -59,6 +59,7 @@ export function WaitingView() {
           <br />
           {t("waiting.breathe")}
         </p>
+        {mode === "live" ? <p className="waiting-town">{t("waiting.searching")}</p> : null}
         {connection === "offline" ? (
           <p className="waiting-offline" role="status">
             {t("waiting.offline")}

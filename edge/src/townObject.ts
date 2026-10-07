@@ -11,6 +11,7 @@ import { type Env, IDLE_SWEEP_MS, LIMITS, SWEEP_MS, retentionDays, townConfig } 
 import { MAX_FRAME_BYTES } from "./security";
 import { saveReport } from "./reports";
 import { recordConversation } from "./dailyStats";
+import { alertsConfigured, sendOwnerAlert } from "./ownerAlert";
 import { activeSuspensions, moderateReport } from "./moderation";
 import { InputError } from "./rules";
 import { TownStore } from "./store";
@@ -49,6 +50,11 @@ export class TownObject extends DurableObject<Env> {
       config: townConfig(env),
       suspendedUntil: (guestId) => this.suspensions.get(guestId) ?? null,
       onConversationStarted: (now) => recordConversation(env.DB, now),
+      onLonelyWaiter: alertsConfigured(env)
+        ? async (alert) => {
+            await sendOwnerAlert(env, alert);
+          }
+        : undefined,
     });
   }
 
