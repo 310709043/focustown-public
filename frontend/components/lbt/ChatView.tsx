@@ -3,13 +3,14 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
-import { ENERGY_ID, MESSAGE_MAX } from "@/lib/lbt/constants";
+import { ENERGY_ID, MESSAGE_MAX, SESSION_SECONDS } from "@/lib/lbt/constants";
 import { formatClock } from "@/lib/lbt/format";
 import { remainingSeconds, useLbtStore } from "@/lib/lbt/sessionStore";
 import type { ChatLine } from "@/lib/lbt/types";
 
 import { BatteryAvatar } from "./BatteryAvatar";
 import { ChimeToggle } from "./ChimeToggle";
+import { SkyTopicSuggestion } from "./SkyTopics";
 import { Notice } from "./Notice";
 
 const bars = (level: number) => "▮".repeat(level);
@@ -23,6 +24,9 @@ export function ChatView() {
   const selfAvatar = useLbtStore((s) => s.selfAvatar);
   const simulated = useLbtStore((s) => s.simulated);
   const remaining = useLbtStore(remainingSeconds);
+  /** Share of the current 7-minute window left, for the thin bar under the header. */
+  const left = Math.max(0, Math.min(1, remaining / SESSION_SECONDS));
+  const lastMinute = remaining > 0 && remaining <= 60;
   const lines = useLbtStore((s) => s.lines);
   const typing = useLbtStore((s) => s.partnerTyping);
   const extendMine = useLbtStore((s) => s.extendMine);
@@ -118,7 +122,7 @@ export function ChatView() {
     <main className="view chat-view">
       <div className="chat-shell">
         <section className="chat-main" aria-label={t("chat.mainAria")}>
-          <div className="chat-header">
+          <div className={`chat-header${lastMinute ? " is-last-minute" : ""}`}>
             <div className="partner-profile">
               <span className="small-label">
                 {partner?.role === "companion"
@@ -168,6 +172,12 @@ export function ChatView() {
               </button>
             </div>
           </div>
+
+          <div
+            className={`session-progress${lastMinute ? " is-last-minute" : ""}`}
+            aria-hidden="true"
+            style={{ transform: `scaleX(${left})` }}
+          />
 
           <div className="self-profile">
             <span className="profile-prefix">{t("chat.selfPrefix")}</span>
@@ -355,6 +365,12 @@ export function ChatView() {
           </button>
           <p className="extend-hint">{extendHint}</p>
           <p className="aside-help">{t("chat.aside.help")}</p>
+          <SkyTopicSuggestion
+            onUse={(word) => {
+              setDraft(t("chat.skyOpener", { word }));
+              inputRef.current?.focus();
+            }}
+          />
         </aside>
       </div>
     </main>

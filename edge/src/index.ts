@@ -374,23 +374,38 @@ export default {
     }
   },
 
-  /** Daily: delete reports and feedback past their retention windows (the privacy page promises it), refresh sky topics. */
+  /**
+   * Daily: delete reports and feedback past their retention windows (the
+   * privacy page promises it), refresh sky topics. Each step runs on its
+   * own, so one failure never skips the others.
+   */
   async scheduled(_controller, env, _ctx): Promise<void> {
-    const cutoff = new Date(Date.now() - retentionDays(env) * 86_400_000).toISOString();
-    await purgeExpiredSuspensions(env.DB, Date.now());
-    const removed = await purgeReports(env.DB, cutoff);
-    if (removed > 0) console.log(JSON.stringify({ event: "lbt_reports_purged", removed, cutoff }));
-    const feedbackCutoff = new Date(Date.now() - feedbackRetentionDays(env) * 86_400_000).toISOString();
-    const feedbackRemoved = await purgeFeedback(env.DB, feedbackCutoff);
-    if (feedbackRemoved > 0) {
-      console.log(JSON.stringify({ event: "lbt_feedback_purged", removed: feedbackRemoved, cutoff: feedbackCutoff }));
-    }
-    try {
-      const stored = await refreshTrends(env.DB, Date.now());
-      console.log(JSON.stringify({ event: "lbt_topics_refreshed", stored }));
-    } catch {
-      // The sky falls back to manual picks and the town's own ideas.
-      console.error(JSON.stringify({ event: "lbt_topics_refresh_failed" }));
+    const now = Date.now();
+    const steps: [string, () => Promise<Record<string, unknown> | null>][] = [
+      ["lbt_suspensions_purge", async () => {
+        await purgeExpiredSuspensions(env.DB, now);
+        return null;
+      }],
+      ["lbt_reports_purged", async () => {
+        const cutoff = new Date(now - retentionDays(env) * 86_400_000).toISOString();
+        const removed = await purgeReports(env.DB, cutoff);
+        return removed > 0 ? { removed, cutoff } : null;
+      }],
+      ["lbt_feedback_purged", async () => {
+        const cutoff = new Date(now - feedbackRetentionDays(env) * 86_400_000).toISOString();
+        const removed = await purgeFeedback(env.DB, cutoff);
+        return removed > 0 ? { removed, cutoff } : null;
+      }],
+      // On failure the sky falls back to manual picks and the town's own ideas.
+      ["lbt_topics_refreshed", async () => ({ stored: await refreshTrends(env.DB, now) })],
+    ];
+    for (const [event, run] of steps) {
+      try {
+        const detail = await run();
+        if (detail) console.log(JSON.stringify({ event, ...detail }));
+      } catch {
+        console.error(JSON.stringify({ event: `${event}_failed` }));
+      }
     }
   },
 } satisfies ExportedHandler<Env>;

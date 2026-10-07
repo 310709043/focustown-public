@@ -28,6 +28,10 @@ describe("trends feed", () => {
     expect(words).toEqual(["颱風假", "中秋烤肉", "b追劇/b", "新手機"]);
   });
 
+  test("numeric entities decode, and a broken one does not fail the feed", () => {
+    expect(parseTrendsRss(rss(["&#39340;&#x9EB5;", "壞&#99999999;字"]))).toEqual(["馬麵", "壞&#99999999;字"]);
+  });
+
   test("heavy topics are recognised", () => {
     expect(["明星過世", "大樓火災", "槍擊案", "颱風假"].map(isHeavy)).toEqual([true, true, true, false]);
   });

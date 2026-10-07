@@ -263,7 +263,7 @@
 }
 .lbt .selection-heading span {
   font-size: 13px;
-  color: #6e7990;
+  color: #56637a;
 }
 .lbt .selection-heading strong {
   font-size: 18px;
@@ -304,7 +304,7 @@
 }
 .lbt .energy-option small {
   font-size: 11px;
-  color: #718098;
+  color: #56637a;
   margin-top: 2px;
 }
 .lbt .energy-symbol {
@@ -340,7 +340,7 @@
 }
 .lbt .preference-row > span {
   display: block;
-  color: #6e7990;
+  color: #56637a;
   font-size: 12px;
   margin-bottom: 10px;
 }
@@ -392,7 +392,7 @@
 .lbt .selection-note {
   text-align: center;
   font-size: 11px;
-  color: #8190a4;
+  color: #56637a;
   margin: 12px 0 0;
 }
 .lbt .selection-note span {
@@ -550,7 +550,7 @@
   justify-content: space-between;
   gap: 15px;
   padding: 25px 0;
-  color: #73839d;
+  color: #8494ad;
   font-size: 11px;
 }
 .lbt .waiting-view,
@@ -1002,7 +1002,7 @@
 }
 .lbt .support-summary span {
   display: block;
-  color: #65738b;
+  color: #56637a;
   font-size: 12px;
   margin-top: 6px;
 }
@@ -1905,7 +1905,7 @@
 }
 .lbt .nickname-field label span {
   font-size: 11px;
-  color: #6e7990;
+  color: #56637a;
   font-weight: 500;
 }
 .lbt .nickname-field input {
@@ -1924,7 +1924,7 @@
 .lbt .nickname-field small {
   display: block;
   margin-top: 7px;
-  color: #68758a;
+  color: #56637a;
   font-size: 11px;
 }
 .lbt .selection-card .selection-heading {
@@ -1933,7 +1933,7 @@
 .lbt .energy-purpose {
   font-size: 12px;
   line-height: 1.65;
-  color: #65738b;
+  color: #56637a;
   margin: 0 0 14px;
 }
 .lbt .partner-profile {
@@ -2208,7 +2208,7 @@
 
 .lbt .adult-check small {
   grid-column: 2;
-  color: #6b7891;
+  color: #56637a;
   font-size: 12px;
   font-weight: 500;
 }
@@ -2365,7 +2365,7 @@
 }
 
 .lbt .report-note small {
-  color: #6b7891;
+  color: #56637a;
   font-size: 12px;
   font-weight: 500;
 }
@@ -2387,7 +2387,7 @@
 
 .lbt .crisis-help {
   margin-top: 6px;
-  color: #6b7891;
+  color: #56637a;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -2410,6 +2410,13 @@
   color: var(--mist);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+/* The 18+ hint sits on the light card: the policy links need a dark ink to be readable. */
+.lbt .adult-check small a {
+  color: #3f5f94;
+}
+.lbt .adult-check small a:hover {
+  color: #25314b;
 }
 .lbt .footer-links a:hover,
 .lbt .adult-check small a:hover {
@@ -2692,10 +2699,17 @@
   .lbt .home-view {
     min-height: 0;
     display: flex;
+    /* Tall screens (an external monitor, a portrait display): the layout
+       stops growing at --home-max-h and sits in the middle, instead of
+       stretching the hero and leaving a hole in the form. */
+    align-items: center;
   }
   .lbt .home-grid {
+    --home-max-h: 860px;
     flex: 1;
     min-height: 0;
+    height: 100%;
+    max-height: var(--home-max-h);
     grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
     grid-template-rows: minmax(0, 1fr) auto;
     grid-template-areas:
@@ -2756,10 +2770,10 @@
     margin-top: clamp(10px, 1.8vh, 18px);
     padding-top: clamp(10px, 1.6vh, 16px);
   }
-  .lbt .home-grid > .selection-card > .primary-button {
-    margin-top: auto;
-  }
+  /* The 18+ check rides with the start button at the bottom of the card. */
   .lbt .home-grid > .selection-card .adult-check {
+    margin-top: auto;
+    padding-top: 14px;
     margin-bottom: 14px;
   }
   .lbt .home-grid > .side-rail {
@@ -2894,7 +2908,7 @@
     margin-bottom: 10px;
   }
   .lbt .home-grid > .selection-card .adult-check small {
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.5;
   }
   .lbt .home-grid > .selection-card .preference-row {
@@ -2927,7 +2941,7 @@
 .lbt-app {
   --ground: var(--night);
   --ground-ink: var(--paper);
-  --ground-soft: #73839d;
+  --ground-soft: #8494ad;
   --ground-line: var(--line);
   --ground-link: var(--mist);
   --ground-muted: var(--mist);
@@ -2992,7 +3006,7 @@ html[data-lbt-time="day"] .lbt-app {
   --sky-c: #e7e4d9;
   --hero-ink: #1f2a44;
   --hero-soft: #4b5872;
-  --hero-accent: #c0502f;
+  --hero-accent: #a8462a;
   --hero-kicker: #a8462f;
   --sun-op: 1;
   --moon-op: 0;
@@ -3752,7 +3766,7 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
 .lbt .sky-tag small {
   display: block;
   font-size: 11px;
-  color: #9a7b4f;
+  color: #7a5c33;
   letter-spacing: 0.06em;
 }
 .lbt .sky-tag b {
@@ -4111,6 +4125,11 @@ html[data-lbt-time="dawn"] .lbt .lbt-intro-glow {
   width: 72%;
   height: 72%;
   fill: var(--sun, #f6d58a);
+}
+.lbt .end-moon .end-crescent {
+  width: 58%;
+  height: 58%;
+  fill: var(--moon, #f4e7c3);
 }
 .lbt .end-actions {
   margin-top: clamp(14px, 3.4vh, 35px);
@@ -5140,4 +5159,116 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
   text-decoration: underline;
   text-decoration-color: var(--line);
   text-underline-offset: 4px;
+}
+
+/* ---- chat: the time left as a thin bar under the header; the last minute warms up ---- */
+.lbt .session-progress {
+  flex-shrink: 0;
+  height: 3px;
+  background: var(--lamp);
+  opacity: 0.75;
+  transform-origin: 0 50%;
+  transition: transform 1s linear, background-color 0.6s ease;
+}
+.lbt .session-progress.is-last-minute,
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .session-progress.is-last-minute {
+  background: #f09a7e;
+}
+.lbt .chat-header.is-last-minute .session-timer,
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .chat-header.is-last-minute .session-timer {
+  color: #f09a7e;
+  animation: lbt-last-minute 2.4s ease-in-out infinite;
+}
+@keyframes lbt-last-minute {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ---- chat aside: today's sky topic, one tap into the composer ---- */
+.lbt .aside-sky-topic {
+  margin-top: auto;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(248, 215, 121, 0.05);
+  display: grid;
+  gap: 6px;
+}
+.lbt .aside-sky-topic strong {
+  font-size: 18px;
+}
+.lbt .aside-sky-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.lbt .aside-sky-actions button {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--lamp);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .aside-sky-actions button {
+  color: var(--accent, #b0573f);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lbt .session-progress { transition: none; }
+  .lbt .chat-header.is-last-minute .session-timer { animation: none; }
+}
+
+/* ---- phones: more room for the conversation and the waiting words ---- */
+@media (max-width: 610px) {
+  /* chat header: two short rows instead of a tall block */
+  .lbt .chat-header {
+    padding: 12px 14px 10px;
+    align-items: center;
+  }
+  .lbt .chat-header .profile-pace {
+    display: none;
+  }
+  .lbt .partner-profile h1 {
+    margin: 2px 0 1px;
+    font-size: 17px;
+  }
+  .lbt .chat-header-actions {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-items: end;
+    gap: 6px;
+  }
+  .lbt .chat-header-actions .session-timer {
+    grid-column: 1 / -1;
+  }
+  .lbt .self-profile {
+    padding: 7px 14px;
+    gap: 4px 8px;
+    font-size: 12px;
+  }
+  /* waiting and end: start near the top and fit the content */
+  .lbt .waiting-view,
+  .lbt .end-view {
+    align-items: start;
+    place-items: start center;
+  }
+  .lbt .waiting-card,
+  .lbt .end-card {
+    height: auto;
+    min-height: 0;
+    justify-content: flex-start;
+    padding-top: 26px;
+    padding-bottom: 26px;
+  }
+  .lbt .waiting-lamp {
+    height: 78px;
+    margin-bottom: 8px;
+    transform: scale(0.8);
+  }
 }

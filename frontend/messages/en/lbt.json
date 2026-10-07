@@ -196,6 +196,9 @@
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
     "titleTop": "Good night.",
+    "titleTopDawn": "Good morning.",
+    "titleTopDay": "Take a breather.",
+    "titleTopDusk": "Evening's here.",
     "titleBottom": "You've already done a lot.",
     "bodyTop": "The conversation has ended, and the street lamps stay on.",
     "bodyBottom": "Come back and sit for a while whenever you feel like talking.",
@@ -761,6 +764,8 @@
       "idea": "Something to talk about"
     },
     "aria": "{label}: {word}. Tap to bring it into your chat",
-    "taken": "Took “{word}” with you — use it to start the chat."
+    "taken": "Took “{word}” with you — use it to start the chat.",
+    "use": "Start with this",
+    "another": "Another"
   }
 }

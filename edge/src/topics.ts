@@ -68,7 +68,11 @@ function decodeEntities(text: string): string {
     .replace(/<!\[CDATA\[(.*?)\]\]>/gs, "$1")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)));
+    .replace(/&#(x[0-9a-f]+|\d+);/gi, (match, n: string) => {
+      const code = n[0] === "x" || n[0] === "X" ? parseInt(n.slice(1), 16) : Number(n);
+      // A broken entity in the feed must not fail the whole refresh.
+      return Number.isInteger(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : match;
+    });
 }
 
 /** Item titles from the trends RSS, in feed order, without the heavy ones. */
