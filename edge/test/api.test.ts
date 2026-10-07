@@ -208,6 +208,28 @@ describe("socket", () => {
     const row = await env.DB.prepare("SELECT id FROM lbt_reports WHERE id = 'old'").first();
     expect(row).toBeNull();
   });
+
+  test("one failing cron step does not skip the retention purges after it", async () => {
+    await env.DB.prepare(
+      "INSERT INTO lbt_reports (id, conversation_id, reporter_guest_id, reported_guest_id, reason, transcript, reporter_profile, reported_profile, created_at) VALUES ('old2', 'c', 'g_a', 'g_b', 'spam', '[]', '{}', '{}', '2020-01-01T00:00:00.000Z')",
+    ).run();
+    // The suspension purge (the first step) hits a database error.
+    const db = new Proxy(env.DB, {
+      get(target, key) {
+        if (key === "prepare") {
+          return (sql: string) => {
+            if (/suspension/i.test(sql)) throw new Error("boom");
+            return target.prepare(sql);
+          };
+        }
+        const value = Reflect.get(target, key);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+    const { default: worker } = await import("../src/index");
+    await worker.scheduled({ cron: "17 19 * * *", scheduledTime: Date.now(), noRetry() {} } as ScheduledController, { ...env, DB: db }, {} as ExecutionContext);
+    expect(await env.DB.prepare("SELECT id FROM lbt_reports WHERE id = 'old2'").first()).toBeNull();
+  });
 });
 
 describe("authenticated companion sockets", () => {
