@@ -196,6 +196,9 @@
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
     "titleTop": "晚安，",
+    "titleTopDawn": "早安，",
+    "titleTopDay": "今天辛苦了，",
+    "titleTopDusk": "傍晚了，",
     "titleBottom": "你已經很努力了。",
     "bodyTop": "一段對話結束了，街燈會繼續亮著。",
     "bodyBottom": "下次想說話時，隨時回來坐一下。",
@@ -761,6 +764,8 @@
       "idea": "可以聊聊"
     },
     "aria": "{label}：{word}。點一下，配對後拿來開場",
-    "taken": "帶上「{word}」了，配對後可以拿來開場。"
+    "taken": "帶上「{word}」了，配對後可以拿來開場。",
+    "use": "用這個開場",
+    "another": "換一個"
   }
 }
