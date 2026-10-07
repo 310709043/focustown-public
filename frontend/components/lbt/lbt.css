@@ -2692,10 +2692,17 @@
   .lbt .home-view {
     min-height: 0;
     display: flex;
+    /* Tall screens (an external monitor, a portrait display): the layout
+       stops growing at --home-max-h and sits in the middle, instead of
+       stretching the hero and leaving a hole in the form. */
+    align-items: center;
   }
   .lbt .home-grid {
+    --home-max-h: 860px;
     flex: 1;
     min-height: 0;
+    height: 100%;
+    max-height: var(--home-max-h);
     grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
     grid-template-rows: minmax(0, 1fr) auto;
     grid-template-areas:
@@ -2756,10 +2763,10 @@
     margin-top: clamp(10px, 1.8vh, 18px);
     padding-top: clamp(10px, 1.6vh, 16px);
   }
-  .lbt .home-grid > .selection-card > .primary-button {
-    margin-top: auto;
-  }
+  /* The 18+ check rides with the start button at the bottom of the card. */
   .lbt .home-grid > .selection-card .adult-check {
+    margin-top: auto;
+    padding-top: 14px;
     margin-bottom: 14px;
   }
   .lbt .home-grid > .side-rail {
