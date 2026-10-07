@@ -12,6 +12,7 @@ const TOKEN_KEY = "lbt.guest.v1";
 /** Refresh the guest token when it has less than this left. */
 const TOKEN_MARGIN_MS = 10 * 60 * 1000;
 const OUTBOX_MAX = 20;
+const CONNECTING = 0;
 const OPEN = 1;
 const END_REASONS: readonly EndReason[] = [
   "left",
@@ -146,6 +147,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
   let offlineTimer: ReturnType<typeof setTimeout> | undefined;
+  let connecting = false;
   const outbox: string[] = [];
 
   const emit = (event: TransportEvent) => listener?.(event);
@@ -205,16 +207,19 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
   }
 
   async function connect() {
-    if (!running) return;
+    if (!running || connecting) return;
+    connecting = true;
     emit({ type: "connection", state: "connecting" });
     let token: string;
     try {
       token = await guestToken();
     } catch {
+      connecting = false;
       scheduleOffline();
       scheduleReconnect(false);
       return;
     }
+    connecting = false;
     if (!running) return;
     const ws = new Socket(`${wsBase}/api/v1/lbt/ws`, [`bearer.${token}`]);
     socket = ws;
@@ -253,6 +258,22 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     };
   }
 
+  /**
+   * The phone woke up, the tab came back or the network returned: if the
+   * socket is gone, try now instead of waiting out the backoff (up to 30 s
+   * after a long sleep), so "reconnecting" clears as soon as it can.
+   */
+  function wake() {
+    if (!running || connecting) return;
+    if (socket && (socket.readyState === CONNECTING || socket.readyState === OPEN)) return;
+    clearTimeout(reconnectTimer);
+    attempt = 0;
+    void connect();
+  }
+  const onVisible = () => {
+    if (typeof document !== "undefined" && document.visibilityState === "visible") wake();
+  };
+
   function send(frame: Record<string, unknown>, { queue }: { queue: boolean }) {
     const data = JSON.stringify(frame);
     if (socket && socket.readyState === OPEN) {
@@ -268,7 +289,11 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
       listener = next;
       running = true;
       void connect();
+      if (typeof window !== "undefined") window.addEventListener("online", wake);
+      if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVisible);
       return () => {
+        if (typeof window !== "undefined") window.removeEventListener("online", wake);
+        if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVisible);
         running = false;
         listener = null;
         clearTimeout(reconnectTimer);
