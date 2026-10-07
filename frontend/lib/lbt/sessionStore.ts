@@ -60,6 +60,8 @@ interface LbtData {
   extendMine: boolean;
   extendPartner: boolean;
   topicId: TopicId | null;
+  /** A sky topic the visitor tapped on the home stage, offered as an opener in the chat. */
+  skyTopic: string | null;
   topicCursor: number;
   modal: LbtModal | null;
   reportPending: boolean;
@@ -87,6 +89,8 @@ interface LbtActions {
   extend: () => void;
   report: (reason: ReportReason, note: string) => Promise<"sent" | "simulated">;
   drawTopic: () => void;
+  takeSkyTopic: (word: string) => void;
+  clearSkyTopic: () => void;
   dismissTopic: () => void;
   openModal: (modal: LbtModal) => void;
   closeModal: () => void;
@@ -119,6 +123,7 @@ const INITIAL: LbtData = {
   extendMine: false,
   extendPartner: false,
   topicId: null,
+  skyTopic: null,
   topicCursor: 0,
   modal: null,
   reportPending: false,
@@ -451,6 +456,8 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       set({ topicId: TOPIC_IDS[topicCursor % TOPIC_IDS.length], topicCursor: topicCursor + 1 });
     },
     dismissTopic: () => set({ topicId: null }),
+    takeSkyTopic: (word) => set({ skyTopic: word }),
+    clearSkyTopic: () => set({ skyTopic: null }),
 
     openModal: (modal) => set({ modal }),
     closeModal: () => set({ modal: null }),
