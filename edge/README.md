@@ -82,6 +82,27 @@ background when both secrets are set:
 The sheet is a convenience: if it is down, the D1 row stays (admin shows
 whether each entry reached the sheet).
 
+## "Someone is waiting" alerts
+
+When a visitor has waited 20 s with nobody to pair with, the sweep sends the
+owner one phone alert (`src/ownerAlert.ts`) so a companion can meet them from
+`/admin` at any hour. Once per visitor, at most one alert per 2 minutes, and
+none while the companion console is on duty. The alert carries only the
+battery, the chat intent and the wait: no nickname, id, IP or message.
+
+Telegram (recommended):
+
+1. In Telegram, talk to `@BotFather`, send `/newbot` and copy the bot token.
+2. Send your new bot any message, then open
+   `https://api.telegram.org/bot<token>/getUpdates` and copy `chat.id`.
+3. Add both as secrets: `npx wrangler secret put TELEGRAM_BOT_TOKEN` and
+   `npx wrangler secret put TELEGRAM_CHAT_ID`, or in the dashboard under
+   Workers → lowbatterytown-api → Settings → Variables and Secrets.
+
+Discord instead (or as well): `npx wrangler secret put DISCORD_WEBHOOK_URL`
+(a `https://discord.com/api/webhooks/…` URL; anything else is ignored).
+With no secrets set, nothing is sent.
+
 ## Admin console
 
 `https://api.lowbatterytown.com/admin`: sign in with `ADMIN_TOKEN`
