@@ -34,6 +34,8 @@ export function ChatView() {
   const extend = useLbtStore((s) => s.extend);
   const leave = useLbtStore((s) => s.leave);
   const drawTopic = useLbtStore((s) => s.drawTopic);
+  const skyTopic = useLbtStore((s) => s.skyTopic);
+  const clearSkyTopic = useLbtStore((s) => s.clearSkyTopic);
   const dismissTopic = useLbtStore((s) => s.dismissTopic);
   const openModal = useLbtStore((s) => s.openModal);
 
@@ -61,6 +63,13 @@ export function ChatView() {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (sendMessage(draft)) setDraft("");
+  };
+
+  const applySkyTopic = () => {
+    if (!skyTopic) return;
+    setDraft(t("chat.skyOpener", { word: skyTopic }));
+    clearSkyTopic();
+    inputRef.current?.focus();
   };
 
   const applyTopic = () => {
@@ -249,6 +258,20 @@ export function ChatView() {
                 {t("chat.promptDraw")} <span aria-hidden="true">↗</span>
               </button>
             </div>
+            {skyTopic && !topicId ? (
+              <div className="topic-card sky-topic-card" aria-live="polite">
+                <span className="small-label">{t("chat.skyLabel")}</span>
+                <p>{t("chat.skyOpener", { word: skyTopic })}</p>
+                <div className="topic-actions">
+                  <button type="button" onClick={applySkyTopic}>
+                    {t("chat.topicUse")}
+                  </button>
+                  <button type="button" onClick={clearSkyTopic}>
+                    {t("chat.skyDismiss")}
+                  </button>
+                </div>
+              </div>
+            ) : null}
             {topicId ? (
               <div className="topic-card" aria-live="polite">
                 <span className="small-label">{t("chat.topicLabel")}</span>

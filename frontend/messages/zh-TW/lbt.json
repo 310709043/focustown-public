@@ -188,7 +188,10 @@
     "senderPartnerLive": "{name}",
     "partnerWantsExtend": "對方想再聊 7 分鐘。",
     "extendAgree": "我也想",
-    "offline": "連線中斷，正在重新連線…"
+    "offline": "連線中斷，正在重新連線…",
+    "skyLabel": "你從天空帶來的話題",
+    "skyOpener": "聊聊「{word}」？你最近有遇到嗎？",
+    "skyDismiss": "先不要"
   },
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
@@ -750,5 +753,14 @@
         }
       }
     }
+  },
+  "sky": {
+    "kind": {
+      "trend": "昨天的熱門搜尋",
+      "pick": "小鎮今天的話題",
+      "idea": "可以聊聊"
+    },
+    "aria": "{label}：{word}。點一下，配對後拿來開場",
+    "taken": "帶上「{word}」了，配對後可以拿來開場。"
   }
 }

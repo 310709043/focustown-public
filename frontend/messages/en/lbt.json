@@ -188,7 +188,10 @@
     "senderPartnerLive": "{name}",
     "partnerWantsExtend": "They'd like 7 more minutes.",
     "extendAgree": "Me too",
-    "offline": "Connection lost. Reconnecting…"
+    "offline": "Connection lost. Reconnecting…",
+    "skyLabel": "A topic you brought from the sky",
+    "skyOpener": "Shall we talk about “{word}”? Has it come up for you lately?",
+    "skyDismiss": "Not now"
   },
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
@@ -750,5 +753,14 @@
         }
       }
     }
+  },
+  "sky": {
+    "kind": {
+      "trend": "Yesterday's top searches",
+      "pick": "Today in town",
+      "idea": "Something to talk about"
+    },
+    "aria": "{label}: {word}. Tap to bring it into your chat",
+    "taken": "Took “{word}” with you — use it to start the chat."
   }
 }

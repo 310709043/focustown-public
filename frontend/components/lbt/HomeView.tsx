@@ -19,6 +19,7 @@ import { BatteryCharacter } from "./BatteryCharacter";
 import { MusicVolume } from "./MusicControls";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
+import { SkyTopicLine, SkyTopics } from "./SkyTopics";
 import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {
@@ -84,9 +85,11 @@ export function HomeView() {
               <br className="desktop-break" />
               {t("home.subtitleB")}
             </p>
+            <SkyTopicLine />
           </div>
 
           <Townscape />
+          <SkyTopics />
         </section>
 
         <div className="selection-card">

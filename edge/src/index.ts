@@ -13,6 +13,7 @@
  *
  * The town itself is one Durable Object (src/townObject.ts); reports go to D1.
  */
+import { addTopic, deleteTopic, listTopics, publicTopics, refreshTrends, setTopicHidden } from "./topics";
 import { type Env, feedbackRetentionDays, retentionDays, tokenTtlHours } from "./config";
 import { adminPage, adminPageHeaders } from "./adminPage";
 import {
@@ -188,6 +189,37 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
     const found = await setReportStatus(env.DB, decodeURIComponent(m[1] as string), status as ReportStatus);
     return found ? json(request, env, 204, null) : error(request, env, 404, "report_not_found");
   }
+  if (path === "/api/v1/admin/lbt/topics" && request.method === "GET") {
+    return json(request, env, 200, { items: await listTopics(env.DB) });
+  }
+  if (path === "/api/v1/admin/lbt/topics" && request.method === "POST") {
+    const body = (await boundedJson(request)) as { word?: unknown } | null;
+    try {
+      return json(request, env, 201, await addTopic(env.DB, body?.word, Date.now()));
+    } catch (err) {
+      if (err instanceof InputError) return error(request, env, 422, err.code);
+      throw err;
+    }
+  }
+  if (path === "/api/v1/admin/lbt/topics/refresh" && request.method === "POST") {
+    try {
+      return json(request, env, 200, { stored: await refreshTrends(env.DB, Date.now()) });
+    } catch {
+      return error(request, env, 502, "trends_unavailable");
+    }
+  }
+  const topicHidden = /^\/api\/v1\/admin\/lbt\/topics\/([^/]+)\/hidden$/.exec(path);
+  if (request.method === "POST" && topicHidden) {
+    const body = (await boundedJson(request)) as { hidden?: unknown } | null;
+    if (typeof body?.hidden !== "boolean") return error(request, env, 422, "invalid_hidden");
+    const found = await setTopicHidden(env.DB, decodeURIComponent(topicHidden[1] as string), body.hidden);
+    return found ? json(request, env, 204, null) : error(request, env, 404, "topic_not_found");
+  }
+  const topicDelete = /^\/api\/v1\/admin\/lbt\/topics\/([^/]+)$/.exec(path);
+  if (request.method === "DELETE" && topicDelete) {
+    const found = await deleteTopic(env.DB, decodeURIComponent(topicDelete[1] as string));
+    return found ? json(request, env, 204, null) : error(request, env, 404, "topic_not_found");
+  }
   if (request.method === "GET" && path === "/api/v1/admin/lbt/feedback") {
     const params = new URL(request.url).searchParams;
     const raw = params.get("status") ?? "new";
@@ -293,6 +325,10 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
     return json(request, env, 200, await town(env).status());
   }
 
+  if (path === "/api/v1/lbt/topics" && request.method === "GET") {
+    return json(request, env, 200, { items: await publicTopics(env.DB) });
+  }
+
   if (path === "/api/v1/lbt/guest" && request.method === "POST") {
     if (!(await town(env).allowGuest(clientIp(request)))) {
       return error(request, env, 429, "too_many_guest_sessions");
@@ -338,7 +374,7 @@ export default {
     }
   },
 
-  /** Daily: delete reports and feedback past their retention windows (the privacy page promises it). */
+  /** Daily: delete reports and feedback past their retention windows (the privacy page promises it), refresh sky topics. */
   async scheduled(_controller, env, _ctx): Promise<void> {
     const cutoff = new Date(Date.now() - retentionDays(env) * 86_400_000).toISOString();
     await purgeExpiredSuspensions(env.DB, Date.now());
@@ -348,6 +384,13 @@ export default {
     const feedbackRemoved = await purgeFeedback(env.DB, feedbackCutoff);
     if (feedbackRemoved > 0) {
       console.log(JSON.stringify({ event: "lbt_feedback_purged", removed: feedbackRemoved, cutoff: feedbackCutoff }));
+    }
+    try {
+      const stored = await refreshTrends(env.DB, Date.now());
+      console.log(JSON.stringify({ event: "lbt_topics_refreshed", stored }));
+    } catch {
+      // The sky falls back to manual picks and the town's own ideas.
+      console.error(JSON.stringify({ event: "lbt_topics_refresh_failed" }));
     }
   },
 } satisfies ExportedHandler<Env>;
