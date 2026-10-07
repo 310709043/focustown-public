@@ -20,11 +20,11 @@
   --peach: #f4b49d;
   --mint: #b6d6c4;
   --display:
-    var(--font-nunito-sans), var(--font-noto-sans-tc), "PingFang TC",
-    "Microsoft JhengHei", sans-serif;
+    var(--font-nunito-sans), "PingFang TC", "Noto Sans TC",
+    "Noto Sans CJK TC", "Microsoft JhengHei", sans-serif;
   --body:
-    var(--font-nunito-sans), var(--font-noto-sans-tc), "PingFang TC",
-    "Microsoft JhengHei", sans-serif;
+    var(--font-nunito-sans), "PingFang TC", "Noto Sans TC",
+    "Noto Sans CJK TC", "Microsoft JhengHei", sans-serif;
   --mono: var(--font-dm-mono), ui-monospace, monospace;
 }
 .lbt * {

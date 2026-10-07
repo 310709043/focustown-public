@@ -9,6 +9,7 @@ import { ConnectionBanner } from "@/components/chrome/ConnectionBanner";
 import { SplashGate } from "@/components/chrome/SplashGate";
 import { Toaster } from "@/components/chrome/Toaster";
 import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
+import { fontVariables } from "@/lib/fonts";
 
 /**
  * Shell for the original Focus Town routes (sign-in, town, focus rooms,
@@ -25,8 +26,11 @@ export const metadata: Metadata = {
 };
 
 export default function LegacyLayout({ children }: { children: ReactNode }) {
+  // The pixel-city fonts (and Noto Sans TC, about 1 MB of CJK slices) are
+  // declared here, not in the root layout, so LowBatteryTown pages never
+  // download them. `display: contents` keeps the wrapper out of layout.
   return (
-    <>
+    <div className={`legacy-fonts ${fontVariables}`}>
       <div className="grain-overlay" aria-hidden />
       <div className="vignette-overlay" aria-hidden />
       <div className="crt-overlay" aria-hidden />
@@ -47,6 +51,6 @@ export default function LegacyLayout({ children }: { children: ReactNode }) {
       </div>
       <AdSenseScript />
       {children}
-    </>
+    </div>
   );
 }

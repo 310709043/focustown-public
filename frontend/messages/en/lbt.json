@@ -348,7 +348,8 @@
             "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
             "Feedback box: the type, message, page and language you send from, and the reply e-mail if you choose to leave one. Used to improve the town and answer you; stored in our database and copied to the operator's Google Sheet (hosted by Google), and deleted after {feedbackDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
-            "Usage statistics: if we enable Google Analytics, it uses cookies for anonymous browsing statistics; you can block them in your browser.",
+            "Usage statistics: we use Cloudflare Web Analytics to count anonymous browsing statistics, such as page views and loading speed. It sets no cookies, does not follow you across other sites and builds no personal profile.",
+            "Waiting alerts and chats with the operator: when someone has waited a while to be paired, the operator's phone gets a notice (via Telegram or Discord) with only the battery and chat intent they chose and how many seconds they have waited — no nickname, guest code, IP or message. The operator may then send you a chat invitation themselves; it always asks first, you can keep waiting for someone else, and you can leave any time after accepting.",
             "Safety review: an anonymous guest code can be suspended from matching for {suspensionHours} hours or {suspensionDays} days after report review. Restrictions expire; reasons, durations and revocation history are retained with report evidence for {reportDays} days. No device fingerprint or real-identity profile is created."
           ]
         },
@@ -767,5 +768,10 @@
     "taken": "Took “{word}” with you — use it to start the chat.",
     "use": "Start with this",
     "another": "Another"
+  },
+  "notFound": {
+    "title": "This street has no lamp yet.",
+    "body": "The page you're looking for isn't here. It may have moved.",
+    "back": "Back to the town"
   }
 }

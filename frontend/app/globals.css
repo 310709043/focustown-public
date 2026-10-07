@@ -185,6 +185,13 @@
   }
 }
 
+/* Legacy Focus Town routes: their fonts are declared on this wrapper (see
+   app/[locale]/(legacy)/layout.tsx), so it repeats the body font. */
+.legacy-fonts {
+  display: contents;
+  font-family: var(--font-dot-gothic-16), monospace;
+}
+
 html,
 body {
   background: var(--bg);

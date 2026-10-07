@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 
 import { routing } from "./i18n/routing";
+import { buildLbtCsp, CF_ANALYTICS_CONNECT, CF_ANALYTICS_SCRIPT } from "./lib/security/lbtCsp";
+import { isLbtPublicRoute } from "./lib/security/lbtRoutes.mjs";
 
 /**
  * CSP + locale routing.
@@ -78,12 +80,10 @@ const mediaOrigins = [
     : []),
 ].join(" ") || apiOriginHttp;
 
-// GA4 CSP origins — always allowed so the CSP doesn't depend on
-// build-time env resolution (which can be stale across Docker cache layers).
-// When GA4 isn't loaded, no script talks to these origins — safe no-op.
-const gaScriptSrc = " https://www.googletagmanager.com https://www.google-analytics.com";
-const gaConnectSrc = " https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net";
-const gaImgSrc = " https://www.google-analytics.com https://www.googletagmanager.com";
+// Cloudflare Web Analytics (cookieless) runs on every page when
+// NEXT_PUBLIC_CF_BEACON_TOKEN is set; allowing it when unset is a no-op.
+const cfScriptSrc = ` ${CF_ANALYTICS_SCRIPT}`;
+const cfConnectSrc = ` ${CF_ANALYTICS_CONNECT}`;
 
 // AdSense CSP origins — only appended when the publisher ID is configured.
 const adsenseEnabled = (process.env.NEXT_PUBLIC_ADSENSE_PUB_ID ?? "").length > 0;
@@ -108,8 +108,8 @@ function buildCsp(nonce: string): string {
   // cdn.jsdelivr.net is needed for MediaPipe's FilesetResolver which injects
   // <script> tags pointing to the WASM loader at that CDN origin.
   const scriptSrc = isProd
-    ? `'self' 'unsafe-inline' https://cdn.jsdelivr.net${adScriptSrc}${gaScriptSrc}`
-    : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net${adScriptSrc}${gaScriptSrc}`;
+    ? `'self' 'unsafe-inline' https://cdn.jsdelivr.net${adScriptSrc}${cfScriptSrc}`
+    : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net${adScriptSrc}${cfScriptSrc}`;
 
   const directives = [
     "default-src 'self'",
@@ -117,14 +117,14 @@ function buildCsp(nonce: string): string {
     // (only the first wins), so this must be the single script-src entry.
     `script-src ${scriptSrc} 'wasm-unsafe-eval'`,
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' data: blob:${adImgSrc}${gaImgSrc}`,
+    `img-src 'self' data: blob:${adImgSrc}`,
     `media-src 'self' ${mediaOrigins} blob:`,
     "font-src 'self' data:",
     // Restrict to the known API origin only. Bare `ws:`/`wss:` wildcards
     // would let an injected script open a WebSocket to attacker-controlled
     // hosts and exfiltrate chat/tokens. The legitimate WS target is already
     // included via apiOriginWs (derived from NEXT_PUBLIC_API_BASE_URL).
-    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} https://cdn.jsdelivr.net https://storage.googleapis.com${adConnectSrc}${gaConnectSrc}`,
+    `connect-src 'self' ${apiOriginHttp} ${apiOriginWs} https://cdn.jsdelivr.net https://storage.googleapis.com${adConnectSrc}${cfConnectSrc}`,
     // MediaPipe worker threads need blob: URLs.
     "worker-src 'self' blob:",
     "manifest-src 'self'",
@@ -159,7 +159,12 @@ export function middleware(request: NextRequest) {
   if (legacy) return legacy;
 
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = buildCsp(nonce);
+  // LowBatteryTown pages get a strict policy; legacy Focus Town pages keep
+  // the allowances their camera, embeds and ads need.
+  const lbt = isLbtPublicRoute(request.nextUrl.pathname);
+  const csp = lbt
+    ? buildLbtCsp({ nonce, prod: isProd, apiHttp: apiOriginHttp, apiWs: apiOriginWs })
+    : buildCsp(nonce);
 
   // Next.js stamps `nonce=` on its SSR-injected <script> tags ONLY when the
   // inner request carries `x-nonce` — and "carries" means the framework's
@@ -201,7 +206,9 @@ export function middleware(request: NextRequest) {
   response.headers.set("x-csp-nonce", nonce);
   response.headers.set(
     "Permissions-Policy",
-    "camera=(self), microphone=(), geolocation=(), interest-cohort=()",
+    lbt
+      ? "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+      : "camera=(self), microphone=(), geolocation=(), interest-cohort=()",
   );
   return response;
 }
