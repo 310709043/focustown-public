@@ -10,10 +10,9 @@ import {
   setRequestLocale,
 } from "next-intl/server";
 
-import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { CloudflareAnalytics } from "@/components/analytics/CloudflareAnalytics";
 import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { routing, type Locale } from "@/i18n/routing";
-import { fontVariables } from "@/lib/fonts";
 import { BRAND, BRAND_ALIASES, jsonLd, SITE_URL } from "@/lib/lbt/site";
 import { TOWN_TIME_BOOT } from "@/lib/lbt/townTime";
 
@@ -149,7 +148,7 @@ export default async function LocaleLayout({
   return (
     // suppressHydrationWarning: the boot script below sets data-lbt-time /
     // data-lbt-week on <html> before React hydrates.
-    <html lang={locale} className={fontVariables} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* Static code, no user input: picks the town's time of day before first paint. */}
         <script dangerouslySetInnerHTML={{ __html: TOWN_TIME_BOOT }} />
@@ -186,7 +185,7 @@ export default async function LocaleLayout({
             }}
           />
           <DirectionSync locale={locale} />
-          <GoogleAnalytics />
+          <CloudflareAnalytics />
           {children}
         </NextIntlClientProvider>
       </body>

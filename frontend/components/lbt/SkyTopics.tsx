@@ -136,3 +136,24 @@ export function SkyTopicLine() {
     </p>
   );
 }
+
+/** Desktop chat aside: today's sky topic, ready to drop into the composer. */
+export function SkyTopicSuggestion({ onUse }: { onUse: (word: string) => void }) {
+  const t = useTranslations("lbt.sky");
+  const topic = useSkyTopic();
+  const next = useSkyTopics((s) => s.next);
+  return (
+    <div className="aside-sky-topic">
+      <span className="small-label">{t(`kind.${topic.kind}`)}</span>
+      <strong>{topic.word}</strong>
+      <div className="aside-sky-actions">
+        <button type="button" onClick={() => onUse(topic.word)}>
+          {t("use")}
+        </button>
+        <button type="button" onClick={next}>
+          {t("another")} <span aria-hidden="true">↻</span>
+        </button>
+      </div>
+    </div>
+  );
+}
