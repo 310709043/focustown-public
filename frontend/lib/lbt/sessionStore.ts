@@ -223,6 +223,10 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         if (state.view !== "chat") set({ view: "waiting", waitingSince: state.waitingSince ?? Date.now() });
         return;
       case "matched":
+        // Reconnect snapshots can precede the queued leave acknowledgement.
+        // Never bring an ended conversation back onto the screen. A fresh
+        // walk-in clears endReason; an initial reload still resumes normally.
+        if (state.view === "end" || state.endReason !== null) return;
         clearTimeout(inviteExpiry);
         set({
           companionInvitation: null,
@@ -419,6 +423,9 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       const state = get();
       const text = Array.from(raw.trim()).slice(0, MESSAGE_MAX).join("");
       if (!text || state.view !== "chat" || remainingSeconds(state) === 0) return false;
+      // Keep the draft in the composer instead of silently queuing it while
+      // disconnected (the partner may have left before we reconnect).
+      if (state.mode === "live" && state.connection !== "open") return false;
       transport?.send(text);
       return true;
     },

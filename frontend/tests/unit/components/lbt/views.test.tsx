@@ -33,6 +33,7 @@ function emit(event: Parameters<FakeTransport["emit"]>[0]) {
 
 function openChat(simulated = false, endsInMs = 420_000) {
   act(() => {
+    transport.emit({ type: "connection", state: "open" });
     store().setAdult(true);
     store().startWaiting("小橘");
     transport.emit(matched(endsInMs, simulated));
@@ -259,6 +260,22 @@ describe("ChatView", () => {
     fireEvent.change(screen.getByLabelText("lbt.chat.composerLabel"), { target: { value: "h" } });
 
     expect(transport.ops()).toContain("typing");
+  });
+
+  test("offline sends keep the draft until the connection is restored", () => {
+    openChat(false);
+    render(<ChatView />);
+    const input = screen.getByLabelText("lbt.chat.composerLabel") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "保留這句話" } });
+    emit({ type: "connection", state: "offline" });
+    expect(screen.getByRole("button", { name: "lbt.chat.send" })).toBeDisabled();
+    fireEvent.submit(input.closest("form") as HTMLFormElement);
+    expect(input.value).toBe("保留這句話");
+    expect(transport.ops()).not.toContain("send");
+    emit({ type: "connection", state: "open" });
+    fireEvent.submit(input.closest("form") as HTMLFormElement);
+    expect(transport.calls.at(-1)).toEqual({ op: "send", arg: "保留這句話" });
+    expect(input.value).toBe("");
   });
 
   test("the partner's extend request shows a one-tap agree", () => {

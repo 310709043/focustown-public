@@ -23,6 +23,7 @@ function walkIn(nickname = "小橘") {
 }
 
 function inChat(endsInMs?: number) {
+  transport.emit({ type: "connection", state: "open" });
   walkIn();
   transport.emit(matched(endsInMs));
 }
@@ -60,6 +61,19 @@ describe("attaching", () => {
 
     expect(store().connection).toBe("offline");
   });
+});
+
+test("reconnect replay cannot reopen a chat after I left, even after returning home", () => {
+  inChat();
+  transport.emit({ type: "connection", state: "offline" });
+  store().leave();
+  store().goHome();
+  // A reconnect can deliver the snapshot before the queued leave is handled.
+  transport.emit(matched());
+  transport.emit({ type: "message", id: "old", from: "partner", text: "private old text" });
+  expect(store().view).toBe("home");
+  expect(store().partner).toBeNull();
+  expect(store().lines).toEqual([]);
 });
 
 describe("walking in", () => {

@@ -6,6 +6,7 @@ on:
     paths:
       - "frontend/**"
       - ".github/workflows/deploy-cloudflare-web.yml"
+      - ".github/workflows/lbt-integration.yml"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +17,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  integration:
+    uses: ./.github/workflows/lbt-integration.yml
   deploy:
+    needs: integration
     runs-on: ubuntu-latest
     defaults:
       run:

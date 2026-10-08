@@ -207,3 +207,30 @@ Defer standalone major migrations until a dedicated compatibility change:
 Major version updates for these packages are deferred in Dependabot; minor and
 patch updates remain enabled. Review security alerts separately rather than
 assuming a deferred major upgrade is safe forever.
+
+## Real-chat acceptance before deployment
+
+Both Cloudflare deployment workflows now require `lbt-integration.yml` to pass.
+It builds the frontend against a disposable local Worker and exercises real
+WebSockets, D1 migrations, pairing, bidirectional messages, mutual extension,
+reporting and review, mobile reconnection, companion duty takeover, feedback,
+music, support navigation, bilingual SEO and day/night presentation.
+
+Run with Node 22 after installing each service's frozen lockfile:
+
+```sh
+cd frontend
+pnpm exec playwright install chromium
+pnpm test:lbt:stack
+```
+
+The runner reserves `127.0.0.1:3100` and `127.0.0.1:8791`, creates fresh local
+D1/DO storage and disposable credentials, and removes them when finished.
+It never deploys or uses production Cloudflare credentials. Do not run a second
+copy concurrently. Failures block deployment rather than retrying into shared
+rate limits. For a focused run, append an `e2e/lbt-*.spec.ts` filename; `--dev`
+uses Next development mode for diagnosis.
+
+Google Sheets delivery, actual payments/payouts and owner phone notifications
+remain separate provider checks. A successful local test is not proof that
+those external accounts are configured or that a financial transaction settled.

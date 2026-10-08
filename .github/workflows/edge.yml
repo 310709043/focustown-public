@@ -6,10 +6,10 @@ name: edge (Cloudflare API)
 
 on:
   pull_request:
-    paths: ["edge/**", ".github/workflows/edge.yml"]
+    paths: ["edge/**", ".github/workflows/edge.yml", ".github/workflows/lbt-integration.yml"]
   push:
     branches: [develop]
-    paths: ["edge/**", ".github/workflows/edge.yml"]
+    paths: ["edge/**", ".github/workflows/edge.yml", ".github/workflows/lbt-integration.yml"]
   workflow_dispatch:
 
 permissions:
@@ -20,6 +20,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  integration:
+    uses: ./.github/workflows/lbt-integration.yml
   test:
     runs-on: ubuntu-latest
     defaults:
@@ -40,7 +42,7 @@ jobs:
       - run: pnpm test
 
   deploy:
-    needs: test
+    needs: [test, integration]
     if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     defaults:
