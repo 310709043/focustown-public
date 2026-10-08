@@ -155,6 +155,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
   let offlineTimer: ReturnType<typeof setTimeout> | undefined;
   let connecting = false;
+  let networkOffline = false;
   const outbox: string[] = [];
 
   const emit = (event: TransportEvent) => listener?.(event);
@@ -214,7 +215,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
   }
 
   async function connect() {
-    if (!running || connecting) return;
+    if (!running || connecting || networkOffline) return;
     connecting = true;
     emit({ type: "connection", state: "connecting" });
     let token: string;
@@ -222,12 +223,13 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
       token = await guestToken();
     } catch {
       connecting = false;
+      if (!running || networkOffline) return;
       scheduleOffline();
       scheduleReconnect(false);
       return;
     }
     connecting = false;
-    if (!running) return;
+    if (!running || networkOffline) return;
     const ws = new Socket(`${wsBase}/api/v1/lbt/ws`, [`bearer.${token}`]);
     socket = ws;
     ws.onopen = () => {
@@ -259,6 +261,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
       clearInterval(heartbeatTimer);
       if (socket === ws) socket = null;
       if (!running) return;
+      emit({ type: "connection", state: "connecting" });
       scheduleOffline();
       if (ev.code === 4401) forgetToken();
       scheduleReconnect(ev.code === 4429);
@@ -277,6 +280,23 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     attempt = 0;
     void connect();
   }
+  // A phone can lose its network while the browser still reports an OPEN
+  // socket. Stop accepting sends immediately; do not wait for TCP to time out.
+  function onOffline() {
+    if (!running) return;
+    networkOffline = true;
+    clearTimeout(reconnectTimer);
+    clearTimeout(offlineTimer);
+    clearInterval(heartbeatTimer);
+    const old = socket;
+    socket = null;
+    if (old) {
+      old.onopen = old.onmessage = old.onclose = old.onerror = null;
+      old.close(1000);
+    }
+    emit({ type: "connection", state: "offline" });
+  }
+  const onOnline = () => { networkOffline = false; wake(); };
   const onVisible = () => {
     if (typeof document !== "undefined" && document.visibilityState === "visible") wake();
   };
@@ -295,11 +315,19 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     start(next) {
       listener = next;
       running = true;
-      void connect();
-      if (typeof window !== "undefined") window.addEventListener("online", wake);
+      networkOffline = typeof navigator !== "undefined" && navigator.onLine === false;
+      if (networkOffline) emit({ type: "connection", state: "offline" });
+      else void connect();
+      if (typeof window !== "undefined") {
+        window.addEventListener("online", onOnline);
+        window.addEventListener("offline", onOffline);
+      }
       if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVisible);
       return () => {
-        if (typeof window !== "undefined") window.removeEventListener("online", wake);
+        if (typeof window !== "undefined") {
+          window.removeEventListener("online", onOnline);
+          window.removeEventListener("offline", onOffline);
+        }
         if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVisible);
         running = false;
         listener = null;

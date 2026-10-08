@@ -291,6 +291,25 @@ describe("createLiveTransport", () => {
     expect(FakeSocket.instances.length).toBe(before + 1);
   });
 
+  test("an offline event retires a stale OPEN socket and online resumes with the same guest", async () => {
+    await started();
+    const old = FakeSocket.instances[0];
+    old.open();
+    window.dispatchEvent(new Event("offline"));
+    expect(events.at(-1)).toEqual({ type: "connection", state: "offline" });
+    expect(old.closedWith).toBe(1000);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(FakeSocket.instances).toHaveLength(1);
+    expect(old.sent).toHaveLength(0);
+    window.dispatchEvent(new Event("online"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(FakeSocket.instances).toHaveLength(2);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    FakeSocket.instances[1].open();
+    old.serverClose(1006);
+    expect(events.at(-1)).toEqual({ type: "connection", state: "open" });
+  });
+
   test("returning to the tab reconnects a dropped socket, and leaves a live one alone", async () => {
     await started();
     FakeSocket.instances[0].open();

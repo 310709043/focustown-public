@@ -28,6 +28,7 @@ export function ChatView() {
   const extendMine = useLbtStore((s) => s.extendMine);
   const extendPartner = useLbtStore((s) => s.extendPartner);
   const connection = useLbtStore((s) => s.connection);
+  const mode = useLbtStore((s) => s.mode);
   const topicId = useLbtStore((s) => s.topicId);
   const sendMessage = useLbtStore((s) => s.sendMessage);
   const notifyTyping = useLbtStore((s) => s.notifyTyping);
@@ -310,7 +311,7 @@ export function ChatView() {
               <button
                 type="submit"
                 aria-label={t("chat.send")}
-                disabled={timeUp}
+                disabled={timeUp || (mode === "live" && connection !== "open")}
               >
                 ↑
               </button>

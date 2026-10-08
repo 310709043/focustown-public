@@ -31,14 +31,17 @@ async function walkIn(
   await page.getByRole("button", { name: /走進小鎮/ }).click();
 }
 
-test.describe.configure({ mode: "serial" });
+// Close even a failed test's sockets before the next scenario enters the town.
+test.afterEach(async ({ browser }) => {
+  await Promise.allSettled(browser.contexts().map(context => context.close()));
+});
 
 test("two visitors are paired, chat, extend together and report", async ({ browser }) => {
   const a = await visitor(browser);
   const b = await visitor(browser);
 
-  // Real head count: both pages hold a live connection.
-  await expect(a.locator(".town-count")).toContainText(/此刻 \d+ 人在小鎮/, { timeout: 20_000 });
+  // Fewer than 20 real visitors deliberately shows a greeting, not a count.
+  await expect(a.locator(".town-count")).toContainText("街燈亮著，歡迎來坐坐", { timeout: 20_000 });
 
   await walkIn(a, "小橘", /快沒電了/, "有人聽我說");
   await expect(a.getByRole("heading", { name: /等另一個人走過來/ })).toBeVisible();

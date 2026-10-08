@@ -1,0 +1,48 @@
+name: LowBatteryTown integration
+
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "edge/**"
+      - ".github/workflows/lbt-integration.yml"
+      - ".github/workflows/deploy-cloudflare-web.yml"
+      - ".github/workflows/edge.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-chat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.15.9 }
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install frontend
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+      - name: Install Worker dependencies with its CI package manager
+        working-directory: edge
+        run: npx --yes pnpm@10 install --frozen-lockfile
+      - name: Install Chromium
+        working-directory: frontend
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Test actual frontend and Worker with disposable local data
+        working-directory: frontend
+        run: pnpm test:lbt:stack
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lbt-integration-${{ github.run_id }}
+          path: frontend/playwright-report/
+          retention-days: 7
