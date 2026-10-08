@@ -63,6 +63,7 @@ const SCRIPT = `
 "use strict";
 try { sessionStorage.removeItem("lbt.admin.token"); } catch {}
 let signedIn = true;
+let sessionVersion = 0;
 const REASONS = {harassment:"騷擾",sexual:"性相關內容",minor:"疑似未成年",spam:"廣告／詐騙",self_harm:"自傷風險",other:"其他"};
 const STATUSES = {open:"待處理",reviewed:"已檢視",actioned:"已處理",dismissed:"駁回"};
 const ENERGY = {1:"快沒電了",2:"還有一點",3:"想說說話"};
@@ -87,37 +88,51 @@ const token = () => signedIn;
 const fmt = (iso) => new Date(iso).toLocaleString("zh-TW", {timeZone:"Asia/Taipei", hour12:false});
 
 async function api(path, opts) {
+  const version = sessionVersion;
   const res = await fetch(path, {...opts, credentials: "same-origin", headers: {"Content-Type": "application/json"}});
+  // Dashboard requests run in parallel. Responses from an earlier session
+  // must not clear the current login form or sign out a newly logged-in owner.
+  if (version !== sessionVersion) throw new Error("stale_session");
   if (res.status === 401) { signOut("管理密碼不正確或已失效。"); throw new Error("unauthorized"); }
   if (!res.ok) { const body = await res.json().catch(() => null); throw new Error(body?.error?.code || "HTTP " + res.status); }
   return res.status === 204 ? null : res.json();
 }
 
-function signOut(message) {
-  stopCompanion();
+async function signOut(message) {
+  if (!signedIn) return;
   signedIn = false;
-  fetch("/api/v1/admin/lbt/logout", {method:"POST", credentials:"same-origin"}).catch(() => {});
+  sessionVersion++;
+  stopCompanion();
+  app.replaceChildren(el("p", {class:"empty", text:"載入中…"}));
+  // Finish clearing the old cookie before allowing a new login to set one.
+  await fetch("/api/v1/admin/lbt/logout", {method:"POST", credentials:"same-origin",
+    signal:AbortSignal.timeout(10000)}).catch(() => {});
   showLogin(message || "");
 }
 
 function showLogin(message) {
   const input = el("input", {type:"password", placeholder:"管理密碼（ADMIN_TOKEN）", autocomplete:"current-password", "aria-label":"管理密碼"});
   const err = el("p", {class:"err", role:"alert", text: message});
+  const submit = el("button", {class:"btn primary", type:"submit", text:"登入"});
   const form = el("form", {class:"login"},
     el("h1", {}, "LowBattery", el("span", {text:"Town"}), " 後台"),
-    input, el("button", {class:"btn primary", type:"submit", text:"登入"}), err);
+    input, submit, err);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!input.value.trim()) return;
+    if (submit.disabled || !input.value.trim()) return;
+    submit.disabled = true;
+    const version = ++sessionVersion;
     const password = input.value;
     input.value = "";
     try {
       const res = await fetch("/api/v1/admin/lbt/login", {method:"POST", credentials:"same-origin",
         headers:{"Content-Type":"application/json"}, body:JSON.stringify({password})});
+      if (version !== sessionVersion) return;
       if (!res.ok) { err.textContent = res.status === 429 ? "登入嘗試太多，請十五分鐘後再試。" : "管理密碼不正確或暫時無法登入。"; return; }
       signedIn = true;
       await render();
     } catch { err.textContent = "無法連線，請稍後再試。"; }
+    finally { submit.disabled = false; }
   });
   app.replaceChildren(form);
   input.focus();
@@ -273,6 +288,7 @@ function topicsSection(items) {
 
 async function render() {
   if (!token()) return showLogin("");
+  const version = sessionVersion;
   const [o, list, fb, trends, topics] = await Promise.all([
     api("/api/v1/admin/lbt/overview"),
     api("/api/v1/admin/lbt/reports?limit=100&status=" + (filter === "all" ? "all" : filter)),
@@ -280,6 +296,7 @@ async function render() {
     api("/api/v1/admin/lbt/trends?days=30"),
     api("/api/v1/admin/lbt/topics"),
   ]);
+  if (!signedIn || version !== sessionVersion) return;
   const tabs = el("div", {class:"tabs", role:"group", "aria-label":"依狀態篩選"});
   for (const [s, label] of [...Object.entries(STATUSES), ["all", "全部"]]) {
     tabs.append(el("button", {class:"btn", type:"button", "aria-pressed": String(s === filter),
