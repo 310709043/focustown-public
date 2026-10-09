@@ -13,7 +13,7 @@ afterEach(() => vi.restoreAllMocks());
 
 test("shows USD pricing and disclosures without obsolete TWD tiers", () => {
   render(<SupportModal />);
-  expect(screen.getByText("1 Power · US$3")).toBeInTheDocument();
+  expect(screen.getByText("1 Power · US$5")).toBeInTheDocument();
   expect(screen.queryAllByRole("radio")).toHaveLength(0);
   expect(screen.getByText("lbt.modal.support.once")).toBeInTheDocument();
   expect(screen.getByText("lbt.modal.support.disclosure")).toBeInTheDocument();
