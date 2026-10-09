@@ -74,6 +74,28 @@ describe("trends feed", () => {
     expect(pub.filter((t) => t.kind === "trend").map((t) => t.word)).toEqual(["颱風假你都怎麼過？", "新手機你會想換嗎？"]);
   });
 
+  test("a good rewrite replaces today's keyword-only rows, skipped ones included", async () => {
+    const fake = (async () => new Response(rss(["颱風假", "罷免投票", "新手機"]))) as unknown as typeof fetch;
+    await refreshTrends(env.DB, NOW, fake); // the 03:17 run, before the rewrite existed
+    await env.DB.prepare("UPDATE lbt_topics SET hidden = 1 WHERE word = '新手機'").run();
+    const rewrite = async (items: TrendItem[]) =>
+      parseRewrites(JSON.stringify([{ id: 1, q: "颱風假你都怎麼過？" }, { id: 2, q: "SKIP" }, { id: 3, q: "新手機你會想換嗎？" }]), items);
+    expect(await refreshTrends(env.DB, NOW, fake, rewrite)).toBe(2);
+    const rows = await env.DB.prepare("SELECT word, prompt, hidden FROM lbt_topics ORDER BY word").all();
+    expect(rows.results).toEqual([
+      { word: "新手機", prompt: "新手機你會想換嗎？", hidden: 1 },
+      { word: "颱風假", prompt: "颱風假你都怎麼過？", hidden: 0 },
+    ]);
+  });
+
+  test("a rewrite with nothing usable keeps the keywords", async () => {
+    const fake = (async () => new Response(rss(["颱風假", "新手機"]))) as unknown as typeof fetch;
+    const useless = async (items: TrendItem[]) => parseRewrites('[{"id":1,"q":"台风假你怎么过？"}]', items);
+    expect(await refreshTrends(env.DB, NOW, fake, useless)).toBe(2);
+    const pub = await publicTopics(env.DB, NOW);
+    expect(pub.filter((t) => t.kind === "trend").map((t) => t.word)).toEqual(["颱風假", "新手機"]);
+  });
+
   test("a failing rewriter keeps the plain keywords, so the sky is never blank", async () => {
     const fake = (async () => new Response(rss(["颱風假", "新手機"]))) as unknown as typeof fetch;
     const broken = async () => {
