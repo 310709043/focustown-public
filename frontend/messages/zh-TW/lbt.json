@@ -191,6 +191,7 @@
     "offline": "連線中斷，正在重新連線…",
     "skyLabel": "你從天空帶來的話題",
     "skyOpener": "聊聊「{word}」？你最近有遇到嗎？",
+    "skyOpenerQuestion": "想問問你：{word}",
     "skyDismiss": "先不要"
   },
   "end": {
@@ -760,7 +761,7 @@
   },
   "sky": {
     "kind": {
-      "trend": "昨天的熱門搜尋",
+      "trend": "從昨天的熱搜聊起",
       "pick": "小鎮今天的話題",
       "idea": "可以聊聊"
     },

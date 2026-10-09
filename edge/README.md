@@ -103,6 +103,32 @@ Discord instead (or as well): `npx wrangler secret put DISCORD_WEBHOOK_URL`
 (a `https://discord.com/api/webhooks/…` URL; anything else is ignored).
 With no secrets set, nothing is sent.
 
+## Sky topics as questions
+
+The daily cron (03:17 Taipei) fetches yesterday's Google Trends for Taiwan
+(`src/topics.ts`), drops heavy keywords and keywords whose news headline is
+heavy, then asks a text model on **Workers AI** to turn each keyword and
+headline into one light, open question in Traditional Chinese, for example
+颱風假 → 颱風假你都怎麼過？ (`src/topicIssues.ts`). Every answer is checked
+before it is shown: Traditional Chinese only, at most 28 characters, a single
+question, no heavy or partisan words, no links. The model answers SKIP for
+anything heavy or political, and skipped trends stay out of the sky.
+
+- Binding: `"ai": { "binding": "AI" }` in `wrangler.jsonc`. No API key is
+  needed, and a dozen rewrites a day fits easily in Workers AI's free daily
+  allowance. Only public keywords and headlines are sent, nothing about
+  visitors.
+- Model: `LBT_TOPICS_MODEL` (default `@cf/qwen/qwen3-30b-a3b-fp8`). To use
+  a third-party model such as `anthropic/claude-haiku-4.5`, load AI Gateway
+  Unified Billing credits in the Cloudflare dashboard and set
+  `LBT_TOPICS_MODEL` (and `LBT_AI_GATEWAY` if the gateway is not `default`).
+- If the model is unavailable or its answer cannot be read, the plain
+  keywords are stored as before, so the sky never goes blank. The owner can
+  hide any topic in /admin, and owner picks may be whole questions (up to 28
+  characters).
+- Tests never reach Cloudflare: `vitest.config.ts` sets
+  `remoteBindings: false`, and the tests inject a fake model.
+
 ## Admin console
 
 `https://api.lowbatterytown.com/admin`: sign in with `ADMIN_TOKEN`

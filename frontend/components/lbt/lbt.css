@@ -3787,6 +3787,16 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
   display: block;
   background: rgba(90, 80, 70, 0.6);
 }
+/* questions (longer topics) wrap onto two balanced lines */
+.lbt .sky-carrier.is-long .sky-tag {
+  max-width: 12.5em;
+  white-space: normal;
+  text-wrap: balance;
+  line-height: 1.35;
+}
+.lbt .sky-carrier.is-long .sky-tag b {
+  font-size: 14px;
+}
 
 /* dawn: a balloon rising behind the street */
 .lbt .carrier-balloon {
@@ -3916,6 +3926,15 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
   letter-spacing: 0.1em;
   text-shadow: 0 0 6px #ff7ab8, 0 0 16px #ff4fa0;
 }
+.lbt .carrier-neon.is-long {
+  max-width: 220px;
+}
+.lbt .carrier-neon.is-long b {
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-wrap: balance;
+}
 @keyframes lbt-neon-cycle {
   0% { opacity: 0.15; }
   2% { opacity: 1; }
@@ -3972,6 +3991,8 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
     animation: none !important;
   }
   .lbt .carrier-plane { left: 58%; }
+  /* still, the balloon hangs where its rise would end, clear of the street */
+  .lbt .carrier-balloon { bottom: 30%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

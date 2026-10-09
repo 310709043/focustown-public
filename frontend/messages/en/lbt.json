@@ -191,6 +191,7 @@
     "offline": "Connection lost. Reconnecting…",
     "skyLabel": "A topic you brought from the sky",
     "skyOpener": "Shall we talk about “{word}”? Has it come up for you lately?",
+    "skyOpenerQuestion": "Here's one for you: {word}",
     "skyDismiss": "Not now"
   },
   "end": {
@@ -760,7 +761,7 @@
   },
   "sky": {
     "kind": {
-      "trend": "Yesterday's top searches",
+      "trend": "From yesterday's searches",
       "pick": "Today in town",
       "idea": "Something to talk about"
     },

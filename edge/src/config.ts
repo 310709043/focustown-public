@@ -25,6 +25,12 @@ export interface Env {
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
   DISCORD_WEBHOOK_URL?: string;
+  /** Workers AI: rewrites the daily trends into questions (topicIssues.ts). Optional. */
+  AI?: Ai;
+  /** Text model for that rewrite; default @cf/qwen/qwen3-30b-a3b-fp8. */
+  LBT_TOPICS_MODEL?: string;
+  /** AI Gateway id for models outside Workers AI (e.g. anthropic/claude-haiku-4.5); default "default". */
+  LBT_AI_GATEWAY?: string;
 }
 
 /** Abuse limits, same numbers as the FastAPI backend's settings. */

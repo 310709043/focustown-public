@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ENERGY_ID, MESSAGE_MAX, SESSION_SECONDS } from "@/lib/lbt/constants";
 import { formatClock } from "@/lib/lbt/format";
 import { remainingSeconds, useLbtStore } from "@/lib/lbt/sessionStore";
+import { isQuestion } from "@/lib/lbt/skyTopics";
 import type { ChatLine } from "@/lib/lbt/types";
 
 import { BatteryAvatar } from "./BatteryAvatar";
@@ -70,9 +71,13 @@ export function ChatView() {
     if (sendMessage(draft)) setDraft("");
   };
 
+  /** A question from the sky opens the chat as it is; a keyword gets a frame. */
+  const skyOpener = (word: string) =>
+    t(isQuestion(word) ? "chat.skyOpenerQuestion" : "chat.skyOpener", { word });
+
   const applySkyTopic = () => {
     if (!skyTopic) return;
-    setDraft(t("chat.skyOpener", { word: skyTopic }));
+    setDraft(skyOpener(skyTopic));
     clearSkyTopic();
     inputRef.current?.focus();
   };
@@ -272,7 +277,7 @@ export function ChatView() {
             {skyTopic && !topicId ? (
               <div className="topic-card sky-topic-card" aria-live="polite">
                 <span className="small-label">{t("chat.skyLabel")}</span>
-                <p>{t("chat.skyOpener", { word: skyTopic })}</p>
+                <p>{skyOpener(skyTopic)}</p>
                 <div className="topic-actions">
                   <button type="button" onClick={applySkyTopic}>
                     {t("chat.topicUse")}
@@ -368,7 +373,7 @@ export function ChatView() {
           <p className="aside-help">{t("chat.aside.help")}</p>
           <SkyTopicSuggestion
             onUse={(word) => {
-              setDraft(t("chat.skyOpener", { word }));
+              setDraft(skyOpener(word));
               inputRef.current?.focus();
             }}
           />
