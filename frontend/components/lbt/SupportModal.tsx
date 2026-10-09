@@ -33,7 +33,7 @@ export function SupportModal() {
       <p>{t("intro")}</p>
       <div className="support-total">
         <span>{t("totalLabel")}</span>
-        <strong>1 Power · US$3</strong>
+        <strong>1 Power · US$5</strong>
       </div>
       <p className="support-once">{t("once")}</p>
       <p>{t("usage")}</p>

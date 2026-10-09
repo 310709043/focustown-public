@@ -167,7 +167,7 @@ The admin password was rotated by the owner; no new password was shared here.
 ## Payments and customer contact
 
 The approved destination is https://buymeacoffee.com/lowbatterytown. One Power is
-US$3; support is voluntary and grants no matching priority. The owner dashboard
+US$5; support is voluntary and grants no matching priority. The owner dashboard
 shows a connected payout account, US$0 earnings and no payout history as of this
 verification. A genuine supporter payment and eventual bank receipt are still
 required; do not mark checkout navigation as a successful payment or have the

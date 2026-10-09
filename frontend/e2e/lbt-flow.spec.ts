@@ -187,7 +187,7 @@ test.describe("LowBatteryTown support dialog", () => {
     const dialog = page.getByRole("dialog", { name: "替小鎮點一盞燈" });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole("radio")).toHaveCount(0);
-    await expect(dialog.locator(".support-total strong")).toHaveText("1 Power · US$3");
+    await expect(dialog.locator(".support-total strong")).toHaveText("1 Power · US$5");
     await expect(dialog).toContainText("不自動續扣");
     await expect(dialog.getByRole("link", { name: /退款政策/ })).toHaveAttribute("target", "_blank");
 
