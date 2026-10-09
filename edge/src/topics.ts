@@ -220,6 +220,8 @@ export async function refreshTrends(
     } catch {
       prompts = null;
     }
+    // Nothing usable came back: keep the keywords rather than an empty sky.
+    if (prompts?.size === 0) prompts = null;
   }
   const keep = prompts ? items.filter((t) => prompts.has(t.word)) : items;
   const day = taipeiDay(nowMs);
@@ -232,6 +234,11 @@ export async function refreshTrends(
       )
       .bind(crypto.randomUUID(), word, prompts?.get(word) ?? null, day, created)
       .run();
+  }
+  if (prompts) {
+    // A good rewrite replaces today's keyword-only rows: ones it skipped,
+    // and ones stored earlier today by a run without the rewrite.
+    await db.prepare(`DELETE FROM lbt_topics WHERE source = 'trends' AND day = ? AND prompt IS NULL`).bind(day).run();
   }
   // Keep a week of trends; manual picks stay until the owner deletes them.
   await db.prepare(`DELETE FROM lbt_topics WHERE source = 'trends' AND day < ?`).bind(taipeiDay(nowMs - 7 * 86_400_000)).run();
