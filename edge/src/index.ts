@@ -14,6 +14,7 @@
  * The town itself is one Durable Object (src/townObject.ts); reports go to D1.
  */
 import { addTopic, deleteTopic, listTopics, publicTopics, refreshTrends, setTopicHidden } from "./topics";
+import { issueRewriter } from "./topicIssues";
 import { type Env, feedbackRetentionDays, retentionDays, tokenTtlHours } from "./config";
 import { adminPage, adminPageHeaders } from "./adminPage";
 import {
@@ -203,7 +204,7 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
   }
   if (path === "/api/v1/admin/lbt/topics/refresh" && request.method === "POST") {
     try {
-      return json(request, env, 200, { stored: await refreshTrends(env.DB, Date.now()) });
+      return json(request, env, 200, { stored: await refreshTrends(env.DB, Date.now(), fetch, issueRewriter(env)) });
     } catch {
       return error(request, env, 502, "trends_unavailable");
     }
@@ -326,7 +327,7 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
   }
 
   if (path === "/api/v1/lbt/topics" && request.method === "GET") {
-    return json(request, env, 200, { items: await publicTopics(env.DB) });
+    return json(request, env, 200, { items: await publicTopics(env.DB, Date.now()) });
   }
 
   if (path === "/api/v1/lbt/guest" && request.method === "POST") {
@@ -397,7 +398,7 @@ export default {
         return removed > 0 ? { removed, cutoff } : null;
       }],
       // On failure the sky falls back to manual picks and the town's own ideas.
-      ["lbt_topics_refreshed", async () => ({ stored: await refreshTrends(env.DB, now) })],
+      ["lbt_topics_refreshed", async () => ({ stored: await refreshTrends(env.DB, now, fetch, issueRewriter(env)) })],
     ];
     for (const [event, run] of steps) {
       try {

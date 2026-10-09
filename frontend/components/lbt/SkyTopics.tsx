@@ -9,6 +9,8 @@ import { currentSkyTopic, useSkyTopics, type SkyTopic } from "@/lib/lbt/skyTopic
 
 /** On phones (no carriers) and under reduced motion, words change on a timer instead. */
 const TIMER_MS = 7000;
+/** Longer than this, a topic (usually a question) wraps onto two smaller lines. */
+const LONG_AT = 8;
 
 function useSkyTopic(): SkyTopic {
   const mode = useLbtStore((s) => s.mode);
@@ -53,6 +55,8 @@ export function SkyTopics() {
       <b>{topic.word}</b>
     </span>
   );
+  const long = Array.from(topic.word).length > LONG_AT;
+  const carrier = (name: string) => `sky-carrier ${name}${long ? " is-long" : ""}`;
   const common = {
     type: "button" as const,
     onClick: () => take(topic.word),
@@ -62,7 +66,7 @@ export function SkyTopics() {
 
   return (
     <div className="sky-topics">
-      <button {...common} className="sky-carrier carrier-balloon">
+      <button {...common} className={carrier("carrier-balloon")}>
         <svg className="balloon-art" viewBox="0 0 84 112" aria-hidden="true" focusable="false">
           <path d="M42 4 C16 4 6 26 8 44 C10 62 30 74 34 86 L50 86 C54 74 74 62 76 44 C78 26 68 4 42 4Z" className="balloon-envelope" />
           <path d="M42 4 C32 20 30 60 36 86 M42 4 C52 20 54 60 48 86" className="balloon-seam" />
@@ -72,7 +76,7 @@ export function SkyTopics() {
         <span className="carrier-rope" aria-hidden="true" />
         {tag}
       </button>
-      <button {...common} className="sky-carrier carrier-plane">
+      <button {...common} className={carrier("carrier-plane")}>
         <span className="sky-tag banner">
           <small>{label}</small>
           <b>{topic.word}</b>
@@ -83,7 +87,7 @@ export function SkyTopics() {
           <path d="M24 14 L33 2 L37 2 L33 14Z M24 16 L33 27 L37 27 L33 16Z M5 15 L2 6 L7 6 L11 14Z" className="plane-wing" />
         </svg>
       </button>
-      <button {...common} className="sky-carrier carrier-kite">
+      <button {...common} className={carrier("carrier-kite")}>
         <svg className="kite-line" viewBox="0 0 190 270" aria-hidden="true" focusable="false">
           <path d="M182 2 C150 60 110 110 60 270" />
         </svg>
@@ -94,7 +98,7 @@ export function SkyTopics() {
         </svg>
         {tag}
       </button>
-      <button {...common} className="sky-carrier carrier-neon">
+      <button {...common} className={carrier("carrier-neon")}>
         <small>{label}</small>
         <b>{topic.word}</b>
       </button>

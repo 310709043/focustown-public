@@ -7,6 +7,9 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: { configPath: "./wrangler.jsonc" },
+        // Workers AI is a remote-only binding; tests inject a fake model and
+        // must run offline, without Cloudflare credentials.
+        remoteBindings: false,
         miniflare: {
           bindings: {
             TEST_MIGRATIONS: migrations,

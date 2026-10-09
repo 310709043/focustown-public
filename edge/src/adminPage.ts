@@ -36,7 +36,7 @@ h2{font-size:16px;margin:28px 0 12px;color:var(--lamp)}
 .stat.alert b{color:var(--peach)}
 .tabs{display:flex;flex-wrap:wrap;gap:8px}
 .report{background:var(--night2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
-.topics{display:grid;gap:8px;margin:12px 0 28px}.topic{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.topic.hidden{opacity:.5}.topic strong{flex:1 1 auto}section[aria-label="天空話題"] input{background:var(--night2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:240px}
+.topics{display:grid;gap:8px;margin:12px 0 28px}.topic{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.topic.hidden{opacity:.5}.topic strong{flex:1 1 auto}section[aria-label="天空話題"] input{background:var(--night2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:min(420px,100%)}
 .report-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
 .reason{font-weight:700;color:var(--peach)}.meta{color:var(--subtle);font-size:13px}
 .people{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
@@ -253,8 +253,8 @@ function topicsSection(items) {
   if (!items.length) list.append(el("p", {class:"empty", text:"還沒有話題：首頁會顯示小鎮內建的日常話題。"}));
   for (const t of items) {
     const row = el("div", {class:"topic" + (t.hidden ? " hidden" : "")},
-      el("span", {class:"reason", text: t.source === "manual" ? "手動" : "熱搜 " + t.day.slice(5)}),
-      el("strong", {text: t.word}),
+      el("span", {class:"reason", text: t.source === "manual" ? "手動" : "熱搜 " + t.day.slice(5) + (t.prompt ? "「" + t.word + "」" : "")}),
+      el("strong", {text: t.prompt || t.word}),
       el("button", {class:"btn", type:"button", text: t.hidden ? "重新顯示" : "隱藏", onclick: async () => {
         await api("/api/v1/admin/lbt/topics/" + encodeURIComponent(t.id) + "/hidden", {method:"POST", body: JSON.stringify({hidden: !t.hidden})});
         await render();
@@ -265,7 +265,7 @@ function topicsSection(items) {
     }}));
     list.append(row);
   }
-  const input = el("input", {type:"text", maxlength:"16", placeholder:"例如 Threads 上的熱門話題（16 字內）", "aria-label":"新增話題", value: topicDraft});
+  const input = el("input", {type:"text", maxlength:"28", placeholder:"例如 Threads 上大家在聊的議題，寫成一句問句（28 字內）", "aria-label":"新增話題", value: topicDraft});
   input.addEventListener("input", () => { topicDraft = input.value; });
   const note = el("p", {class:"meta", role:"status"});
   const add = el("button", {class:"btn primary", type:"button", text:"新增", onclick: async () => {
@@ -273,7 +273,7 @@ function topicsSection(items) {
       await api("/api/v1/admin/lbt/topics", {method:"POST", body: JSON.stringify({word: topicDraft})});
       topicDraft = "";
       await render();
-    } catch { note.textContent = "沒辦法新增：請確認是 1–16 字、不含連結或帳號。"; }
+    } catch { note.textContent = "沒辦法新增：請確認是 1–28 字、不含連結或帳號。"; }
   }});
   const refresh = el("button", {class:"btn", type:"button", text:"立即抓取熱搜", onclick: async (e) => {
     const btn = e.currentTarget; btn.disabled = true;
@@ -282,7 +282,7 @@ function topicsSection(items) {
   }});
   return el("section", {"aria-label":"天空話題"},
     el("h2", {text:"天空話題"}),
-    el("p", {class:"meta", text:"首頁天空會輪流帶著這些字飛過（清晨熱氣球、白天飛機、傍晚風箏、夜晚霓虹招牌）。熱搜每天 03:17 自動更新，已過濾沉重字詞；任何字都可以隱藏。"}),
+    el("p", {class:"meta", text:"首頁天空會輪流帶著這些話題飛過（清晨熱氣球、白天飛機、傍晚風箏、夜晚霓虹招牌）。熱搜每天 03:17 自動更新：先過濾沉重字詞，再由 Workers AI 改寫成好開口的問句（沉重或政治的會跳過）。任何一則都可以隱藏。"}),
     el("div", {class:"actions"}, input, add, refresh), note, list);
 }
 

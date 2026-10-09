@@ -23,6 +23,9 @@
       "migrations_dir": "migrations"
     }
   ],
+  // Workers AI: the daily cron rewrites trending searches into questions
+  // (src/topicIssues.ts). Public keywords and headlines only.
+  "ai": { "binding": "AI" },
   // 03:17 Asia/Taipei: purge reports past LBT_REPORT_RETENTION_DAYS.
   "triggers": { "crons": ["17 19 * * *"] },
   "vars": {
@@ -30,6 +33,7 @@
     "LBT_OPEN_HOURS": "",
     "LBT_TIMEZONE": "Asia/Taipei",
     "LBT_REPORT_RETENTION_DAYS": "180",
-    "LBT_FEEDBACK_RETENTION_DAYS": "30"
+    "LBT_FEEDBACK_RETENTION_DAYS": "30",
+    "LBT_TOPICS_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8"
   }
 }
