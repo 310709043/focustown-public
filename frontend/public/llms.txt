@@ -1,0 +1,37 @@
+# LowBatteryTown (低電量小鎮)
+
+> A free, no-sign-up, anonymous 1-on-1 chat for people with a low "social battery": talk to a real person for about 7 minutes, extend only if both agree, and leave anytime. Traditional Chinese first, also in English. 18+.
+
+LowBatteryTown (低電量小鎮) pairs two real, anonymous people for one short, low-pressure conversation. You pick a "social battery" that tells the other person your reply pace (快沒電了 / 還有一點 / 想說說話) and a chat intent (隨意聊聊 / 有人聽我說 / 聽聽別人的故事). No account and no real name — just an editable nickname. The first window is 7 minutes and extends only when both people agree; you can always leave ("說聲晚安") or report. It is not counselling or an emergency service.
+
+## Key facts
+
+- Free, no sign-up, anonymous; nickname is editable. 18+ (self-declared, enforced server-side).
+- Real people only — no bots and no fake head counts. A clearly labelled scripted demo (模擬對象) lives at /demo.
+- Works in mobile and desktop browsers. Available in Traditional Chinese (zh-TW) and English (en).
+- Not medical or crisis help: the chat and report dialog point to a universal helpline finder (findahelpline.com) and "your local emergency number".
+- Reports end the chat, are reviewed, and block that pair for 24 hours.
+
+## Who it is for
+
+People who feel socially drained, lonely, or awake at night and want a few minutes of low-pressure conversation with a stranger — without downloads, accounts, or pressure to keep talking.
+
+## Main pages
+
+- [Home (zh-TW)](https://www.lowbatterytown.com/zh-TW): start an anonymous one-on-one chat
+- [Home (English)](https://www.lowbatterytown.com/en): free anonymous chat, no sign-up
+- [Guide & FAQ (zh-TW)](https://www.lowbatterytown.com/zh-TW/guide)
+- [Guide & FAQ (English)](https://www.lowbatterytown.com/en/guide)
+
+## Guide articles
+
+- [社交電量是什麼 / What a social battery is](https://www.lowbatterytown.com/zh-TW/guide/social-battery)
+- [睡不著、想找人說話 / Can't sleep and want to talk](https://www.lowbatterytown.com/zh-TW/guide/cant-sleep)
+- [匿名聊天安全嗎 / Is anonymous chat safe](https://www.lowbatterytown.com/zh-TW/guide/anonymous-chat-safety)
+- [WooTalk 的替代選擇 / A WooTalk alternative](https://www.lowbatterytown.com/zh-TW/guide/wootalk-alternative)
+
+## Policies
+
+- [Privacy policy](https://www.lowbatterytown.com/zh-TW/policies/privacy)
+- [Terms of service](https://www.lowbatterytown.com/zh-TW/policies/terms)
+- [Community guidelines](https://www.lowbatterytown.com/zh-TW/policies/guidelines)
