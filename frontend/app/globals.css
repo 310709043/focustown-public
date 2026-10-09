@@ -209,12 +209,18 @@ body {
    for visitors who set OS-level reduced motion. Keeps essential transitions
    (focus rings, button press) but flattens decorative loops. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  /* LowBatteryTown (.lbt) sets its own reduced-motion rules in
+     components/lbt/lbt.css, which keep a few slow light changes. */
+  *:not(.lbt *),
+  *:not(.lbt *)::before,
+  *:not(.lbt *)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
   }
 }

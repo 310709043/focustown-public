@@ -1294,14 +1294,6 @@
     padding: 28px 22px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .lbt *,
-  .lbt *:before,
-  .lbt *:after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
 /* A few slow lights make the town feel awake without demanding attention. */
 .lbt .view:not(.hidden) {
   animation: lbt-view-arrive 0.42s ease-out both;
@@ -1471,11 +1463,20 @@
     transform: translateY(0) rotate(0);
   }
 }
+/* Reduced motion: nothing moves, slides or flickers. The town's slow,
+   in-place light changes stay, so the street does not look frozen: stars
+   twinkling, window lights switching on and off, the lamp's glow and the
+   low dusk sun (opacity, fill and glow only; keep this list to those). */
 @media (prefers-reduced-motion: reduce) {
-  .lbt *,
+  .lbt *:not(.sky-star, .sky-sun, .tw-beam, .lf-on, .lf-off),
   .lbt *:before,
   .lbt *:after {
     animation: none !important;
+  }
+  /* No transitions at all: the sun would otherwise glide to its new place. */
+  .lbt *,
+  .lbt *:before,
+  .lbt *:after {
     transition: none !important;
   }
 }
@@ -3693,6 +3694,16 @@ html[data-lbt-time="dusk"] .lbt .sky-sun {
   50% { box-shadow: 0 0 34px 10px rgba(255, 170, 110, 0.45); }
 }
 
+/* day: the sun's pale halo breathes, the one light change by day (so the
+   street is not frozen for visitors who ask for reduced motion either) */
+html[data-lbt-time="day"] .lbt .sky-sun {
+  animation: lbt-sun-glow-day 9s ease-in-out infinite;
+}
+@keyframes lbt-sun-glow-day {
+  0%, 100% { box-shadow: 0 0 16px 4px rgba(255, 236, 170, 0.3); }
+  50% { box-shadow: 0 0 30px 9px rgba(255, 236, 170, 0.55); }
+}
+
 /* windows: people come home at dusk, wake up at dawn */
 html[data-lbt-time="dusk"] .lbt .tw-win.lf-on,
 html[data-lbt-time="dawn"] .lbt .tw-win.lf-on { animation: lbt-life-on 26s steps(1, end) infinite; }
@@ -3964,8 +3975,6 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lbt .town-sky *,
-  .lbt .townscape *,
   .lbt.lbt-app {
     animation: none !important;
     transition: none !important;
