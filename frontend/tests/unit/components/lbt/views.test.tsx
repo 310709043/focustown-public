@@ -278,23 +278,58 @@ describe("ChatView", () => {
     expect(input.value).toBe("");
   });
 
-  test("the partner's extend request shows a one-tap agree", () => {
+  test("the partner's plug shows on their side and one tap agrees", () => {
     openChat();
     render(<ChatView />);
     emit({ type: "extendRequested", by: "partner" });
 
-    fireEvent.click(screen.getByRole("button", { name: "lbt.chat.extendAgree" }));
+    expect(screen.getByText("lbt.chat.plug.partnerPlugged")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "lbt.chat.plug.mine" }));
 
     expect(transport.ops().at(-1)).toBe("extend");
   });
 
-  test("my pending request disables the extend buttons", () => {
+  test("my plug cannot be pulled again while it waits for theirs", () => {
     openChat();
     render(<ChatView />);
 
     emit({ type: "extendRequested", by: "me" });
 
-    expect(screen.getByRole("button", { name: "lbt.chat.extendAria" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "lbt.chat.plug.minePlugged" })).toBeDisabled();
+  });
+
+  test("plug notes name the partner, as text", () => {
+    openChat();
+    render(<ChatView />);
+
+    emit({ type: "extendRequested", by: "partner" });
+
+    expect(
+      screen.getByText('lbt.chat.system.extendPartnerAsked({"name":"阿樹"})'),
+    ).toBeInTheDocument();
+  });
+
+  test("both names, batteries and intents stay on the stage", () => {
+    openChat();
+    render(<ChatView />);
+
+    const people = [".partner-profile", ".self-profile"].map(
+      (selector) => document.querySelector(selector)?.textContent ?? "",
+    );
+
+    expect(people).toEqual([
+      expect.stringMatching(/阿樹.*lbt\.energy\.mid\.name.*lbt\.preference\.story/),
+      expect.stringMatching(/小橘.*lbt\.energy\.low\.name.*lbt\.preference\.casual/),
+    ]);
+  });
+
+  test("saying good night is always on the stage", () => {
+    openChat();
+    render(<ChatView />);
+
+    fireEvent.click(screen.getByRole("button", { name: /lbt\.chat\.leave/ }));
+
+    expect(transport.ops()).toContain("leave");
   });
 
   test("when time is up the composer is disabled", () => {

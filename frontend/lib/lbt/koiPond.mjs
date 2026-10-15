@@ -23,6 +23,8 @@ export const KOI_KINDS = ['kohaku', 'showa', 'ogon', 'platinum'];
 export function mountKoiPond(host, options = {}) {
 const reduce = !!options.reducedMotion;
 const onCount = typeof options.onCount === 'function' ? options.onCount : () => {};
+// night: the moon's reflection fades in on the water and rides its ripples
+let moonT = options.night ? 1 : 0, moonA = moonT;
 const waterCv = document.createElement('canvas'), surf = document.createElement('canvas');
 waterCv.className = 'koi-water'; surf.className = 'koi-surface';
 waterCv.setAttribute('aria-hidden', 'true'); surf.setAttribute('aria-hidden', 'true');
@@ -557,7 +559,7 @@ const FS = `#version 300 es
 precision highp float;
 in vec2 vUv; out vec4 o;
 uniform sampler2D uScene,uH,uCau,uNoi,uDap;
-uniform vec2 uRes,uGrid,uDapOff; uniform float uT,uDapS,uPondR,uAmb; uniform vec4 uPond;
+uniform vec2 uRes,uGrid,uDapOff; uniform float uT,uDapS,uPondR,uAmb,uMoon; uniform vec4 uPond; uniform vec3 uMoonP;
 float sdRR(vec2 p){ vec2 c=uPond.xy+uPond.zw*.5; vec2 q=abs(p-c)-(uPond.zw*.5-uPondR); return length(max(q,0.))+min(max(q.x,q.y),0.)-uPondR; }
 float hf(vec2 u){ return texture(uH,u).r; }
 float nz(vec2 u){ return texture(uNoi,u).r; }
@@ -575,7 +577,7 @@ void main(){
   float c1=texture(uCau,cp+uT*vec2(.0009,.0005)+G*.015).r;
   float c2=texture(uCau,cp*1.31+vec2(.37,.11)-uT*vec2(.0006,.001)+G*.015).r;
   float cau=pow(min(c1,c2),1.4)*1.7+clamp(-lap*.35,0.,.6);
-  col*=mix(.58,1.,light);
+  col*=mix(.7,1.,light); // prototype: .58; lifted so the shaded water still reads on the home stage
   col+=col*cau*light*.7+vec3(.85,1.,.92)*cau*light*.035;
   vec3 n=normalize(vec3(-G*1.25,1.));
   vec3 sun=normalize(vec3(-.42,-.52,.74)), hv=normalize(sun+vec3(0.,0.,1.));
@@ -583,6 +585,16 @@ void main(){
   float fres=.02+.98*pow(1.-n.z,5.);
   vec3 sky=mix(vec3(.10,.15,.13),vec3(.80,.88,.90),light);
   col=mix(col,sky,clamp(.035+fres*5.,0.,.4));
+  if(uMoon>0.){
+    // a crescent like the street's moon, bent by the same ripples that bend the floor
+    vec2 mq=px+G*26.+vec2(sin(uT*.011+px.y*.05),0.)*.8;
+    float r=uMoonP.z, d=length(mq-uMoonP.xy), d2=length(mq-uMoonP.xy-vec2(r*.38,-r*.2));
+    float disc=(1.-smoothstep(r*.8,r,d))*smoothstep(r*.62,r*.9,d2);
+    float bloom=(1.-smoothstep(r*.6,r*1.5,d))*smoothstep(r*.4,r*1.1,d2)*.35;
+    float glow=exp(-max(d-r*.5,0.)/(r*2.8))*.34;
+    col=mix(col,vec3(1.,.94,.76)*(.9+.1*nz(mq/50.)),clamp(disc*.75+bloom,0.,1.)*uMoon);
+    col+=vec3(.6,.66,.78)*glow*uMoon;
+  }
   col+=vec3(1.,.97,.9)*sp;
   float ins=1.-smoothstep(-1.,1.,sdRR(px));
   o=vec4(col*ins,ins);
@@ -683,6 +695,9 @@ function frame(now) {
     gl.uniform2f(U('uRes'), W, H); gl.uniform2f(U('uGrid'), gw, gh); gl.uniform1f(U('uT'), t0);
     gl.uniform4f(U('uPond'), P.x, P.y, P.w, P.h); gl.uniform1f(U('uPondR'), P.r);
     gl.uniform2f(U('uDapOff'), dapOff[0], dapOff[1]); gl.uniform1f(U('uDapS'), dapS); gl.uniform1f(U('uAmb'), 6.5);
+    moonA = reduce ? moonT : moonA + (moonT - moonA) * Math.min(1, .02 * k);
+    gl.uniform1f(U('uMoon'), moonA < .005 ? 0 : moonA);
+    gl.uniform3f(U('uMoonP'), P.x + P.w * .7, P.y + P.h * .44, clamp(Math.sqrt(P.w * P.h) * .07, 22, 60));
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   } else { wctx2.setTransform(1, 0, 0, 1, 0, 0); wctx2.drawImage(scene, 0, 0, waterCv.width, waterCv.height); }
   // surface layer
@@ -733,6 +748,7 @@ wake();
 return {
   addFish: kind => { if (KINDS[kind]) addFish(kind, true); },
   drawIcon: (kind, canvas) => { if (KINDS[kind]) drawIcon(kind, canvas); },
+  setNight(on) { moonT = on ? 1 : 0; },
   destroy() {
     stopped = true; if (raf) cancelAnimationFrame(raf); raf = 0; clearTimeout(rT);
     ro.disconnect(); document.removeEventListener('visibilitychange', wake);

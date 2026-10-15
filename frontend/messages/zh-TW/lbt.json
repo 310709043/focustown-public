@@ -145,15 +145,11 @@
     "partnerPrefix": "對方",
     "selfPrefix": "你",
     "timerAria": "剩餘時間",
-    "extendAria": "雙方同意後延長七分鐘",
-    "extendMobile": "＋7 分鐘",
-    "extendMobilePending": "等候中…",
     "leave": "說聲晚安",
     "senderMe": "{name} · 你",
     "senderPartner": "{name} · 模擬對象",
     "avatarMe": "我",
     "typing": "對方正在輸入",
-    "promptLabel": "不知道怎麼開口？",
     "promptDraw": "抽一張話題卡",
     "topicLabel": "街燈遞來一張卡",
     "topicUse": "放進輸入框",
@@ -165,34 +161,56 @@
     "privacy": "結束後清空對話；需要檢舉請在離開前送出。",
     "report": "檢舉對話",
     "system": {
-      "met": "你們在街燈下相遇了。先聊 7 分鐘，想繼續可以一起留下。",
+      "met": "你們在街燈下的長椅坐下了。先聊 7 分鐘，想繼續就一起插上插頭。",
       "energyShown": "你的狀態已顯示：{energy}。{pace}",
-      "extendAsked": "你提出再聊 7 分鐘的邀請。",
-      "extendAccepted": "對方也願意留下。你們可以再聊 7 分鐘。",
-      "extendPartnerAsked": "對方想再聊 7 分鐘。你也願意的話，按「想再聊 7 分鐘」。"
+      "extendAsked": "你插上了插頭，等{name}決定要不要一起再坐一會兒。",
+      "extendAccepted": {
+        "lamp": "兩邊都插上了，路燈多亮 7 分鐘。",
+        "bench": "兩邊都插上了，長椅多坐 7 分鐘。"
+      },
+      "extendPartnerAsked": "{name}插上了插頭，想再坐一會兒。"
     },
     "aside": {
-      "label": "A NOTE FROM TOWN",
-      "titleTop": "不用把每一句",
-      "titleBottom": "都說得很漂亮。",
-      "body": "這裡沒有已讀，也沒有誰先回覆的壓力。想停下來時，按「說聲晚安」即可。",
-      "energyLabel": "你現在的電量",
-      "extend": "想再聊 7 分鐘",
-      "extendPending": "等待對方回應…",
-      "hint": "需要雙方都願意。",
-      "hintPending": "原型示範：對方會同意延長。",
-      "hintPendingLive": "等對方也按下延長。",
       "help": "需要有人聽你說或專業協助：可在 findahelpline.com 查到你所在地區的求助專線。"
     },
     "partnerLabelLive": "第 07 號街燈",
     "senderPartnerLive": "{name}",
-    "partnerWantsExtend": "對方想再聊 7 分鐘。",
-    "extendAgree": "我也想",
     "offline": "連線中斷，正在重新連線…",
     "skyLabel": "你從天空帶來的話題",
     "skyOpener": "聊聊「{word}」？你最近有遇到嗎？",
     "skyOpenerQuestion": "想問問你：{word}",
-    "skyDismiss": "先不要"
+    "skyDismiss": "先不要",
+    "asideAria": "這一回合",
+    "stage": {
+      "aria": "你們坐的長椅",
+      "timer": {
+        "night": "這盞燈還會亮",
+        "dawn": "天快亮了，還能坐",
+        "day": "長椅還能坐",
+        "dusk": "路燈剛亮，還能坐"
+      },
+      "badge": {
+        "lamp": "路燈多亮 7 分鐘",
+        "bench": "長椅多坐 7 分鐘"
+      }
+    },
+    "plug": {
+      "title": "再坐 7 分鐘？",
+      "mine": "你：插上",
+      "minePlugged": "你：已插上 ✓",
+      "partner": "對方：還沒插",
+      "partnerPlugged": "對方：已插上 ✓",
+      "hint": {
+        "lamp": "兩邊都插上，路燈多亮 7 分鐘。",
+        "bench": "兩邊都插上，就再坐 7 分鐘。"
+      },
+      "hintPartner": {
+        "lamp": "對方插上了。你也插上，路燈就多亮 7 分鐘。",
+        "bench": "對方插上了。你也插上，就再坐 7 分鐘。"
+      },
+      "hintPending": "示範：模擬對象會一起插上。",
+      "hintPendingLive": "等對方也插上。"
+    }
   },
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
