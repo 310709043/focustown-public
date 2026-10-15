@@ -119,6 +119,13 @@ export class TownObject extends DurableObject<Env> {
     return allowed;
   }
 
+  /** Counts an unlock-code attempt from `ip`; false once the hourly limit is used up (stops guessing). */
+  async allowUnlock(ip: string): Promise<boolean> {
+    const allowed = await this.store.hit(`unlock:ip:${ip}`, LIMITS.unlockPerIpPerHour, 3600_000, Date.now());
+    await this.ensureAlarm();
+    return allowed;
+  }
+
   /** Counts a feedback submission from `ip`; false once the hourly limit is used up. */
   async allowFeedback(ip: string): Promise<boolean> {
     const allowed = await this.store.hit(`feedback:ip:${ip}`, LIMITS.feedbackPerIpPerHour, 3600_000, Date.now());

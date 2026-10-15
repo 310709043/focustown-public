@@ -36,7 +36,7 @@ h2{font-size:16px;margin:28px 0 12px;color:var(--lamp)}
 .stat.alert b{color:var(--peach)}
 .tabs{display:flex;flex-wrap:wrap;gap:8px}
 .report{background:var(--night2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
-.topics{display:grid;gap:8px;margin:12px 0 28px}.topic{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.topic.hidden{opacity:.5}.topic strong{flex:1 1 auto}section[aria-label="天空話題"] input{background:var(--night2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:min(420px,100%)}
+.topics{display:grid;gap:8px;margin:12px 0 28px}.topic{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.topic.hidden{opacity:.5}.topic strong{flex:1 1 auto}.unlock-fresh pre{background:var(--night2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;letter-spacing:.08em;user-select:all}section[aria-label="解鎖碼"] input{background:var(--night2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}section[aria-label="天空話題"] input{background:var(--night2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:min(420px,100%)}
 .report-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
 .reason{font-weight:700;color:var(--peach)}.meta{color:var(--subtle);font-size:13px}
 .people{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
@@ -286,15 +286,57 @@ function topicsSection(items) {
     el("div", {class:"actions"}, input, add, refresh), note, list);
 }
 
+const UNLOCK_ITEMS = {"koi-pond": "錦鯉池場景"};
+let unlockNote = "", unlockCount = "1", unlockFresh = [];
+function unlocksSection(items) {
+  const count = el("input", {type:"number", min:"1", max:"50", value: unlockCount, "aria-label":"產生幾組"});
+  count.addEventListener("input", () => { unlockCount = count.value; });
+  const note = el("input", {type:"text", maxlength:"60", placeholder:"備註（例如：BMC 10/15 第 3 筆）", "aria-label":"備註", value: unlockNote});
+  note.addEventListener("input", () => { unlockNote = note.value; });
+  const msg = el("p", {class:"meta", role:"status"});
+  const make = el("button", {class:"btn primary", type:"button", text:"產生解鎖碼", onclick: async (e) => {
+    const btn = e.currentTarget; btn.disabled = true;
+    try {
+      const r = await api("/api/v1/admin/lbt/unlocks", {method:"POST", body: JSON.stringify({item:"koi-pond", count: Number(unlockCount) || 1, note: unlockNote})});
+      unlockFresh = r.codes; unlockNote = ""; await render();
+    } catch { msg.textContent = "沒辦法產生：數量請填 1–50。"; btn.disabled = false; }
+  }});
+  const fresh = unlockFresh.length ? el("div", {class:"unlock-fresh"},
+    el("p", {class:"meta", text:"新的解鎖碼（只會顯示這一次，請現在複製給買家）："}),
+    el("pre", {text: unlockFresh.join("\\n")}),
+    el("button", {class:"btn", type:"button", text:"複製全部", onclick: async (e) => {
+      try { await navigator.clipboard.writeText(unlockFresh.join("\\n")); e.currentTarget.textContent = "已複製"; } catch { e.currentTarget.textContent = "請手動選取複製"; }
+    }})) : null;
+  const list = el("div", {class:"topics"});
+  if (!items.length) list.append(el("p", {class:"empty", text:"還沒有解鎖碼。"}));
+  for (const u of items) {
+    const row = el("div", {class:"topic" + (u.revoked ? " hidden" : "")},
+      el("span", {class:"reason", text: (UNLOCK_ITEMS[u.item] || u.item) + " · " + u.hint + "…"}),
+      el("strong", {text: u.note || "（無備註）"}),
+      el("span", {class:"meta", text: "已用 " + u.redemptions + "/" + u.maxDevices + " 台 · " + fmt(u.createdAt) + (u.revoked ? " · 已撤銷" : "")}));
+    if (!u.revoked) row.append(el("button", {class:"btn", type:"button", text:"撤銷（退款）", onclick: async () => {
+      if (!confirm("撤銷後，用這組碼解鎖的裝置下次檢查時就會失去錦鯉池。確定？")) return;
+      await api("/api/v1/admin/lbt/unlocks/" + encodeURIComponent(u.id) + "/revoke", {method:"POST"});
+      await render();
+    }}));
+    list.append(row);
+  }
+  return el("section", {"aria-label":"解鎖碼"},
+    el("h2", {text:"解鎖碼"}),
+    el("p", {class:"meta", text:"付費場景還沒公開。每組碼可在 3 台裝置使用；買家到 www.lowbatterytown.com/zh-TW/unlock 輸入。退款時撤銷即可。"}),
+    el("div", {class:"actions"}, count, note, make), msg, ...(fresh ? [fresh] : []), list);
+}
+
 async function render() {
   if (!token()) return showLogin("");
   const version = sessionVersion;
-  const [o, list, fb, trends, topics] = await Promise.all([
+  const [o, list, fb, trends, topics, unlocks] = await Promise.all([
     api("/api/v1/admin/lbt/overview"),
     api("/api/v1/admin/lbt/reports?limit=100&status=" + (filter === "all" ? "all" : filter)),
     api("/api/v1/admin/lbt/feedback?limit=100&status=" + feedbackFilter),
     api("/api/v1/admin/lbt/trends?days=30"),
     api("/api/v1/admin/lbt/topics"),
+    api("/api/v1/admin/lbt/unlocks"),
   ]);
   if (!signedIn || version !== sessionVersion) return;
   const tabs = el("div", {class:"tabs", role:"group", "aria-label":"依狀態篩選"});
@@ -338,6 +380,7 @@ async function render() {
     el("p", {class:"meta", text: (o.maintenance ? "⏸ 維護模式：已暫停配對" : (o.open ? "小鎮開放中" : "小鎮休息中")) + (o.hours ? "（" + o.hours + "）" : "（全天開放）") + " · 更新於 " + fmt(new Date().toISOString())}),
     trendsSection(trends.items),
     topicsSection(topics.items),
+    unlocksSection(unlocks.items),
     getCompanionPanel(), el("h2", {text:"檢舉"}), tabs, reports,
     el("h2", {text:"意見箱"}), fbTabs, feedback);
   if (active && getCompanionPanel().contains(active)) active.focus({preventScroll:true});

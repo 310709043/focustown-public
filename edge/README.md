@@ -129,6 +129,26 @@ anything heavy or political, and skipped trends stay out of the sky.
 - Tests never reach Cloudflare: `vitest.config.ts` sets
   `remoteBindings: false`, and the tests inject a fake model.
 
+## Unlock codes (paid extras)
+
+The koi pond stage scene is a paid cosmetic extra, unlocked per device with
+a code (`src/unlocks.ts`, D1 `lbt_unlock_codes`, migration 0006). The town
+stays anonymous and never sees payment data: the extra is sold elsewhere,
+and the buyer gets a code.
+
+- **Make codes:** /admin → 解鎖碼 → 產生解鎖碼 (1–50 at a time, with a note
+  such as where it was sold). The plain codes are shown once; only their
+  SHA-256 and first four characters are stored.
+- **Redeem:** the buyer enters the code at `https://www.lowbatterytown.com/zh-TW/unlock`
+  (`POST /api/v1/lbt/unlock`, 10 tries per IP per hour). One code works on 3
+  devices; each device keeps a signed token and re-checks it about once a
+  day (`POST /api/v1/lbt/unlock/verify`).
+- **Refund:** 撤銷 in /admin. The code stops redeeming, and devices drop the
+  pond at their next check.
+- Codes can be handed out by hand (e.g. after a Buy Me a Coffee "extra"
+  purchase), or later issued automatically from a store's webhook or
+  license keys.
+
 ## Admin console
 
 `https://api.lowbatterytown.com/admin`: sign in with `ADMIN_TOKEN`

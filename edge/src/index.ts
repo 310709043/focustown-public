@@ -8,6 +8,7 @@
  *   POST /api/v1/lbt/reports   safety report (guest bearer token)
  *   GET  /api/v1/lbt/ws        WebSocket, subprotocol `bearer.{token}`
  *   POST /api/v1/lbt/feedback  feedback box (anonymous, rate-limited per IP; copied to the owner's Google Sheet)
+ *   POST /api/v1/lbt/unlock    redeem an unlock code for a paid extra (rate-limited per IP); /unlock/verify checks a device token
  *   GET  /api/v1/admin/lbt/overview, /reports, /feedback, POST …/{id}/status   (ADMIN_TOKEN)
  *   GET  /admin                admin console page (signs in with ADMIN_TOKEN)
  *
@@ -15,6 +16,7 @@
  */
 import { addTopic, deleteTopic, listTopics, publicTopics, refreshTrends, setTopicHidden } from "./topics";
 import { issueRewriter } from "./topicIssues";
+import { createCodes, listCodes, parseCreateCodes, redeemCode, revokeCode, verifyUnlock } from "./unlocks";
 import { type Env, feedbackRetentionDays, retentionDays, tokenTtlHours } from "./config";
 import { adminPage, adminPageHeaders } from "./adminPage";
 import {
@@ -190,6 +192,23 @@ async function handleAdmin(request: Request, env: Env, path: string): Promise<Re
     const found = await setReportStatus(env.DB, decodeURIComponent(m[1] as string), status as ReportStatus);
     return found ? json(request, env, 204, null) : error(request, env, 404, "report_not_found");
   }
+  if (path === "/api/v1/admin/lbt/unlocks" && request.method === "GET") {
+    return json(request, env, 200, { items: await listCodes(env.DB) });
+  }
+  if (path === "/api/v1/admin/lbt/unlocks" && request.method === "POST") {
+    try {
+      const input = parseCreateCodes(await boundedJson(request));
+      return json(request, env, 201, { codes: await createCodes(env.DB, input, Date.now()) });
+    } catch (err) {
+      if (err instanceof InputError) return error(request, env, 422, err.code);
+      throw err;
+    }
+  }
+  const unlockRevoke = /^\/api\/v1\/admin\/lbt\/unlocks\/([^/]+)\/revoke$/.exec(path);
+  if (request.method === "POST" && unlockRevoke) {
+    const found = await revokeCode(env.DB, decodeURIComponent(unlockRevoke[1] as string));
+    return found ? json(request, env, 204, null) : error(request, env, 404, "code_not_found");
+  }
   if (path === "/api/v1/admin/lbt/topics" && request.method === "GET") {
     return json(request, env, 200, { items: await listTopics(env.DB) });
   }
@@ -354,6 +373,17 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
   }
 
   if (path === "/api/v1/lbt/feedback" && request.method === "POST") return handleFeedback(request, env, ctx);
+
+  if (path === "/api/v1/lbt/unlock" && request.method === "POST") {
+    if (!(await town(env).allowUnlock(clientIp(request)))) return error(request, env, 429, "too_many_unlock_attempts");
+    const body = (await boundedJson(request)) as { code?: unknown } | null;
+    const result = await redeemCode(env.DB, env.LBT_TOKEN_SECRET, body?.code, Date.now());
+    return result.ok ? json(request, env, 200, { token: result.token, items: result.items }) : error(request, env, result.status, result.code);
+  }
+  if (path === "/api/v1/lbt/unlock/verify" && request.method === "POST") {
+    const body = (await boundedJson(request)) as { token?: unknown } | null;
+    return json(request, env, 200, { items: await verifyUnlock(env.DB, env.LBT_TOKEN_SECRET, body?.token) });
+  }
 
   if (path.startsWith("/api/v1/admin/lbt/")) return handleAdmin(request, env, path);
 

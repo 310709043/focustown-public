@@ -789,5 +789,21 @@
       "ogon": "Ogon",
       "platinum": "Platinum"
     }
+  },
+  "unlock": {
+    "title": "Unlock a scene",
+    "intro": "Enter the unlock code you bought, and this device's home page can switch to the koi pond. One code works on 3 devices.",
+    "label": "Unlock code",
+    "submit": "Unlock",
+    "working": "Checking…",
+    "done": "The koi pond is unlocked. Go back home and pick “Koi pond” at the top right of the big frame.",
+    "home": "Back home",
+    "note": "An unlock code only unlocks the home scene; it changes nothing about chats or matching. No sign-up: we only remember on this device that it is unlocked. If you clear your browser data, enter the same code again (it counts as one more device).",
+    "error": {
+      "invalid_code": "That code isn't right or no longer works. Please check it and try again.",
+      "code_used_up": "This code has already been used on 3 devices.",
+      "too_many": "Too many tries. Please try again in an hour.",
+      "offline": "Can't reach the town right now. Please try again later."
+    }
   }
 }

@@ -5441,3 +5441,55 @@ html[data-lbt-time="dawn"] .lbt .koi-tint { background: rgba(196, 188, 236, 0.38
   .lbt .koi-pond { display: none; }
   .lbt .main-stage.is-pond .town-sky { display: block; }
 }
+
+/* ── /unlock: enter a code bought elsewhere (components/lbt/UnlockForm.tsx) ── */
+.lbt .unlock-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 12px;
+  margin: 26px 0 8px;
+}
+.lbt .unlock-form label {
+  grid-column: 1 / -1;
+  color: var(--mist);
+  font-size: 14px;
+}
+.lbt .unlock-form input {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(249, 244, 235, 0.06);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.lbt .unlock-form input:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+.lbt .unlock-form button {
+  padding: 0 22px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--lamp);
+  color: #1f2a44;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lbt .unlock-form button:disabled { opacity: 0.55; cursor: default; }
+.lbt .policy .unlock-status {
+  grid-column: 1 / -1;
+  min-height: 1.6em;
+  margin: 0;
+  color: var(--peach);
+}
+.lbt .unlock-done {
+  margin: 26px 0 8px;
+  padding: 16px 18px;
+  border: 1px solid rgba(248, 215, 121, 0.4);
+  border-radius: 14px;
+  background: rgba(248, 215, 121, 0.08);
+}
+.lbt .unlock-done a { color: var(--lamp); }
+.lbt .policy .unlock-note { color: var(--mist); font-size: 13px; }
