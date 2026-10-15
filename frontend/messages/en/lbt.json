@@ -774,5 +774,20 @@
     "title": "This street has no lamp yet.",
     "body": "The page you're looking for isn't here. It may have moved.",
     "back": "Back to the town"
+  },
+  "pond": {
+    "toggle": "Stage scene",
+    "town": "Street",
+    "pond": "Koi pond",
+    "trayLabel": "Add a koi",
+    "count": "{count} koi",
+    "hint": "Tap to feed · drag to stir",
+    "add": "Add a {name} koi",
+    "kinds": {
+      "kohaku": "Kohaku",
+      "showa": "Showa",
+      "ogon": "Ogon",
+      "platinum": "Platinum"
+    }
   }
 }
