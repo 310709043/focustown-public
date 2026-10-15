@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { POND_ON_SALE } from "../lib/lbt/pond";
+
 /**
  * LowBatteryTown demo flow at /demo. No backend is involved: the partner is
  * the labelled script in lib/lbt/demoTransport.ts, so these tests need no
@@ -226,5 +228,21 @@ test.describe("LowBatteryTown support dialog", () => {
       const inside = await dialog.evaluate((node) => node.contains(document.activeElement));
       expect(inside).toBe(true);
     }
+  });
+});
+
+test.describe("Koi pond offer", () => {
+  test("the unlock page shows the pond and takes a code; it is sold only with a link", async ({ page }) => {
+    await page.goto("/zh-TW/unlock");
+    await expect(page.getByRole("heading", { level: 1, name: /錦鯉池/ })).toBeVisible();
+    await expect(page.getByRole("img", { name: /錦鯉池場景/ })).toBeVisible();
+    await expect(page.getByText(/US\$50/)).toBeVisible();
+    await expect(page.getByRole("link", { name: /到 Buy Me a Coffee 購買/ })).toHaveCount(POND_ON_SALE ? 1 : 0);
+    await expect(page.getByRole("textbox", { name: "解鎖碼" })).toBeVisible();
+    await page.goto("/zh-TW/policies/terms");
+    await expect(page.getByRole("heading", { name: "付費場景：錦鯉池" })).toHaveCount(POND_ON_SALE ? 1 : 0);
+    await page.goto(HOME);
+    await expect(page.getByRole("heading", { name: /今天還剩/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /錦鯉池：付費場景/ })).toHaveCount(POND_ON_SALE ? 1 : 0);
   });
 });

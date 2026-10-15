@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/routing";
-import { fillLegalFacts, LBT_LEGAL, POLICY_SLUGS, type PolicySlug } from "@/lib/lbt/legal";
+import { fillLegalFacts, LBT_LEGAL, POLICY_SLUGS, policySections, type PolicySlug } from "@/lib/lbt/legal";
 import { lbtFontVariables } from "@/lib/lbtFonts";
 
 import { Wordmark } from "./BrandMark";
@@ -11,12 +11,14 @@ import "./lbt.css";
 interface Section {
   h: string;
   p: string[];
+  /** Only while the koi pond is on sale (lib/lbt/pond). */
+  pond?: boolean;
 }
 
 /** Privacy policy, terms and community guidelines for LowBatteryTown. */
 export async function PolicyPage({ locale, slug }: { locale: string; slug: PolicySlug }) {
   const t = await getTranslations({ locale, namespace: "lbt.policy" });
-  const sections = t.raw(`${slug}.sections`) as Section[];
+  const sections = policySections(t.raw(`${slug}.sections`) as Section[]);
 
   return (
     <div className={`lbt ${lbtFontVariables}`}>

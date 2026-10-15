@@ -5435,6 +5435,28 @@ html[data-lbt-time="dawn"] .lbt .koi-tint { background: rgba(196, 188, 236, 0.38
   color: #1f2a44;
 }
 .lbt .stage-scene button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+/* not unlocked yet: the street is on, the pond chip links to the offer */
+.lbt .stage-scene.is-locked > span,
+.lbt .stage-scene.is-locked a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.lbt .stage-scene.is-locked > span.is-on {
+  background: var(--lamp);
+  color: #1f2a44;
+}
+.lbt .stage-scene.is-locked a {
+  color: inherit;
+  text-decoration: none;
+}
+.lbt .stage-scene.is-locked a:hover { background: rgba(249, 244, 235, 0.1); }
+.lbt .stage-scene.is-locked a:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+.lbt .stage-scene.is-locked svg { opacity: 0.75; }
 /* the stage is a compact card below the desktop layout: the pond stays off there */
 @media (max-width: 959px), (max-height: 619px) {
   .lbt .stage-scene,
@@ -5442,7 +5464,39 @@ html[data-lbt-time="dawn"] .lbt .koi-tint { background: rgba(196, 188, 236, 0.38
   .lbt .main-stage.is-pond .town-sky { display: block; }
 }
 
-/* ── /unlock: enter a code bought elsewhere (components/lbt/UnlockForm.tsx) ── */
+/* ── /unlock: the koi pond offer (PondOffer.tsx) above the code form (UnlockForm.tsx) ── */
+.lbt .pond-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 22px 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.lbt .policy .pond-buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin: 22px 0 8px;
+}
+.lbt .pond-buy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  background: var(--lamp);
+  color: #1f2a44;
+  font-weight: 700;
+  text-decoration: none;
+}
+.lbt .pond-buy-link:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
+.lbt .policy .pond-soon { color: var(--mist); }
+/* both parts are .policy sections, which already draw the line between them */
+.lbt .policy .pond-offer { padding-top: 0; }
+.lbt .policy .pond-offer h2 { margin-top: 24px; }
+.lbt .policy .unlock-redeem { border-bottom: 0; }
 .lbt .unlock-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

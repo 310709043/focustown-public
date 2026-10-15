@@ -6,7 +6,8 @@ import { expect, test } from "vitest";
 
 import zh from "@/messages/zh-TW/lbt.json";
 import en from "@/messages/en/lbt.json";
-import { fillLegalFacts, LBT_LEGAL } from "@/lib/lbt/legal";
+import { fillLegalFacts, LBT_LEGAL, policySections } from "@/lib/lbt/legal";
+import { POND_OFFER, POND_ON_SALE, POND_PURCHASE_URL } from "@/lib/lbt/pond";
 
 test("fills every known placeholder from LBT_LEGAL", () => {
   const out = fillLegalFacts("{reportDays}/{pairBlockHours}/{tokenHours}/{feedbackDays}/{suspensionHours}/{suspensionDays}");
@@ -49,4 +50,39 @@ test.each([
     .join("\n");
   expect(text).not.toMatch(/\b(24|180)\b/);
   expect(text).toContain("{pairBlockHours}");
+});
+
+test("the koi pond facts come from POND_OFFER", () => {
+  expect(fillLegalFacts("{pondPrice}/{pondDevices}/{pondCodeHours}/{pondRefundDays}")).toBe(
+    `${POND_OFFER.priceUsd}/${POND_OFFER.devices}/${POND_OFFER.codeHours}/${POND_OFFER.refundDays}`,
+  );
+});
+
+test("sections marked pond appear only while the pond is on sale", () => {
+  const sections = [{ h: "a" }, { h: "pond", pond: true }, { h: "b" }];
+  expect(policySections(sections, false).map((s) => s.h)).toEqual(["a", "b"]);
+  expect(policySections(sections, true).map((s) => s.h)).toEqual(["a", "pond", "b"]);
+});
+
+test("the pond goes on sale only with a Buy Me a Coffee link", () => {
+  expect(POND_ON_SALE).toBe(POND_PURCHASE_URL !== null);
+  if (POND_PURCHASE_URL !== null) expect(new URL(POND_PURCHASE_URL).hostname).toBe("buymeacoffee.com");
+});
+
+test.each([
+  ["zh-TW", zh],
+  ["en", en],
+])("%s terms and privacy each describe the pond, with its numbers as placeholders", (_locale, messages) => {
+  for (const slug of ["terms", "privacy"] as const) {
+    const pond = messages.policy[slug].sections.filter((s) => "pond" in s && s.pond);
+    expect(pond).toHaveLength(1);
+  }
+  const terms = messages.policy.terms.sections
+    .filter((s) => "pond" in s && s.pond)
+    .flatMap((s) => s.p)
+    .join("\n");
+  for (const fact of ["{pondPrice}", "{pondDevices}", "{pondCodeHours}", "{pondRefundDays}"]) {
+    expect(terms).toContain(fact);
+  }
+  expect(terms).not.toMatch(new RegExp(`\\b${POND_OFFER.priceUsd}\\b`));
 });

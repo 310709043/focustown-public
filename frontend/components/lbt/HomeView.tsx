@@ -20,7 +20,7 @@ import { MusicVolume } from "./MusicControls";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
-import { StageSceneLayer, StageSceneToggle, useStageScene } from "./StageScene";
+import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useStageScene } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {
@@ -72,7 +72,7 @@ export function HomeView() {
               <span className="by-time t-dusk">{t("home.coordinateDusk")}</span>
               <span className="by-time t-night">{t("home.coordinate")}</span>
             </span>
-            {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : null}
+            {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : <StageSceneOffer />}
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">
