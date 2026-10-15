@@ -575,7 +575,7 @@ void main(){
   float c1=texture(uCau,cp+uT*vec2(.0009,.0005)+G*.015).r;
   float c2=texture(uCau,cp*1.31+vec2(.37,.11)-uT*vec2(.0006,.001)+G*.015).r;
   float cau=pow(min(c1,c2),1.4)*1.7+clamp(-lap*.35,0.,.6);
-  col*=mix(.58,1.,light);
+  col*=mix(.7,1.,light); // prototype: .58; lifted so the shaded water still reads on the home stage
   col+=col*cau*light*.7+vec3(.85,1.,.92)*cau*light*.035;
   vec3 n=normalize(vec3(-G*1.25,1.));
   vec3 sun=normalize(vec3(-.42,-.52,.74)), hv=normalize(sun+vec3(0.,0.,1.));

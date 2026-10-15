@@ -5305,8 +5305,8 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
 
 /* ── Stage scene: koi pond (preview, components/lbt/KoiPond.tsx) ─────────
    The pond fills the stage under the hero copy; the street, sky and sky
-   topics step aside. Light text over a soft dark scrim on the left keeps
-   the headline readable whatever the water does; a tint follows the hour. */
+   topics step aside. A text shadow and a light scrim on the left keep the
+   headline readable whatever the water does; a light tint follows the hour. */
 .lbt .main-stage.is-pond .town-sky,
 .lbt .main-stage.is-pond .townscape,
 .lbt .main-stage.is-pond .sky-topics {
@@ -5355,16 +5355,24 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
   inset: 0;
   pointer-events: none;
 }
+/* kept light so the water stays as bright as the owner's prototype; the
+   text shadow below does most of the work for the headline */
 .lbt .koi-scrim {
   right: auto;
-  width: min(560px, 64%);
-  background: linear-gradient(90deg, rgba(12, 18, 30, 0.66), rgba(12, 18, 30, 0.42) 55%, transparent);
+  width: min(520px, 58%);
+  background: linear-gradient(90deg, rgba(12, 18, 30, 0.42), rgba(12, 18, 30, 0.2) 60%, transparent);
 }
 .lbt .koi-tint { mix-blend-mode: multiply; }
+/* a cool moonlit cast at night, warm at dusk, lilac at dawn: colour, not darkness */
 html[data-lbt-time="night"] .lbt .koi-tint,
-html:not([data-lbt-time]) .lbt .koi-tint { background: rgba(28, 40, 86, 0.62); }
-html[data-lbt-time="dusk"] .lbt .koi-tint { background: rgba(255, 168, 120, 0.4); }
-html[data-lbt-time="dawn"] .lbt .koi-tint { background: rgba(196, 188, 236, 0.38); }
+html:not([data-lbt-time]) .lbt .koi-tint { background: rgba(120, 140, 200, 0.4); }
+html[data-lbt-time="dusk"] .lbt .koi-tint { background: rgba(255, 176, 128, 0.28); }
+html[data-lbt-time="dawn"] .lbt .koi-tint { background: rgba(206, 198, 240, 0.28); }
+.lbt .main-stage.is-pond .hero-copy,
+.lbt .main-stage.is-pond .stage-topline {
+  text-shadow: 0 1px 2px rgba(6, 10, 18, 0.7), 0 0 14px rgba(6, 10, 18, 0.55);
+}
+.lbt .main-stage.is-pond .stage-scene { text-shadow: none; }
 .lbt .koi-tray {
   position: absolute;
   right: 18px;
