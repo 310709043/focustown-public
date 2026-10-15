@@ -64,11 +64,11 @@ test("two visitors are paired, chat, extend together and report", async ({ brows
   await b.getByRole("button", { name: "送出訊息" }).click();
   await expect(a.locator(".message.other .bubble").last()).toHaveText("我在聽，慢慢說就好。");
 
-  // Extending needs both: B asks, A sees the request and agrees.
+  // Extending needs both: B plugs in, A sees B's plug and plugs in too.
   await b.locator(".extend-button").click();
-  await expect(a.locator(".extend-banner")).toContainText("對方想再聊 7 分鐘");
-  await a.getByRole("button", { name: "我也想" }).click();
-  await expect(a.getByText("對方也願意留下")).toBeVisible();
+  await expect(a.locator(".plug-chip.is-partner")).toContainText("對方：已插上");
+  await a.getByRole("button", { name: "你：插上" }).click();
+  await expect(a.locator(".system-note.is-extendAccepted")).toBeVisible();
   const clock = await a.locator(".session-timer").innerText();
   expect(Number(clock.split(":")[0])).toBeGreaterThanOrEqual(13);
 

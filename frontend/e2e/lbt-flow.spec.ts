@@ -114,7 +114,7 @@ test.describe("LowBatteryTown chat (simulated)", () => {
     await enterChat(page);
     await page.locator(".extend-button").click();
     await expect(page.locator(".extend-button")).toBeDisabled();
-    await expect(page.getByText("對方也願意留下")).toBeVisible({ timeout: 4000 });
+    await expect(page.locator(".system-note.is-extendAccepted")).toBeVisible({ timeout: 4000 });
     // 7:00 minus a couple of ticks, plus 7:00 → well above the original 7:00.
     const clock = await page.locator(".session-timer").innerText();
     const [m] = clock.split(":").map(Number);

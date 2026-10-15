@@ -40,8 +40,8 @@ test(`${nickname}: host invites, visitor chooses, both chat and extend, then lea
     await visitor.getByRole("button", { name: "送出訊息", exact: true }).click();
     await expect(admin.locator(".companion-line.partner").last()).toContainText("測試：訪客回覆");
     await admin.getByRole("button", { name: "再聊 7 分鐘（雙方同意）", exact: true }).click();
-    await expect(visitor.locator(".extend-banner")).toContainText("對方想再聊 7 分鐘");
-    await visitor.getByRole("button", { name: "我也想", exact: true }).click();
+    await expect(visitor.locator(".plug-chip.is-partner")).toContainText("對方：已插上");
+    await visitor.getByRole("button", { name: "你：插上", exact: true }).click();
     await expect(visitor.locator(".session-timer")).toContainText(/^1[34]:/);
     const input = admin.getByLabel("輸入陪聊訊息", { exact: true });
     await input.fill("保留未送出的草稿");

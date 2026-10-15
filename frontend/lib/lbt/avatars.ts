@@ -43,3 +43,17 @@ export function avatarPair(conversationId: string): [AvatarId, AvatarId] {
   const b = (a + 1 + (Math.floor(h / n) % (n - 1))) % n;
   return [AVATAR_IDS[a] as AvatarId, AVATAR_IDS[b] as AvatarId];
 }
+
+/**
+ * The pair on the chat stage: the server's, or for a side it did not send
+ * (an older server, a reconnect snapshot) a stand-in that never matches the
+ * other side. Returns [partner, self].
+ */
+export function stageAvatars(
+  partner: AvatarId | null | undefined,
+  self: AvatarId | null | undefined,
+): [AvatarId, AvatarId] {
+  const them = partner ?? (self === "headphones" ? "flower" : "headphones");
+  const me = self ?? (them === "scarf" ? "plug" : "scarf");
+  return [them, me];
+}

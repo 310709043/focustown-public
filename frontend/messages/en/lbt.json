@@ -145,15 +145,11 @@
     "partnerPrefix": "Them",
     "selfPrefix": "You",
     "timerAria": "Time remaining",
-    "extendAria": "Extend by seven minutes if you both agree",
-    "extendMobile": "+7 min",
-    "extendMobilePending": "Waiting…",
     "leave": "Say good night",
     "senderMe": "{name} · you",
     "senderPartner": "{name} · simulated",
     "avatarMe": "Me",
     "typing": "The other person is typing",
-    "promptLabel": "Not sure how to start?",
     "promptDraw": "Draw a topic card",
     "topicLabel": "The lamp passes you a card",
     "topicUse": "Put it in the box",
@@ -165,34 +161,56 @@
     "privacy": "Chats are cleared when they end. Submit reports before leaving.",
     "report": "Report conversation",
     "system": {
-      "met": "You met under the street lamp. You have 7 minutes to start, and you can stay longer together.",
+      "met": "You sat down on the bench under the lamp. 7 minutes to start; plug in together to stay longer.",
       "energyShown": "Your status is shown: {energy}. {pace}",
-      "extendAsked": "You asked for 7 more minutes.",
-      "extendAccepted": "They'd like to stay too. You have 7 more minutes.",
-      "extendPartnerAsked": "They'd like 7 more minutes. If you do too, press \"Chat 7 more minutes\"."
+      "extendAsked": "You plugged in. {name} can decide whether to stay a little longer.",
+      "extendAccepted": {
+        "lamp": "You both plugged in. The lamp stays on 7 more minutes.",
+        "bench": "You both plugged in. 7 more minutes on the bench."
+      },
+      "extendPartnerAsked": "{name} plugged in and would like to stay a little longer."
     },
     "aside": {
-      "label": "A NOTE FROM TOWN",
-      "titleTop": "No need to make",
-      "titleBottom": "every sentence beautiful.",
-      "body": "There are no read receipts and no pressure to reply first. When you want to stop, press \"Say good night\".",
-      "energyLabel": "Your battery now",
-      "extend": "Chat 7 more minutes",
-      "extendPending": "Waiting for a reply…",
-      "hint": "Both of you need to agree.",
-      "hintPending": "Prototype demo: the other side will agree.",
-      "hintPendingLive": "Waiting for them to agree.",
       "help": "Need someone to listen, or professional support? Find a helpline where you are at findahelpline.com."
     },
     "partnerLabelLive": "Streetlamp No. 07",
     "senderPartnerLive": "{name}",
-    "partnerWantsExtend": "They'd like 7 more minutes.",
-    "extendAgree": "Me too",
     "offline": "Connection lost. Reconnecting…",
     "skyLabel": "A topic you brought from the sky",
     "skyOpener": "Shall we talk about “{word}”? Has it come up for you lately?",
     "skyOpenerQuestion": "Here's one for you: {word}",
-    "skyDismiss": "Not now"
+    "skyDismiss": "Not now",
+    "asideAria": "This chat",
+    "stage": {
+      "aria": "The bench you share",
+      "timer": {
+        "night": "The lamp stays on",
+        "dawn": "Before sunrise",
+        "day": "Bench time",
+        "dusk": "The lamps just came on"
+      },
+      "badge": {
+        "lamp": "The lamp stays on 7 more minutes",
+        "bench": "7 more minutes on the bench"
+      }
+    },
+    "plug": {
+      "title": "Stay 7 more minutes?",
+      "mine": "You: plug in",
+      "minePlugged": "You: plugged in ✓",
+      "partner": "Them: not yet",
+      "partnerPlugged": "Them: plugged in ✓",
+      "hint": {
+        "lamp": "When you both plug in, the lamp stays on 7 more minutes.",
+        "bench": "When you both plug in, you get 7 more minutes on the bench."
+      },
+      "hintPartner": {
+        "lamp": "They plugged in. Plug in too and the lamp stays on 7 more minutes.",
+        "bench": "They plugged in. Plug in too for 7 more minutes on the bench."
+      },
+      "hintPending": "Demo: the simulated partner will plug in too.",
+      "hintPendingLive": "Waiting for them to plug in."
+    }
   },
   "end": {
     "eyebrow": "THANK YOU FOR STOPPING BY",
