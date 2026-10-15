@@ -22,7 +22,8 @@ test("late unauthorized dashboard responses cannot erase a login or end the new 
   });
   try {
     await page.goto(`${api}/admin`);
-    await expect.poll(() => pending.length).toBe(4);
+    // reports, feedback, trends, topics and unlocks.
+    await expect.poll(() => pending.length).toBe(5);
     const input = page.getByLabel("管理密碼", { exact: true });
     await input.fill(password!);
     await pending.shift()!();
