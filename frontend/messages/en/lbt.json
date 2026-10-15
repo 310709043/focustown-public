@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Free Anonymous Chat, No Sign-up | LowBatteryTown",
-    "description": "LowBatteryTown is a free anonymous chat site with no sign-up. Choose your social battery and talk one-on-one with a real person for 7 minutes. Extend together or leave any time. Mobile and desktop. 18+.",
+    "description": "Meet someone through free anonymous chat without a dating profile or registration. Start with 7 minutes, extend only if you both agree, and leave anytime. LowBatteryTown works on mobile and desktop. 18+.",
     "keywords": "LowBatteryTown,low social battery,social battery,anonymous chat,anonymous chat room,one-on-one chat,talk to a stranger,someone to talk to,low-pressure chat,no sign-up chat",
     "ogAlt": "LowBatteryTown: a deep-blue night town with street lamps and an expressive animated battery"
   },
@@ -527,12 +527,16 @@
   "guide": {
     "nav": "Anonymous chat guide",
     "title": "Anonymous Chat Guide and Frequently Asked Questions",
-    "description": "Learn how free, no-sign-up anonymous chat works at LowBatteryTown: real-person matching, social battery, 7-minute conversations, waiting, privacy and reporting.",
+    "description": "How free, no-sign-up anonymous chat works at LowBatteryTown, how it differs from dating apps, and what to expect from matching, privacy and reporting.",
     "intro": "LowBatteryTown, also called LowBattery or Low, is a free anonymous chat website for people with a low social battery. Its Chinese name is 低電量小鎮, shortened to 低電量. Here, low battery means the energy you have for talking and socialising. No sign-up is needed: choose a nickname and your current social battery, then sit one-on-one with someone who also wants to talk. You do not need to exchange contact details, and you can leave whenever you like.",
     "questions": [
       {
         "q": "Do I need an account or payment?",
         "a": "No account is needed and chatting is free. Use a nickname for this visit. Lighting a lamp through Buy Me a Coffee is voluntary, one-time support and does not affect matching or chat access. The beta is for people aged 18 or older. Before entering, confirm the terms, community guidelines and privacy policy."
+      },
+      {
+        "q": "Can I meet people here? How is it different from a dating app?",
+        "a": "You can talk to a stranger with a nickname, but friendship or romance is not guaranteed. The town has no photo-based dating profiles, nearby-person search, friend list or partner lookup. Identities are not verified. Ordinary ended chats lose their messages and pairing details. If you want ongoing contact or a specific partner, consider these limits before entering."
       },
       {
         "q": "What does social battery mean?",
@@ -776,6 +780,121 @@
             }
           ]
         }
+      },
+      "anonymous-dating": {
+        "nav": "Meeting people through anonymous chat",
+        "title": "Anonymous Chat to Meet People: A Free, No-Sign-Up Starting Point",
+        "description": "Want to meet people online without photos or a dating profile? Learn how anonymous chat works, how to start a conversation, and LowBatteryTown’s limits on matching, contact details and privacy.",
+        "intro": "Want to meet someone new, but choosing photos and writing a dating profile already feels tiring? First decide whether you want a lasting connection or simply a few words with someone right now. Anonymous chat lets you start with a nickname, but services differ: some keep friends connected, while others offer only a brief encounter.",
+        "sections": [
+          {
+            "h": "A conversation now, or a relationship to keep building?",
+            "p": [
+              "If you want to share a small moment after work or listen to someone, a short one-on-one conversation may be enough. You do not need to decide whether to date, or treat every chat like an interview.",
+              "If you want to find the same person again, check for friends, message history or ongoing contact. LowBatteryTown has no friend list and cannot find a partner after the chat ends. It offers a conversation in the moment."
+            ]
+          },
+          {
+            "h": "Can you use a website instead of downloading a dating app?",
+            "p": [
+              "LowBatteryTown works in mobile and desktop browsers. Chat is free and requires no registration. Choose a nickname for this visit; you do not need to upload photos or fill in a dating profile.",
+              "Anonymous does not mean identity-verified. A nickname, social battery or chat preference is not proof of who someone is. The town does not guarantee friendship, romance or an instant match."
+            ]
+          },
+          {
+            "h": "Not sure how to start the first conversation?",
+            "li": [
+              "Start small: “Did you eat anything good today?”",
+              "Explain your pace: “I’m tired today, so I might reply a little slowly.”",
+              "Offer an easy choice: “After work, is it food, a show, or straight to the couch?”",
+              "Ask before sharing something heavy: “I’d like to talk about my day. Do you have the energy to listen?”"
+            ]
+          },
+          {
+            "h": "Starting an anonymous conversation in LowBatteryTown",
+            "li": [
+              "Open the home page and pick a nickname, your current social battery and a chat preference. The battery describes reply pace, not identity or a score.",
+              "Read the terms, privacy policy and community guidelines, confirm you are 18 or older, then enter the town.",
+              "Wait for another suitable real person. Matching may take time and you can cancel; you do not need to keep watching the screen.",
+              "After matching, start with 7 minutes. Continue only if you both extend, and say good night to leave whenever you want."
+            ]
+          },
+          {
+            "h": "Can you exchange contact details or find the same person again?",
+            "p": [
+              "The town has no adding friends, partner search or ordinary chat history. The server masks links, email addresses, @handles and phone numbers in messages, so it is not designed for exchanging contact details.",
+              "When an ordinary conversation ends, the application deletes its messages and pairing details. If ongoing contact is what you want from meeting people online, consider this limit first. Do not assume closing the window lets you return to the same partner."
+            ]
+          },
+          {
+            "h": "Meeting strangers while keeping your boundaries",
+            "p": [
+              "You do not need to reveal a name, workplace, address, photo or account to keep a conversation going. Websites cannot reliably prevent screenshots or photographs. You can refuse requests to move platforms, pay money or share private information, then leave. Reports sent during a chat keep evidence for {reportDays} days and prevent the pair from matching again for {pairBlockHours} hours.",
+              "The town is for adults aged 18 or older and is not counselling or emergency help. Find local support at findahelpline.com; in immediate danger, call your local emergency number."
+            ]
+          }
+        ]
+      },
+      "dating-app-or-chat": {
+        "nav": "Dating apps or anonymous chat?",
+        "title": "Dating Apps, Dating Websites or Anonymous Chat: What Fits Your Needs?",
+        "description": "Choosing between a dating app and anonymous chat? Compare profiles, ongoing contact, free features and privacy, and understand the limits of LowBatteryTown’s 18+ real-person conversations.",
+        "intro": "When searching for a dating app or a place to meet people online, you might want friendship, a partner, or just a few replies after work. These needs are different. Before joining because something says “free,” decide what you want and check what the service actually provides.",
+        "sections": [
+          {
+            "h": "How do dating apps and anonymous chat differ?",
+            "p": [
+              "Some dating services focus on profiles, photos, filters or ongoing messages. Anonymous chat may focus on starting a conversation with a nickname. These are common designs, not universal rules; check each service’s own features and pricing.",
+              "LowBatteryTown uses the second approach: no dating profile, and a first conversation of 7 minutes with a real person. Social battery and chat preference help explain reply pace; they are not dating filters for a specific gender, location or relationship goal."
+            ]
+          },
+          {
+            "h": "A few words without filling in a profile",
+            "p": [
+              "If you want to talk about lunch, work or a small moment, opening a website with a nickname may feel easier than preparing photos and an introduction. The town works in mobile and desktop browsers without registration.",
+              "The tradeoff is knowing little about the other person. Live matches are real people, but their identities are not verified and a connection is not guaranteed. Another suitable person must also be waiting, so matching may not be instant."
+            ]
+          },
+          {
+            "h": "Check which features are actually free",
+            "li": [
+              "Can you actually start talking, or only browse? Look beyond the word “free.”",
+              "Will a payment renew automatically? Read the amount, currency and refund information first.",
+              "Ordinary matching and chat in the town are free. Lighting a lamp is voluntary, one-time support and does not add chat access.",
+              "The koi pond is a separately purchased desktop homepage scene. It does not buy priority matching or help find a particular person."
+            ]
+          },
+          {
+            "h": "For a lasting connection, check whether you can stay in touch",
+            "p": [
+              "Building a relationship usually takes ongoing communication. The town has no friend list, partner search or ordinary conversation history. After a chat ends, you cannot return to it or be guaranteed to find the same partner again.",
+              "If ongoing contact is your main goal, that limit may not fit. If you simply want to talk to a stranger right now, set a lighter expectation: extend if you both enjoy it, and leave when you are ready."
+            ]
+          },
+          {
+            "h": "Does anonymous chat mean a hookup service?",
+            "p": [
+              "Seeking sexual contact is a different purpose from conversation or meeting new friends. LowBatteryTown offers anonymous text chat, with no nearby-person search, arranged sexual encounters or filtering by sexual intent. It does not guarantee a date.",
+              "18+ is an age requirement, not consent to sexual topics or harassment. Respect a refusal and do not request intimate photos or personal details. Leave or report any conversation that makes you uncomfortable."
+            ]
+          },
+          {
+            "h": "What if someone harasses you or asks for private information?",
+            "p": [
+              "Reporting while a conversation is active ends it, keeps evidence for {reportDays} days for review, and prevents the pair from matching again for {pairBlockHours} hours. Ordinary ended chats lose their messages and pairing details; guest tokens and technical logs follow separate privacy rules.",
+              "A website cannot reliably prevent screenshots or verify a stranger’s identity for you. Do not share passwords, addresses, accounts or identifying information. The town is not counselling or emergency help: find support at findahelpline.com, or call your local emergency number in immediate danger."
+            ]
+          },
+          {
+            "h": "Four questions before you enter",
+            "li": [
+              "Do I want a short conversation or ongoing contact?",
+              "What information am I comfortable sharing, and what will I keep private?",
+              "Do I understand how leaving, reporting and record retention work?",
+              "Do the actual features meet my expectations, beyond the name in a search result?"
+            ]
+          }
+        ]
       }
     }
   },

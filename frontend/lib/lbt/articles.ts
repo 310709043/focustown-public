@@ -9,6 +9,8 @@ export const ARTICLES = [
   { slug: "cant-sleep", published: "2026-10-05", updated: "2026-10-05" },
   { slug: "anonymous-chat-safety", published: "2026-10-05", updated: "2026-10-05" },
   { slug: "wootalk-alternative", published: "2026-10-06", updated: "2026-10-06" },
+  { slug: "anonymous-dating", published: "2026-10-16", updated: "2026-10-16" },
+  { slug: "dating-app-or-chat", published: "2026-10-16", updated: "2026-10-16" },
 ] as const;
 
 export type ArticleSlug = (typeof ARTICLES)[number]["slug"];

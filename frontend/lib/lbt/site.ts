@@ -13,7 +13,7 @@ export const BRAND_ZH = "低電量小鎮";
 export const BRAND_ALIASES = [BRAND_ZH, "LowBattery", "低電量", "Low"];
 
 /** Date the indexed pages last changed in substance (sitemap lastmod). */
-export const CONTENT_UPDATED = "2026-10-06";
+export const CONTENT_UPDATED = "2026-10-16";
 
 /** JSON for an inline <script type="application/ld+json">, safe against `</script>`. */
 export function jsonLd(data: unknown): string {

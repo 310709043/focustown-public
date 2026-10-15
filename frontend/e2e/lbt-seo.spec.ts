@@ -31,8 +31,8 @@ for (const locale of ["zh-TW", "en"]) {
     expect(await response.text()).toContain(locale === "zh-TW" ? "匿名聊天指南" : "Anonymous Chat Guide");
     await page.goto(`/${locale}/guide`);
     await expect(page.locator("main h1")).toHaveCount(1);
-    // Seven answers, then the links to the guide articles.
-    await expect(page.locator("main section h2")).toHaveCount(8);
+    // Eight answers, then the links to the guide articles.
+    await expect(page.locator("main section h2")).toHaveCount(9);
     await expect(page.locator('main .article-links a')).toHaveCount(ARTICLE_SLUGS.length);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}/${locale}/guide`);
     for (const language of ["zh-TW", "en"]) {
@@ -48,6 +48,38 @@ for (const locale of ["zh-TW", "en"]) {
     expect(data.length).toBeGreaterThan(0);
     for (const entry of data) expect(() => JSON.parse(entry)).not.toThrow();
     expect(data.join("")).toContain('"FAQPage"');
+  });
+
+  test(`${locale}: meeting-people guides are discoverable and describe the actual service`, async ({ page, request }) => {
+    for (const slug of ["anonymous-dating", "dating-app-or-chat"]) {
+      const path = `/${locale}/guide/${slug}`;
+      const response = await request.get(path);
+      expect(response.status()).toBe(200);
+      const html = await response.text();
+      expect(html).toContain(locale === "zh-TW" ? "交友" : "dating");
+      expect(html).toContain(locale === "zh-TW" ? "沒有好友名單" : "no friend list");
+      await page.goto(path);
+      await expect(page.locator("main h1")).toHaveCount(1);
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}${path}`);
+      await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", `${origin}${path}`);
+      await expect(page.locator('meta[name="robots"]')).not.toHaveAttribute("content", /noindex/);
+      for (const language of ["zh-TW", "en"]) {
+        await expect(page.locator(`link[hreflang="${language}"]`)).toHaveAttribute("href", `${origin}/${language}/guide/${slug}`);
+      }
+      await expect(page.locator("main")).not.toContainText("{reportDays}");
+      const entries = (await page.locator('script[type="application/ld+json"]').allTextContents())
+        .flatMap((entry) => JSON.parse(entry)["@graph"] ?? []);
+      const article = entries.find((entry) => entry["@type"] === "Article");
+      expect(article.mainEntityOfPage).toBe(`${origin}${path}`);
+      expect(article.headline).toBe(await page.locator("main h1").textContent());
+      if (slug === "dating-app-or-chat") {
+        await expect(page.locator("main")).toContainText(locale === "zh-TW" ? "匿名交友就是約砲、打砲嗎？" : "Does anonymous chat mean a hookup service?");
+        await expect(page.locator("main")).toContainText(locale === "zh-TW" ? "18+ 是使用年齡門檻" : "18+ is an age requirement");
+      }
+      await page.goto(`/${locale}/guide`);
+      await expect(page.locator(`main a[href="${path}"]`)).toHaveCount(1);
+      expect(await (await request.get("/sitemap.xml")).text()).toContain(`${origin}${path}`);
+    }
   });
 
   test(`${locale}: guide articles are indexable, server-rendered and linked`, async ({ page, request }) => {
