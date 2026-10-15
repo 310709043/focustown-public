@@ -8,7 +8,7 @@
  * Launching: set POND_PURCHASE_URL to the extra's page and bump
  * LBT_LEGAL.effectiveDate, since the terms and privacy pages change.
  */
-export const POND_PURCHASE_URL: string | null = null;
+export const POND_PURCHASE_URL: string | null = "https://buymeacoffee.com/lowbatterytown/e/587337";
 export const POND_ON_SALE = POND_PURCHASE_URL !== null;
 
 export const POND_OFFER = {
