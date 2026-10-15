@@ -20,6 +20,7 @@ import { MusicVolume } from "./MusicControls";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
+import { StageSceneLayer, StageSceneToggle, useStageScene } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {
@@ -38,6 +39,7 @@ export function HomeView() {
 
   const defaultNickname = t("home.nickname.default");
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
+  const stage = useStageScene();
   const energyId = ENERGY_ID[energy];
 
   const start = () => {
@@ -55,7 +57,11 @@ export function HomeView() {
           info on the left, the form as its own column); phones stack them
           in that order so the form comes before the extra cards. */}
       <div className="home-grid">
-        <section className="main-stage" aria-labelledby="lbt-hero-title">
+        <section
+          className={`main-stage${stage.scene === "pond" ? " is-pond" : ""}`}
+          aria-labelledby="lbt-hero-title"
+        >
+          <StageSceneLayer scene={stage.scene} />
           <TownSky />
           <div className="stage-topline">
             <span className="eyebrow">{t("home.eyebrow")}</span>
@@ -66,6 +72,7 @@ export function HomeView() {
               <span className="by-time t-dusk">{t("home.coordinateDusk")}</span>
               <span className="by-time t-night">{t("home.coordinate")}</span>
             </span>
+            {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : null}
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">

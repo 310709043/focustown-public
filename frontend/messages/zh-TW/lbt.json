@@ -774,5 +774,20 @@
     "title": "這條街還沒有燈。",
     "body": "你要找的頁面不在這裡，可能已經搬走了。",
     "back": "回到小鎮"
+  },
+  "pond": {
+    "toggle": "舞台場景",
+    "town": "街景",
+    "pond": "錦鯉池",
+    "trayLabel": "放魚入池",
+    "count": "池中 {count} 尾",
+    "hint": "點水面撒飼料・拖曳撥水",
+    "add": "放一尾{name}入池",
+    "kinds": {
+      "kohaku": "紅白",
+      "showa": "昭和三色",
+      "ogon": "黃金",
+      "platinum": "白金"
+    }
   }
 }
