@@ -1,3 +1,5 @@
+import { POND_OFFER, POND_ON_SALE } from "./pond";
+
 /**
  * Facts the LowBatteryTown policy pages state. Keep the numbers in step
  * with the Cloudflare API: LBT_GUEST_TOKEN_TTL_HOURS and
@@ -22,6 +24,10 @@ const FACTS: Record<string, string> = {
   suspensionHours: String(LBT_LEGAL.suspensionHours),
   suspensionDays: String(LBT_LEGAL.suspensionDays),
   feedbackDays: String(LBT_LEGAL.feedbackDays),
+  pondPrice: String(POND_OFFER.priceUsd),
+  pondDevices: String(POND_OFFER.devices),
+  pondCodeHours: String(POND_OFFER.codeHours),
+  pondRefundDays: String(POND_OFFER.refundDays),
 };
 
 /**
@@ -30,6 +36,11 @@ const FACTS: Record<string, string> = {
  */
 export function fillLegalFacts(text: string): string {
   return text.replace(/\{(\w+)\}/g, (match, key: string) => FACTS[key] ?? match);
+}
+
+/** Policy sections marked `pond` describe the paid koi pond and appear only while it is on sale. */
+export function policySections<T extends { pond?: boolean }>(sections: T[], pondOnSale: boolean = POND_ON_SALE): T[] {
+  return sections.filter((section) => !section.pond || pondOnSale);
 }
 
 export const POLICY_SLUGS = ["privacy", "terms", "guidelines"] as const;

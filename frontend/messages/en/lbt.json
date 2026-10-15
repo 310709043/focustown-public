@@ -355,6 +355,15 @@
           ]
         },
         {
+          "h": "Paid scene (koi pond)",
+          "pond": true,
+          "p": [
+            "When you buy, Buy Me a Coffee handles your name, e-mail and payment details. The operator uses your e-mail only to send the unlock code, handle refunds and answer you; that correspondence stays in the operator's mailbox.",
+            "Our database keeps only a hash of each code, its first four characters, the operator's note (such as a transaction ID), how many devices used it and when it was last used, never your e-mail or payment details. We keep this while the code is valid, to check that unlocks still hold.",
+            "Once unlocked, your browser keeps a signed unlock token in localStorage (no personal data) and asks the server about once a day whether it still holds; clearing your browser data deletes it."
+          ]
+        },
+        {
           "h": "Why",
           "p": [
             "To pair people and relay chats, to prevent abuse and handle reports, to answer feedback, and to keep the service running. We don't sell data or use chats for advertising."
@@ -424,6 +433,17 @@
           "h": "Voluntary support",
           "p": [
             "Light a lamp is voluntary, one-time support through Buy Me a Coffee. Each Power costs US$5; choose the quantity on the support page. Payments are in US dollars, with currency conversion and fees determined by your bank. There is no automatic renewal and free chat and matching are unchanged. LowBatteryTown is run by an independent creator. Buy Me a Coffee handles payment details. For mistaken payments or refund requests, contact us using the email below or through Buy Me a Coffee with the transaction ID. Its refund policy applies (https://help.buymeacoffee.com/en/articles/8722330-buy-me-a-coffee-refund-policy)."
+          ]
+        },
+        {
+          "h": "Paid scene: the koi pond",
+          "pond": true,
+          "p": [
+            "The koi pond is a paid home-page scene: a one-time payment of US${pondPrice} through Buy Me a Coffee, charged in US dollars (the amount in your currency depends on your card issuer's rate and fees), with no automatic renewal. Buy Me a Coffee handles payment details; we never see your card number.",
+            "Within {pondCodeHours} hours of payment the operator e-mails an unlock code to the address you gave Buy Me a Coffee. Entered on the unlock page, it lets that device switch the home page to the koi pond; one code works on {pondDevices} devices.",
+            "The koi pond shows only in a large window on a computer and only changes the home page picture. It changes nothing about matching, chats, extending or any other benefit, and it is separate from the voluntary “Light a lamp” support.",
+            "Refunds: an unused code can be fully refunded within {pondRefundDays} days of purchase; after use, if it doesn't display properly on your device and we can't fix it, we refund it too. Write to the contact address on this page with your Buy Me a Coffee transaction ID. Once a refund or chargeback goes through, the code stops working and unlocked devices return to the street within about a day.",
+            "The town is still in beta; if we ever stop offering the koi pond, we will announce it on the site first."
           ]
         },
         {
@@ -788,20 +808,35 @@
       "showa": "Showa",
       "ogon": "Ogon",
       "platinum": "Platinum"
-    }
+    },
+    "locked": "Koi pond: a paid scene, see what it is"
   },
   "unlock": {
-    "title": "Unlock a scene",
-    "intro": "Enter the unlock code you bought, and this device's home page can switch to the koi pond. One code works on 3 devices.",
+    "title": "Koi pond · paid scene",
+    "intro": "Turn the big frame on the home page into a koi pond: tap the water to feed, drag to stir, and add four kinds of koi (Kohaku, Showa, Ogon, Platinum). The water's tint follows the town's time of day.",
+    "previewAlt": "The koi pond scene: Kohaku, Showa, Ogon and Platinum koi in dark green water, stones and water lilies at the edge, and the home page title on the left.",
+    "factsTitle": "Before you buy",
+    "facts": {
+      "price": "A one-time payment of US${price} on Buy Me a Coffee. Charged in US dollars; the amount in your currency depends on your card issuer's rate and fees. Nothing renews automatically.",
+      "delivery": "Within {hours} hours of payment we e-mail the unlock code to the address you gave Buy Me a Coffee.",
+      "devices": "One code works on {devices} devices. No sign-up.",
+      "desktop": "The pond shows only in a large window on a computer; phones and small windows keep the street. Enter the code on a computer so you don't use up a device for nothing.",
+      "scope": "It only changes the home page picture, not matching, chats or extending, and it is separate from the voluntary “Light a lamp” support.",
+      "refund": "An unused code can be fully refunded within {days} days of purchase. After use, if it doesn't display properly on your computer and we can't help, we refund it too. A refunded code stops working."
+    },
+    "buy": "Buy on Buy Me a Coffee",
+    "notOnSale": "Not on sale yet.",
+    "terms": "Full purchase terms",
+    "redeemTitle": "Already have a code?",
     "label": "Unlock code",
     "submit": "Unlock",
     "working": "Checking…",
     "done": "The koi pond is unlocked. Go back home and pick “Koi pond” at the top right of the big frame.",
     "home": "Back home",
-    "note": "An unlock code only unlocks the home scene; it changes nothing about chats or matching. No sign-up: we only remember on this device that it is unlocked. If you clear your browser data, enter the same code again (it counts as one more device).",
+    "note": "An unlock code only unlocks the home scene; it changes nothing about chats or matching. We only remember on this device that it is unlocked. If you clear your browser data, enter the same code again (it counts as one more device).",
     "error": {
       "invalid_code": "That code isn't right or no longer works. Please check it and try again.",
-      "code_used_up": "This code has already been used on 3 devices.",
+      "code_used_up": "This code has already been used on {devices} devices.",
       "too_many": "Too many tries. Please try again in an hour.",
       "offline": "Can't reach the town right now. Please try again later."
     }

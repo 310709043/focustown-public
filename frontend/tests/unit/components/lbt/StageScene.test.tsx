@@ -4,10 +4,14 @@
  * redeemed a code gets the switch and keeps its last choice.
  */
 import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { StageSceneToggle, useStageScene } from "@/components/lbt/StageScene";
+import { StageSceneOffer, StageSceneToggle, useStageScene } from "@/components/lbt/StageScene";
 import { useUnlocks } from "@/lib/lbt/unlocks";
+
+vi.mock("@/i18n/routing", () => ({
+  Link: ({ children, ...props }: React.ComponentProps<"a">) => <a {...props}>{children}</a>,
+}));
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -41,5 +45,25 @@ describe("StageSceneToggle", () => {
     expect(screen.getByRole("radio", { name: "lbt.pond.pond" })).toHaveAttribute("aria-checked", "true");
     fireEvent.click(screen.getByRole("radio", { name: "lbt.pond.town" }));
     expect(picked).toBe("town");
+  });
+});
+
+describe("StageSceneOffer", () => {
+  test("shows nothing while the pond is not on sale", () => {
+    const { container } = render(<StageSceneOffer onSale={false} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  test("on sale: a locked pond chip that leads to the offer", () => {
+    render(<StageSceneOffer onSale />);
+    const link = screen.getByRole("link", { name: "lbt.pond.locked" });
+    expect(link).toHaveAttribute("href", "/unlock");
+    expect(screen.queryByRole("radio")).toBeNull();
+  });
+
+  test("waits for this device's unlocks before showing the lock", () => {
+    useUnlocks.setState({ items: [], loaded: false });
+    const { container } = render(<StageSceneOffer onSale />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

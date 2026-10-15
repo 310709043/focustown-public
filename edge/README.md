@@ -145,8 +145,18 @@ and the buyer gets a code.
   day (`POST /api/v1/lbt/unlock/verify`).
 - **Refund:** 撤銷 in /admin. The code stops redeeming, and devices drop the
   pond at their next check.
-- Codes can be handed out by hand (e.g. after a Buy Me a Coffee "extra"
-  purchase), or later issued automatically from a store's webhook or
+- **Selling (Buy Me a Coffee extra, by hand):** the offer and its numbers
+  live in `frontend/lib/lbt/pond.ts` (US$50, code within 24 h, 3 devices,
+  unused codes refundable within 7 days). When Buy Me a Coffee e-mails you a
+  purchase: /admin → 解鎖碼 → one code, with the transaction ID as the note
+  (not the buyer's e-mail) → reply to the buyer with the code and
+  `https://www.lowbatterytown.com/zh-TW/unlock#code`, asking them to enter it
+  on a computer. Refund on Buy Me a Coffee first, then 撤銷 the code.
+- **Going on sale:** set `POND_PURCHASE_URL` in `frontend/lib/lbt/pond.ts` to
+  the extra's page and bump `LBT_LEGAL.effectiveDate`; that adds the locked
+  chip on the home stage, the buy link on /unlock and the pond sections of
+  the terms and privacy pages. Until then none of these exist.
+- Later, codes could be issued automatically from a store's webhook or its
   license keys.
 
 ## Admin console
