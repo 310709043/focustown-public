@@ -40,6 +40,7 @@ export const LIMITS = {
   messagesPerGuestPerMin: 30,
   reportsPerGuestPerHour: 5,
   feedbackPerIpPerHour: 5,
+  unlockPerIpPerHour: 10,
 } as const;
 
 /** How often the Durable Object sweeps while anyone is waiting or chatting. */

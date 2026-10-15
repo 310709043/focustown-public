@@ -37,7 +37,7 @@ describe("LowBatteryTown CSP", () => {
 });
 
 describe("LowBatteryTown routes", () => {
-  it.each(["/zh-TW", "/en", "/zh-TW/demo", "/en/guide", "/zh-TW/guide/cant-sleep", "/en/policies/privacy"])(
+  it.each(["/zh-TW", "/en", "/zh-TW/demo", "/zh-TW/unlock", "/en/guide", "/zh-TW/guide/cant-sleep", "/en/policies/privacy"])(
     "%s is a LowBatteryTown page",
     (path) => expect(isLbtPublicRoute(path)).toBe(true),
   );
