@@ -22,3 +22,5 @@ Do not add hidden keyword blocks, fake success stories, copied reviews, location
 - Review query impressions, clicks, CTR and indexed-page status after Google has recrawled. No search volume, ranking position, indexing date or first-page outcome is promised.
 
 Local regression checks: frontend typecheck, lint, production build, guide-content unit tests, `e2e/lbt-seo.spec.ts`, and the Cloudflare built-Worker route checker. Existing unrelated lint warnings remain outside this change.
+
+The first two GitHub CI attempts failed in Turbopack's existing Noto Sans TC font resolver (`next/font/google queries have exactly one entry`). Production builds explicitly use Next.js's supported `--webpack` mode to preserve the fonts while avoiding that resolver path. The same `pnpm build` command is used by OpenNext; validate its Worker output and nonce CSP after this build change.
