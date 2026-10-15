@@ -9,6 +9,7 @@ import { KOI_KINDS, mountKoiPond, type KoiKind, type KoiPond as Pond } from "@/l
  * The koi pond as the home stage's scene (see lib/lbt/koiPond.mjs). Loaded
  * only when the visitor switches to it, so the street stays the default and
  * costs nothing extra. The tray drops a koi of each variety into the pond.
+ * At night the moon's reflection sits on the water.
  */
 export default function KoiPond() {
   const t = useTranslations("lbt.pond");
@@ -20,9 +21,13 @@ export default function KoiPond() {
     const el = host.current;
     if (!el) return;
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    const mounted = mountKoiPond(el, { reducedMotion, onCount: setCount });
+    const mounted = mountKoiPond(el, { reducedMotion, night: isNight(), onCount: setCount });
     setPond(mounted);
+    // town time (lib/lbt/townTime) can turn to night while the pond is open
+    const watch = new MutationObserver(() => mounted.setNight(isNight()));
+    watch.observe(document.documentElement, { attributes: true, attributeFilter: ["data-lbt-time"] });
     return () => {
+      watch.disconnect();
       mounted.destroy();
       setPond(null);
     };
@@ -46,6 +51,12 @@ export default function KoiPond() {
       </div>
     </div>
   );
+}
+
+/** Night, as the CSS reads it: no town time yet counts as night (the original look). */
+function isNight(): boolean {
+  const time = document.documentElement.dataset.lbtTime;
+  return !time || time === "night";
 }
 
 function KoiButton({ kind, pond, name, label }: { kind: KoiKind; pond: Pond | null; name: string; label: string }) {
