@@ -122,6 +122,12 @@ for (const locale of ["zh-TW", "en"]) {
     const article = graphs.find((entry) => entry["@type"] === "Article");
     expect(article.mainEntityOfPage).toBe(`${origin}${path}`);
     expect(article.headline).toBe(await page.locator("main h1").textContent());
+    const entry = page.getByRole("link", {
+      name: locale === "zh-TW" ? "試試免費匿名聊天（18+）" : "Try free anonymous chat (18+)",
+    });
+    await expect(entry).toHaveAttribute("href", `/${locale}`);
+    await entry.click();
+    await expect(page).toHaveURL(new RegExp(`/${locale}$`));
     await page.goto(`/${locale}/guide`);
     await expect(page.locator(`main a[href="${path}"]`)).toHaveCount(1);
   });

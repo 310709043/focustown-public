@@ -93,6 +93,11 @@ export default async function ArticlePage({ params }: { params: Params }) {
         <time dateTime={article.updated}>{t("articles.updated", { date: article.updated })}</time>
       </p>
       <p className="policy-intro">{copy.intro}</p>
+      {copy.entryCta ? (
+        <p className="policy-contact">
+          <Link className="text-button" href="/">{copy.entryCta} <span aria-hidden="true">↗</span></Link>
+        </p>
+      ) : null}
       {copy.sections.map((section) => (
         <section key={section.h}>
           <h2>{section.h}</h2>
