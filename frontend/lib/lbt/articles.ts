@@ -8,7 +8,7 @@ export const ARTICLES = [
   { slug: "social-battery", published: "2026-10-05", updated: "2026-10-05" },
   { slug: "cant-sleep", published: "2026-10-05", updated: "2026-10-05" },
   { slug: "anonymous-chat-safety", published: "2026-10-05", updated: "2026-10-05" },
-  { slug: "wootalk-alternative", published: "2026-10-06", updated: "2026-10-06" },
+  { slug: "wootalk-alternative", published: "2026-10-06", updated: "2026-10-17" },
   { slug: "anonymous-dating", published: "2026-10-16", updated: "2026-10-16" },
   { slug: "dating-app-or-chat", published: "2026-10-16", updated: "2026-10-16" },
 ] as const;
@@ -25,6 +25,8 @@ export interface ArticleCopy {
   title: string;
   description: string;
   intro: string;
+  /** Optional early entry point for readers already ready to try the chat. */
+  entryCta?: string;
   /** Paragraphs (`p`) or a bulleted list (`li`). */
   sections: { h: string; p?: string[]; li?: string[] }[];
   /** Public sources for factual references to other services. */
