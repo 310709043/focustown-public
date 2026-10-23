@@ -2525,7 +2525,6 @@
   --tw-bulb: #ffe9a8;
   --tw-beam: 0.22;
   --tw-ground: #0e1626;
-  --tw-cat: #070b15;
   --tw-bus: #2b5793;
   --tw-plate: #1c263f;
   --tw-plate-text: #f8d779;
@@ -2577,7 +2576,6 @@ html[data-lbt-time="day"] .lbt-app {
   --tw-bulb: #d5d7d9;
   --tw-beam: 0;
   --tw-ground: #bdb5a6;
-  --tw-cat: #3e4049;
   --tw-bus: #2f6db5;
   --tw-plate: #f3efe6;
   --tw-plate-text: #c8553d;
@@ -2631,7 +2629,6 @@ html[data-lbt-time="dusk"] .lbt-app {
   --tw-bulb: #ffe3a1;
   --tw-beam: 0.14;
   --tw-ground: #5c4f60;
-  --tw-cat: #2a2332;
   --tw-bus: #3f5f95;
   --tw-plate: #e9ddd0;
   --tw-plate-text: #9a3a26;
@@ -2685,7 +2682,6 @@ html[data-lbt-time="dawn"] .lbt-app {
   --tw-bulb: #ffe6b0;
   --tw-beam: 0.1;
   --tw-ground: #8c889a;
-  --tw-cat: #34324a;
   --tw-bus: #4a66a0;
   --tw-plate: #ece8ee;
   --tw-plate-text: #ac4536;
@@ -2866,6 +2862,15 @@ html:not([data-lbt-week="weekend"]) .lbt .tw-weekday,
 html[data-lbt-week="weekend"] .lbt .tw-weekend {
   display: block;
 }
+/* the street cat (StreetCat.tsx) walks in front of both streets; of the
+   whole street only the cat itself takes clicks */
+.lbt .tw-street.tw-cat-layer {
+  display: block;
+}
+.lbt .tw-cat-layer .cat-hit {
+  pointer-events: visiblePainted;
+  cursor: pointer;
+}
 .lbt .tw-hand {
   filter: url(#tw-hand-filter);
 }
@@ -2927,17 +2932,10 @@ html[data-lbt-time="night"] .lbt .tw-grille-sheet { opacity: 0.55; }
 .lbt .tw-bus-mark { fill: #f4f1ea; opacity: 0.9; }
 .lbt .tw-shelter { fill: var(--tw-pole); }
 .lbt .tw-ground { fill: var(--tw-ground); }
-.lbt .tw-cat { fill: var(--tw-cat); }
-.lbt .tw-cat-tail { fill: none; stroke: var(--tw-cat); stroke-width: 2.4; stroke-linecap: round; }
 
-/* who is out when: laundry comes in at night, the cat moves to the lamp */
-.lbt .tw-cat-lamp,
-html[data-lbt-time="night"] .lbt .tw-cat-roof,
+/* who is out when: the laundry comes in at night */
 html[data-lbt-time="night"] .lbt .tw-laundry {
   display: none;
-}
-html[data-lbt-time="night"] .lbt .tw-cat-lamp {
-  display: inline;
 }
 
 /* ---- motion: one quiet thing at a time ---- */
@@ -2961,10 +2959,6 @@ html[data-lbt-time="night"] .lbt .tw-cat-lamp {
 @keyframes lbt-sway {
   0%, 100% { transform: rotate(-2.5deg); }
   50% { transform: rotate(2.5deg); }
-}
-@keyframes lbt-cat-breathe {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(1.06); }
 }
 html[data-lbt-time="day"] .lbt .sky-cloud,
 html[data-lbt-time="dawn"] .lbt .sky-cloud {
@@ -2998,13 +2992,6 @@ html[data-lbt-time="dusk"] .lbt .tw-laundry {
 }
 html[data-lbt-time="dusk"] .lbt .tw-laundry {
   animation-duration: 8s;
-}
-.lbt .tw-cat-roof {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-}
-html[data-lbt-time="day"] .lbt .tw-cat-roof {
-  animation: lbt-cat-breathe 4.5s ease-in-out infinite;
 }
 
 /* ---- night life: more stars, a shooting star now and then, a far plane,
@@ -4144,11 +4131,20 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
 /* the copy always clears the street: the street is a little shorter on short
    windows and the copy's bottom padding is at least the street's height */
 @media (min-width: 960px) and (min-height: 620px) {
+  /* the street keeps the drawing's proportions, so the towers in the middle
+     are never sliced; the copy clears the low buildings on the left, whose
+     roofs stay 160 of the drawing's 1200 units above the bottom */
   .lbt .home-grid > .main-stage .townscape {
-    height: clamp(56px, 12vh, 140px);
+    height: auto;
+    aspect-ratio: 1200 / 310;
   }
   .lbt .home-grid > .main-stage .hero-copy {
-    padding-bottom: max(clamp(56px, 11vh, 110px), calc(clamp(56px, 12vh, 140px) + 6px));
+    padding-bottom: max(clamp(56px, 11vh, 110px), calc(13.4cqw + 6px));
+  }
+  /* on narrow stages the subtitle wraps before the towers (which start at
+     half the stage width) instead of running into them */
+  .lbt .home-grid > .main-stage .hero-subtitle {
+    max-width: 42cqw;
   }
 }
 @media (min-width: 960px) and (max-width: 1100px) and (min-height: 620px) and (max-height: 700px) {
@@ -4161,6 +4157,16 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
 @media (min-width: 960px) and (min-height: 620px) {
   .lbt .home-grid > .main-stage {
     container: lbt-stage / size;
+  }
+}
+/* on a narrow stage the rooftop neon sign would stand in front of the
+   towers: it hangs in the sky above them instead, like the other carriers */
+@container lbt-stage (max-width: 800px) {
+  .lbt .carrier-neon {
+    bottom: calc(24.5cqw + 30px);
+  }
+  .lbt .carrier-neon::after {
+    display: none;
   }
 }
 @container lbt-stage (max-height: 340px) {
