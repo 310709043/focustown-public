@@ -11,6 +11,8 @@
  * "l1" windows light at dusk, "l2" only at night.
  */
 
+import { StreetCat } from "./StreetCat";
+
 type Lit = "" | "l1" | "l2";
 
 interface Block {
@@ -23,6 +25,12 @@ interface Block {
 }
 
 const GROUND = 190;
+/**
+ * The drawing reaches up to y = -110 for the tall towers in the middle; the
+ * left half stays low (tops at y >= 40) because the hero copy sits above it,
+ * and the right stays under the rooftop neon sign.
+ */
+const VIEWBOX = "0 -110 1200 310";
 
 /** Deterministic pattern: a fifth lit at dusk, two fifths at night. */
 function litFor(i: number): Lit {
@@ -63,20 +71,23 @@ function windows(b: Block, key: string, padX: number, padTop: number, gap: numbe
 }
 
 const WEEKDAY: Block[] = [
-  { x: 18, top: 78, w: 150, cols: 5, rows: 4, tone: 1 },
-  { x: 186, top: 34, w: 104, cols: 3, rows: 6, tone: 2 },
-  { x: 372, top: 96, w: 150, cols: 5, rows: 3, tone: 3 },
-  { x: 540, top: 52, w: 156, cols: 4, rows: 5, tone: 1 },
-  { x: 836, top: 84, w: 126, cols: 4, rows: 4, tone: 2 },
-  { x: 980, top: 44, w: 200, cols: 6, rows: 5, tone: 3 },
+  { x: 18, top: 62, w: 150, cols: 5, rows: 5, tone: 1 },
+  { x: 186, top: 42, w: 104, cols: 3, rows: 7, tone: 2 },
+  { x: 372, top: 74, w: 150, cols: 5, rows: 4, tone: 3 },
+  { x: 540, top: 44, w: 52, cols: 2, rows: 6, tone: 2 },
+  { x: 596, top: -40, w: 128, cols: 4, rows: 10, tone: 1 },
+  { x: 724, top: -92, w: 104, cols: 3, rows: 12, tone: 3 },
+  { x: 842, top: 32, w: 120, cols: 4, rows: 6, tone: 2 },
+  { x: 978, top: 36, w: 204, cols: 6, rows: 6, tone: 3 },
 ];
 
 const WEEKEND: Block[] = [
-  { x: 16, top: 70, w: 190, cols: 3, rows: 4, tone: 1 },
-  { x: 222, top: 30, w: 128, cols: 2, rows: 5, tone: 2 },
-  { x: 404, top: 98, w: 220, cols: 3, rows: 3, tone: 3 },
-  { x: 870, top: 62, w: 170, cols: 3, rows: 4, tone: 2 },
-  { x: 1056, top: 40, w: 132, cols: 2, rows: 5, tone: 1 },
+  { x: 16, top: 56, w: 190, cols: 3, rows: 5, tone: 1 },
+  { x: 222, top: 42, w: 128, cols: 2, rows: 6, tone: 2 },
+  { x: 404, top: 74, w: 200, cols: 3, rows: 4, tone: 3 },
+  { x: 618, top: -56, w: 124, cols: 3, rows: 7, tone: 1 },
+  { x: 870, top: 30, w: 170, cols: 3, rows: 5, tone: 2 },
+  { x: 1056, top: 28, w: 132, cols: 2, rows: 6, tone: 1 },
 ];
 
 function StreetLamp({ x }: { x: number }) {
@@ -102,10 +113,10 @@ function StreetLamp({ x }: { x: number }) {
 
 function WeekdayStreet() {
   return (
-    <svg className="tw-street tw-weekday" viewBox="0 0 1200 200" preserveAspectRatio="xMidYMax slice" focusable="false">
+    <svg className="tw-street tw-weekday" viewBox={VIEWBOX} preserveAspectRatio="xMidYMax slice" focusable="false">
       <path
         className="tw-far"
-        d="M0 200V118h46V96h58v30h70V84h40v40h150V102h60v26h104V90h70v34h90V74h62v44h118V96h70v30h84V200Z"
+        d="M0 200V96H40V74H104V100H160V58H200V100H296V18H350V44H380V84H520V-6H546V60H830V-12H852V66H966V30H990V60H1180V40H1200V200Z"
       />
       <g className="tw-hand">
         {WEEKDAY.map((b, k) => (
@@ -114,8 +125,8 @@ function WeekdayStreet() {
             {windows(b, `wd${k}`, 12, 14, 7)}
           </g>
         ))}
-        <path className="tw-edge" d="M210 34V22M260 34V16" />
-        <rect className="tw-block tw-tone2" x={604} y={40} width={36} height={12} />
+        <path className="tw-edge" d="M210 42V30M260 42V24M752 -92V-106M800 -92V-101" />
+        <rect className="tw-block tw-tone2" x={640} y={-52} width={36} height={12} />
         {/* bus stop: the weekday commute */}
         <rect className="tw-pole-thin" x={322} y={124} width={3} height={66} />
         <rect className="tw-bus-sign" x={311} y={110} width={25} height={17} rx={3} />
@@ -143,7 +154,7 @@ function WeekdayStreet() {
 
 function WeekendStreet() {
   return (
-    <svg className="tw-street tw-weekend" viewBox="0 0 1200 200" preserveAspectRatio="xMidYMax slice" focusable="false">
+    <svg className="tw-street tw-weekend" viewBox={VIEWBOX} preserveAspectRatio="xMidYMax slice" focusable="false">
       <defs>
         <pattern id="tw-grille" width="5" height="40" patternUnits="userSpaceOnUse">
           <path className="tw-grille" d="M2.5 0V40" />
@@ -157,7 +168,7 @@ function WeekendStreet() {
       </defs>
       <path
         className="tw-far"
-        d="M0 200V112h52V92h46v28h80V80h36v36h196V98h50v24h120V86h64v30h96V76h58v40h110V94h60v30h80V200Z"
+        d="M0 200V98H52V78H98V106H178V66H214V102H350V30H400V84H600V20H624V60H742V-24H800V10H836V40H880V62H1044V12H1062V80H1180V58H1200V200Z"
       />
       <path className="tw-wire" d="M0 40C80 56 160 60 222 54" />
       <path className="tw-wire" d="M350 60C500 96 640 100 760 104" />
@@ -170,17 +181,18 @@ function WeekendStreet() {
           </g>
         ))}
         {/* rooftop water tanks, tin add-on, plants */}
-        <rect className="tw-tank" x={140} y={46} width={44} height={24} rx={5} />
-        <rect className="tw-tank" x={1128} y={20} width={36} height={20} rx={4} />
-        <polygon className="tw-tin" points="430,98 430,74 590,68 590,98" />
-        <polygon points="430,98 430,74 590,68 590,98" fill="url(#tw-tin)" />
-        <rect className="tw-pot" x={28} y={58} width={12} height={12} />
-        <path className="tw-plant" d="M26 60c-4-12 6-14 8-7 2-9 12-8 8 3 6-2 7 5 1 5z" />
-        <rect className="tw-pot" x={884} y={50} width={12} height={12} />
-        <path className="tw-plant" d="M882 52c-5-13 6-15 8-6 3-9 13-6 8 4 6-1 6 5 0 4z" />
+        <rect className="tw-tank" x={140} y={32} width={44} height={24} rx={5} />
+        <rect className="tw-tank" x={1128} y={8} width={36} height={20} rx={4} />
+        <rect className="tw-tank" x={650} y={-76} width={40} height={20} rx={4} />
+        <polygon className="tw-tin" points="430,74 430,50 590,44 590,74" />
+        <polygon points="430,74 430,50 590,44 590,74" fill="url(#tw-tin)" />
+        <rect className="tw-pot" x={28} y={44} width={12} height={12} />
+        <path className="tw-plant" d="M26 46c-4-12 6-14 8-7 2-9 12-8 8 3 6-2 7 5 1 5z" />
+        <rect className="tw-pot" x={884} y={18} width={12} height={12} />
+        <path className="tw-plant" d="M882 20c-5-13 6-15 8-6 3-9 13-6 8 4 6-1 6 5 0 4z" />
         {/* AC units */}
         <rect className="tw-ac" x={176} y={96} width={22} height={13} rx={1.5} />
-        <rect className="tw-ac" x={612} y={124} width={22} height={13} rx={1.5} />
+        <rect className="tw-ac" x={560} y={124} width={22} height={13} rx={1.5} />
         <rect className="tw-ac" x={1018} y={110} width={22} height={13} rx={1.5} />
         {/* breakfast shop: shutter down at the weekend, a note taped on */}
         <rect className="tw-sign" x={340} y={58} width={22} height={70} rx={2} />
@@ -197,19 +209,10 @@ function WeekendStreet() {
         <rect className="tw-sign" x={888} y={150} width={84} height={16} rx={2} />
       </g>
       {/* laundry pole off the low building: sways by day */}
-      <path className="tw-pole-line" d="M610 112L668 108" />
+      <path className="tw-pole-line" d="M604 112L668 108" />
       <g className="tw-laundry">
         <path className="tw-cloth-a" d="M618 112h18l5 6-5 3v18h-18v-18l-5-3z" />
         <rect className="tw-cloth-b" x={646} y={110} width={11} height={22} />
-      </g>
-      {/* the cat: asleep on the roof by day, under the lamp at night */}
-      <g className="tw-cat tw-cat-roof">
-        <path d="M520 98c0-8 7-12 16-12 8 0 14 4 14 10 0 2-1 2-3 2h-24c-2 0-3 0-3 0z" />
-        <path className="tw-cat-tail" d="M548 96c6 0 8-4 6-8" />
-      </g>
-      <g className="tw-cat tw-cat-lamp">
-        <path d="M790 190c-2-7 1-14 7-16l-1-7 4 4h5l4-4-1 7c5 2 7 9 5 16z" />
-        <path className="tw-cat-tail" d="M812 189c8-1 10-8 6-12" />
       </g>
       <StreetLamp x={760} />
       <rect className="tw-ground" x={0} y={GROUND} width={1200} height={10} />
@@ -272,6 +275,7 @@ export function Townscape() {
       </svg>
       <WeekdayStreet />
       <WeekendStreet />
+      <StreetCat />
     </div>
   );
 }
