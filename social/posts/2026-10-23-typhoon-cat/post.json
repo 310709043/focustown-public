@@ -1,0 +1,17 @@
+{
+  "status": "draft",
+  "note": "Typhoon Champi street-cat post, 2026-10-23. Posted by hand from the desktop app; kept as the first example. Change status to ready to publish.",
+  "instagram": {
+    "type": "reel",
+    "video": "reel.mp4",
+    "cover": "reel-cover.jpg",
+    "caption_file": "instagram.txt",
+    "share_to_feed": true
+  },
+  "threads": {
+    "video": "reel.mp4",
+    "text_file": "threads.txt",
+    "topic_tag": "颱風假",
+    "reply_file": "threads-reply.txt"
+  }
+}

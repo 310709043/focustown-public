@@ -1,0 +1,91 @@
+name: Social post
+
+# Publishes posts prepared under social/posts/<slug>/ to Instagram and Threads
+# (scripts/social, setup in docs/social-posting.md). A push that adds or edits
+# a post.json marked "ready" queues it; every publish waits for a person to
+# approve the run in the "social" environment. Run it by hand with dry_run to
+# check the tokens and media without posting.
+
+on:
+  push:
+    paths:
+      - "social/posts/*/post.json"
+  workflow_dispatch:
+    inputs:
+      post:
+        description: "Post folder, e.g. social/posts/2026-10-23-typhoon-cat"
+        required: true
+      dry_run:
+        description: "Only check the post, tokens and media; publish nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-post
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      posts: ${{ steps.plan.outputs.posts }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - id: plan
+        env:
+          BEFORE: ${{ github.event.before }}
+          INPUT_POST: ${{ inputs.post }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "$DRY_RUN" = "true" ]; then posts="$INPUT_POST"; else posts=$(node scripts/social/plan.mjs "$INPUT_POST/post.json"); fi
+          else
+            if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then BEFORE=$(git rev-parse HEAD~1); fi
+            changed=$(git diff --name-only "$BEFORE" HEAD -- 'social/posts/*/post.json')
+            posts=$( [ -n "$changed" ] && node scripts/social/plan.mjs $changed || true )
+          fi
+          echo "posts=$(echo $posts)" >> "$GITHUB_OUTPUT"
+          echo "Posts to send: ${posts:-none}"
+
+  publish:
+    needs: plan
+    if: needs.plan.outputs.posts != ''
+    runs-on: ubuntu-latest
+    environment: social
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Require an approval gate
+        if: inputs.dry_run != true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/social/requireReview.mjs
+      - name: Publish
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          MEDIA_BASE_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}
+          POSTS: ${{ needs.plan.outputs.posts }}
+          DRY: ${{ inputs.dry_run == true && '--dry-run' || '' }}
+        run: node scripts/social/post.mjs $DRY $POSTS
+      - name: Record what was published
+        if: always() && inputs.dry_run != true
+        run: |
+          git add social/posts/*/published.json 2>/dev/null || true
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Record published social post ids"
+          git push origin "HEAD:$GITHUB_REF_NAME" || echo "::warning::Could not push published.json; the post ids are in the job summary."
