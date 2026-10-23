@@ -11,9 +11,13 @@ test("day/weekend and night select different scenery; mobile sky topics become c
   await page.setViewportSize({ width: 390, height: 844 });
   const topic = page.locator(".sky-line button");
   await expect(topic).toBeVisible();
-  const word = await topic.locator("b").innerText();
+  // Phone topics rotate every few seconds, so read the word that was taken
+  // from the confirmation rather than the line before the tap.
   await topic.click();
-  await expect(page.locator(".sky-line-taken")).toContainText(word);
+  const taken = page.locator(".sky-line-taken");
+  await expect(taken).toContainText("「");
+  const word = /「(.+)」/.exec(await taken.innerText())?.[1] ?? "";
+  expect(word).not.toBe("");
   await page.getByRole("checkbox", { name: /我已年滿 18 歲/ }).check();
   await page.getByRole("button", { name: /走進小鎮/ }).click();
   await expect(page.locator(".sky-topic-card")).toContainText(word, { timeout: 10_000 });
