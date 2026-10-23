@@ -89,7 +89,8 @@ try {
   await ready(`${api}/healthz`, worker);
   const next = resolve(frontend, "node_modules/next/dist/bin/next");
   const dev = process.argv.includes("--dev");
-  if (!dev) await start(next, ["build"], frontend).done;
+  // Match pnpm build and the Cloudflare build instead of defaulting to Turbopack.
+  if (!dev) await start(next, ["build", "--webpack"], frontend).done;
   const web = start(next, [dev ? "dev" : "start", "--hostname", "127.0.0.1", "--port", "3100"], frontend);
   await ready(`${site}/zh-TW`, web);
   const specs = process.argv.slice(2).filter(arg => arg !== "--dev");
