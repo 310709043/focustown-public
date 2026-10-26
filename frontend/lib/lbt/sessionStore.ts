@@ -11,6 +11,7 @@ import type { AvatarId } from "./avatars";
 import type { LbtTransport, TransportEvent } from "./transport";
 import type {
   ChatLine,
+  ChatLanguage,
   CompanionInvitation,
   ConnectionState,
   EndReason,
@@ -42,6 +43,8 @@ interface LbtData {
   view: LbtView;
   energy: Energy;
   preference: Preference;
+  /** Null until selected; the home view defaults to its interface language. */
+  language: ChatLanguage | null;
   /** Committed when the visitor walks in; empty until then. */
   nickname: string;
   adult: boolean;
@@ -77,9 +80,10 @@ interface LbtActions {
   attach: (transport: LbtTransport) => () => void;
   setEnergy: (energy: Energy) => void;
   setPreference: (preference: Preference) => void;
+  setLanguage: (language: ChatLanguage) => void;
   setAdult: (adult: boolean) => void;
   setTown: (town: TownStatus | null) => void;
-  startWaiting: (nickname: string) => void;
+  startWaiting: (nickname: string, language?: ChatLanguage) => void;
   cancelWaiting: () => void;
   again: () => void;
   goHome: () => void;
@@ -109,6 +113,7 @@ const INITIAL: LbtData = {
   view: "home",
   energy: 1,
   preference: "casual",
+  language: null,
   nickname: "",
   adult: false,
   connection: "idle",
@@ -134,7 +139,7 @@ const INITIAL: LbtData = {
 };
 
 /** Codes that mean "you can't be in the waiting room right now". */
-const SEND_HOME = new Set(["closed", "age_required", "nickname_required", "invalid_energy", "invalid_preference", "guest_suspended"]);
+const SEND_HOME = new Set(["closed", "age_required", "nickname_required", "invalid_energy", "invalid_preference", "invalid_language", "guest_suspended"]);
 
 /** Seconds left in the current window (full window outside a chat). */
 export function remainingSeconds(state: Pick<LbtData, "endsAt" | "now">): number {
@@ -236,6 +241,11 @@ export const useLbtStore = create<LbtState>()((set, get) => {
           selfAvatar: event.me.avatar ?? null,
           simulated: event.simulated,
           nickname: event.me.nickname || state.nickname,
+          energy: event.me.energy,
+          preference: event.me.preference,
+          language: event.me.language ?? state.language,
+          // A resumed chat has already passed the server's adult-only join.
+          adult: true,
           endsAt: event.endsAt,
           lines: [system("met"), system("energyShown")],
           partnerTyping: false,
@@ -304,7 +314,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
           // flaky connection doesn't quietly cost the visitor their spot.
           // If we can't (no nickname, town closed, not adult), send home.
           if (state.nickname && state.adult && !(state.town && !state.town.open)) {
-            transport?.join({ nickname: state.nickname, energy: state.energy, preference: state.preference, adult: state.adult });
+            transport?.join({ nickname: state.nickname, energy: state.energy, preference: state.preference, language: state.language ?? "zh-TW", adult: state.adult });
           } else {
             set({ view: "home", waitingSince: null, companionInvitation: null, notice: "wait_interrupted" });
           }
@@ -334,10 +344,11 @@ export const useLbtStore = create<LbtState>()((set, get) => {
 
     setEnergy: (energy) => set({ energy }),
     setPreference: (preference) => set({ preference }),
+    setLanguage: (language) => set({ language }),
     setAdult: (adult) => set({ adult, notice: get().notice === "age_required" ? null : get().notice }),
     setTown: (town) => set({ town }),
 
-    startWaiting(nickname) {
+    startWaiting(nickname, language = get().language ?? "zh-TW") {
       const state = get();
       if (!state.adult) {
         set({ notice: "age_required" });
@@ -352,6 +363,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         companionAnswering: false,
         view: "waiting",
         nickname,
+        language,
         lines: [],
         partner: null,
         selfAvatar: null,
@@ -364,6 +376,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         nickname,
         energy: state.energy,
         preference: state.preference,
+        language,
         adult: state.adult,
       });
     },

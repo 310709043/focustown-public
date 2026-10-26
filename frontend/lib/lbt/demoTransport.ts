@@ -88,6 +88,7 @@ export function createDemoTransport(options: DemoTransportOptions = {}): LbtTran
             nickname: request.nickname,
             energy: request.energy,
             preference: request.preference,
+            language: request.language,
             avatar: mine,
           },
           // Name and copy come from the UI's localised demo partner.
@@ -95,6 +96,7 @@ export function createDemoTransport(options: DemoTransportOptions = {}): LbtTran
             nickname: "",
             energy: DEMO_PARTNER_ENERGY,
             preference: COMPLEMENT[request.preference],
+            language: request.language,
             avatar: theirs,
           },
           simulated: true,

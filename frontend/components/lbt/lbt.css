@@ -53,6 +53,7 @@
 }
 .lbt button:focus-visible,
 .lbt a:focus-visible,
+.lbt select:focus-visible,
 .lbt input:focus-visible {
   outline: 2px solid var(--lamp);
   outline-offset: 4px;
@@ -362,6 +363,28 @@
   border-color: #23334e;
   color: var(--paper);
 }
+.lbt .language-field {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 12px;
+  color: #56637a;
+  font-size: 12px;
+}
+.lbt .language-field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid #bcc3cd;
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--night);
+  font: inherit;
+  font-size: 16px;
+}
+.lbt .language-field small { grid-column: 1 / -1; line-height: 1.5; }
+.lbt .language-field select:focus-visible { outline-color: #23334e; }
 .lbt .primary-button {
   width: 100%;
   min-height: 51px;

@@ -13,7 +13,7 @@ import { ChatView } from "@/components/lbt/ChatView";
 import { SkyTopicLine, SkyTopics } from "@/components/lbt/SkyTopics";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 import {
-  fetchSkyTopics, IDEA_QUESTIONS, IDEA_TOPICS, ideaTopicsFor, isQuestion, toSkyTopics, useSkyTopics,
+  currentSkyTopic, EN_IDEA_TOPICS, fetchSkyTopics, IDEA_QUESTIONS, IDEA_TOPICS, ideaTopicsFor, isQuestion, toSkyTopics, useSkyTopics,
 } from "@/lib/lbt/skyTopics";
 
 const ok = (body: unknown) => ({ ok: true, json: async () => body }) as Response;
@@ -51,6 +51,31 @@ describe("toSkyTopics / fetchSkyTopics", () => {
 });
 
 describe("the town's own questions", () => {
+  test("English ideas are English questions and not represented as trends", () => {
+    expect(EN_IDEA_TOPICS.every(t => t.kind === "idea" && isQuestion(t.word) && !/[\u4e00-\u9fff]/u.test(t.word))).toBe(true);
+    expect(new Set(ideaTopicsFor(new Date(2026, 9, 26), "en"))).toEqual(new Set(EN_IDEA_TOPICS));
+    expect(currentSkyTopic({ items: IDEA_TOPICS, index: 0, locale: "zh-TW" }, "en")).toBe(EN_IDEA_TOPICS[0]);
+    expect(currentSkyTopic({ items: [], index: 0, locale: "en" }, "en")).toBe(EN_IDEA_TOPICS[0]);
+  });
+
+  test("a pending Chinese request cannot overwrite the English page", async () => {
+    let resolveChinese!: (value: Response) => void;
+    const fetcher = vi.fn(() => new Promise<Response>(resolve => { resolveChinese = resolve; }));
+    vi.stubGlobal("fetch", fetcher);
+    try {
+      useSkyTopics.setState({ loaded: false, locale: "zh-TW" });
+      const chinese = useSkyTopics.getState().load("live", "http://api", "zh-TW");
+      await useSkyTopics.getState().load("live", "http://api", "en");
+      resolveChinese(ok({ items: [{ word: "宵夜", kind: "trend" }] }));
+      await chinese;
+      expect(useSkyTopics.getState().locale).toBe("en");
+      expect(useSkyTopics.getState().items.every(t => EN_IDEA_TOPICS.includes(t))).toBe(true);
+      expect(fetcher).toHaveBeenCalledTimes(1); // English never requests the Chinese feed.
+    } finally {
+      vi.unstubAllGlobals();
+      useSkyTopics.setState({ items: IDEA_TOPICS, index: 0, loaded: false, locale: "zh-TW" });
+    }
+  });
   test("match the edge's list, in the same order", () => {
     const edge = readFileSync(resolve(process.cwd(), "../edge/src/topics.ts"), "utf8");
     const block = edge.slice(edge.indexOf("export const IDEA_QUESTIONS = ["), edge.indexOf("] as const;", edge.indexOf("export const IDEA_QUESTIONS = [")));
@@ -68,7 +93,7 @@ describe("the town's own questions", () => {
 
 describe("SkyTopics", () => {
   beforeEach(() => {
-    useSkyTopics.setState({ items: [{ word: "颱風假", kind: "trend" }, { word: "宵夜", kind: "pick" }], index: 0, loaded: true });
+    useSkyTopics.setState({ items: [{ word: "颱風假", kind: "trend" }, { word: "宵夜", kind: "pick" }], index: 0, loaded: true, locale: "zh-TW" });
     useLbtStore.setState({ mode: "demo", skyTopic: null });
   });
 

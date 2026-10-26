@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Link } from "@/i18n/routing";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/lbt/constants";
 import { normalizeNickname } from "@/lib/lbt/nickname";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
+import { CHAT_LANGUAGES, type ChatLanguage } from "@/lib/lbt/types";
 import { onRadioGroupKeyDown } from "@/lib/lbt/useRadioArrowKeys";
 
 import { BatteryCharacter } from "./BatteryCharacter";
@@ -25,6 +26,10 @@ import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {
   const t = useTranslations("lbt");
+  const locale = useLocale();
+  const selectedLanguage = useLbtStore((s) => s.language);
+  const language = selectedLanguage ?? (locale === "en" ? "en" : "zh-TW");
+  const setLanguage = useLbtStore((s) => s.setLanguage);
   const energy = useLbtStore((s) => s.energy);
   const preference = useLbtStore((s) => s.preference);
   const committedNickname = useLbtStore((s) => s.nickname);
@@ -48,7 +53,7 @@ export function HomeView() {
     const nickname =
       draft === defaultNickname ? draft : normalizeNickname(draft, defaultNickname);
     setDraft(nickname);
-    startWaiting(nickname);
+    startWaiting(nickname, language);
   };
 
   return (
@@ -84,6 +89,7 @@ export function HomeView() {
             <TownCount />
             <h1 id="lbt-hero-title" tabIndex={-1}>
               {t("home.titleTop")}
+              {locale === "en" ? " " : null}
               <br />
               <em>{t("home.titleEm")}</em>
             </h1>
@@ -176,6 +182,18 @@ export function HomeView() {
                 );
               })}
             </div>
+          </div>
+          <div className="language-field">
+            <label htmlFor="lbt-chat-language">{t("language.label")}</label>
+            <select
+              id="lbt-chat-language"
+              value={language}
+              onChange={(event) => setLanguage(event.target.value as ChatLanguage)}
+              aria-describedby="lbt-language-note"
+            >
+              {CHAT_LANGUAGES.map((id) => <option key={id} value={id}>{t(`language.${id}`)}</option>)}
+            </select>
+            <small id="lbt-language-note">{t("language.note")}</small>
           </div>
           <label className="adult-check" htmlFor="lbt-adult">
             <input

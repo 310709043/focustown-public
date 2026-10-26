@@ -55,6 +55,16 @@ afterEach(() => {
 });
 
 describe("HomeView", () => {
+  test("chat language is labelled, explained, and sent only by explicit selection", () => {
+    render(<HomeView />);
+    const select = screen.getByRole("combobox", { name: "lbt.language.label" });
+    expect(select).toHaveValue("zh-TW");
+    expect(select).toHaveAccessibleDescription("lbt.language.note");
+    fireEvent.change(select, { target: { value: "both" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: /lbt\.home\.adult/ }));
+    fireEvent.click(screen.getByRole("button", { name: /lbt\.home\.start/ }));
+    expect(transport.calls[0]).toMatchObject({ op: "join", arg: { language: "both" } });
+  });
   test("starts on the lowest battery with one tab stop in the group", () => {
     render(<HomeView />);
 
@@ -98,7 +108,7 @@ describe("HomeView", () => {
 
     expect(transport.calls[0]).toEqual({
       op: "join",
-      arg: { nickname: "lbt.home.nickname.default", energy: 1, preference: "casual", adult: true },
+      arg: { nickname: "lbt.home.nickname.default", energy: 1, preference: "casual", language: "zh-TW", adult: true },
     });
   });
 
@@ -198,7 +208,7 @@ describe("WaitingView", () => {
     });
     render(<WaitingView />);
 
-    expect(screen.getByText("lbt.waiting.searching")).toBeInTheDocument();
+    expect(screen.getByText(/lbt\.waiting\.searching/)).toBeInTheDocument();
     expect(screen.queryByText(/lbt\.waiting\.townNow/)).toBeNull();
   });
 
@@ -319,7 +329,7 @@ describe("ChatView", () => {
 
     expect(people).toEqual([
       expect.stringMatching(/阿樹.*lbt\.energy\.mid\.name.*lbt\.preference\.story/),
-      expect.stringMatching(/小橘.*lbt\.energy\.low\.name.*lbt\.preference\.casual/),
+      expect.stringMatching(/小橘.*lbt\.energy\.low\.name.*lbt\.preference\.listen/),
     ]);
   });
 

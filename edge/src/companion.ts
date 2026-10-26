@@ -1,4 +1,4 @@
-import type { Profile } from "./rules";
+import { CHAT_LANGUAGES, InputError, type ChatLanguage, type Profile } from "./rules";
 
 /** A single human operator, never an automatically queued or simulated guest. */
 export const COMPANION_ID = "admin:companion";
@@ -11,9 +11,10 @@ export const COMPANION_PROFILE: Profile = {
 };
 
 /** Only these owner-approved names can be selected by an authenticated host. */
-export function companionProfile(identity: unknown = "male"): Profile | null {
+export function companionProfile(identity: unknown = "male", language: unknown = "zh-TW"): Profile | null {
   if (identity !== "male" && identity !== "female") return null;
-  return { ...COMPANION_PROFILE, nickname: identity === "male" ? "小辟穀" : "打辟穀" };
+  if (!(CHAT_LANGUAGES as readonly unknown[]).includes(language)) throw new InputError("invalid_language");
+  return { ...COMPANION_PROFILE, nickname: identity === "male" ? "小辟穀" : "打辟穀", language: language as ChatLanguage };
 }
 
 export function publicProfile(profile: Profile) {

@@ -12,6 +12,8 @@ import {
   parseOpenHours,
   parseProfile,
   pickPartner,
+  shareLanguage,
+  type ChatLanguage,
   type Preference,
   type Waiting,
 } from "../src/rules";
@@ -41,6 +43,12 @@ describe("cleanText", () => {
 });
 
 describe("parseProfile", () => {
+  test.each(["zh-TW", "en", "both"])("accepts the explicit chat language %s", (language) => {
+    expect(parseProfile({ nickname: "Night Owl", energy: 1, preference: "casual", language })).toHaveProperty("language", language);
+  });
+  test.each(["", "any", "fr", null, ["en"], 1])("rejects unsupported language %j", (language) => {
+    expect(() => parseProfile({ nickname: "x", energy: 1, preference: "casual", language })).toThrow("invalid_language");
+  });
   test("accepts a valid profile", () =>
     expect(parseProfile({ nickname: " 小橘 ", energy: 1, preference: "listen" })).toEqual({
       nickname: "小橘",
@@ -87,6 +95,19 @@ describe("compatibility", () => {
 });
 
 describe("pickPartner", () => {
+  test.each([
+    ["zh-TW", "zh-TW", true], ["zh-TW", "en", false], ["zh-TW", "both", true],
+    ["en", "zh-TW", false], ["en", "en", true], ["en", "both", true],
+    ["both", "zh-TW", true], ["both", "en", true], ["both", "both", true],
+    [undefined, "zh-TW", true], [undefined, "en", false], [undefined, "both", true],
+  ] as const)("language %s + %s compatible = %s, even after a long wait", (left, right, allowed) => {
+    const a = waiting("a", "casual", 1, 120);
+    const b = waiting("b", "casual", 1, 120);
+    a.profile.language = left as ChatLanguage | undefined;
+    b.profile.language = right as ChatLanguage | undefined;
+    expect(shareLanguage(a.profile, b.profile)).toBe(allowed);
+    expect(pickPartner(a, [b], T0, RELAX)).toBe(allowed ? b : null);
+  });
   test("prefers the best score", () => {
     const best = waiting("story", "story", 1);
     expect(pickPartner(waiting("me", "listen", 1), [waiting("c", "casual", 1), best], T0, RELAX)).toBe(best);

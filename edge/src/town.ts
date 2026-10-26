@@ -15,6 +15,7 @@ import {
   maskContacts,
   parseProfile,
   pickPartner,
+  shareLanguage,
   type Preference,
   type Waiting,
 } from "./rules";
@@ -143,7 +144,7 @@ export class Town {
       if (invite && invite.expiresAt > now) {
         const target = (await this.store.listWaiting()).find((w) => w.guestId === invite.guestId);
         if (target) {
-          this.deps.send(guestId, { type: "lbt.companion_pending", id: invite.id, profile: target.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname });
+          this.deps.send(guestId, { type: "lbt.companion_pending", id: invite.id, profile: target.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname, language: invite.profile?.language ?? "zh-TW" });
           return;
         }
       }
@@ -186,8 +187,8 @@ export class Town {
   }
 
   /** Offer without removing the visitor from normal matching. Acceptance is explicit. */
-  async inviteCompanion(target: unknown, identity: unknown = "male") {
-    const profile = companionProfile(identity);
+  async inviteCompanion(target: unknown, identity: unknown = "male", language: unknown = "zh-TW") {
+    const profile = companionProfile(identity, language);
     if (!profile) throw new InputError("invalid_companion_identity");
     if (typeof target !== "string") throw new InputError("not_waiting");
     this.requireAllowed(COMPANION_ID);
@@ -201,12 +202,13 @@ export class Town {
     const visitor = (await this.store.listWaiting()).find((w) => w.guestId === target);
     const seen = await this.store.lastSeen(target);
     if (!visitor || seen === null || seen < now - this.cfg.offlineAfterMs) throw new InputError("not_waiting");
+    if (!shareLanguage(visitor.profile, profile)) throw new InputError("language_mismatch");
     if ((await this.store.blockedFor(target, now)).has(COMPANION_ID)) throw new InputError("pair_blocked");
     if (!(await this.store.hit(`companion:invite:${target}`, 1, INVITE_MS, now))) throw new InputError("slow_down");
     const invite: CompanionInvite = { id: this.deps.newId(), guestId: target, expiresAt: now + INVITE_MS, profile };
     await this.store.saveCompanionInvite(invite);
     this.sendCompanionInvite(invite);
-    this.deps.send(COMPANION_ID, { type: "lbt.companion_pending", id: invite.id, profile: visitor.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname });
+    this.deps.send(COMPANION_ID, { type: "lbt.companion_pending", id: invite.id, profile: visitor.profile, nickname: publicProfile(invite.profile ?? COMPANION_PROFILE).nickname, language: profile.language });
   }
 
   async answerCompanion(guestId: string, id: unknown, accept: boolean) {
@@ -222,6 +224,10 @@ export class Town {
       throw new InputError("invite_unavailable");
     }
     if (!accept) return this.clearCompanion("declined");
+    if (!shareLanguage(target.profile, invite.profile ?? COMPANION_PROFILE)) {
+      await this.clearCompanion("cancelled");
+      throw new InputError("language_mismatch");
+    }
     if (!(await this.openNow(now))) {
       await this.clearCompanion("cancelled");
       throw new InputError("closed");

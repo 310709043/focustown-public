@@ -86,12 +86,35 @@ const KINDS: readonly SkyTopicKind[] = ["trend", "pick", "idea"];
 
 export const IDEA_TOPICS: SkyTopic[] = IDEA_QUESTIONS.map((word) => ({ word, kind: "idea" }));
 
+/** Original English prompts, labelled as town ideas, never as live trends. */
+export const EN_IDEA_TOPICS: SkyTopic[] = [
+  "What's your after-work ritual?",
+  "What made you laugh lately?",
+  "What would you do with a day off?",
+  "What's on repeat in your playlist?",
+  "What's your go-to late-night snack?",
+  "What helps you switch off?",
+  "Are you a night owl or early bird?",
+  "Watching anything good lately?",
+  "Where would you love to go again?",
+  "What's a tiny win from today?",
+  "How do you recharge on weekends?",
+  "What movie can you watch again?",
+  "What's your comfort food?",
+  "What's your social battery today?",
+  "What's something you want to learn?",
+  "Quiet night in or a night out?",
+].map((word) => ({ word, kind: "idea" }));
+
+const ideasForLocale = (locale: string) => locale === "en" ? EN_IDEA_TOPICS : IDEA_TOPICS;
+
 /** The town's questions starting somewhere new each day, like the edge's `ideasFor`. */
-export function ideaTopicsFor(date: Date): SkyTopic[] {
-  const n = IDEA_TOPICS.length;
+export function ideaTopicsFor(date: Date, locale = "zh-TW"): SkyTopic[] {
+  const topics = ideasForLocale(locale);
+  const n = topics.length;
   const dayNumber = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
   const start = (((dayNumber * 7) % n) + n) % n;
-  return [...IDEA_TOPICS.slice(start), ...IDEA_TOPICS.slice(0, start)];
+  return [...topics.slice(start), ...topics.slice(0, start)];
 }
 
 /** Topics phrased as a question open the chat as they are; keywords get a frame. */
@@ -125,7 +148,8 @@ interface SkyTopicsState {
   items: SkyTopic[];
   index: number;
   loaded: boolean;
-  load: (source: "live" | "demo", apiBaseUrl: string) => Promise<void>;
+  locale: string;
+  load: (source: "live" | "demo", apiBaseUrl: string, locale?: string) => Promise<void>;
   next: () => void;
 }
 
@@ -133,19 +157,31 @@ export const useSkyTopics = create<SkyTopicsState>((set, get) => ({
   items: IDEA_TOPICS,
   index: 0,
   loaded: false,
-  async load(source, apiBaseUrl) {
-    if (get().loaded) return;
-    set({ loaded: true });
+  locale: "zh-TW",
+  async load(source, apiBaseUrl, locale = "zh-TW") {
+    if (get().loaded && get().locale === locale) return;
+    set({ loaded: true, locale, items: ideasForLocale(locale), index: 0 });
+    // The current API curates Taiwanese topics in Chinese. English visitors
+    // get original English ideas until an English trend source is available.
+    if (locale === "en") {
+      set({ items: ideaTopicsFor(new Date(), locale) });
+      return;
+    }
     // The demo has no API: today's turn of the town's own questions.
     if (source === "demo") {
       set({ items: ideaTopicsFor(new Date()), index: 0 });
       return;
     }
-    set({ items: await fetchSkyTopics(apiBaseUrl), index: 0 });
+    const items = await fetchSkyTopics(apiBaseUrl);
+    // A pending Chinese fetch must not overwrite a newly selected English page.
+    if (get().locale === locale) set({ items, index: 0 });
   },
   next: () => set((s) => ({ index: (s.index + 1) % Math.max(1, s.items.length) })),
 }));
 
-export function currentSkyTopic(s: Pick<SkyTopicsState, "items" | "index">): SkyTopic {
-  return s.items[s.index % s.items.length] ?? IDEA_TOPICS[0];
+export function currentSkyTopic(s: Pick<SkyTopicsState, "items" | "index" | "locale">, locale = "zh-TW"): SkyTopic {
+  const fallback = ideasForLocale(locale)[0];
+  // Also applies during server rendering, before the load effect can run.
+  if (s.locale !== locale) return fallback;
+  return s.items[s.index % s.items.length] ?? fallback;
 }

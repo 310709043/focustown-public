@@ -238,7 +238,7 @@ export class TownObject extends DurableObject<Env> {
   private async dispatch(guestId: string, frame: Record<string, unknown>) {
     if (frame.type === "companion_invite") {
       if (guestId !== COMPANION_ID) throw new InputError("unauthorized");
-      return this.town.inviteCompanion(frame.guest_id, frame.identity);
+      return this.town.inviteCompanion(frame.guest_id, frame.identity, frame.language);
     }
     if (frame.type === "companion_answer") {
       if (typeof frame.accept !== "boolean") throw new InputError("invalid_answer");

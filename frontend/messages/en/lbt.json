@@ -93,6 +93,15 @@
     "listen": "Someone to listen",
     "story": "Hear others' stories"
   },
+  "language": {
+    "shared": "Chat language: {language}",
+    "label": "Chat language",
+    "zh-TW": "中文",
+    "en": "English",
+    "both": "中文 / English — either is fine",
+    "note": "We only match you with someone who shares a language. This won't change while you wait.",
+    "searching": "Looking for someone who can chat in: {language}."
+  },
   "partner": {
     "name": "Window Cat",
     "opener": {
@@ -319,6 +328,7 @@
     "rightLive": "Beta: please be kind. You can say good night or report at any time."
   },
   "notice": {
+    "invalid_language": "Please choose a chat language again.",
     "closed": "The lamps aren't lit yet. Please come back during open hours.",
     "age_required": "Please confirm that you are 18 or older.",
     "slow_down": "That's a lot of messages. Take a breath before the next one.",
@@ -361,10 +371,10 @@
           "h": "What we handle",
           "p": [
             "Anonymous guest code: issued to your browser when you enter, kept in the browser's localStorage and valid for {tokenHours} hours, so a refresh or dropped connection can rejoin your chat.",
-            "Nickname, social battery and chat intent: shown to the person you are paired with.",
+            "Nickname, social battery and chat intent: shown to your partner. Your chosen chat language is used to find a shared language for pairing. The operator can see these choices while you wait to offer a chat in a shared language.",
             "Messages and pairing profiles: temporarily stored during an active chat for reconnects. When either person leaves, the session expires or the reconnect window runs out, they are immediately deleted from application chat storage and cleared from browsers that receive the end event. Reports cannot be submitted after the chat ends.",
             "IP address: used only for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
-            "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
+            "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents/chat languages, the reason and any note for safety review, and delete them after {reportDays} days.",
             "Feedback box: the type, message, page and language you send from, and the reply e-mail if you choose to leave one. Used to improve the town and answer you; stored in our database and copied to the operator's Google Sheet (hosted by Google), and deleted after {feedbackDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
             "Usage statistics: we use Cloudflare Web Analytics to count anonymous browsing statistics, such as page views and loading speed. It sets no cookies, does not follow you across other sites and builds no personal profile.",
