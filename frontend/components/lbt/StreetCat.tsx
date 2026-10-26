@@ -25,7 +25,7 @@ function readWorld(root: HTMLElement, motion: MediaQueryList | null): CatWorld {
  * light after dark. Click it and it turns to look at you. Decorative: the
  * street around it is aria-hidden and only the cat itself takes clicks.
  *
- * It only runs while the street is on screen (desktop, street scene), stops
+ * It only runs while the street is on screen (street scene, any size), stops
  * with the tab, and under reduced motion just sits and blinks. The server
  * renders an empty layer; the cat is built in the browser.
  */
