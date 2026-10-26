@@ -122,7 +122,7 @@ export function ChatView() {
           />
         );
       default:
-        return t(`chat.system.${code}`);
+        return null;
     }
   };
 
