@@ -2380,13 +2380,18 @@
   }
   .lbt .home-grid > .main-stage {
     min-height: 0;
-    padding-bottom: 20px;
+    padding-bottom: 0;
   }
   .lbt .home-grid > .main-stage .hero-copy {
     margin-top: 22px;
   }
+  /* the street is the stage's floor under the copy, edge to edge (the
+     stage's side padding is 6.5% of its content width), whole drawing */
   .lbt .home-grid > .main-stage .townscape {
-    display: none;
+    display: block;
+    height: auto;
+    aspect-ratio: 1200 / 310;
+    margin: 20px -6.5% 0;
   }
 }
 
@@ -2767,6 +2772,20 @@ html[data-lbt-time="dawn"] .lbt-app .town-count {
   background: rgba(255, 255, 255, 0.5);
   border-color: var(--ground-line);
   color: var(--hero-ink);
+}
+/* the phone topic line reads on the light skies too */
+.lbt-app .main-stage .sky-line button {
+  color: var(--hero-ink);
+}
+.lbt-app .main-stage .sky-line small,
+.lbt-app .main-stage .sky-line-taken {
+  color: var(--hero-accent);
+}
+html[data-lbt-time="day"] .lbt-app .main-stage .sky-line button,
+html[data-lbt-time="dusk"] .lbt-app .main-stage .sky-line button,
+html[data-lbt-time="dawn"] .lbt-app .main-stage .sky-line button {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--ground-line);
 }
 
 /* ---- sky layer ---- */
@@ -3528,13 +3547,17 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
   }
 }
 
-/* ---- sizes: below the desktop layout the street stays hidden (the stage
-   keeps its compact proportions); phones keep a small sun or moon ---- */
+/* ---- sizes: below the desktop layout the street is the stage's floor;
+   phones show its middle (the two towers and lamp 07, where the cat keeps
+   after dark) and keep a small sun or moon instead of the sky details ---- */
 @media (max-width: 610px) {
   .lbt .home-grid > .main-stage {
-    padding-bottom: 14px;
+    padding-bottom: 0;
   }
-  .lbt .home-grid > .main-stage .townscape,
+  .lbt .home-grid > .main-stage .townscape {
+    aspect-ratio: 2.3;
+    margin: 12px -17px 0;
+  }
   .lbt .sky-cloud,
   .lbt .sky-star,
   .lbt .sky-meteor,
@@ -4775,7 +4798,8 @@ html[data-lbt-time="dawn"] .lbt .koi-tint { background: rgba(206, 198, 240, 0.28
 @media (max-width: 959px), (max-height: 619px) {
   .lbt .stage-scene,
   .lbt .koi-pond { display: none; }
-  .lbt .main-stage.is-pond .town-sky { display: block; }
+  .lbt .main-stage.is-pond .town-sky,
+  .lbt .main-stage.is-pond .townscape { display: block; }
 }
 
 /* ── /unlock: the koi pond offer (PondOffer.tsx) above the code form (UnlockForm.tsx) ── */

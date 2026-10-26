@@ -7,7 +7,7 @@ test("day/weekend and night select different scenery; mobile sky topics become c
   await expect(page.locator("html")).toHaveAttribute("data-lbt-time", "day");
   await expect(page.locator("html")).toHaveAttribute("data-lbt-week", "weekend");
   await expect(page.locator(".tw-weekend").first()).toBeVisible();
-  // The current compact phone layout uses a sky and topic line, not the street.
+  // Phones get the topic as one line under the subtitle (the street sits below it).
   await page.setViewportSize({ width: 390, height: 844 });
   const topic = page.locator(".sky-line button");
   await expect(topic).toBeVisible();
