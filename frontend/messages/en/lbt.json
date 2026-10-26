@@ -94,6 +94,7 @@
     "story": "Hear others' stories"
   },
   "language": {
+    "shared": "Chat language: {language}",
     "label": "Chat language",
     "zh-TW": "中文",
     "en": "English",

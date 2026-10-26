@@ -55,6 +55,7 @@ test("English matches English or an explicit bilingual choice, never a Chinese-o
     await englishWalkIn(b, "Moon");
     await expect(a.locator(".partner-profile .tag-name")).toHaveText("Moon", { timeout: 10_000 });
     await expect(b.locator(".partner-profile .tag-name")).toHaveText("Night Owl");
+    await expect(a.locator(".system-note.is-met")).toContainText("Chat language: English");
     await expect(chinese.locator(".waiting-card")).toBeVisible();
     await a.getByLabel("Type a message").fill("Long day. How about you?");
     await a.getByRole("button", { name: "Send message", exact: true }).click();
@@ -76,6 +77,7 @@ test("English matches English or an explicit bilingual choice, never a Chinese-o
     await englishWalkIn(b, "Bilingual", "both");
     // The oldest waiter is Chinese; explicit bilingual consent can meet them.
     await expect(chinese.locator(".partner-profile .tag-name")).toHaveText("Bilingual", { timeout: 10_000 });
+    await expect(b.locator(".system-note.is-met")).toContainText("Chat language: 中文");
     await expect(a.locator(".waiting-card")).toBeVisible();
   } finally {
     await Promise.all(contexts.map(context => context.close()));

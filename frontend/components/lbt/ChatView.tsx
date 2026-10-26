@@ -31,6 +31,7 @@ export function ChatView() {
   const t = useTranslations("lbt");
   const energy = useLbtStore((s) => s.energy);
   const preference = useLbtStore((s) => s.preference);
+  const language = useLbtStore((s) => s.language) ?? "zh-TW";
   const nickname = useLbtStore((s) => s.nickname);
   const partner = useLbtStore((s) => s.partner);
   const selfAvatar = useLbtStore((s) => s.selfAvatar);
@@ -54,6 +55,10 @@ export function ChatView() {
   const messagesRef = useRef<HTMLDivElement>(null);
 
   const partnerName = usePartnerName();
+  const partnerLanguage = partner?.language ?? "zh-TW";
+  const sharedLanguage = language === "both"
+    ? partnerLanguage
+    : partnerLanguage === "both" || language === partnerLanguage ? language : null;
   const selfId = ENERGY_ID[energy];
   const timeUp = remaining === 0;
 
@@ -94,6 +99,13 @@ export function ChatView() {
 
   const systemText = (code: SystemLine["code"]): ReactNode => {
     switch (code) {
+      case "met":
+        return (
+          <>
+            {t("chat.system.met")}
+            {sharedLanguage ? <><br />{t("language.shared", { language: t(`language.${sharedLanguage}`) })}</> : null}
+          </>
+        );
       case "energyShown":
         return t("chat.system.energyShown", {
           energy: t(`energy.${selfId}.name`),

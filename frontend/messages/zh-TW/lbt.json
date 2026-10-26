@@ -94,6 +94,7 @@
     "story": "聽聽別人的故事"
   },
   "language": {
+    "shared": "這次的共同語言：{language}",
     "label": "想用哪種語言聊？",
     "zh-TW": "中文",
     "en": "English",
