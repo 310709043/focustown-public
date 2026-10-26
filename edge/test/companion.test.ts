@@ -13,6 +13,22 @@ beforeEach(async () => {
 });
 async function offer() { await town.inviteCompanion(guest); return (await store.companionInvite())!; }
 describe("human companion invitations", () => {
+  test("the host must explicitly choose a language shared with the visitor", async () => {
+    await town.join(guest, { ...profile, language: "en" }, true);
+    await expect(town.inviteCompanion(guest)).rejects.toThrow("language_mismatch");
+    expect(await store.companionInvite()).toBeNull();
+    await town.inviteCompanion(guest, "male", "en");
+    const inv = (await store.companionInvite())!;
+    await town.answerCompanion(guest, inv.id, true);
+    expect(frames(guest, "lbt.matched")[0]?.partner).toMatchObject({ language: "en" });
+  });
+  test("changing language after an offer invalidates an incompatible acceptance", async () => {
+    const inv = await offer();
+    await town.join(guest, { ...profile, language: "en" }, true);
+    await expect(town.answerCompanion(guest, inv.id, true)).rejects.toThrow("language_mismatch");
+    expect(await store.companionInvite()).toBeNull();
+    expect(await store.conversationIdOf(guest)).toBeNull();
+  });
   test("only matches after explicit acceptance with server-labelled identity", async () => {
     const inv=await offer(); expect(await store.conversationIdOf(guest)).toBeNull(); expect(await store.listWaiting()).toHaveLength(1);
     await town.answerCompanion(guest,inv.id,true);

@@ -106,7 +106,7 @@ describe("walking in", () => {
       view: "waiting",
       join: {
         op: "join",
-        arg: { nickname: "小橘", energy: 3, preference: "story", adult: true },
+        arg: { nickname: "小橘", energy: 3, preference: "story", language: "zh-TW", adult: true },
       },
     });
   });
@@ -130,7 +130,7 @@ describe("walking in", () => {
     });
   });
 
-  test.each(["closed", "age_required", "invalid_energy"])(
+  test.each(["closed", "age_required", "invalid_energy", "invalid_language"])(
     "a %s error from the server sends the visitor home",
     (code) => {
       walkIn();
@@ -154,6 +154,15 @@ describe("walking in", () => {
 });
 
 describe("matching", () => {
+  test("a reload restores the accepted profile so matching again keeps its language", () => {
+    const event = matched();
+    if (event.type !== "matched") throw new Error("Expected a matched fixture");
+    transport.emit({ ...event, me: { nickname: "Night Owl", energy: 3, preference: "story", language: "en" } });
+    expect(store()).toMatchObject({ nickname: "Night Owl", energy: 3, preference: "story", language: "en", adult: true });
+    store().leave();
+    store().again();
+    expect(transport.calls.at(-1)).toEqual({ op: "join", arg: { nickname: "Night Owl", energy: 3, preference: "story", language: "en", adult: true } });
+  });
   test("opens the chat with the partner's profile and the seed notes", () => {
     walkIn();
 
@@ -481,6 +490,7 @@ describe("ending", () => {
   test("idle while waiting re-enqueues with the same choices", () => {
     store().setEnergy(2);
     store().setPreference("listen");
+    store().setLanguage("en");
     walkIn("小橘"); // first join
 
     transport.emit({ type: "idle" }); // dropped from the queue (e.g. a long disconnect)
@@ -489,7 +499,7 @@ describe("ending", () => {
     expect(transport.calls.filter((c) => c.op === "join").length).toBe(2);
     expect(transport.calls.at(-1)).toEqual({
       op: "join",
-      arg: { nickname: "小橘", energy: 2, preference: "listen", adult: true },
+      arg: { nickname: "小橘", energy: 2, preference: "listen", language: "en", adult: true },
     });
   });
 

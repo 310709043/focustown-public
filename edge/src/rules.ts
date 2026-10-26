@@ -10,15 +10,19 @@ export const REPORT_NOTE_MAX = 500;
 
 export const ENERGIES = [1, 2, 3] as const;
 export const PREFERENCES = ["casual", "listen", "story"] as const;
+export const CHAT_LANGUAGES = ["zh-TW", "en", "both"] as const;
 export const REPORT_REASONS = ["harassment", "sexual", "minor", "spam", "self_harm", "other"] as const;
 
 export type Preference = (typeof PREFERENCES)[number];
+export type ChatLanguage = (typeof CHAT_LANGUAGES)[number];
 export type ReportReason = (typeof REPORT_REASONS)[number];
 
 export interface Profile {
   nickname: string;
   energy: number;
   preference: Preference;
+  /** Missing on pre-upgrade clients/state, which used Traditional Chinese. */
+  language?: ChatLanguage;
   /** Set by the server only; parseProfile never accepts a client-supplied role. */
   role?: "admin";
 }
@@ -59,7 +63,13 @@ export function parseProfile(raw: unknown): Profile {
   if (typeof preference !== "string" || !(PREFERENCES as readonly string[]).includes(preference)) {
     throw new InputError("invalid_preference");
   }
-  return { nickname, energy, preference: preference as Preference };
+  if (r.language !== undefined && !(CHAT_LANGUAGES as readonly unknown[]).includes(r.language)) {
+    throw new InputError("invalid_language");
+  }
+  return {
+    nickname, energy, preference: preference as Preference,
+    ...(r.language !== undefined ? { language: r.language as ChatLanguage } : {}),
+  };
 }
 
 // ── contact masking ──────────────────────────────────────────────────
@@ -99,6 +109,13 @@ export function maskContacts(text: string): string {
 
 // ── pairing ──────────────────────────────────────────────────────────
 
+/** Language is a hard requirement, including after the pace/intent relaxes. */
+export function shareLanguage(a: Profile, b: Profile): boolean {
+  const left = a.language ?? "zh-TW";
+  const right = b.language ?? "zh-TW";
+  return left === right || left === "both" || right === "both";
+}
+
 /**
  * Higher is a better pairing; 0 means "only if nobody better shows up".
  * Listener + storyteller is best, "just chatting" goes with anyone, two
@@ -119,7 +136,8 @@ export function compatibility(me: Profile, other: Profile): number {
 /**
  * Best partner for `me` among `candidates` (oldest first). A candidate
  * needs a score of at least 1 unless either side has waited `relaxAfterMs`,
- * then anyone not blocked will do. Ties go to whoever waited longest.
+ * then any unblocked partner with a shared language will do.
+ * Ties go to whoever waited longest.
  */
 export function pickPartner(
   me: Waiting,
@@ -132,6 +150,7 @@ export function pickPartner(
   let bestScore = -1;
   for (const other of candidates) {
     if (other.guestId === me.guestId || blocked.has(other.guestId)) continue;
+    if (!shareLanguage(me.profile, other.profile)) continue;
     const score = compatibility(me.profile, other.profile);
     const relaxed = now - me.joinedAt >= relaxAfterMs || now - other.joinedAt >= relaxAfterMs;
     if (score < 1 && !relaxed) continue;

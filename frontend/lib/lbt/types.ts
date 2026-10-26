@@ -14,6 +14,9 @@ export type EnergyId = "low" | "mid" | "high";
 
 export type Preference = "casual" | "listen" | "story";
 
+export type ChatLanguage = "zh-TW" | "en" | "both";
+export const CHAT_LANGUAGES: readonly ChatLanguage[] = ["zh-TW", "en", "both"];
+
 export type TopicId = "moment" | "pause" | "song" | "quiet" | "story";
 
 export type ReplyId = "understand" | "think" | "thanks" | "similar" | "listening";
@@ -48,6 +51,7 @@ export interface PeerProfile {
   nickname: string;
   energy: Energy;
   preference: Preference;
+  language?: ChatLanguage;
   role?: "companion";
   /** Battery-family avatar the server picked for this chat. */
   avatar?: AvatarId;

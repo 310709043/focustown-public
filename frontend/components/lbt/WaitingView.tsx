@@ -15,6 +15,7 @@ export function WaitingView() {
   const t = useTranslations("lbt");
   const chimeOn = useChimeStore((s) => s.enabled);
   const energy = useLbtStore((s) => s.energy);
+  const language = useLbtStore((s) => s.language) ?? "zh-TW";
   const cancelWaiting = useLbtStore((s) => s.cancelWaiting);
   const mode = useLbtStore((s) => s.mode);
   const connection = useLbtStore((s) => s.connection);
@@ -59,7 +60,12 @@ export function WaitingView() {
           <br />
           {t("waiting.breathe")}
         </p>
-        {mode === "live" ? <p className="waiting-town">{t("waiting.searching")}</p> : null}
+        {mode === "live" ? (
+          <p className="waiting-town">
+            {t("waiting.searching")}<br />
+            {t("language.searching", { language: t(`language.${language}`) })}
+          </p>
+        ) : null}
         {connection === "offline" ? (
           <p className="waiting-offline" role="status">
             {t("waiting.offline")}

@@ -17,6 +17,7 @@ const KNOWN = new Set([
   "nickname_required",
   "invalid_energy",
   "invalid_preference",
+  "invalid_language",
   "wait_interrupted",
   "report_failed",
   "guest_suspended",

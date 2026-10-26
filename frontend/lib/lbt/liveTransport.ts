@@ -2,6 +2,7 @@ import { isAvatarId } from "./avatars";
 import { ENERGIES, HEARTBEAT_MS, OFFLINE_GRACE_MS, PREFERENCES } from "./constants";
 import type { JoinRequest, LbtTransport, TransportEvent, TransportListener } from "./transport";
 import type { EndReason, PeerProfile, ReportReason, TownStatus } from "./types";
+import { CHAT_LANGUAGES } from "./types";
 
 /**
  * Live transport: anonymous guest token over HTTP, then one WebSocket that
@@ -58,7 +59,7 @@ function safeStorage(): Pick<Storage, "getItem" | "setItem" | "removeItem"> | nu
 
 function toProfile(raw: unknown): PeerProfile | null {
   if (!raw || typeof raw !== "object") return null;
-  const { nickname, energy, preference, role, avatar } = raw as Record<string, unknown>;
+  const { nickname, energy, preference, language, role, avatar } = raw as Record<string, unknown>;
   if (typeof nickname !== "string") return null;
   if (!(ENERGIES as readonly unknown[]).includes(energy)) return null;
   if (!(PREFERENCES as readonly unknown[]).includes(preference)) return null;
@@ -66,6 +67,7 @@ function toProfile(raw: unknown): PeerProfile | null {
     nickname,
     energy,
     preference,
+    ...((CHAT_LANGUAGES as readonly unknown[]).includes(language) ? { language } : {}),
     ...((role === "companion" || role === "admin") ? { role: "companion" } : {}),
     ...(isAvatarId(avatar) ? { avatar } : {}),
   } as PeerProfile;
@@ -340,8 +342,8 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
       };
     },
     join(request: JoinRequest) {
-      const { nickname, energy, preference, adult } = request;
-      send({ type: "join", profile: { nickname, energy, preference }, adult }, { queue: true });
+      const { nickname, energy, preference, language, adult } = request;
+      send({ type: "join", profile: { nickname, energy, preference, ...(language ? { language } : {}) }, adult }, { queue: true });
     },
     cancel: () => send({ type: "cancel" }, { queue: true }),
     answerCompanion: (id, accept) => send({ type: "companion_answer", id, accept }, { queue: false }),

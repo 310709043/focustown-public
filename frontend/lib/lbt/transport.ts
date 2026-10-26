@@ -1,5 +1,6 @@
 import type {
   EndReason,
+  ChatLanguage,
   Energy,
   LbtMode,
   PartnerRef,
@@ -13,6 +14,8 @@ export interface JoinRequest {
   nickname: string;
   energy: Energy;
   preference: Preference;
+  /** Optional only for compatibility with older callers. */
+  language?: ChatLanguage;
   adult: boolean;
 }
 

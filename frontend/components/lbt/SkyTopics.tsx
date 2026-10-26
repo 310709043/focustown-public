@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, type AnimationEvent } from "react";
 
 import { config } from "@/lib/config";
@@ -13,12 +13,13 @@ const TIMER_MS = 7000;
 const LONG_AT = 8;
 
 function useSkyTopic(): SkyTopic {
+  const locale = useLocale();
   const mode = useLbtStore((s) => s.mode);
   const load = useSkyTopics((s) => s.load);
-  const topic = useSkyTopics(currentSkyTopic);
+  const topic = useSkyTopics((state) => currentSkyTopic(state, locale));
   useEffect(() => {
-    void load(mode, config.apiBaseUrl);
-  }, [load, mode]);
+    void load(mode, config.apiBaseUrl, locale);
+  }, [load, mode, locale]);
   return topic;
 }
 

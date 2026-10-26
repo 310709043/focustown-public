@@ -6,7 +6,7 @@ import { POND_OFFER, POND_ON_SALE } from "./pond";
  * LBT_REPORT_RETENTION_DAYS. Ordinary ended chats are deleted immediately.
  */
 export const LBT_LEGAL = {
-  effectiveDate: "2026-10-15",
+  effectiveDate: "2026-10-26",
   contactEmail: process.env.NEXT_PUBLIC_LBT_CONTACT_EMAIL || "hello@lowbatterytown.com",
   tokenHours: 24,
   reportDays: 180,

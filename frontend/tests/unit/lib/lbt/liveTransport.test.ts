@@ -204,6 +204,13 @@ describe("createLiveTransport", () => {
     });
   });
 
+  test("the selected chat language is carried in the join frame", async () => {
+    const transport = await started();
+    transport.join({ nickname: "Night Owl", energy: 1, preference: "casual", language: "en", adult: true });
+    FakeSocket.instances[0].open();
+    expect(JSON.parse(FakeSocket.instances[0].sent[0])).toMatchObject({ type: "join", profile: { language: "en" } });
+  });
+
   test("leaving discards offline messages before reconnect", async () => {
     const transport = await started();
     transport.send("private unsent message");

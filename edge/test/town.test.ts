@@ -62,6 +62,25 @@ async function expectCode(p: Promise<unknown>, code: string) {
 }
 
 describe("joining", () => {
+  test("Chinese and English wait separately; two English visitors can exchange messages and resume", async () => {
+    await town.join("g_zh", LISTEN, true); // pre-upgrade client: Chinese
+    await town.join("g_en", { ...STORY, nickname: "Night Owl", language: "en" }, true);
+    now += 35_000; // normal intent relaxation must never override language
+    await town.heartbeat("g_zh");
+    await town.heartbeat("g_en");
+    await town.sweep();
+    expect(await store.listWaiting()).toHaveLength(2);
+    await town.join("g_en2", { ...LISTEN, nickname: "Moon", language: "en" }, true);
+    expect((await store.listWaiting()).map(w => w.guestId)).toEqual(["g_zh"]);
+    expect(frames("g_en", "lbt.matched")[0]?.partner).toMatchObject({ nickname: "Moon", language: "en" });
+    await town.sendMessage("g_en", "Long day. How about you?");
+    await town.sendMessage("g_en2", "Same here. Taking it slow.");
+    expect(frames("g_en", "lbt.message").at(-1)).toMatchObject({ from: "partner", text: "Same here. Taking it slow." });
+    await town.connect("g_en");
+    expect(frames("g_en", "lbt.matched").at(-1)?.me).toMatchObject({ language: "en" });
+    await town.leave("g_en2");
+    expect(await store.conversationIdOf("g_en")).toBeNull();
+  });
   test("without age confirmation is rejected", () => expectCode(town.join("g_a", LISTEN, false), "age_required"));
 
   test("outside opening hours is rejected", async () => {
