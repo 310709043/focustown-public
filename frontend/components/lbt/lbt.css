@@ -2419,6 +2419,9 @@
   .lbt .home-grid > .main-stage h1 br {
     display: none;
   }
+  html[lang="en"] .lbt .home-grid > .main-stage h1 br {
+    display: block;
+  }
   .lbt .site-shell:has(.home-view) .topbar {
     height: 58px;
   }
@@ -2440,6 +2443,10 @@
   }
   .lbt .home-grid > .selection-card .nickname-field small {
     display: none;
+  }
+  /* Keep iOS from zooming the whole page when the nickname receives focus. */
+  .lbt .home-grid > .selection-card .nickname-field input {
+    font-size: 16px;
   }
   .lbt .home-grid > .selection-card .energy-option {
     min-height: 66px;
@@ -3555,8 +3562,8 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
     padding-bottom: 0;
   }
   .lbt .home-grid > .main-stage .townscape {
-    aspect-ratio: 2.3;
-    margin: 12px -17px 0;
+    aspect-ratio: 3.6;
+    margin: 8px -17px 0;
   }
   .lbt .sky-cloud,
   .lbt .sky-star,
@@ -5825,6 +5832,9 @@ html[data-lbt-time]:not([data-lbt-time="night"]) .lbt .bs-birds {
 @media (max-width: 610px) {
   .lbt .chat-stage { --s: 0.6; }
   .lbt .chat-main { border-radius: 18px; }
+  .lbt .chat-view {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
   .lbt .bs-clouds,
   .lbt .bs-birds,
   .lbt .bs-moths {
@@ -5850,6 +5860,40 @@ html[data-lbt-time]:not([data-lbt-time="night"]) .lbt .bs-birds {
   .lbt .composer input { height: 44px; padding: 0 14px; }
   .lbt .composer button { width: 44px; height: 44px; }
   .lbt .plug-chip { min-height: 40px; font-size: 13px; }
+}
+/* Short phones need room for the conversation before decorative scenery.
+   Keep both profiles, the timer, leave/report and mutual extension visible. */
+@media (max-width: 610px) and (min-height: 521px) and (max-height: 700px) {
+  .lbt .chat-stage { --s: 0.3; }
+  .lbt .bench-people { gap: 8px; padding: 6px 12px; }
+  .lbt .plug-panel { gap: 4px; padding: 6px 12px 2px; }
+  .lbt .plug-chip { min-height: 44px; }
+  .lbt .chat-bottom { padding: 6px 12px; }
+  .lbt .chat-foot { padding: 0 12px 8px; }
+  .lbt .bench-tag .small-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lbt .tag-details { gap: 2px 4px; font-size: 11px; }
+  .lbt .bench-tag h1 { gap: 2px 4px; }
+  .lbt .tag-name { font-size: 16px; }
+  .lbt .profile-prefix { font-size: 11px; }
+  .lbt .plug-hint { line-height: 1.4; }
+  .lbt .leave-button { min-height: 44px; }
+}
+@media (max-width: 610px) and (min-height: 521px) and (max-height: 620px) {
+  .lbt .chat-stage { --s: 0.22; }
+  .lbt .bench-scene { display: none; }
+  .lbt .stage-timer { top: 8px; }
+  .lbt .leave-button { top: 8px; }
+}
+/* Use the existing battery brand mark on the narrowest chat headers, so
+   longer English actions and a running music switch need no second row. */
+@media (max-width: 360px) {
+  .lbt .site-shell:has(> .chat-view) .wordmark { font-size: 0; }
+  .lbt .site-shell:has(> .chat-view) .wordmark-b { height: 26px; }
 }
 /* landscape phones and tiny windows: the page scrolls, the thread keeps room */
 @media (max-height: 520px) {
