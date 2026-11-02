@@ -377,7 +377,7 @@
           "pond": true,
           "p": [
             "When you buy, Buy Me a Coffee handles your name, e-mail and payment details. The operator uses your e-mail only to send the unlock code, handle refunds and answer you; that correspondence stays in the operator's mailbox.",
-            "Our database keeps only a hash of each code, its first four characters, the operator's note (such as a transaction ID), how many devices used it and when it was last used, never your e-mail or payment details. We keep this while the code is valid, to check that unlocks still hold.",
+            "Our database keeps only a hash of each code, its first four characters, the operator's note (such as a transaction ID), device usage counts, first activation and last use times, and the duration and expiry of promotional codes, never your e-mail or payment details. We keep this while the code is valid, to check that unlocks still hold.",
             "Once unlocked, your browser keeps a signed unlock token in localStorage (no personal data) and asks the server about once a day whether it still holds; clearing your browser data deletes it."
           ]
         },
@@ -460,6 +460,7 @@
             "The koi pond is a paid home-page scene: a one-time payment of US${pondPrice} through Buy Me a Coffee, charged in US dollars (the amount in your currency depends on your card issuer's rate and fees), with no automatic renewal. Buy Me a Coffee handles payment details; we never see your card number.",
             "Within {pondCodeHours} hours of payment the operator e-mails an unlock code to the address you gave Buy Me a Coffee. Entered on the unlock page, it lets that device switch the home page to the koi pond; one code works on {pondDevices} devices.",
             "The koi pond shows only in a large window on a computer and only changes the home page picture. It changes nothing about matching, chats, extending or any other benefit, and it is separate from the voluntary “Light a lamp” support.",
+            "Free promotional codes are separate from purchased codes. A six-month promotional term starts at the first successful activation and follows Taiwan's calendar; if the target month has no matching day, it ends on that month's last day. All devices using a code share its deadline; entering it again does not extend it. The scene returns to the street at expiry, without a charge. Existing purchased codes do not gain an expiry because of this promotion.",
             "Refunds: an unused code can be fully refunded within {pondRefundDays} days of purchase; after use, if it doesn't display properly on your device and we can't fix it, we refund it too. Write to the contact address on this page with your Buy Me a Coffee transaction ID. Once a refund or chargeback goes through, the code stops working and unlocked devices return to the street within about a day.",
             "The town is still in beta; if we ever stop offering the koi pond, we will announce it on the site first."
           ]
@@ -570,7 +571,7 @@
       },
       {
         "q": "Is my partner a real person or AI?",
-        "a": "The live town pairs real people. Companion invitations show the other person’s nickname and require your acceptance. The demo uses a clearly labelled simulated partner so you can try the flow."
+        "a": "The town only pairs real people, never AI or simulated partners. Companion invitations show the other person’s nickname and chatting starts only if you accept."
       },
       {
         "q": "Does anonymous mean no records? Can screenshots be prevented?",
@@ -971,10 +972,12 @@
     "working": "Checking…",
     "done": "The koi pond is unlocked. Go back home and pick “Koi pond” at the top right of the big frame.",
     "home": "Back home",
+    "expires": "Your promotional scene lasts until {date} (Taiwan time). It then returns to the street; you will not be charged.",
     "note": "An unlock code only unlocks the home scene; it changes nothing about chats or matching. We only remember on this device that it is unlocked. If you clear your browser data, enter the same code again (it counts as one more device).",
     "error": {
       "invalid_code": "That code isn't right or no longer works. Please check it and try again.",
       "code_used_up": "This code has already been used on {devices} devices.",
+      "code_expired": "This promotional code has expired. You will not be charged.",
       "too_many": "Too many tries. Please try again in an hour.",
       "offline": "Can't reach the town right now. Please try again later."
     }

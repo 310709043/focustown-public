@@ -31,11 +31,27 @@ export interface UnlockCodeRow {
   revoked: boolean;
   createdAt: string;
   lastRedeemedAt: string | null;
+  durationMonths: 6 | null;
+  activatedAt: string | null;
+  expiresAt: string | null;
 }
 
 export type RedeemResult =
-  | { ok: true; token: string; items: UnlockItem[] }
-  | { ok: false; status: 409 | 422; code: "invalid_code" | "code_used_up" };
+  | { ok: true; token: string; items: UnlockItem[]; expiresAt: string | null }
+  | { ok: false; status: 409 | 422; code: "invalid_code" | "code_used_up" | "code_expired" };
+
+/** Six calendar months in the campaign's Asia/Taipei time zone, clamped
+ * to the target month's last day (e.g. August 31 → February 28/29). */
+export function sixMonthsFrom(nowMs: number): string {
+  const offset = 8 * 3_600_000;
+  const date = new Date(nowMs + offset);
+  const day = date.getUTCDate();
+  date.setUTCDate(1);
+  date.setUTCMonth(date.getUTCMonth() + 6);
+  const last = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+  date.setUTCDate(Math.min(day, last));
+  return new Date(date.getTime() - offset).toISOString();
+}
 
 const isItem = (v: unknown): v is UnlockItem => (UNLOCK_ITEMS as readonly unknown[]).includes(v);
 
@@ -107,6 +123,9 @@ function toRow(r: Record<string, unknown>): UnlockCodeRow {
     revoked: Number(r.revoked) === 1,
     createdAt: String(r.created_at),
     lastRedeemedAt: typeof r.last_redeemed_at === "string" ? r.last_redeemed_at : null,
+    durationMonths: r.duration_months === 6 ? 6 : null,
+    activatedAt: typeof r.activated_at === "string" ? r.activated_at : null,
+    expiresAt: typeof r.expires_at === "string" ? r.expires_at : null,
   };
 }
 
@@ -115,6 +134,7 @@ export interface CreateCodesInput {
   count: number;
   note: string;
   maxDevices: number;
+  durationMonths: 6 | null;
 }
 
 /** Validate the admin form: a known item, 1–50 codes, 1–10 devices each, a short note. */
@@ -126,7 +146,9 @@ export function parseCreateCodes(raw: unknown): CreateCodesInput {
   const maxDevices = Number(body.maxDevices ?? DEFAULT_MAX_DEVICES);
   if (!Number.isInteger(maxDevices) || maxDevices < 1 || maxDevices > 10) throw new InputError("invalid_devices");
   const note = typeof body.note === "string" ? cleanText(body.note, 60).trim() : "";
-  return { item: body.item, count, note, maxDevices };
+  const durationMonths = body.durationMonths ?? null;
+  if (durationMonths !== null && durationMonths !== 6) throw new InputError("invalid_duration");
+  return { item: body.item, count, note, maxDevices, durationMonths };
 }
 
 /** Make `count` new codes; the plain codes are returned once and never stored. */
@@ -138,10 +160,10 @@ export async function createCodes(db: D1Database, input: CreateCodesInput, nowMs
     const plain = code.replace(/-/g, "");
     await db
       .prepare(
-        `INSERT INTO lbt_unlock_codes (id, code_hash, hint, item, note, max_devices, redemptions, revoked, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)`,
+        `INSERT INTO lbt_unlock_codes (id, code_hash, hint, item, note, max_devices, redemptions, revoked, created_at, duration_months)
+         VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)`,
       )
-      .bind(crypto.randomUUID(), await hashCode(plain), plain.slice(0, 4), input.item, input.note, input.maxDevices, created)
+      .bind(crypto.randomUUID(), await hashCode(plain), plain.slice(0, 4), input.item, input.note, input.maxDevices, created, input.durationMonths)
       .run();
     codes.push(code);
   }
@@ -164,21 +186,32 @@ export async function redeemCode(db: D1Database, secret: string, raw: unknown, n
   if (!code) return { ok: false, status: 422, code: "invalid_code" };
   const row = await db.prepare(`SELECT * FROM lbt_unlock_codes WHERE code_hash = ?`).bind(await hashCode(code)).first<Record<string, unknown>>();
   if (!row || Number(row.revoked) === 1) return { ok: false, status: 422, code: "invalid_code" };
+  const now = new Date(nowMs).toISOString();
+  if (typeof row.expires_at === "string" && row.expires_at <= now) return { ok: false, status: 422, code: "code_expired" };
   // One statement, so two devices racing cannot both take the last slot.
+  // COALESCE also makes the first activation the only start of the term.
   const taken = await db
-    .prepare(`UPDATE lbt_unlock_codes SET redemptions = redemptions + 1, last_redeemed_at = ? WHERE id = ? AND revoked = 0 AND redemptions < max_devices`)
-    .bind(new Date(nowMs).toISOString(), row.id)
-    .run();
-  if ((taken.meta.changes ?? 0) === 0) return { ok: false, status: 409, code: "code_used_up" };
+    .prepare(`UPDATE lbt_unlock_codes SET redemptions = redemptions + 1,
+      last_redeemed_at = ?1, activated_at = COALESCE(activated_at, ?1),
+      expires_at = CASE WHEN duration_months = 6 THEN COALESCE(expires_at, ?2) ELSE NULL END
+      WHERE id = ?3 AND revoked = 0 AND redemptions < max_devices
+      AND (expires_at IS NULL OR expires_at > ?1)
+      RETURNING expires_at`)
+    .bind(now, sixMonthsFrom(nowMs), row.id)
+    .first<{ expires_at: string | null }>();
+  if (!taken) return { ok: false, status: 409, code: "code_used_up" };
   const { item } = toRow(row);
-  return { ok: true, token: await signToken(secret, String(row.id), nowMs), items: [item] };
+  return { ok: true, token: await signToken(secret, String(row.id), nowMs), items: [item], expiresAt: taken.expires_at };
 }
 
-/** What a device token still unlocks: its code's item, or nothing once the code is revoked. */
-export async function verifyUnlock(db: D1Database, secret: string, token: unknown): Promise<UnlockItem[]> {
+/** Expiry is enforced by the server for every device, including old tokens. */
+export async function verifyUnlock(db: D1Database, secret: string, token: unknown, nowMs = Date.now()): Promise<{ items: UnlockItem[]; expires_at: string | null }> {
+  const empty = { items: [], expires_at: null };
   const id = await tokenCodeId(secret, token);
-  if (!id) return [];
-  const row = await db.prepare(`SELECT item, revoked FROM lbt_unlock_codes WHERE id = ?`).bind(id).first<Record<string, unknown>>();
-  if (!row || Number(row.revoked) === 1 || !isItem(row.item)) return [];
-  return [row.item];
+  if (!id) return empty;
+  const row = await db.prepare(`SELECT item, revoked, expires_at FROM lbt_unlock_codes WHERE id = ?`).bind(id).first<Record<string, unknown>>();
+  if (!row || Number(row.revoked) === 1 || !isItem(row.item)) return empty;
+  const expiresAt = typeof row.expires_at === "string" ? row.expires_at : null;
+  if (expiresAt !== null && expiresAt <= new Date(nowMs).toISOString()) return empty;
+  return { items: [row.item], expires_at: expiresAt };
 }

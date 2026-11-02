@@ -16,6 +16,7 @@ const admin = randomBytes(24).toString("hex");
 const env = {
   ...process.env,
   NEXT_TELEMETRY_DISABLED: "1",
+  LBT_ENABLE_DEMO: "1", // Scripted flow exists only in this disposable test build.
   WRANGLER_SEND_METRICS: "false",
   NEXT_PUBLIC_API_BASE_URL: api,
   NEXT_PUBLIC_WS_BASE_URL: api.replace("http:", "ws:"),

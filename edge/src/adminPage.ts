@@ -287,8 +287,13 @@ function topicsSection(items) {
 }
 
 const UNLOCK_ITEMS = {"koi-pond": "錦鯉池場景"};
-let unlockNote = "", unlockCount = "1", unlockFresh = [];
+let unlockNote = "", unlockCount = "1", unlockDuration = "", unlockFresh = [];
 function unlocksSection(items) {
+  const duration = el("select", {"aria-label":"解鎖期限"},
+    el("option", {value:"", text:"付費碼：無期限"}),
+    el("option", {value:"6", text:"活動碼：首次啟用起六個月"}));
+  duration.value = unlockDuration;
+  duration.addEventListener("change", () => { unlockDuration = duration.value; });
   const count = el("input", {type:"number", min:"1", max:"50", value: unlockCount, "aria-label":"產生幾組"});
   count.addEventListener("input", () => { unlockCount = count.value; });
   const note = el("input", {type:"text", maxlength:"60", placeholder:"備註（例如：BMC 10/15 第 3 筆）", "aria-label":"備註", value: unlockNote});
@@ -297,7 +302,7 @@ function unlocksSection(items) {
   const make = el("button", {class:"btn primary", type:"button", text:"產生解鎖碼", onclick: async (e) => {
     const btn = e.currentTarget; btn.disabled = true;
     try {
-      const r = await api("/api/v1/admin/lbt/unlocks", {method:"POST", body: JSON.stringify({item:"koi-pond", count: Number(unlockCount) || 1, note: unlockNote})});
+      const r = await api("/api/v1/admin/lbt/unlocks", {method:"POST", body: JSON.stringify({item:"koi-pond", count: Number(unlockCount) || 1, note: unlockNote, durationMonths: unlockDuration === "6" ? 6 : null})});
       unlockFresh = r.codes; unlockNote = ""; await render();
     } catch { msg.textContent = "沒辦法產生：數量請填 1–50。"; btn.disabled = false; }
   }});
@@ -313,7 +318,8 @@ function unlocksSection(items) {
     const row = el("div", {class:"topic" + (u.revoked ? " hidden" : "")},
       el("span", {class:"reason", text: (UNLOCK_ITEMS[u.item] || u.item) + " · " + u.hint + "…"}),
       el("strong", {text: u.note || "（無備註）"}),
-      el("span", {class:"meta", text: "已用 " + u.redemptions + "/" + u.maxDevices + " 台 · " + fmt(u.createdAt) + (u.revoked ? " · 已撤銷" : "")}));
+      el("span", {class:"meta", text: "已用 " + u.redemptions + "/" + u.maxDevices + " 台 · " + fmt(u.createdAt) +
+        (u.durationMonths === 6 ? (u.expiresAt ? " · 到期 " + fmt(u.expiresAt) : " · 未啟用（啟用起六個月）") : " · 無期限") + (u.revoked ? " · 已撤銷" : "")}));
     if (!u.revoked) row.append(el("button", {class:"btn", type:"button", text:"撤銷（退款）", onclick: async () => {
       if (!confirm("撤銷後，用這組碼解鎖的裝置下次檢查時就會失去錦鯉池。確定？")) return;
       await api("/api/v1/admin/lbt/unlocks/" + encodeURIComponent(u.id) + "/revoke", {method:"POST"});
@@ -323,8 +329,8 @@ function unlocksSection(items) {
   }
   return el("section", {"aria-label":"解鎖碼"},
     el("h2", {text:"解鎖碼"}),
-    el("p", {class:"meta", text:"付費場景還沒公開。每組碼可在 3 台裝置使用；買家到 www.lowbatterytown.com/zh-TW/unlock 輸入。退款時撤銷即可。"}),
-    el("div", {class:"actions"}, count, note, make), msg, ...(fresh ? [fresh] : []), list);
+    el("p", {class:"meta", text:"每組碼可在 3 台裝置使用，至 www.lowbatterytown.com/zh-TW/unlock 輸入。活動碼從首次啟用起算六個月，其他裝置共用同一到期日；到期不扣款。既有付費碼維持無期限。"}),
+    el("div", {class:"actions"}, duration, count, note, make), msg, ...(fresh ? [fresh] : []), list);
 }
 
 async function render() {

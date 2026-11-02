@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import { config } from "@/lib/config";
 import { POND_ON_SALE } from "@/lib/lbt/pond";
 import { useUnlocks } from "@/lib/lbt/unlocks";
+import { useUnlockExpiry } from "@/lib/lbt/useUnlockExpiry";
 
 /** The pond's code (canvas + WebGL) loads only when someone switches to it. */
 const KoiPond = dynamic(() => import("./KoiPond"), { ssr: false });
@@ -24,6 +25,7 @@ const SCENE_KEY = "lbt-stage-scene";
  * after mount.
  */
 export function useStageScene(): { scene: StageScene; enabled: boolean; setScene: (scene: StageScene) => void } {
+  useUnlockExpiry();
   const load = useUnlocks((s) => s.load);
   const enabled = useUnlocks((s) => s.items.includes("koi-pond"));
   const [chosen, setChosen] = useState<StageScene>("town");

@@ -12,7 +12,7 @@ const reply = (status: number, body: unknown) => ({ ok: status < 300, status, js
 
 beforeEach(() => {
   window.localStorage.clear();
-  useUnlocks.setState({ items: [], loaded: false });
+  useUnlocks.setState({ items: [], loaded: false, expiresAt: null });
 });
 
 describe("redeem", () => {
@@ -20,13 +20,14 @@ describe("redeem", () => {
     const fetcher = vi.fn(async () => reply(200, { token: "u1.a.b", items: ["koi-pond"] }));
     expect(await useUnlocks.getState().redeem("http://api", "abcd-efgh-jkmn", fetcher, NOW)).toBe("ok");
     expect(useUnlocks.getState().items).toEqual(["koi-pond"]);
-    expect(JSON.parse(window.localStorage.getItem("lbt-unlock")!)).toEqual({ token: "u1.a.b", items: ["koi-pond"], checkedAt: NOW });
+    expect(JSON.parse(window.localStorage.getItem("lbt-unlock")!)).toEqual({ token: "u1.a.b", items: ["koi-pond"], checkedAt: NOW, expiresAt: null });
     expect(fetcher).toHaveBeenCalledWith("http://api/api/v1/lbt/unlock", expect.objectContaining({ method: "POST", body: '{"code":"abcd-efgh-jkmn"}' }));
   });
 
   test.each([
     [reply(422, { error: { code: "invalid_code" } }), "invalid_code"],
     [reply(409, { error: { code: "code_used_up" } }), "code_used_up"],
+    [reply(422, { error: { code: "code_expired" } }), "code_expired"],
     [reply(429, {}), "too_many"],
   ] as const)("a refusal becomes a plain outcome (%#)", async (res, outcome) => {
     expect(await useUnlocks.getState().redeem("http://api", "x", vi.fn(async () => res), NOW)).toBe(outcome);
@@ -35,6 +36,29 @@ describe("redeem", () => {
 
   test("no connection says so", async () => {
     expect(await useUnlocks.getState().redeem("http://api", "x", vi.fn(async () => { throw new Error("down"); }), NOW)).toBe("offline");
+  });
+});
+
+describe("promotional expiry", () => {
+  test("remembers the server deadline and expires an already loaded scene", async () => {
+    const deadline = NOW + 10_000;
+    await useUnlocks.getState().redeem("http://api", "test", vi.fn(async () => reply(200, {
+      token: "u1.a.b", items: ["koi-pond"], expires_at: new Date(deadline).toISOString(),
+    })), NOW);
+    expect(useUnlocks.getState().expiresAt).toBe(deadline);
+    useUnlocks.getState().expire(deadline - 1);
+    expect(useUnlocks.getState().items).toEqual(["koi-pond"]);
+    useUnlocks.getState().expire(deadline);
+    expect(useUnlocks.getState().items).toEqual([]);
+    expect(window.localStorage.getItem("lbt-unlock")).toBeNull();
+  });
+
+  test("a recently cached promotional scene still expires while offline", async () => {
+    window.localStorage.setItem("lbt-unlock", JSON.stringify({ token: "u1.a.b", items: ["koi-pond"], checkedAt: NOW - 1000, expiresAt: NOW }));
+    const fetcher = vi.fn();
+    await useUnlocks.getState().load("http://api", fetcher, NOW);
+    expect(useUnlocks.getState().items).toEqual([]);
+    expect(fetcher).not.toHaveBeenCalled();
   });
 });
 

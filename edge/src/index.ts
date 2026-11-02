@@ -378,11 +378,11 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
     if (!(await town(env).allowUnlock(clientIp(request)))) return error(request, env, 429, "too_many_unlock_attempts");
     const body = (await boundedJson(request)) as { code?: unknown } | null;
     const result = await redeemCode(env.DB, env.LBT_TOKEN_SECRET, body?.code, Date.now());
-    return result.ok ? json(request, env, 200, { token: result.token, items: result.items }) : error(request, env, result.status, result.code);
+    return result.ok ? json(request, env, 200, { token: result.token, items: result.items, expires_at: result.expiresAt }) : error(request, env, result.status, result.code);
   }
   if (path === "/api/v1/lbt/unlock/verify" && request.method === "POST") {
     const body = (await boundedJson(request)) as { token?: unknown } | null;
-    return json(request, env, 200, { items: await verifyUnlock(env.DB, env.LBT_TOKEN_SECRET, body?.token) });
+    return json(request, env, 200, await verifyUnlock(env.DB, env.LBT_TOKEN_SECRET, body?.token));
   }
 
   if (path.startsWith("/api/v1/admin/lbt/")) return handleAdmin(request, env, path);

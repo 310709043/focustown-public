@@ -16,8 +16,11 @@ pnpm cf:build
 pnpm cf:preview
 ```
 
-Preview `/zh-TW` and `/zh-TW/demo` on Wrangler's local URL. Demo needs no backend;
-live chat uses the separate API Worker. Changing `NEXT_PUBLIC_*` requires a
+Preview `/zh-TW` on Wrangler's local URL; live chat uses the separate API Worker.
+Production returns 404 for `/[locale]/demo`. The labelled script is available
+in local development, or an isolated acceptance build explicitly setting
+`LBT_ENABLE_DEMO=1`; never set that variable for the public deployment.
+Changing `NEXT_PUBLIC_*` requires a
 rebuild. CSP is generated in `middleware.ts` and allows the configured HTTPS
 and WebSocket origins.
 

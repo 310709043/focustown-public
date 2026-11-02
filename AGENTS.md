@@ -8,7 +8,7 @@ Focus Town — Pomodoro-based social focus app. Pixel-city UI, live leaderboards
 
 ## LowBatteryTown front door (current `/`)
 
-The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". `/` pairs **real people** through the backend; `/demo` (noindex) runs a clearly labelled scripted partner with no backend. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
+The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". `/` pairs **real people** through the backend; `/demo` returns 404 on the public production build. The clearly labelled scripted partner is only an internal local/test fixture (`LBT_ENABLE_DEMO=1` for the disposable acceptance build). Owner requested public removal on 2026-11-03. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
 
 Frontend (`frontend/`):
 
@@ -36,7 +36,7 @@ Product rules to keep (from the handoff — do not change without asking the own
 - Three social batteries (快沒電了 / 還有一點 / 想說說話) tell the other person the reply pace; they are not identity or a score. Chat intent is chosen separately (隨意聊聊 / 有人聽我說 / 聽聽別人的故事).
 - Every message names its sender; the chat shows both nicknames, batteries and intents. First window is 7 minutes, extended only when **both** press extend; leaving ("說聲晚安") is always possible.
 - On the live homepage, show real online counts only at 20 or above; below 20 show the open-town greeting and hide the waiting count. Unavailable/closed status must not imply the town is open. Demo counts remain explicitly labelled.
-- No fake people and no fake numbers. Never reuse the legacy `bot_reply_service` here. The demo partner is always labelled "模擬對象". Head counts are real or hidden (the prototype artifact counts people who have the page open).
+- No fake people and no fake numbers. Never reuse the legacy `bot_reply_service` here. The internal test fixture remains labelled "模擬對象"; never expose it publicly or disguise it as a real person. Head counts are real or hidden (the prototype artifact counts people who have the page open).
 - Reports end the chat, snapshot the transcript to `lbt_reports`, and block the pair for 24 h. Owner-approved Cloudflare rule (2026-10-04): ended conversations and transcripts are deleted immediately, and browser chat state is cleared. Reports must be submitted before the chat ends; only report evidence is kept for review. The legacy FastAPI implementation is unchanged during the AWS retirement. Crisis lines (1925 / 1995) stay visible in the chat aside and the report dialog.
 - Support ("替小鎮點燈"): optional one-time support through the owner-approved Buy Me a Coffee page at https://buymeacoffee.com/lowbatterytown. Each Power is US$5; quantity and final total are chosen there. Disclose USD conversion, no automatic renewal, no extra chat benefits, independent creator operation, contact and platform refund policy. Do not collect payment data, invent paid success or supporter counts, or present legacy NT$60 / 150 / 300 as live amounts.
 - User text is rendered as React text only; never put nickname or message content into `dangerouslySetInnerHTML`.
