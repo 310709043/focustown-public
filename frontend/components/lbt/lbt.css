@@ -5884,10 +5884,23 @@ html[data-lbt-time]:not([data-lbt-time="night"]) .lbt .bs-birds {
   .lbt .leave-button { min-height: 44px; }
 }
 @media (max-width: 610px) and (min-height: 521px) and (max-height: 620px) {
+  .lbt .chat-view { padding-top: 4px; }
   .lbt .chat-stage { --s: 0.22; }
   .lbt .bench-scene { display: none; }
   .lbt .stage-timer { top: 8px; }
+  .lbt .stage-timer-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .lbt .leave-button { top: 8px; }
+  .lbt .bench-people { padding-block: 4px; }
+  .lbt .plug-panel { padding-top: 4px; gap: 2px; }
+  .lbt .chat-bottom { padding-block: 4px; }
+  .lbt .chat-foot { padding-bottom: 4px; }
 }
 /* Use the existing battery brand mark on the narrowest chat headers, so
    longer English actions and a running music switch need no second row. */
