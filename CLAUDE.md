@@ -8,7 +8,7 @@ Focus Town — Pomodoro-based social focus app. Pixel-city UI, live leaderboards
 
 ## LowBatteryTown front door (current `/`)
 
-The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". `/` pairs **real people** through the backend; `/demo` (noindex) runs a clearly labelled scripted partner with no backend. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
+The home route `/` is **LowBatteryTown**: a low-pressure anonymous 1:1 chat for people with a low "social battery". `/` pairs **real people** through the backend; `/demo` returns 404 on the public production build. The clearly labelled scripted partner is only an internal local/test fixture (`LBT_ENABLE_DEMO=1` for the disposable acceptance build). Owner requested public removal on 2026-11-03. Source of the design: the handoff prototype (deep-blue night town, street lamps, expressive animated battery, zh-Hant first).
 
 Frontend (`frontend/`):
 
@@ -52,7 +52,7 @@ Product rules to keep (from the handoff — do not change without asking the own
 - Traditional Chinese, mobile and desktop; anonymous, editable nickname, no sign-up. Beta is 18+ (self-declared checkbox, enforced server-side too).
 - Three social batteries (快沒電了 / 還有一點 / 想說說話) tell the other person the reply pace; they are not identity or a score. Chat intent is chosen separately (隨意聊聊 / 有人聽我說 / 聽聽別人的故事).
 - Every message names its sender; the chat shows both nicknames, batteries and intents. First window is 7 minutes, extended only when **both** press extend; leaving ("說聲晚安") is always possible.
-- No fake people and no fake numbers. Never reuse the legacy `bot_reply_service` here. The demo partner is always labelled "模擬對象". Head counts are real or hidden (the prototype artifact counts people who have the page open).
+- No fake people and no fake numbers. Never reuse the legacy `bot_reply_service` here. The internal test fixture remains labelled "模擬對象"; never expose it publicly or disguise it as a real person. Head counts are real or hidden (the prototype artifact counts people who have the page open).
 - Reports end the chat, snapshot the transcript to `lbt_reports`, and block the pair for 24 h. Closed conversations and transcripts expire from Redis after 24 h. A **universal** crisis resource stays visible in the chat aside and the report dialog: the copy points to `findahelpline.com` (an international helpline finder) and "your local emergency number" rather than any country's hotline, so the product is safe to open worldwide. Do not reintroduce country-specific numbers (e.g. Taiwan's 1925 / 1995) into the shared copy.
 - Support ("替小鎮點燈"): optional one-time support through the owner-approved Buy Me a Coffee page (`SUPPORT_PAGE_URL` in `lib/lbt/support.ts`, https://buymeacoffee.com/lowbatterytown). Each Power is US$5; quantity and the final total are chosen there. Disclose USD conversion, no automatic renewal, no extra chat benefits, independent creator operation, contact and the platform refund policy. Never collect payment data here, invent paid success or supporter counts, or show the old NT$60 / 150 / 300 tiers as live amounts. Entry points: the header 贊助 pill, the home support card, the end screen; it never opens by itself during a chat.
 - User text is rendered as React text only; never put nickname or message content into `dangerouslySetInnerHTML`.

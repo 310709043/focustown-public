@@ -8,7 +8,7 @@ import { SELF } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, test } from "vitest";
 
-import { newCode, normalizeCode } from "../src/unlocks";
+import { newCode, normalizeCode, redeemCode, sixMonthsFrom, verifyUnlock } from "../src/unlocks";
 
 const BASE = "https://api.lowbatterytown.com";
 const AUTH = { Authorization: "Bearer admin-test-token" };
@@ -57,6 +57,50 @@ describe("admin", () => {
     expect((await make({ item: "dragon", count: 1 })).status).toBe(422);
     expect((await make({ item: "koi-pond", count: 0 })).status).toBe(422);
     expect((await make({ item: "koi-pond", count: 500 })).status).toBe(422);
+    for (const durationMonths of [0, 3, -6, "6", true]) {
+      expect((await make({ item: "koi-pond", durationMonths })).status).toBe(422);
+    }
+  });
+});
+
+describe("six-month promotional codes", () => {
+  const start = Date.parse("2026-11-05T10:00:00.000Z");
+  const end = "2027-05-05T10:00:00.000Z";
+
+  test("calendar months clamp the last day and follow Taiwan's calendar", () => {
+    expect(sixMonthsFrom(Date.parse("2026-08-31T10:00:00Z"))).toBe("2027-02-28T10:00:00.000Z");
+    expect(sixMonthsFrom(Date.parse("2027-08-31T10:00:00Z"))).toBe("2028-02-29T10:00:00.000Z");
+    // December 1 at 00:30 Taiwan time → June 1 at 00:30 Taiwan time.
+    expect(sixMonthsFrom(Date.parse("2026-11-30T16:30:00Z"))).toBe("2027-05-31T16:30:00.000Z");
+  });
+
+  test("start on first redemption; all devices share a deadline that never restarts", async () => {
+    const { codes } = await (await make({ item: "koi-pond", durationMonths: 6 })).json() as { codes: string[] };
+    const before = await env.DB.prepare("SELECT activated_at, expires_at FROM lbt_unlock_codes").first();
+    expect(before).toEqual({ activated_at: null, expires_at: null });
+    const first = await redeemCode(env.DB, env.LBT_TOKEN_SECRET, codes[0], start);
+    const second = await redeemCode(env.DB, env.LBT_TOKEN_SECRET, codes[0], start + 7 * 86_400_000);
+    expect(first).toMatchObject({ ok: true, expiresAt: end });
+    expect(second).toMatchObject({ ok: true, expiresAt: end });
+    if (!first.ok || !second.ok) throw new Error("test code did not redeem");
+    expect(await verifyUnlock(env.DB, env.LBT_TOKEN_SECRET, first.token, Date.parse(end) - 1)).toEqual({ items: ["koi-pond"], expires_at: end });
+    expect(await verifyUnlock(env.DB, env.LBT_TOKEN_SECRET, second.token, Date.parse(end))).toEqual({ items: [], expires_at: null });
+    expect(await redeemCode(env.DB, env.LBT_TOKEN_SECRET, codes[0], Date.parse(end))).toMatchObject({ ok: false, code: "code_expired" });
+  });
+
+  test("concurrent first devices get the same deadline", async () => {
+    const { codes } = await (await make({ item: "koi-pond", durationMonths: 6 })).json() as { codes: string[] };
+    const results = await Promise.all([start, start + 86_400_000].map(now => redeemCode(env.DB, env.LBT_TOKEN_SECRET, codes[0], now)));
+    expect(results.every(r => r.ok)).toBe(true);
+    expect(new Set(results.map(r => r.ok ? r.expiresAt : null)).size).toBe(1);
+  });
+
+  test("existing paid codes stay unlimited", async () => {
+    const { codes } = await (await make()).json() as { codes: string[] };
+    const result = await redeemCode(env.DB, env.LBT_TOKEN_SECRET, codes[0], start);
+    if (!result.ok) throw new Error("test code did not redeem");
+    expect(result.expiresAt).toBeNull();
+    expect(await verifyUnlock(env.DB, env.LBT_TOKEN_SECRET, result.token, start + 5 * 365 * 86_400_000)).toEqual({ items: ["koi-pond"], expires_at: null });
   });
 });
 

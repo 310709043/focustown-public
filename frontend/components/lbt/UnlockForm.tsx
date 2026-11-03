@@ -1,19 +1,23 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { Link } from "@/i18n/routing";
 import { config } from "@/lib/config";
 import { POND_OFFER } from "@/lib/lbt/pond";
 import { useUnlocks, type RedeemOutcome } from "@/lib/lbt/unlocks";
+import { useUnlockExpiry } from "@/lib/lbt/useUnlockExpiry";
 
 /** Enter a code bought elsewhere; this device then gets the koi pond scene. The e-mail links to #code. */
 export function UnlockForm() {
+  useUnlockExpiry();
+  const locale = useLocale();
   const t = useTranslations("lbt.unlock");
   const load = useUnlocks((s) => s.load);
   const redeem = useUnlocks((s) => s.redeem);
   const unlocked = useUnlocks((s) => s.items.includes("koi-pond"));
+  const expiresAt = useUnlocks((s) => s.expiresAt);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<RedeemOutcome | null>(null);
@@ -59,6 +63,11 @@ export function UnlockForm() {
           </p>
         </form>
       )}
+      {unlocked && expiresAt !== null ? (
+        <p className="unlock-note">{t("expires", { date: new Intl.DateTimeFormat(locale, {
+          timeZone: "Asia/Taipei", dateStyle: "medium", timeStyle: "short",
+        }).format(expiresAt) })}</p>
+      ) : null}
       <p className="unlock-note">{t("note")}</p>
     </section>
   );

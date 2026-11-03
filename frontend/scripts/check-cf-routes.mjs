@@ -28,6 +28,8 @@ for (const path of paths) {
   console.log(`OK ${path}`);
 }
 for (const locale of ["zh-TW", "en"]) {
+  const demo = await fetch(`${preview}/${locale}/demo`, { signal: AbortSignal.timeout(10000) });
+  if (demo.status !== 404) throw new Error(`${locale}: scripted chat must not be public`);
   const response = await fetch(`${preview}/${locale}/guide/not-an-article`, { signal: AbortSignal.timeout(10000) });
   if (response.status !== 404) throw new Error(`${locale}: unknown article must return 404`);
 }
