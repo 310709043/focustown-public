@@ -67,6 +67,7 @@ function toProfile(raw: unknown): PeerProfile | null {
     energy,
     preference,
     ...((role === "companion" || role === "admin") ? { role: "companion" } : {}),
+    ...(role === "ai" ? { role: "ai" } : {}),
     ...(isAvatarId(avatar) ? { avatar } : {}),
   } as PeerProfile;
 }
@@ -85,8 +86,10 @@ export function mapServerFrame(frame: unknown, now: number): TransportEvent | nu
   if (!frame || typeof frame !== "object") return null;
   const f = frame as Record<string, unknown>;
   switch (f.type) {
-    case "lbt.waiting":
-      return { type: "waiting" };
+    case "lbt.waiting": {
+      const availableAt = toLocal(f.jojo_available_at, f.server_now, now);
+      return { type: "waiting", ...(availableAt !== null ? { jojoAvailableAt: availableAt } : {}) };
+    }
     case "lbt.companion_invite": {
       const expiresAt = toLocal(f.expires_at, f.server_now, now);
       return typeof f.id === "string" && expiresAt !== null && expiresAt > now
@@ -345,6 +348,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     },
     cancel: () => send({ type: "cancel" }, { queue: true }),
     answerCompanion: (id, accept) => send({ type: "companion_answer", id, accept }, { queue: false }),
+    startJojo: () => send({ type: "jojo_start", consent: true }, { queue: false }),
     send: (text) => send({ type: "message", text }, { queue: true }),
     typing: () => send({ type: "typing" }, { queue: false }),
     extend: () => send({ type: "extend" }, { queue: true }),

@@ -17,6 +17,7 @@ import { InputError } from "./rules";
 import { TownStore } from "./store";
 import { COMPANION_ID } from "./companion";
 import { type Frame, Town } from "./town";
+import { createJojoReply } from "./jojo";
 
 export type ReportResult = { ok: true; id: string } | { ok: false; status: 422 | 429; code: string };
 
@@ -48,6 +49,7 @@ export class TownObject extends DurableObject<Env> {
       newId: () => crypto.randomUUID(),
       saveReport: (record) => saveReport(env.DB, record),
       config: townConfig(env),
+      jojoReply: env.LBT_JOJO_ENABLED === "true" && env.AI ? createJojoReply(env.AI) : undefined,
       suspendedUntil: (guestId) => this.suspensions.get(guestId) ?? null,
       onConversationStarted: (now) => recordConversation(env.DB, now),
       onLonelyWaiter: alertsConfigured(env)
@@ -245,6 +247,8 @@ export class TownObject extends DurableObject<Env> {
       return this.town.answerCompanion(guestId, frame.id, frame.accept);
     }
     switch (frame.type) {
+      case "jojo_start":
+        return this.town.startJojo(guestId, frame.consent);
       case "heartbeat":
         return this.town.heartbeat(guestId);
       case "join":

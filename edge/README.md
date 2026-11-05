@@ -273,3 +273,30 @@ SQL uses parameter bindings, and user text is rendered as text in both consoles.
 Both Workers disable workers.dev and preview URLs. CI scans dependencies;
 Dependabot proposes updates targeting develop. See
 `docs/security/lbt-security-review-2026-10-04.md` for verification and limitations.
+
+### Optional AI resident 小jojo
+
+Owner-approved adult female fictional AI character. `LBT_JOJO_ENABLED=true` and
+the existing `AI` Workers AI binding enable an explicit choice after 180 seconds
+of server-side waiting. Ordinary matching and the human companion remain human.
+Clients must send `jojo_start` with `consent: true`; a waiting profile can only
+exist after the 18+ join check. No automatic AI pairing, fake presence or human
+conversation-stat increments. Role `ai` is server-only and remains on reconnect.
+
+`src/jojo.ts` owns the persona, direct Cloudflare-hosted Qwen model, recent-message
+context and output normalization. No OpenAI key, AI Gateway logs/cache, model
+training, cross-session memory or extra D1 migration is used. Only the latest
+16 contact-masked chat lines are passed to inference, never a human-only chat.
+Users accept this processing in the invitation; privacy copy documents it.
+
+Inference aborts after 15 seconds or when the chat closes. Late results cannot
+recreate ended transcripts. Limits: one request in flight per chat, 12 turns per
+visitor per minute, 60 per hour, 1,000 total turns per UTC date, and four AI chat
+starts per visitor per hour. Output is capped at 256 model tokens and 80 displayed
+characters. These are usage limits, not a guaranteed dollar spend cap. AI errors
+show a notice; they never silently switch to an invented human response.
+
+Disable with `LBT_JOJO_ENABLED=false` and redeploy the API: no new invitations are
+sent and existing AI chats close on the next sweep. Ordinary ended chats are
+deleted immediately; only submitted report evidence follows report retention.
+No prompt, transcript, generated reply or provider error body is logged by this code.

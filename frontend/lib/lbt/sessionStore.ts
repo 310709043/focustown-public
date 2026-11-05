@@ -36,6 +36,9 @@ import type {
  */
 
 interface LbtData {
+  jojoAvailableAt: number | null;
+  jojoStarting: boolean;
+  jojoReplyPending: boolean;
   companionInvitation: CompanionInvitation | null;
   companionAnswering: boolean;
   mode: LbtMode;
@@ -73,6 +76,7 @@ interface LbtData {
 }
 
 interface LbtActions {
+  startJojo: () => void;
   answerCompanion: (accept: boolean) => void;
   attach: (transport: LbtTransport) => () => void;
   setEnergy: (energy: Energy) => void;
@@ -103,6 +107,9 @@ interface LbtActions {
 export type LbtState = LbtData & LbtActions;
 
 const INITIAL: LbtData = {
+  jojoAvailableAt: null,
+  jojoStarting: false,
+  jojoReplyPending: false,
   companionInvitation: null,
   companionAnswering: false,
   mode: "live",
@@ -183,6 +190,9 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     clearTimeout(typingClear);
     set((s) => ({
       view: "end",
+      jojoAvailableAt: null,
+      jojoStarting: false,
+      jojoReplyPending: false,
       lines: [],
       partner: null,
       selfAvatar: null,
@@ -205,7 +215,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
     const state = get();
     switch (event.type) {
       case "connection":
-        set({ connection: event.state, ...(event.state === "offline" ? { companionInvitation: null, companionAnswering: false } : {}) });
+        set({ connection: event.state, ...(event.state === "offline" ? { companionInvitation: null, companionAnswering: false, jojoStarting: false, jojoReplyPending: false } : {}) });
         return;
       case "companionInvite":
         if (state.view !== "waiting") return;
@@ -220,7 +230,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         }
         return;
       case "waiting":
-        if (state.view !== "chat") set({ view: "waiting", waitingSince: state.waitingSince ?? Date.now() });
+        if (state.view !== "chat") set({ view: "waiting", waitingSince: state.waitingSince ?? Date.now(), jojoAvailableAt: event.jojoAvailableAt ?? null, jojoStarting: false });
         return;
       case "matched":
         // Reconnect snapshots can precede the queued leave acknowledgement.
@@ -232,6 +242,9 @@ export const useLbtStore = create<LbtState>()((set, get) => {
           companionInvitation: null,
           companionAnswering: false,
           view: "chat",
+          jojoAvailableAt: null,
+          jojoStarting: false,
+          jojoReplyPending: false,
           partner: event.partner,
           selfAvatar: event.me.avatar ?? null,
           simulated: event.simulated,
@@ -260,6 +273,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         set((s) => ({
           lines: [...s.lines, line],
           partnerTyping: event.from === "partner" ? false : s.partnerTyping,
+          jojoReplyPending: event.from === "partner" ? false : s.jojoReplyPending,
         }));
         return;
       }
@@ -311,7 +325,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         }
         return;
       case "error":
-        set({ notice: event.code, companionAnswering: false });
+        set({ notice: event.code, companionAnswering: false, jojoStarting: false, jojoReplyPending: false });
         if (state.view === "waiting" && SEND_HOME.has(event.code)) {
           set({ view: "home", waitingSince: null });
         }
@@ -351,6 +365,9 @@ export const useLbtStore = create<LbtState>()((set, get) => {
         companionInvitation: null,
         companionAnswering: false,
         view: "waiting",
+        jojoAvailableAt: null,
+        jojoStarting: false,
+        jojoReplyPending: false,
         nickname,
         lines: [],
         partner: null,
@@ -373,7 +390,7 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       // Leave the waiting view FIRST: a transport's cancel can echo `idle`
       // synchronously, and we must already be home so it isn't mistaken for a
       // dropped-from-queue reconnect (which would re-enqueue us).
-      set({ view: "home", waitingSince: null, companionInvitation: null, companionAnswering: false });
+      set({ view: "home", waitingSince: null, companionInvitation: null, companionAnswering: false, jojoAvailableAt: null, jojoStarting: false });
       transport?.cancel();
     },
 
@@ -382,6 +399,14 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       if (!invite || companionAnswering || view !== "waiting" || connection !== "open" || invite.expiresAt <= Date.now()) return;
       set({ companionAnswering: true });
       transport?.answerCompanion(invite.id, accept);
+    },
+
+    startJojo() {
+      const state = get();
+      if (state.view !== "waiting" || state.connection !== "open" || !state.adult ||
+          state.jojoStarting || state.jojoAvailableAt === null || Date.now() < state.jojoAvailableAt || !transport?.startJojo) return;
+      set({ jojoStarting: true, notice: null });
+      transport.startJojo();
     },
 
     again() {
@@ -397,6 +422,9 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       // like a dropped-from-queue reconnect (which would re-enqueue us).
       set({
         view: "home",
+        jojoAvailableAt: null,
+        jojoStarting: false,
+        jojoReplyPending: false,
         lines: [],
         companionInvitation: null,
         companionAnswering: false,
@@ -426,6 +454,10 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       // Keep the draft in the composer instead of silently queuing it while
       // disconnected (the partner may have left before we reconnect).
       if (state.mode === "live" && state.connection !== "open") return false;
+      if (state.partner?.role === "ai") {
+        if (state.jojoReplyPending) return false;
+        set({ jojoReplyPending: true });
+      }
       transport?.send(text);
       return true;
     },

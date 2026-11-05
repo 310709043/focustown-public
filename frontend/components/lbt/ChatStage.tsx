@@ -35,7 +35,7 @@ export function ChatStage() {
   const energy = useLbtStore((s) => s.energy);
   const preference = useLbtStore((s) => s.preference);
   const selfAvatar = useLbtStore((s) => s.selfAvatar);
-  const partnerTyping = useLbtStore((s) => s.partnerTyping);
+  const partnerTyping = useLbtStore((s) => s.partnerTyping || s.jojoReplyPending);
   const extendMine = useLbtStore((s) => s.extendMine);
   const extendPartner = useLbtStore((s) => s.extendPartner);
   const leave = useLbtStore((s) => s.leave);
@@ -49,7 +49,9 @@ export function ChatStage() {
   const partnerId = ENERGY_ID[partnerEnergy];
   const selfId = ENERGY_ID[energy];
   const label =
-    partner?.role === "companion"
+    partner?.role === "ai"
+      ? t("jojo.label")
+      : partner?.role === "companion"
       ? t("companion.label")
       : simulated
         ? t("chat.partnerLabel")
@@ -127,6 +129,9 @@ export function ChatStage() {
           <p className="profile-pace">{t(`energy.${partnerId}.pace`)}</p>
           {partner?.role === "companion" ? (
             <p className="companion-disclosure">{t("companion.chatDisclosure")}</p>
+          ) : null}
+          {partner?.role === "ai" ? (
+            <p className="companion-disclosure">{t("jojo.disclosure")}</p>
           ) : null}
         </div>
         <div className="self-profile bench-tag">

@@ -21,6 +21,7 @@ import {
 import type { Conversation, Line, TownStore } from "./store";
 import { avatarPair } from "./avatars";
 import { COMPANION_ID, COMPANION_PROFILE, companionProfile, publicProfile, INVITE_MS, type CompanionInvite } from "./companion";
+import { JOJO_PROFILE, JOJO_WAIT_MS, declaresMinor, isJojo, jojoId, type JojoReply } from "./jojo";
 
 export interface TownConfig {
   sessionMs: number;
@@ -78,6 +79,7 @@ export interface TownDeps {
   onConversationStarted?: (now: number) => Promise<void>;
   /** "Someone is waiting" to the owner's phone (battery, intent and wait only). */
   onLonelyWaiter?: (alert: { energy: number; preference: Preference; waitedMs: number }) => Promise<void>;
+  jojoReply?: JojoReply;
 }
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -85,6 +87,9 @@ const iso = (ms: number) => new Date(ms).toISOString();
 export class Town {
   private readonly store: TownStore;
   private readonly cfg: TownConfig;
+  /** In-flight inference only; durable chat state remains in TownStore. */
+  private readonly jojoRequests = new Map<string, AbortController>();
+  private readonly jojoStarts = new Set<string>();
 
   constructor(private readonly deps: TownDeps) {
     this.store = deps.store;
@@ -133,7 +138,7 @@ export class Town {
     }
     const waiting = (await this.store.listWaiting()).find((w) => w.guestId === guestId);
     if (waiting) {
-      this.deps.send(guestId, { type: "lbt.waiting", since: iso(waiting.joinedAt) });
+      this.sendWaiting(waiting);
       const invite = await this.store.companionInvite();
       if (invite?.guestId === guestId && invite.expiresAt > now) this.sendCompanionInvite(invite);
       return;
@@ -176,13 +181,47 @@ export class Town {
     if (await this.current(guestId)) throw new InputError("already_in_conversation");
     await this.store.touchOnline(guestId, now);
     await this.store.enqueue({ guestId, profile, joinedAt: now });
-    this.deps.send(guestId, { type: "lbt.waiting", since: iso(now) });
+    this.sendWaiting({ guestId, profile, joinedAt: now });
     await this.pairWaiting();
   }
 
   async cancel(guestId: string) {
     await this.cancelCompanionFor(guestId, "cancelled");
     await this.store.dequeue(guestId);
+  }
+
+  private sendWaiting(waiting: Waiting) {
+    this.deps.send(waiting.guestId, {
+      type: "lbt.waiting", since: iso(waiting.joinedAt),
+      ...(this.deps.jojoReply ? { jojo_available_at: iso(waiting.joinedAt + JOJO_WAIT_MS), server_now: iso(this.deps.now()) } : {}),
+    });
+  }
+
+  /** Never auto-match an AI. Consent and the full wait are checked on the server. */
+  async startJojo(guestId: string, consent: unknown) {
+    this.requireAllowed(guestId);
+    if (!this.deps.jojoReply) throw new InputError("jojo_unavailable");
+    if (consent !== true) throw new InputError("jojo_consent_required");
+    if (guestId === COMPANION_ID || isJojo(guestId)) throw new InputError("not_waiting");
+    if (this.jojoStarts.has(guestId)) throw new InputError("jojo_busy");
+    this.jojoStarts.add(guestId);
+    try {
+      const now = this.deps.now();
+      if (!(await this.openNow(now))) throw new InputError("closed");
+      if (await this.current(guestId)) return this.connect(guestId);
+      // Prefer a real match if someone arrived just as the visitor clicked.
+      await this.pairWaiting();
+      if (await this.current(guestId)) return;
+      const waiting = (await this.store.listWaiting()).find(w => w.guestId === guestId);
+      const seen = await this.store.lastSeen(guestId);
+      if (!waiting || seen === null || seen < now - this.cfg.offlineAfterMs) throw new InputError("not_waiting");
+      if (now - waiting.joinedAt < JOJO_WAIT_MS) throw new InputError("jojo_too_early");
+      if ((await this.store.blockedFor(guestId, now)).has(jojoId(guestId))) throw new InputError("jojo_unavailable");
+      if (!(await this.store.hit("jojo:start:" + guestId, 4, 3600_000, now))) throw new InputError("slow_down");
+      await this.startConversation(waiting, { guestId: jojoId(guestId), profile: JOJO_PROFILE, joinedAt: now }, now);
+      const c = await this.current(guestId);
+      if (c?.profileB.role === "ai") await this.deliverJojo(c, "我是小jojo，小鎮的 AI 居民。想隨便聊，還是讓我逗你一下？");
+    } finally { this.jojoStarts.delete(guestId); }
   }
 
   /** Offer without removing the visitor from normal matching. Acceptance is explicit. */
@@ -296,7 +335,7 @@ export class Town {
       extensions: 0,
     };
     await this.store.saveConversation(c);
-    await this.deps.onConversationStarted?.(now);
+    if (b.profile.role !== "ai") await this.deps.onConversationStarted?.(now);
     for (const g of [a.guestId, b.guestId]) this.deps.send(g, this.matchedFrame(c, g, now));
   }
 
@@ -308,9 +347,58 @@ export class Town {
     const c = await this.require(guestId);
     const now = this.deps.now();
     if (c.endsAt <= now) throw new InputError("time_up");
-    const line: Line = { id: this.deps.newId(), from: guestId, text, at: now };
+    const aiPartner = isJojo(partnerOf(c, guestId));
+    if (aiPartner && declaresMinor(text)) {
+      this.deps.send(guestId, { type: "lbt.error", code: "age_required" });
+      await this.close(c, { [guestId]: "left" });
+      return;
+    }
+    if (aiPartner && this.jojoRequests.has(c.id)) throw new InputError("jojo_busy");
+    const controller = aiPartner ? new AbortController() : null;
+    if (controller) this.jojoRequests.set(c.id, controller);
+    try {
+      if (aiPartner && (!this.deps.jojoReply ||
+          !(await this.store.hit("jojo:minute:" + guestId, 12, 60_000, now)) ||
+          !(await this.store.hit("jojo:hour:" + guestId, 60, 3600_000, now)) ||
+          !(await this.store.hit("jojo:day:" + Math.floor(now / 86_400_000), 1000, 86_400_000, now)))) {
+        throw new InputError("jojo_unavailable");
+      }
+      const line: Line = { id: this.deps.newId(), from: guestId, text, at: now };
+      await this.store.appendLine(c.id, line);
+      for (const g of [guestId, partnerOf(c, guestId)]) this.deps.send(g, messageFrame(line, g));
+      if (controller && this.deps.jojoReply) {
+        this.deps.send(guestId, { type: "lbt.typing" });
+        const timeout = setTimeout(() => controller.abort(), 15_000);
+        let abortListener: () => void = () => {};
+        const aborted = new Promise<never>((_, reject) => {
+          abortListener = () => reject(new Error("jojo_aborted"));
+          controller.signal.addEventListener("abort", abortListener, { once: true });
+          if (controller.signal.aborted) abortListener();
+        });
+        try {
+          const lines = await this.store.transcript(c.id);
+          const reply = await Promise.race([this.deps.jojoReply(lines, guestId, controller.signal), aborted]);
+          if (!controller.signal.aborted) await this.deliverJojo(c, reply);
+        } catch {
+          // Never log prompts, transcripts, generated output or provider error bodies.
+          if (await this.store.getConversation(c.id)) this.deps.send(guestId, { type: "lbt.error", code: "jojo_unavailable" });
+        } finally {
+          clearTimeout(timeout);
+          controller.signal.removeEventListener("abort", abortListener);
+        }
+      }
+    } finally { if (controller) this.jojoRequests.delete(c.id); }
+  }
+
+  private async deliverJojo(c: Conversation, raw: string) {
+    // A leave/report/timeout can finish while inference awaits external I/O.
+    const current = await this.store.getConversation(c.id);
+    if (!current || current.profileB.role !== "ai" || current.endsAt <= this.deps.now()) return;
+    const text = maskContacts(cleanText(raw, 80));
+    if (!text) return;
+    const line: Line = { id: this.deps.newId(), from: c.guestB, text, at: this.deps.now() };
     await this.store.appendLine(c.id, line);
-    for (const g of [guestId, partnerOf(c, guestId)]) this.deps.send(g, messageFrame(line, g));
+    this.deps.send(c.guestA, messageFrame(line, c.guestA));
   }
 
   async typing(guestId: string) {
@@ -324,6 +412,7 @@ export class Town {
     const now = this.deps.now();
     if (now >= c.endsAt + this.cfg.graceMs) throw new InputError("too_late");
     const partner = partnerOf(c, guestId);
+    if (isJojo(partner)) await this.store.addExtendVote(c, partner);
     if (await this.store.addExtendVote(c, guestId)) {
       // Agreeing during the grace period still yields a full window.
       const updated: Conversation = {
@@ -397,6 +486,10 @@ export class Town {
     for (const id of await this.store.activeConversationIds()) {
       const c = await this.store.getConversation(id);
       if (!c) continue;
+      if (c.profileB.role === "ai" && !this.deps.jojoReply) {
+        await this.close(c, { [c.guestA]: "partner_disconnected" });
+        continue;
+      }
       const restricted = [c.guestA, c.guestB].find((g) => this.suspended(g));
       if (restricted) { await this.restrict(restricted); continue; }
       if (now >= c.endsAt + this.cfg.graceMs) {
@@ -405,6 +498,7 @@ export class Town {
       }
       const gone: string[] = [];
       for (const g of [c.guestA, c.guestB]) {
+        if (isJojo(g)) continue;
         const seen = await this.store.lastSeen(g);
         if (seen === null || seen < cutoff) gone.push(g);
       }
@@ -480,6 +574,7 @@ export class Town {
   }
 
   private async close(c: Conversation, reasons: Record<string, string>) {
+    this.jojoRequests.get(c.id)?.abort();
     await this.store.closeConversation(c);
     for (const [g, reason] of Object.entries(reasons)) this.deps.send(g, { type: "lbt.ended", reason });
   }

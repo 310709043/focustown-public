@@ -5,6 +5,10 @@ import { useTranslations } from "next-intl";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 const KNOWN = new Set([
+  "jojo_unavailable",
+  "jojo_busy",
+  "jojo_too_early",
+  "jojo_consent_required",
   "invite_unavailable",
   "closed",
   "age_required",
