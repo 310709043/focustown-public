@@ -10,6 +10,7 @@ import { useLbtStore } from "@/lib/lbt/sessionStore";
 import { ChimeToggle } from "./ChimeToggle";
 import { Notice } from "./Notice";
 import { TownSky } from "./Townscape";
+import { JojoInvitation } from "./JojoInvitation";
 
 export function WaitingView() {
   const t = useTranslations("lbt");
@@ -19,6 +20,7 @@ export function WaitingView() {
   const mode = useLbtStore((s) => s.mode);
   const connection = useLbtStore((s) => s.connection);
   const waitingSince = useLbtStore((s) => s.waitingSince);
+  const jojoAvailableAt = useLbtStore((s) => s.jojoAvailableAt);
   const invitation = useLbtStore((s) => s.companionInvitation);
   const answering = useLbtStore((s) => s.companionAnswering);
   const answerCompanion = useLbtStore((s) => s.answerCompanion);
@@ -96,6 +98,7 @@ export function WaitingView() {
             </div>
           </section>
         ) : null}
+        {mode === "live" ? <JojoInvitation key={jojoAvailableAt} /> : null}
         <Notice />
         <div className="waiting-progress">
           <span />

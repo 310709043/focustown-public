@@ -22,7 +22,7 @@ export interface JoinRequest {
  */
 export type TransportEvent =
   | { type: "connection"; state: "connecting" | "open" | "offline" }
-  | { type: "waiting" }
+  | { type: "waiting"; jojoAvailableAt?: number }
   | { type: "companionInvite"; id: string; expiresAt: number; nickname?: string }
   | { type: "companionCleared"; id: string }
   | {
@@ -54,6 +54,8 @@ export interface LbtTransport {
   join(request: JoinRequest): void;
   cancel(): void;
   answerCompanion(id: string, accept: boolean): void;
+  /** Explicit AI consent; absent on the internal scripted test transport. */
+  startJojo?(): void;
   send(text: string): void;
   typing(): void;
   extend(): void;

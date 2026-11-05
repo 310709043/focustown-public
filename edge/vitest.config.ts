@@ -15,6 +15,7 @@ export default defineConfig(async () => {
             TEST_MIGRATIONS: migrations,
             LBT_TOKEN_SECRET: "test-secret-that-is-at-least-32-characters",
             ADMIN_TOKEN: "admin-test-token",
+            LBT_JOJO_ENABLED: "false", // No remote AI in offline API tests; jojo.test injects a fake.
           },
         },
       }),

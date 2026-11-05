@@ -48,7 +48,7 @@ export interface PeerProfile {
   nickname: string;
   energy: Energy;
   preference: Preference;
-  role?: "companion";
+  role?: "companion" | "ai";
   /** Battery-family avatar the server picked for this chat. */
   avatar?: AvatarId;
 }

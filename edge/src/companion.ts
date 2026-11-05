@@ -17,6 +17,8 @@ export function companionProfile(identity: unknown = "male"): Profile | null {
 }
 
 export function publicProfile(profile: Profile) {
+  // Keep disclosure visible even on a cached pre-AI client that ignores new roles.
+  if (profile.role === "ai") return { ...profile, nickname: profile.nickname + "（AI）" };
   if (profile.role !== "admin") return { ...profile };
   return { ...profile, nickname: profile.nickname === "小鎮管理員" ? "小辟穀" : profile.nickname, role: "companion" };
 }

@@ -20,7 +20,7 @@ export interface Profile {
   energy: number;
   preference: Preference;
   /** Set by the server only; parseProfile never accepts a client-supplied role. */
-  role?: "admin";
+  role?: "admin" | "ai";
 }
 
 export interface Waiting {

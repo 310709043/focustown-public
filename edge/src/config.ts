@@ -27,6 +27,8 @@ export interface Env {
   DISCORD_WEBHOOK_URL?: string;
   /** Workers AI: rewrites the daily trends into questions (topicIssues.ts). Optional. */
   AI?: Ai;
+  /** Explicit opt-in AI resident after three minutes. Off unless exactly "true". */
+  LBT_JOJO_ENABLED?: string;
   /** Text model for that rewrite; default @cf/qwen/qwen3-30b-a3b-fp8. */
   LBT_TOPICS_MODEL?: string;
   /** AI Gateway id for models outside Workers AI (e.g. anthropic/claude-haiku-4.5); default "default". */

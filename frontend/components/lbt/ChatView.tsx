@@ -38,6 +38,7 @@ export function ChatView() {
   const remaining = useLbtStore(remainingSeconds);
   const lines = useLbtStore((s) => s.lines);
   const typing = useLbtStore((s) => s.partnerTyping);
+  const jojoReplyPending = useLbtStore((s) => s.jojoReplyPending);
   const connection = useLbtStore((s) => s.connection);
   const mode = useLbtStore((s) => s.mode);
   const topicId = useLbtStore((s) => s.topicId);
@@ -178,7 +179,7 @@ export function ChatView() {
                   </div>
                 ),
               )}
-              {typing ? (
+              {typing || jojoReplyPending ? (
                 <div className="typing-indicator" role="status" aria-label={t("chat.typing")}>
                   <span aria-hidden="true" />
                   <span aria-hidden="true" />
@@ -243,7 +244,7 @@ export function ChatView() {
                 <button
                   type="submit"
                   aria-label={t("chat.send")}
-                  disabled={timeUp || (mode === "live" && connection !== "open")}
+                  disabled={timeUp || jojoReplyPending || (mode === "live" && connection !== "open")}
                 >
                   ↑
                 </button>

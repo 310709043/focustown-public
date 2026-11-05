@@ -34,6 +34,7 @@
     "LBT_TIMEZONE": "Asia/Taipei",
     "LBT_REPORT_RETENTION_DAYS": "180",
     "LBT_FEEDBACK_RETENTION_DAYS": "30",
-    "LBT_TOPICS_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8"
+    "LBT_TOPICS_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8",
+    "LBT_JOJO_ENABLED": "true"
   }
 }
