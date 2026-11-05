@@ -2,7 +2,7 @@ import type { Profile } from "./rules";
 import { cleanText, maskContacts } from "./rules";
 import type { Line } from "./store";
 
-export const JOJO_WAIT_MS = 180_000;
+export const JOJO_WAIT_MS = 60_000;
 export const JOJO_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
 export const JOJO_PROFILE: Profile = { nickname: "你家貓咪會後空翻嗎", energy: 3, preference: "casual", role: "ai" };
 export const jojoId = (guestId: string) => "ai:jojo:" + guestId;

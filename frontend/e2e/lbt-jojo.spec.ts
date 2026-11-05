@@ -16,9 +16,9 @@ for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]
       ws.onMessage(message => {
         const frame = JSON.parse(String(message)) as Record<string, unknown>;
         frames.push(frame);
-        if (frame.type === "join") send({ type: "lbt.waiting", since: new Date(now).toISOString(), server_now: new Date(now).toISOString(), jojo_available_at: new Date(now + 180000).toISOString() });
+        if (frame.type === "join") send({ type: "lbt.waiting", since: new Date(now).toISOString(), server_now: new Date(now).toISOString(), jojo_available_at: new Date(now + 60000).toISOString() });
         if (frame.type === "jojo_start") {
-          send({ type: "lbt.matched", conversation_id: "contract-only", me: { nickname: "範例訪客", energy: 1, preference: "casual" }, partner: { nickname: "你家貓咪會後空翻嗎（AI）", energy: 3, preference: "casual", role: "ai" }, server_now: new Date(now + 180000).toISOString(), ends_at: new Date(now + 600000).toISOString(), grace_seconds: 60 });
+          send({ type: "lbt.matched", conversation_id: "contract-only", me: { nickname: "範例訪客", energy: 1, preference: "casual" }, partner: { nickname: "你家貓咪會後空翻嗎（AI）", energy: 3, preference: "casual", role: "ai" }, server_now: new Date(now + 60000).toISOString(), ends_at: new Date(now + 480000).toISOString(), grace_seconds: 60 });
           send({ type: "lbt.message", id: "opening", from: "partner", text: "我是「你家貓咪會後空翻嗎」，小鎮的 AI 居民。想隨便聊，還是讓我逗你一下？" });
         }
         if (frame.type === "message") {
@@ -34,7 +34,7 @@ for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]
     await page.getByRole("button", { name: /走進小鎮/ }).click();
     await expect(page.locator(".waiting-view")).toBeVisible();
     await expect(page.getByRole("button", { name: /我知道是 AI/ })).toHaveCount(0);
-    await page.clock.fastForward(180001);
+    await page.clock.fastForward(60001);
     await expect(page.getByRole("button", { name: /我知道是 AI/ })).toBeVisible();
     expect(frames.some(f => f.type === "jojo_start")).toBe(false);
     await page.screenshot({ path: info.outputPath("jojo-offer-" + name + ".png"), animations: "disabled" });

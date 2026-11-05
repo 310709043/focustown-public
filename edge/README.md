@@ -277,7 +277,7 @@ Dependabot proposes updates targeting develop. See
 ### Optional AI resident 你家貓咪會後空翻嗎
 
 Owner-approved adult female fictional AI character. `LBT_JOJO_ENABLED=true` and
-the existing `AI` Workers AI binding enable an explicit choice after 180 seconds
+the existing `AI` Workers AI binding enable an explicit choice after 60 seconds
 of server-side waiting. Ordinary matching and the human companion remain human.
 Clients must send `jojo_start` with `consent: true`; a waiting profile can only
 exist after the 18+ join check. No automatic AI pairing, fake presence or human
