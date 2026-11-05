@@ -274,7 +274,7 @@ Both Workers disable workers.dev and preview URLs. CI scans dependencies;
 Dependabot proposes updates targeting develop. See
 `docs/security/lbt-security-review-2026-10-04.md` for verification and limitations.
 
-### Optional AI resident 小jojo
+### Optional AI resident 你家貓咪會後空翻嗎
 
 Owner-approved adult female fictional AI character. `LBT_JOJO_ENABLED=true` and
 the existing `AI` Workers AI binding enable an explicit choice after 180 seconds
