@@ -220,7 +220,7 @@ export class Town {
       if (!(await this.store.hit("jojo:start:" + guestId, 4, 3600_000, now))) throw new InputError("slow_down");
       await this.startConversation(waiting, { guestId: jojoId(guestId), profile: JOJO_PROFILE, joinedAt: now }, now);
       const c = await this.current(guestId);
-      if (c?.profileB.role === "ai") await this.deliverJojo(c, "我是小jojo，小鎮的 AI 居民。想隨便聊，還是讓我逗你一下？");
+      if (c?.profileB.role === "ai") await this.deliverJojo(c, "我是「你家貓咪會後空翻嗎」，小鎮的 AI 居民。想隨便聊，還是讓我逗你一下？");
     } finally { this.jojoStarts.delete(guestId); }
   }
 

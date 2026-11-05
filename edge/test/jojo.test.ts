@@ -40,7 +40,7 @@ describe("explicit AI resident", () => {
     await expect(town.startJojo("g_a", false)).rejects.toThrow("jojo_consent_required");
     expect(await store.listWaiting()).toHaveLength(1);
     await town.startJojo("g_a", true);
-    expect(frames("lbt.matched")[0]?.partner).toMatchObject({ nickname: "小jojo（AI）", role: "ai" });
+    expect(frames("lbt.matched")[0]?.partner).toMatchObject({ nickname: "你家貓咪會後空翻嗎（AI）", role: "ai" });
     expect(reply).not.toHaveBeenCalled();
     expect(frames("lbt.message").at(-1)?.text).toContain("AI");
   });
@@ -70,7 +70,7 @@ describe("explicit AI resident", () => {
   });
   test("reconnect preserves the AI label and only its own transcript", async () => {
     await chat(); await town.sendMessage("g_a", "妳很直接欸"); await town.connect("g_a");
-    expect(frames("lbt.matched").at(-1)?.partner).toMatchObject({ nickname: "小jojo（AI）", role: "ai" });
+    expect(frames("lbt.matched").at(-1)?.partner).toMatchObject({ nickname: "你家貓咪會後空翻嗎（AI）", role: "ai" });
     expect(reply.mock.calls[0]?.[0].map(l => l.text)).toContain("妳很直接欸");
   });
   test("a late model result cannot recreate a chat after leave", async () => {
@@ -144,7 +144,7 @@ describe("explicit AI resident", () => {
 });
 
 test("response adapter handles both Cloudflare output forms without exposing reasoning", () => {
-  expect(jojoResponseText({ choices: [{ message: { content: "<think>private</think>小jojo：你也太會 😏" } }] })).toBe("你也太會 😏");
+  expect(jojoResponseText({ choices: [{ message: { content: "<think>private</think>你家貓咪會後空翻嗎：你也太會 😏" } }] })).toBe("你也太會 😏");
   expect(jojoResponseText({ response: "好" })).toBe("好");
   expect(() => jojoResponseText({ response: "<think>unfinished" })).toThrow("jojo_invalid_response");
   expect(Array.from(jojoResponseText({ response: "嘿".repeat(100) })).length).toBe(80);

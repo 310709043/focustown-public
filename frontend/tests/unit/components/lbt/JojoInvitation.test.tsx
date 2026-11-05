@@ -40,7 +40,7 @@ test("server clock skew is translated and invitation waits the full three minute
   expect(transport.startJojo).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: /我知道是 AI/ }));
   expect(transport.startJojo).toHaveBeenCalledTimes(1);
-  expect(screen.getByRole("button", { name: "正在接通小jojo…" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "正在接通…" })).toBeDisabled();
 });
 
 test("declining leaves the visitor in the human queue without any AI request", () => {
@@ -53,19 +53,19 @@ test("declining leaves the visitor in the human queue without any AI request", (
 
 test("AI role survives mapping and is visibly disclosed in the chat stage", () => {
   const frame = { type: "lbt.matched", me: { nickname: "訪客", energy: 2, preference: "casual" },
-    partner: { nickname: "小jojo", energy: 3, preference: "casual", role: "ai" },
+    partner: { nickname: "你家貓咪會後空翻嗎", energy: 3, preference: "casual", role: "ai" },
     ends_at: new Date(Date.now() + 420000).toISOString(), server_now: new Date().toISOString() };
   const event = mapServerFrame(frame, Date.now());
   act(() => transport.emit(event!)); render(<ChatStage />);
-  expect(screen.getByText("小jojo")).toBeVisible();
+  expect(screen.getByText("你家貓咪會後空翻嗎")).toBeVisible();
   expect(screen.getByText("AI 居民・成年女性角色")).toBeVisible();
-  expect(screen.getByText(/小jojo是 AI 虛構角色/)).toBeVisible();
+  expect(screen.getByText(/「你家貓咪會後空翻嗎」是 AI 虛構角色/)).toBeVisible();
 });
 
 test("one AI message is pending at a time and an error unlocks the composer", () => {
   const event = matched();
   if (event.type !== "matched") throw new Error("invalid test fixture");
-  event.partner = { ...event.partner, nickname: "小jojo", role: "ai" };
+  event.partner = { ...event.partner, nickname: "你家貓咪會後空翻嗎", role: "ai" };
   transport.emit(event);
   expect(store().sendMessage("嗨")).toBe(true);
   expect(store().sendMessage("第二句先留在輸入框")).toBe(false);

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 // Browser contract fixture only. Production never receives these scripted replies.
 // Server consent, timing, isolation and deletion are exercised in edge/test/jojo.test.ts.
-for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]] as const) {
+for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844], ["small-phone", 375, 667]] as const) {
   test(name + ": AI invitation requires a choice and remains disclosed in chat", async ({ page }, info) => {
     await page.setViewportSize({ width, height });
     const now = Date.now();
@@ -18,8 +18,8 @@ for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]
         frames.push(frame);
         if (frame.type === "join") send({ type: "lbt.waiting", since: new Date(now).toISOString(), server_now: new Date(now).toISOString(), jojo_available_at: new Date(now + 180000).toISOString() });
         if (frame.type === "jojo_start") {
-          send({ type: "lbt.matched", conversation_id: "contract-only", me: { nickname: "範例訪客", energy: 1, preference: "casual" }, partner: { nickname: "小jojo（AI）", energy: 3, preference: "casual", role: "ai" }, server_now: new Date(now + 180000).toISOString(), ends_at: new Date(now + 600000).toISOString(), grace_seconds: 60 });
-          send({ type: "lbt.message", id: "opening", from: "partner", text: "我是小jojo，小鎮的 AI 居民。想隨便聊，還是讓我逗你一下？" });
+          send({ type: "lbt.matched", conversation_id: "contract-only", me: { nickname: "範例訪客", energy: 1, preference: "casual" }, partner: { nickname: "你家貓咪會後空翻嗎（AI）", energy: 3, preference: "casual", role: "ai" }, server_now: new Date(now + 180000).toISOString(), ends_at: new Date(now + 600000).toISOString(), grace_seconds: 60 });
+          send({ type: "lbt.message", id: "opening", from: "partner", text: "我是「你家貓咪會後空翻嗎」，小鎮的 AI 居民。想隨便聊，還是讓我逗你一下？" });
         }
         if (frame.type === "message") {
           send({ type: "lbt.message", id: "sent", from: "me", text: frame.text });
@@ -39,13 +39,15 @@ for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]
     expect(frames.some(f => f.type === "jojo_start")).toBe(false);
     await page.screenshot({ path: info.outputPath("jojo-offer-" + name + ".png"), animations: "disabled" });
     await page.getByRole("button", { name: /我知道是 AI/ }).click();
-    await expect(page.locator(".partner-profile")).toContainText("小jojo（AI）");
+    await expect(page.locator(".partner-profile")).toContainText("你家貓咪會後空翻嗎（AI）");
     await expect(page.locator(".companion-disclosure")).toContainText("AI 虛構角色");
     expect(frames.find(f => f.type === "jojo_start")?.consent).toBe(true);
     await page.getByLabel("輸入訊息", { exact: true }).fill("熟了就不乖了");
     await page.getByRole("button", { name: "送出訊息", exact: true }).click();
     await expect(page.locator(".message.other .bubble").last()).toHaveText("好，那我有點想跟你熟了 😏");
     expect(await page.locator(".lbt").evaluate(el => el.scrollWidth - el.clientWidth)).toBe(0);
+    await expect(page.getByLabel("輸入訊息", { exact: true })).toBeInViewport();
+    await expect(page.getByRole("button", { name: /說聲晚安/ })).toBeInViewport();
     await page.screenshot({ path: info.outputPath("jojo-chat-" + name + ".png"), animations: "disabled" });
     await page.getByRole("button", { name: /說聲晚安/ }).click();
     await expect(page.locator(".message, .partner-profile")).toHaveCount(0);

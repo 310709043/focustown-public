@@ -335,8 +335,8 @@
     "generic": "Something went wrong. Please try again.",
     "invite_unavailable": "The invitation has ended. You can keep waiting.",
     "guest_suspended": "Matching is temporarily suspended for this anonymous guest code. You can join again when the restriction expires.",
-    "jojo_unavailable": "小jojo cannot reply right now or has reached a usage limit. Try later, or return home to find a person to chat with.",
-    "jojo_busy": "小jojo is still replying. Wait for her response before sending another message.",
+    "jojo_unavailable": "“你家貓咪會後空翻嗎” cannot reply right now or has reached a usage limit. Try later, or return home to find a person to chat with.",
+    "jojo_busy": "“你家貓咪會後空翻嗎” is still replying. Wait for her response before sending another message.",
     "jojo_too_early": "Wait for a person for three minutes before choosing AI chat.",
     "jojo_consent_required": "Please explicitly accept AI chat before starting."
   },
@@ -374,7 +374,7 @@
             "Usage statistics: we use Cloudflare Web Analytics to count anonymous browsing statistics, such as page views and loading speed. It sets no cookies, does not follow you across other sites and builds no personal profile.",
             "Waiting alerts and chats with the operator: when someone has waited a while to be paired, the operator's phone gets a notice (via Telegram or Discord) with only the battery and chat intent they chose and how many seconds they have waited — no nickname, guest code, IP or message. The operator may then send you a chat invitation themselves; it always asks first, you can keep waiting for someone else, and you can leave any time after accepting.",
             "Safety review: an anonymous guest code can be suspended from matching for {suspensionHours} hours or {suspensionDays} days after report review. Restrictions expire; reasons, durations and revocation history are retained with report evidence for {reportDays} days. No device fingerprint or real-identity profile is created.",
-            "AI resident 小jojo: this chat starts only after three minutes of waiting and your explicit acceptance of a clearly labelled AI invitation. Up to the most recent 16 messages from this conversation are sent to Cloudflare Workers AI to generate replies. We do not use AI Gateway prompt logging or caching, train 小jojo on your chats, or keep cross-session memory. The same end-of-chat deletion and report retention rules apply."
+            "AI resident “你家貓咪會後空翻嗎”: this chat starts only after three minutes of waiting and your explicit acceptance of a clearly labelled AI invitation. Up to the most recent 16 messages from this conversation are sent to Cloudflare Workers AI to generate replies. We do not use AI Gateway prompt logging or caching, train “你家貓咪會後空翻嗎” on your chats, or keep cross-session memory. The same end-of-chat deletion and report retention rules apply."
           ]
         },
         {
@@ -576,7 +576,7 @@
       },
       {
         "q": "Is my partner a real person or AI?",
-        "a": "Ordinary matching connects real people. After three minutes of waiting, you may explicitly choose the clearly labelled AI resident 小jojo. Declining keeps you waiting for a person; we never silently switch you to AI. Human companion invitations show the companion’s nickname and start only after acceptance."
+        "a": "Ordinary matching connects real people. After three minutes of waiting, you may explicitly choose the clearly labelled AI resident “你家貓咪會後空翻嗎”. Declining keeps you waiting for a person; we never silently switch you to AI. Human companion invitations show the companion’s nickname and start only after acceptance."
       },
       {
         "q": "Does anonymous mean no records? Can screenshots be prevented?",
@@ -988,13 +988,13 @@
     }
   },
   "jojo": {
-    "title": "Want to chat with 小jojo while you wait?",
-    "body": "小jojo is a fictional adult female AI resident: playful, direct, and occasionally flirty. AI chat starts only if you accept. You can keep waiting for a person instead.",
+    "title": "Want to chat with “你家貓咪會後空翻嗎” while you wait?",
+    "body": "“你家貓咪會後空翻嗎” is a fictional adult female AI resident: playful, direct, and occasionally flirty. AI chat starts only if you accept. You can keep waiting for a person instead.",
     "privacy": "If you accept, recent messages from this chat are sent to Cloudflare Workers AI to generate replies. Avoid personal information. You can leave anytime.",
-    "accept": "I understand she is AI — chat with 小jojo",
+    "accept": "I understand she is AI — start chatting",
     "decline": "Keep waiting for a person",
-    "starting": "Connecting to 小jojo…",
+    "starting": "Connecting…",
     "label": "AI resident · fictional adult woman",
-    "disclosure": "小jojo is a fictional AI character and cannot meet in person. Start with 7 minutes and leave anytime."
+    "disclosure": "“你家貓咪會後空翻嗎” is a fictional AI character and cannot meet in person. Start with 7 minutes and leave anytime."
   }
 }
