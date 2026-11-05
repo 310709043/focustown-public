@@ -31,12 +31,13 @@ describe("explicit AI resident", () => {
     expect(frames("lbt.matched")).toHaveLength(0);
     await expect(town.startJojo("g_a", true)).rejects.toThrow("jojo_unavailable");
   });
-  test("requires full server-side waiting time, adult join and explicit consent", async () => {
+  test("requires a full one-minute server-side wait, adult join and explicit consent", async () => {
     await expect(town.join("g_a", profile, false)).rejects.toThrow("age_required");
     await town.join("g_a", { ...profile, role: "ai" }, true);
     expect((await store.listWaiting())[0]?.profile).not.toHaveProperty("role");
+    now += 59_999; await town.heartbeat("g_a");
     await expect(town.startJojo("g_a", true)).rejects.toThrow("jojo_too_early");
-    now += JOJO_WAIT_MS; await town.heartbeat("g_a");
+    now += 1; await town.heartbeat("g_a");
     await expect(town.startJojo("g_a", false)).rejects.toThrow("jojo_consent_required");
     expect(await store.listWaiting()).toHaveLength(1);
     await town.startJojo("g_a", true);

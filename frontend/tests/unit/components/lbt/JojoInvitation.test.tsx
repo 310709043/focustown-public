@@ -29,12 +29,12 @@ beforeEach(() => {
 });
 afterEach(() => { act(() => { detach(); store().reset(); }); vi.useRealTimers(); });
 
-test("server clock skew is translated and invitation waits the full three minutes", () => {
-  const event = mapServerFrame({ type: "lbt.waiting", server_now: "2026-11-06T13:00:00Z", jojo_available_at: "2026-11-06T13:03:00Z" }, Date.now());
-  expect(event).toEqual({ type: "waiting", jojoAvailableAt: Date.now() + 180000 });
+test("server clock skew is translated and invitation waits the full minute", () => {
+  const event = mapServerFrame({ type: "lbt.waiting", server_now: "2026-11-06T13:00:00Z", jojo_available_at: "2026-11-06T13:01:00Z" }, Date.now());
+  expect(event).toEqual({ type: "waiting", jojoAvailableAt: Date.now() + 60000 });
   act(() => transport.emit(event!)); render(<JojoInvitation />);
   expect(screen.queryByRole("button", { name: /AI/ })).toBeNull();
-  act(() => vi.advanceTimersByTime(179999)); expect(transport.startJojo).not.toHaveBeenCalled();
+  act(() => vi.advanceTimersByTime(59999)); expect(transport.startJojo).not.toHaveBeenCalled();
   act(() => vi.advanceTimersByTime(1));
   expect(screen.getByRole("button", { name: /我知道是 AI/ })).toBeEnabled();
   expect(transport.startJojo).not.toHaveBeenCalled();
