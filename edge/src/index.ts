@@ -36,6 +36,8 @@ import { listDailyTrends } from "./dailyStats";
 import { createAdminSession, verifyAdminSession, createCompanionToken, createGuestToken, newGuestId, verifyCompanionToken, verifyGuestToken } from "./token";
 import { COMPANION_ID } from "./companion";
 import { purgeExpiredSuspensions } from "./moderation";
+import { alertsConfigured, sendOwnerText } from "./ownerAlert";
+import { siteProbe, twice, UPTIME_CRON, runUptime } from "./uptime";
 
 import { adminCookie, adminSigningKey, boundedJson, cookieToken, PayloadTooLarge, sameSecret, tokenFingerprint } from "./security";
 
@@ -406,12 +408,33 @@ export default {
   },
 
   /**
+   * Every five minutes (UPTIME_CRON): check the website and the chat
+   * Durable Object, alert the owner on changes (src/uptime.ts).
    * Daily: delete reports and feedback past their retention windows (the
    * privacy page promises it), refresh sky topics. Each step runs on its
    * own, so one failure never skips the others.
    */
-  async scheduled(_controller, env, _ctx): Promise<void> {
+  async scheduled(controller, env, _ctx): Promise<void> {
     const now = Date.now();
+    if (controller.cron === UPTIME_CRON) {
+      try {
+        const sent = await runUptime({
+          db: env.DB,
+          now,
+          checks: [
+            { name: "網站", host: "www.lowbatterytown.com", probe: () => twice(siteProbe()) },
+            { name: "聊天伺服器", host: "api.lowbatterytown.com", probe: () => twice(async () => typeof (await town(env).status()).online === "number") },
+          ],
+          notify: async (text) => {
+            if (alertsConfigured(env)) await sendOwnerText(env, text);
+          },
+        });
+        if (sent.length) console.log(JSON.stringify({ event: "lbt_uptime_alert", count: sent.length }));
+      } catch {
+        console.error(JSON.stringify({ event: "lbt_uptime_failed" }));
+      }
+      return;
+    }
     const steps: [string, () => Promise<Record<string, unknown> | null>][] = [
       ["lbt_suspensions_purge", async () => {
         await purgeExpiredSuspensions(env.DB, now);
