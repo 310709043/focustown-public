@@ -27,7 +27,8 @@
   // (src/topicIssues.ts). Public keywords and headlines only.
   "ai": { "binding": "AI" },
   // 03:17 Asia/Taipei: purge reports past LBT_REPORT_RETENTION_DAYS.
-  "triggers": { "crons": ["17 19 * * *"] },
+  // Every 5 minutes: uptime watch with owner alerts (src/uptime.ts UPTIME_CRON).
+  "triggers": { "crons": ["17 19 * * *", "*/5 * * * *"] },
   "vars": {
     "ALLOWED_ORIGINS": "https://www.lowbatterytown.com,https://lowbatterytown.com",
     "LBT_OPEN_HOURS": "",

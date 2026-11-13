@@ -2,8 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fonts are self-hosted via next/font/google (see frontend/lib/fonts.ts).
-   The font CSS variables are attached to <html> in app/layout.tsx and
+/* Fonts are self-hosted via next/font/local from assets/fonts/ (see
+   lib/fonts.ts and lib/lbtFonts.ts). The font CSS variables are attached in
+   the layouts and pages that use them and
    exposed to Tailwind's fontFamily tokens via tailwind.config.ts. */
 
 :root {

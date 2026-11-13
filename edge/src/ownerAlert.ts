@@ -52,7 +52,11 @@ export function alertsConfigured(env: AlertEnv): boolean {
 
 /** Send to every configured channel; failures are swallowed (an alert must never break the sweep). */
 export async function sendOwnerAlert(env: AlertEnv, alert: WaitingAlert, fetcher: typeof fetch = fetch): Promise<number> {
-  const text = alertText(alert);
+  return sendOwnerText(env, alertText(alert), fetcher);
+}
+
+/** Any owner notice (waiting visitors, uptime). Returns how many channels accepted it. */
+export async function sendOwnerText(env: AlertEnv, text: string, fetcher: typeof fetch = fetch): Promise<number> {
   const jobs: Promise<Response>[] = [];
   if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
     jobs.push(fetcher(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {

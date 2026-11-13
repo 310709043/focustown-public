@@ -103,6 +103,20 @@ Discord instead (or as well): `npx wrangler secret put DISCORD_WEBHOOK_URL`
 (a `https://discord.com/api/webhooks/…` URL; anything else is ignored).
 With no secrets set, nothing is sent.
 
+## Uptime alerts
+
+Every five minutes the same cron checks that `www.lowbatterytown.com/zh-TW`
+answers with the town page and that the chat Durable Object answers a status
+call (`src/uptime.ts`; two tries a few seconds apart). It uses the Telegram /
+Discord secrets above: one alert when a check starts failing, a reminder each
+hour it stays down, and one when it recovers. The last state of each check is
+in D1 (`lbt_uptime`, migration 0008). Nothing is sent while all is well.
+
+The Worker cannot report its own outage or a Cloudflare one. Point a free
+external monitor (for example UptimeRobot) at
+`https://api.lowbatterytown.com/healthz`, which answers `{"ok":true}`; the
+GitHub `monitor-lbt.yml` schedule is a slower backstop.
+
 ## Sky topics as questions
 
 The daily cron (03:17 Taipei) fetches yesterday's Google Trends for Taiwan
