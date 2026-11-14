@@ -11,7 +11,7 @@ import { ChimeToggle } from "./ChimeToggle";
 import { Notice } from "./Notice";
 import { TownSky } from "./Townscape";
 import { JojoInvitation } from "./JojoInvitation";
-import { useActiveTheme } from "./StageScene";
+import { useActiveTheme } from "@/lib/lbt/stylePreview";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
 export function WaitingView() {

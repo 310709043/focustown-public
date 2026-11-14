@@ -11,7 +11,7 @@ import { BenchScene } from "./BenchScene";
 import { ByTime } from "./ByTime";
 import { EnergyGlyph } from "./EnergyGlyph";
 import { useChatFaces } from "./useChatFaces";
-import { useActiveTheme } from "./StageScene";
+import { useActiveTheme } from "@/lib/lbt/stylePreview";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
 /** The partner's name: the demo's is localised, a real person's is their own. */

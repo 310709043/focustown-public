@@ -22,7 +22,9 @@ import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
 import { RainSky } from "./RainScene";
 import { ThemeSkyDecor } from "./ThemeDecor";
-import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useRainPreview, useStageScene, useThemePreview } from "./StageScene";
+import { useRainPreview, useThemePreview } from "@/lib/lbt/stylePreview";
+
+import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useStageScene } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {

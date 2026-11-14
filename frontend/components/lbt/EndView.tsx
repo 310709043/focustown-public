@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 import { TownSky } from "./Townscape";
-import { useActiveTheme } from "./StageScene";
+import { useActiveTheme } from "@/lib/lbt/stylePreview";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
 export function EndView() {
