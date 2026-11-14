@@ -6258,3 +6258,150 @@ html[data-lbt-theme="milktea"] .lbt .side-card { background: #2c2330; }
 html[data-lbt-theme="mint"] .lbt .side-card { background: #12303a; }
 html[data-lbt-theme="sakura"] .lbt .side-card { background: #2d1f34; }
 html[data-lbt-theme="pixel"] .lbt .side-card { background: #1e1e3a; }
+
+/* ---- style-pack decorations (ThemeDecor.tsx): preview only ---- */
+.lbt .theme-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.lbt .decor,
+.lbt .tw-decor-layer [class^="decor-"] {
+  display: none;
+}
+html[data-lbt-theme="sakura"] .lbt .decor-sakura,
+html[data-lbt-theme="mint"] .lbt .decor-mint,
+html[data-lbt-theme="milktea"] .lbt .decor-milktea,
+html[data-lbt-theme="pixel"] .lbt .decor-pixel {
+  display: block;
+}
+html[data-lbt-theme="sakura"] .lbt .tw-decor-layer .decor-sakura,
+html[data-lbt-theme="mint"] .lbt .tw-decor-layer .decor-mint,
+html[data-lbt-theme="milktea"] .lbt .tw-decor-layer .decor-milktea,
+html[data-lbt-theme="pixel"] .lbt .tw-decor-layer .decor-pixel {
+  display: inline;
+}
+.lbt .tw-street.tw-decor-layer { display: block; }
+.lbt .decor { position: absolute; inset: 0; }
+
+/* 櫻花: petals drift down and sway */
+.lbt .petal {
+  position: absolute;
+  top: -6%;
+  left: var(--x);
+  width: var(--s);
+  height: calc(var(--s) * 0.7);
+  border-radius: 80% 0 80% 0;
+  background: linear-gradient(135deg, #ffd6e0, #ff9fb8);
+  opacity: 0.85;
+  animation: lbt-petal var(--t) linear var(--d) infinite;
+}
+@keyframes lbt-petal {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(28px, 28vh) rotate(90deg); }
+  50% { transform: translate(-12px, 56vh) rotate(200deg); }
+  75% { transform: translate(24px, 84vh) rotate(290deg); }
+  100% { transform: translate(-6px, 112vh) rotate(380deg); }
+}
+.lbt .sk-trunk { fill: none; stroke: #5a3b40; stroke-width: 4; stroke-linecap: round; }
+.lbt .sk-bloom.b0 { fill: #ffb7c9; }
+.lbt .sk-bloom.b1 { fill: #ffc9d6; }
+.lbt .sk-bloom.b2 { fill: #f79ab3; }
+.lbt .sk-fallen { fill: #ffb7c9; opacity: 0.7; }
+html[data-lbt-time="night"] .lbt .sk-bloom { filter: brightness(0.8); }
+
+/* 薄荷汽水: soda bubbles rise */
+.lbt .bubble {
+  position: absolute;
+  bottom: -4%;
+  left: var(--x);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  border: 1.5px solid rgba(178, 245, 224, 0.7);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), transparent 45%);
+  animation: lbt-bubble var(--t) ease-in var(--d) infinite;
+}
+@keyframes lbt-bubble {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.8; }
+  50% { transform: translate(10px, -55vh); }
+  90% { opacity: 0.6; }
+  100% { transform: translate(-6px, -110vh); opacity: 0; }
+}
+.lbt .sm-glow { fill: #9be7cf; opacity: 0.18; filter: blur(6px); }
+.lbt .sm-body { fill: #2f8f7e; }
+.lbt .sm-panel { fill: #dffbf2; }
+.lbt .sm-can.c0 { fill: #ff8fa3; }
+.lbt .sm-can.c1 { fill: #74d6b8; }
+.lbt .sm-can.c2 { fill: #ffd27a; }
+.lbt .sm-coin, .lbt .sm-slot { fill: #1b4f46; }
+.lbt .sm-label { fill: #dffbf2; font: 700 7px var(--mono); text-anchor: middle; letter-spacing: 1px; }
+
+/* 奶茶: warm lantern glows drift, steam from the cup */
+.lbt .glow {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 196, 140, 0.45), transparent 70%);
+  animation: lbt-glow var(--t) ease-in-out var(--d) infinite alternate;
+}
+@keyframes lbt-glow {
+  from { transform: translate(0, 0); opacity: 0.35; }
+  to { transform: translate(24px, -14px); opacity: 0.9; }
+}
+.lbt .bt-cup { fill: rgba(255, 248, 236, 0.85); stroke: #8a6d58; stroke-width: 1; }
+.lbt .bt-tea { fill: #c8916a; }
+.lbt .bt-pearl { fill: #3b2418; }
+.lbt .bt-lid { fill: #f3e4cf; }
+.lbt .bt-straw { fill: #e9a37e; }
+.lbt .bt-label { fill: #fff6ea; font: 700 6.5px var(--body); text-anchor: middle; }
+.lbt .bt-steam {
+  fill: none;
+  stroke: rgba(255, 240, 222, 0.6);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  animation: lbt-steam 3s ease-in-out infinite;
+}
+.lbt .bt-steam.s2 { animation-delay: 1.4s; }
+@keyframes lbt-steam {
+  0% { transform: translateY(4px); opacity: 0; }
+  40% { opacity: 0.8; }
+  100% { transform: translateY(-8px); opacity: 0; }
+}
+
+/* 像素小鎮: plus-shaped sparkles blink in steps, an arcade cabinet glows */
+.lbt .spark {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  background: #ffd23f;
+  box-shadow:
+    var(--s) 0 0 #ffd23f,
+    calc(var(--s) * -1) 0 0 #ffd23f,
+    0 var(--s) 0 #ffd23f,
+    0 calc(var(--s) * -1) 0 #ffd23f;
+  animation: lbt-spark var(--t) steps(2, jump-none) var(--d) infinite;
+}
+@keyframes lbt-spark {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+.lbt .ar-glow { fill: #ffd23f; opacity: 0.16; }
+.lbt .ar-body { fill: #3b2d7a; }
+.lbt .ar-top { fill: #ff5c8a; }
+.lbt .ar-screen { fill: #0c0c18; }
+.lbt .ar-pix.p1 { fill: #7bd389; animation: lbt-spark 1.2s steps(2, jump-none) infinite; }
+.lbt .ar-pix.p2 { fill: #ffd23f; animation: lbt-spark 1.2s steps(2, jump-none) 0.6s infinite; }
+.lbt .ar-deck { fill: #2a2060; }
+.lbt .ar-btn.b1 { fill: #ff5c8a; }
+.lbt .ar-btn.b2 { fill: #ffd23f; }
+.lbt .ar-btn.b3 { fill: #7bd389; }

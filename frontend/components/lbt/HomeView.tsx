@@ -21,6 +21,7 @@ import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
 import { RainSky } from "./RainScene";
+import { ThemeSkyDecor } from "./ThemeDecor";
 import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useRainPreview, useStageScene, useThemePreview } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
@@ -42,7 +43,7 @@ export function HomeView() {
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
   const stage = useStageScene();
   const rain = useRainPreview() && stage.scene === "town";
-  useThemePreview();
+  const theme = useThemePreview();
   const energyId = ENERGY_ID[energy];
 
   const start = () => {
@@ -67,6 +68,7 @@ export function HomeView() {
           <StageSceneLayer scene={stage.scene} />
           <TownSky />
           {rain ? <RainSky /> : null}
+          {theme ? <ThemeSkyDecor /> : null}
           <div className="stage-topline">
             <span className="eyebrow">{t("home.eyebrow")}</span>
             {/* One greeting per time of day; CSS shows the one matching <html data-lbt-time>. */}
@@ -99,7 +101,7 @@ export function HomeView() {
             <SkyTopicLine />
           </div>
 
-          <Townscape rain={rain} />
+          <Townscape rain={rain} decor={theme !== null} />
           <SkyTopics />
         </section>
 

@@ -112,10 +112,15 @@ export function useRainPreview(): boolean {
 
 /** 小鎮風格 preview: dev builds only, ?theme=milktea|mint|sakura|pixel. */
 const PREVIEW_THEMES = ["milktea", "mint", "sakura", "pixel"];
-export function useThemePreview(): void {
+export function useThemePreview(): string | null {
+  const [theme, setTheme] = useState<string | null>(null);
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
-    const theme = new URLSearchParams(window.location.search).get("theme");
-    if (theme && PREVIEW_THEMES.includes(theme)) document.documentElement.dataset.lbtTheme = theme;
+    const picked = new URLSearchParams(window.location.search).get("theme");
+    if (picked && PREVIEW_THEMES.includes(picked)) {
+      document.documentElement.dataset.lbtTheme = picked;
+      setTheme(picked);
+    }
   }, []);
+  return theme;
 }

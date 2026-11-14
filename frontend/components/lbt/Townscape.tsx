@@ -13,6 +13,7 @@
 
 import { RainStreet } from "./RainScene";
 import { StreetCat } from "./StreetCat";
+import { ThemeStreetDecor } from "./ThemeDecor";
 
 type Lit = "" | "l1" | "l2";
 
@@ -264,7 +265,7 @@ export function TownSky() {
   );
 }
 
-export function Townscape({ rain = false }: { rain?: boolean }) {
+export function Townscape({ rain = false, decor = false }: { rain?: boolean; decor?: boolean }) {
   return (
     <div className="townscape" aria-hidden="true">
       {/* A slight hand-drawn wobble for the static street (animated bits sit outside it). */}
@@ -276,6 +277,7 @@ export function Townscape({ rain = false }: { rain?: boolean }) {
       </svg>
       <WeekdayStreet />
       <WeekendStreet />
+      {decor ? <ThemeStreetDecor /> : null}
       {rain ? <RainStreet /> : null}
       <StreetCat />
     </div>
