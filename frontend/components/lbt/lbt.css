@@ -6497,3 +6497,95 @@ html[data-lbt-theme="pixel"] .lbt :is(.waiting-card, .end-card) {
 @media (max-width: 610px) {
   .lbt .bench-decor { display: none; }
 }
+
+/* ---- 外觀 menu (LooksMenu.tsx): switch owned looks ---- */
+.lbt .stage-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.lbt .looks-menu {
+  position: relative;
+  font-size: 13px;
+}
+.lbt .looks-menu > summary,
+.lbt .looks-menu.is-offer {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--pill-line);
+  color: var(--hero-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lbt .looks-menu > summary::-webkit-details-marker { display: none; }
+.lbt .looks-menu > summary::before { content: "✦"; color: var(--hero-accent); }
+.lbt .looks-menu[open] > summary { color: var(--hero-ink); border-color: var(--hero-accent); }
+.lbt .looks-menu > summary:focus-visible,
+.lbt .looks-menu.is-offer:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+.lbt .looks-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 5;
+  min-width: 190px;
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--th-card, var(--paper));
+  color: var(--th-card-ink, var(--night));
+  box-shadow: 0 14px 34px rgba(8, 15, 29, 0.28);
+  text-align: left;
+}
+.lbt .looks-panel fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
+.lbt .looks-panel legend { font-size: 12px; color: var(--th-card-soft, #56637a); margin-bottom: 4px; }
+.lbt .looks-panel label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.lbt .looks-panel input { accent-color: var(--th-strong, #23334e); }
+.lbt .looks-more { font-size: 12px; text-decoration: underline; color: var(--th-card-soft, #56637a); }
+/* the stage copy sits in the top line on desktop; phones hide that line, so the phone copy shows under the hero text */
+.lbt .looks-phone { display: none; }
+@media (max-width: 959px), (max-height: 619px) {
+  .lbt .looks-stage { display: none; }
+  .lbt .looks-phone { display: block; margin-top: 12px; }
+  .lbt .looks-phone > summary { width: max-content; }
+  /* the compact stage clips overflow, so the phone panel opens in place */
+  .lbt .looks-phone .looks-panel { position: static; margin-top: 8px; max-width: 260px; }
+}
+html[data-lbt-theme="pixel"] .lbt .looks-panel,
+html[data-lbt-theme="pixel"] .lbt .looks-menu > summary { border-radius: 0; }
+/* an open 外觀 panel sits above the hero copy, the street and the sky carriers */
+.lbt .main-stage > .stage-topline:has(.looks-menu[open]),
+.lbt .main-stage > .hero-copy:has(.looks-menu[open]) {
+  z-index: 6;
+}
+
+/* ── /unlock: rainy town and the style packs (LooksOffer.tsx) ── */
+.lbt .policy .looks-offer { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--line); }
+.lbt .policy .looks-offer h3 { margin: 22px 0 6px; font-size: 16px; color: var(--lamp); }
+.lbt .policy .looks-grid {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.lbt .policy .looks-grid li {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--night-2);
+}
+.lbt .policy .looks-grid li::marker { content: none; }
+.lbt .policy .looks-grid img { display: block; width: 100%; height: auto; }
+.lbt .policy .looks-grid strong { padding: 8px 14px 0; font-size: 16px; }
+.lbt .policy .looks-grid span { padding: 0 14px; font-size: 13px; line-height: 1.6; color: var(--mist); }
+.lbt .policy .looks-grid em { padding: 4px 14px 0; font-style: normal; font-size: 13px; color: var(--lamp); }

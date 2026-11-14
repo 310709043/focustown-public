@@ -11,12 +11,12 @@ import { ChimeToggle } from "./ChimeToggle";
 import { Notice } from "./Notice";
 import { TownSky } from "./Townscape";
 import { JojoInvitation } from "./JojoInvitation";
-import { useActiveTheme } from "@/lib/lbt/stylePreview";
+import { useEffectiveLooks } from "@/lib/lbt/looks";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
 export function WaitingView() {
   const t = useTranslations("lbt");
-  const theme = useActiveTheme();
+  const theme = useEffectiveLooks().style;
   const chimeOn = useChimeStore((s) => s.enabled);
   const energy = useLbtStore((s) => s.energy);
   const cancelWaiting = useLbtStore((s) => s.cancelWaiting);

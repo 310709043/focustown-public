@@ -5,12 +5,12 @@ import { useTranslations } from "next-intl";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 import { TownSky } from "./Townscape";
-import { useActiveTheme } from "@/lib/lbt/stylePreview";
+import { useEffectiveLooks } from "@/lib/lbt/looks";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
 export function EndView() {
   const t = useTranslations("lbt.end");
-  const theme = useActiveTheme();
+  const theme = useEffectiveLooks().style;
   const again = useLbtStore((s) => s.again);
   const goHome = useLbtStore((s) => s.goHome);
   const openModal = useLbtStore((s) => s.openModal);

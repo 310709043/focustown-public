@@ -11,19 +11,19 @@ import {
   NICKNAME_MAX,
   PREFERENCES,
 } from "@/lib/lbt/constants";
+import { useEffectiveLooks } from "@/lib/lbt/looks";
 import { normalizeNickname } from "@/lib/lbt/nickname";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 import { onRadioGroupKeyDown } from "@/lib/lbt/useRadioArrowKeys";
 
 import { BatteryCharacter } from "./BatteryCharacter";
+import { LooksMenu } from "./LooksMenu";
 import { MusicVolume } from "./MusicControls";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
 import { RainSky } from "./RainScene";
 import { ThemeSkyDecor } from "./ThemeDecor";
-import { useRainPreview, useThemePreview } from "@/lib/lbt/stylePreview";
-
 import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useStageScene } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
@@ -44,8 +44,9 @@ export function HomeView() {
   const defaultNickname = t("home.nickname.default");
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
   const stage = useStageScene();
-  const rain = useRainPreview() && stage.scene === "town";
-  const theme = useThemePreview();
+  const looks = useEffectiveLooks();
+  const rain = looks.rain && stage.scene === "town";
+  const theme = looks.style;
   const energyId = ENERGY_ID[energy];
 
   const start = () => {
@@ -80,7 +81,10 @@ export function HomeView() {
               <span className="by-time t-dusk">{t("home.coordinateDusk")}</span>
               <span className="by-time t-night">{t("home.coordinate")}</span>
             </span>
-            {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : <StageSceneOffer />}
+            <span className="stage-controls">
+              <LooksMenu place="stage" />
+              {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : <StageSceneOffer />}
+            </span>
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">
@@ -101,6 +105,7 @@ export function HomeView() {
               {t("home.subtitleB")}
             </p>
             <SkyTopicLine />
+            <LooksMenu place="phone" />
           </div>
 
           <Townscape rain={rain} decor={theme !== null} />

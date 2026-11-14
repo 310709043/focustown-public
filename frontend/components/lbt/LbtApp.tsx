@@ -8,6 +8,7 @@ import { config } from "@/lib/config";
 import { STATUS_POLL_MS } from "@/lib/lbt/constants";
 import { createDemoTransport } from "@/lib/lbt/demoTransport";
 import { createLiveTransport } from "@/lib/lbt/liveTransport";
+import { useApplyLooks } from "@/lib/lbt/looks";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 import type { LbtTransport } from "@/lib/lbt/transport";
 import { applyTownTime } from "@/lib/lbt/townTime";
@@ -56,6 +57,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
 
   const transportRef = useRef<LbtTransport | null>(null);
   useMusicLifecycle();
+  useApplyLooks();
   useAttentionCues();
 
   // The boot script set the time of day before paint; keep it current while

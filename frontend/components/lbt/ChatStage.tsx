@@ -11,7 +11,7 @@ import { BenchScene } from "./BenchScene";
 import { ByTime } from "./ByTime";
 import { EnergyGlyph } from "./EnergyGlyph";
 import { useChatFaces } from "./useChatFaces";
-import { useActiveTheme } from "@/lib/lbt/stylePreview";
+import { useEffectiveLooks } from "@/lib/lbt/looks";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
 /** The partner's name: the demo's is localised, a real person's is their own. */
@@ -30,7 +30,7 @@ export function usePartnerName(): string {
  */
 export function ChatStage() {
   const t = useTranslations("lbt");
-  const theme = useActiveTheme();
+  const theme = useEffectiveLooks().style;
   const lines = useLbtStore((s) => s.lines);
   const partner = useLbtStore((s) => s.partner);
   const simulated = useLbtStore((s) => s.simulated);

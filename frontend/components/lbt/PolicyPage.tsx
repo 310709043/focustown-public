@@ -13,6 +13,10 @@ interface Section {
   p: string[];
   /** Only while the koi pond is on sale (lib/lbt/pond). */
   pond?: boolean;
+  /** Only while the rainy town and styles are on sale (lib/lbt/looksOffer). */
+  looks?: boolean;
+  /** While either is on sale. */
+  paid?: boolean;
 }
 
 /** Privacy policy, terms and community guidelines for LowBatteryTown. */
