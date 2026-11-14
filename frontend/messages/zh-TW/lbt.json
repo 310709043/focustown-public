@@ -171,7 +171,8 @@
       "extendPartnerAsked": "{name}插上了插頭，想再坐一會兒。"
     },
     "aside": {
-      "help": "需要有人聽你說或專業協助：可在 findahelpline.com 查到你所在地區的求助專線。"
+      "help": "需要有人聽你說或專業協助：可在 findahelpline.com 查到你所在地區的求助專線。",
+      "helpShort": "需要協助：findahelpline.com 或當地緊急電話"
     },
     "partnerLabelLive": "第 07 號街燈",
     "senderPartnerLive": "{name}",

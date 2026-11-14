@@ -6589,3 +6589,67 @@ html[data-lbt-theme="pixel"] .lbt .looks-menu > summary { border-radius: 0; }
 .lbt .policy .looks-grid strong { padding: 8px 14px 0; font-size: 16px; }
 .lbt .policy .looks-grid span { padding: 0 14px; font-size: 13px; line-height: 1.6; color: var(--mist); }
 .lbt .policy .looks-grid em { padding: 4px 14px 0; font-style: normal; font-size: 13px; color: var(--lamp); }
+
+/* ── phones: a calmer, less crowded layout (≤610px) ──
+   Home: the three info cards under the form become compact rows.
+   Chat: the header drops its pills, the name tags and the plug panel slim
+   down and the safety lines shrink, so the messages get the room. The
+   crisis line and the report link stay in view (product rule). */
+@media (max-width: 610px) {
+  /* header: keep it to the brand and two small controls */
+  .lbt .topbar { gap: 8px; }
+  .lbt .topbar .brand svg,
+  .lbt .topbar .brand { max-width: 46vw; }
+  .lbt .topbar-actions { gap: 6px; }
+  .lbt .topbar-actions .prototype-pill { padding: 6px 10px; font-size: 13px; }
+  .lbt[data-view="chat"] .topbar-actions .support-pill,
+  .lbt[data-view="chat"] .topbar-actions .feedback-pill { display: none; }
+
+  /* home: form breathes less, info cards become short rows */
+  .lbt .selection-card { padding: 20px 18px 16px; }
+  .lbt .side-rail { gap: 12px; }
+  .lbt .side-card { padding: 18px 18px; border-radius: 20px; }
+  .lbt .battery-card {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    grid-template-areas: "top top" "art title" "art text";
+    column-gap: 14px;
+    align-items: center;
+  }
+  .lbt .battery-card .side-card-top { grid-area: top; margin-bottom: 6px; }
+  .lbt .side-card { min-height: 0; }
+  .lbt .home-grid > .side-rail .battery-card .battery-display { grid-area: art; zoom: 0.55; height: 170px; width: 150px; filter: none; }
+  .lbt .battery-card h2 { grid-area: title; font-size: 18px; margin: 0; align-self: end; }
+  .lbt .battery-card > p { grid-area: text; font-size: 14px; margin: 4px 0 0; align-self: start; }
+  .lbt .battery-card .battery-footnote { display: none; }
+  .lbt .home-grid > .side-rail .how-card ol { margin-top: 6px; }
+  .lbt .home-grid > .side-rail .how-card li { padding: 7px 0; min-height: 0; }
+  .lbt .home-grid > .side-rail .how-card li p { font-size: 15px; }
+  .lbt .support-card h3 { font-size: 17px; margin: 0 0 6px; }
+  .lbt .support-card p { font-size: 14px; margin: 0; }
+  .lbt .support-card .support-note { display: none; }
+
+  /* chat: name tags on one line each */
+  .lbt .bench-people { padding: 8px 14px 10px; gap: 4px 10px; }
+  .lbt .bench-people .small-label { font-size: 11px; }
+  .lbt .bench-people .tag-name { font-size: 17px; }
+  .lbt .bench-people .tag-details { font-size: 12px; }
+  /* chat: a slim plug panel */
+  .lbt .plug-panel { padding: 8px 14px 0; gap: 6px; }
+  .lbt .plug-panel .plug-chip { min-height: 38px; padding: 6px 10px; font-size: 14px; border-radius: 12px; }
+  /* the chat's opening line already explains plugging in */
+  .lbt .plug-panel .plug-hint { display: none; }
+  /* chat: composer and the safety lines, smaller and tighter */
+  .lbt .composer-row { gap: 8px; }
+  /* one short crisis line and the two actions on one row; the privacy
+     note is also in the report dialog */
+  .lbt .chat-foot { flex-direction: column; gap: 2px; padding-bottom: 10px; }
+  .lbt .chat-foot .aside-help { font-size: 12px; line-height: 1.5; margin: 0; }
+  .lbt .chat-foot .chat-privacy { display: none; }
+  .lbt .chat-foot .chat-bottom-actions { font-size: 12px; margin: 0; }
+}
+.lbt .aside-help .help-short { display: none; }
+@media (max-width: 610px) {
+  .lbt .aside-help .help-long { display: none; }
+  .lbt .aside-help .help-short { display: inline; }
+}

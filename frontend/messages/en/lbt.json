@@ -171,7 +171,8 @@
       "extendPartnerAsked": "{name} plugged in and would like to stay a little longer."
     },
     "aside": {
-      "help": "Need someone to listen, or professional support? Find a helpline where you are at findahelpline.com."
+      "help": "Need someone to listen, or professional support? Find a helpline where you are at findahelpline.com.",
+      "helpShort": "Need help: findahelpline.com or your local emergency number"
     },
     "partnerLabelLive": "Streetlamp No. 07",
     "senderPartnerLive": "{name}",

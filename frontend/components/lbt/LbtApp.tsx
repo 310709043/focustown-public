@@ -120,7 +120,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
   }, [view]);
 
   return (
-    <div ref={rootRef} className={`lbt lbt-app ${fontClassName}`.trim()}>
+    <div ref={rootRef} className={`lbt lbt-app ${fontClassName}`.trim()} data-view={view}>
       <IntroSplash tagline={`${t("home.titleTop")}${t("home.titleEm")}`} />
       <div className="site-shell">
         <header className="topbar">
