@@ -109,3 +109,13 @@ export function useRainPreview(): boolean {
   }, []);
   return rain;
 }
+
+/** 小鎮風格 preview: dev builds only, ?theme=milktea|mint|sakura|pixel. */
+const PREVIEW_THEMES = ["milktea", "mint", "sakura", "pixel"];
+export function useThemePreview(): void {
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    const theme = new URLSearchParams(window.location.search).get("theme");
+    if (theme && PREVIEW_THEMES.includes(theme)) document.documentElement.dataset.lbtTheme = theme;
+  }, []);
+}

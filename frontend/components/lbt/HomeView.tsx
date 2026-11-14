@@ -21,7 +21,7 @@ import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
 import { RainSky } from "./RainScene";
-import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useRainPreview, useStageScene } from "./StageScene";
+import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useRainPreview, useStageScene, useThemePreview } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {
@@ -42,6 +42,7 @@ export function HomeView() {
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
   const stage = useStageScene();
   const rain = useRainPreview() && stage.scene === "town";
+  useThemePreview();
   const energyId = ENERGY_ID[energy];
 
   const start = () => {

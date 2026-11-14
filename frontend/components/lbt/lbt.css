@@ -6095,3 +6095,166 @@ html[data-lbt-week="weekend"] .lbt .rain-wd {
   70% { opacity: 0.25; }
   100% { transform: scale(1.7); opacity: 0; }
 }
+
+/* ---- 小鎮風格 (style packs): paid looks for the whole surface, preview only ----
+   <html data-lbt-theme="milktea|mint|sakura|pixel">. A pack recolours the
+   accents, the form card, the chat and the lit windows; town time still
+   decides sky, street and the light/dark copy colours. */
+html[data-lbt-theme] .lbt .selection-card {
+  background: var(--th-card, var(--paper));
+  color: var(--th-card-ink, var(--night));
+}
+html[data-lbt-theme] .lbt .energy-option,
+html[data-lbt-theme] .lbt .preference {
+  background: var(--th-chip, #f1eee9);
+  color: var(--th-card-ink, #25314b);
+  border-color: var(--th-chip-line, transparent);
+}
+html[data-lbt-theme] .lbt .energy-option.selected {
+  background: var(--th-chip-on, #e7edf1);
+  border-color: var(--th-strong, #1d2d4b);
+}
+html[data-lbt-theme] .lbt .preference.selected {
+  background: var(--th-strong, #23334e);
+  border-color: var(--th-strong, #23334e);
+  color: var(--th-card, var(--paper));
+}
+html[data-lbt-theme] .lbt .primary-button {
+  background: var(--th-button, var(--lamp));
+  color: var(--th-button-ink, #1f2b40);
+}
+html[data-lbt-theme] .lbt .primary-button:hover {
+  background: var(--th-button-hover, #ffe29b);
+}
+html[data-lbt-theme] .lbt .energy-option small,
+html[data-lbt-theme] .lbt .selection-heading span,
+html[data-lbt-theme] .lbt .preference-row > span {
+  color: var(--th-card-soft, #56637a);
+}
+
+/* 奶茶: warm caramel and cream */
+html[data-lbt-theme="milktea"] .lbt {
+  --lamp: #ecc08f;
+  --peach: #e9a37e;
+  --mint: #cdb79a;
+  --th-card: #fbf2e4;
+  --th-card-ink: #4a3426;
+  --th-card-soft: #8a6d58;
+  --th-chip: #f3e4cf;
+  --th-chip-on: #ecd6b8;
+  --th-strong: #6b4a36;
+  --th-button: #d9a26a;
+  --th-button-hover: #e7b884;
+  --th-button-ink: #3a2416;
+}
+html[data-lbt-theme="milktea"] .lbt-app {
+  --tw-lit: #f0b77a;
+  --tw-bulb: #ffd9a8;
+  --pill-line: rgba(236, 192, 143, 0.32);
+  --chat-bubble: #3a2f2c;
+  --chat-mine-ink: #3a2416;
+}
+html[data-lbt-theme="milktea"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
+  background: linear-gradient(155deg, #2b2230 0%, #241d29 65%, #1f1923 100%);
+}
+
+/* 薄荷汽水: mint and pale teal */
+html[data-lbt-theme="mint"] .lbt {
+  --lamp: #9be7cf;
+  --peach: #ffb3a7;
+  --mint: #9be7cf;
+  --th-card: #f1fbf7;
+  --th-card-ink: #173a34;
+  --th-card-soft: #4f7c73;
+  --th-chip: #e0f3ec;
+  --th-chip-on: #c9ece0;
+  --th-strong: #1f5a50;
+  --th-button: #74d6b8;
+  --th-button-hover: #93e2ca;
+  --th-button-ink: #0e2b25;
+}
+html[data-lbt-theme="mint"] .lbt-app {
+  --tw-lit: #a8ecd6;
+  --tw-bulb: #dcfff3;
+  --pill-line: rgba(155, 231, 207, 0.32);
+  --chat-bubble: #1f3d44;
+  --chat-mine-ink: #0e2b25;
+}
+html[data-lbt-theme="mint"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
+  background: linear-gradient(155deg, #12293a 0%, #10222f 65%, #0d1c28 100%);
+}
+
+/* 櫻花: soft pink */
+html[data-lbt-theme="sakura"] .lbt {
+  --lamp: #ffbfd0;
+  --peach: #ff9fb3;
+  --mint: #c6d9b5;
+  --th-card: #fff5f7;
+  --th-card-ink: #4a2a35;
+  --th-card-soft: #8e6372;
+  --th-chip: #fbe6ec;
+  --th-chip-on: #f7d3de;
+  --th-strong: #8a3f58;
+  --th-button: #ff9fb8;
+  --th-button-hover: #ffb8ca;
+  --th-button-ink: #3f1626;
+}
+html[data-lbt-theme="sakura"] .lbt-app {
+  --tw-lit: #ffc6d4;
+  --tw-bulb: #ffe3ea;
+  --pill-line: rgba(255, 191, 208, 0.34);
+  --chat-bubble: #43293a;
+  --chat-mine-ink: #3f1626;
+}
+html[data-lbt-theme="sakura"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
+  background: linear-gradient(155deg, #2c1f36 0%, #251a2f 65%, #1f1628 100%);
+}
+
+/* 像素小鎮: square corners, chunky borders, hard shadows */
+html[data-lbt-theme="pixel"] .lbt {
+  --lamp: #ffd23f;
+  --peach: #ff8a5c;
+  --mint: #7bd389;
+  --th-card: #fffbea;
+  --th-card-ink: #1b1b2f;
+  --th-card-soft: #4b4b66;
+  --th-chip: #fff3c4;
+  --th-chip-on: #ffe58a;
+  --th-chip-line: #1b1b2f;
+  --th-strong: #1b1b2f;
+  --th-button: #ffd23f;
+  --th-button-hover: #ffe27a;
+  --th-button-ink: #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt .main-stage,
+html[data-lbt-theme="pixel"] .lbt .selection-card,
+html[data-lbt-theme="pixel"] .lbt .side-card {
+  border-radius: 0;
+  border: 3px solid #0c0c18;
+  box-shadow: 6px 6px 0 #0c0c18;
+}
+html[data-lbt-theme="pixel"] .lbt .energy-option,
+html[data-lbt-theme="pixel"] .lbt .preference,
+html[data-lbt-theme="pixel"] .lbt .primary-button,
+html[data-lbt-theme="pixel"] .lbt .nickname-field input {
+  border-radius: 0;
+  border: 2px solid #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt .primary-button {
+  box-shadow: 4px 4px 0 #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt .primary-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt-app {
+  --tw-lit: #ffd23f;
+  --chat-bubble: #2a2a48;
+}
+html[data-lbt-theme="pixel"] .lbt .tw-hand {
+  filter: none;
+}
+html[data-lbt-theme="milktea"] .lbt .side-card { background: #2c2330; }
+html[data-lbt-theme="mint"] .lbt .side-card { background: #12303a; }
+html[data-lbt-theme="sakura"] .lbt .side-card { background: #2d1f34; }
+html[data-lbt-theme="pixel"] .lbt .side-card { background: #1e1e3a; }
