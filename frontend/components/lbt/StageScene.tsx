@@ -124,3 +124,12 @@ export function useThemePreview(): string | null {
   }, []);
   return theme;
 }
+
+/** The style pack in use (set on <html> by the preview), for views after the home. */
+export function useActiveTheme(): string | null {
+  const [theme, setTheme] = useState<string | null>(null);
+  useEffect(() => {
+    setTheme(document.documentElement.dataset.lbtTheme ?? null);
+  }, []);
+  return theme;
+}

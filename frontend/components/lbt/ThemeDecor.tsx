@@ -37,30 +37,30 @@ export function ThemeSkyDecor() {
     <div className="theme-sky" aria-hidden="true">
       <div className="decor decor-sakura">
         {bits(16, 3, 9, 7, 9, 6).map((b, i) => (
-          <span key={i} className="petal" style={style(b)} />
+          <span key={i} className="decor-petal" style={style(b)} />
         ))}
       </div>
       <div className="decor decor-mint">
         {bits(14, 5, 8, 8, 6, 12).map((b, i) => (
-          <span key={i} className="bubble" style={style(b)} />
+          <span key={i} className="decor-bubble" style={style(b)} />
         ))}
       </div>
       <div className="decor decor-milktea">
         {bits(7, 2, 10, 8, 26, 30).map((b, i) => (
-          <span key={i} className="glow" style={{ ...style(b), "--y": `${12 + ((i * 23) % 50)}%` } as CSSProperties} />
+          <span key={i} className="decor-glow" style={{ ...style(b), "--y": `${12 + ((i * 23) % 50)}%` } as CSSProperties} />
         ))}
       </div>
       <div className="decor decor-pixel">
         {bits(10, 7, 2, 3, 3, 3).map((b, i) => (
-          <span key={i} className="spark" style={{ ...style(b), "--y": `${6 + ((i * 19) % 46)}%` } as CSSProperties} />
+          <span key={i} className="decor-spark" style={{ ...style(b), "--y": `${6 + ((i * 19) % 46)}%` } as CSSProperties} />
         ))}
       </div>
     </div>
   );
 }
 
-function BubbleTea({ x }: { x: number }) {
-  const top = GROUND - 40;
+function BubbleTea({ x, g = GROUND }: { x: number; g?: number }) {
+  const top = g - 40;
   return (
     <g className="decor-milktea">
       <path className="bt-steam s1" d={`M${x + 8} ${top - 8}c-4-6 4-10 0-16`} />
@@ -79,27 +79,27 @@ function BubbleTea({ x }: { x: number }) {
   );
 }
 
-function SakuraTree({ x }: { x: number }) {
+function SakuraTree({ x, g = GROUND }: { x: number; g?: number }) {
   return (
     <g className="decor-sakura">
-      <path className="sk-trunk" d={`M${x} ${GROUND}c2-22-4-38 4-56M${x + 3} ${GROUND - 40}c8-6 14-8 22-16M${x + 2} ${GROUND - 30}c-8-4-14-10-18-18`} />
+      <path className="sk-trunk" d={`M${x} ${g}c2-22-4-38 4-56M${x + 3} ${g - 40}c8-6 14-8 22-16M${x + 2} ${g - 30}c-8-4-14-10-18-18`} />
       {[
-        [x + 6, GROUND - 64, 16],
-        [x + 26, GROUND - 58, 13],
-        [x - 14, GROUND - 52, 13],
-        [x + 14, GROUND - 78, 12],
-        [x - 6, GROUND - 74, 11],
-        [x + 32, GROUND - 72, 9],
+        [x + 6, g - 64, 16],
+        [x + 26, g - 58, 13],
+        [x - 14, g - 52, 13],
+        [x + 14, g - 78, 12],
+        [x - 6, g - 74, 11],
+        [x + 32, g - 72, 9],
       ].map(([cx, cy, r], i) => (
         <circle key={i} className={`sk-bloom b${i % 3}`} cx={cx} cy={cy} r={r} />
       ))}
-      <ellipse className="sk-fallen" cx={x + 6} cy={GROUND + 2} rx={30} ry={2.4} />
+      <ellipse className="sk-fallen" cx={x + 6} cy={g + 2} rx={30} ry={2.4} />
     </g>
   );
 }
 
-function SodaMachine({ x }: { x: number }) {
-  const top = GROUND - 62;
+function SodaMachine({ x, g = GROUND }: { x: number; g?: number }) {
+  const top = g - 62;
   return (
     <g className="decor-mint">
       <rect className="sm-glow" x={x - 10} y={top - 6} width={56} height={74} rx={10} />
@@ -117,8 +117,8 @@ function SodaMachine({ x }: { x: number }) {
   );
 }
 
-function Arcade({ x }: { x: number }) {
-  const top = GROUND - 60;
+function Arcade({ x, g = GROUND }: { x: number; g?: number }) {
+  const top = g - 60;
   return (
     <g className="decor-pixel" shapeRendering="crispEdges">
       <rect className="ar-glow" x={x - 8} y={top - 4} width={46} height={70} />
@@ -136,8 +136,8 @@ function Arcade({ x }: { x: number }) {
 }
 
 /** Scale a street object up from its foot, so it stays on the road. */
-function Grow({ x, k, children }: { x: number; k: number; children: ReactNode }) {
-  return <g transform={`translate(${x} ${GROUND}) scale(${k}) translate(${-x} ${-GROUND})`}>{children}</g>;
+function Grow({ x, k, g = GROUND, children }: { x: number; k: number; g?: number; children: ReactNode }) {
+  return <g transform={`translate(${x} ${g}) scale(${k}) translate(${-x} ${-g})`}>{children}</g>;
 }
 
 export function ThemeStreetDecor() {
@@ -156,5 +156,29 @@ export function ThemeStreetDecor() {
         <Arcade x={684} />
       </Grow>
     </svg>
+  );
+}
+
+/**
+ * The same objects beside the chat bench (BenchScene's 1344 × 260 canvas,
+ * road at y = 250), well left of the bench and the name tags beside it.
+ */
+export function ThemeBenchDecor() {
+  const g = 250;
+  return (
+    <g className="bench-decor">
+      <Grow x={330} k={1.7} g={g}>
+        <BubbleTea x={316} g={g} />
+      </Grow>
+      <Grow x={320} k={1.5} g={g}>
+        <SakuraTree x={320} g={g} />
+      </Grow>
+      <Grow x={330} k={1.55} g={g}>
+        <SodaMachine x={312} g={g} />
+      </Grow>
+      <Grow x={330} k={1.55} g={g}>
+        <Arcade x={315} g={g} />
+      </Grow>
+    </g>
   );
 }

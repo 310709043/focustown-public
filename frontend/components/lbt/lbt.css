@@ -6151,8 +6151,6 @@ html[data-lbt-theme="milktea"] .lbt-app {
   --tw-lit: #f0b77a;
   --tw-bulb: #ffd9a8;
   --pill-line: rgba(236, 192, 143, 0.32);
-  --chat-bubble: #3a2f2c;
-  --chat-mine-ink: #3a2416;
 }
 html[data-lbt-theme="milktea"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
   background: linear-gradient(155deg, #2b2230 0%, #241d29 65%, #1f1923 100%);
@@ -6177,8 +6175,6 @@ html[data-lbt-theme="mint"] .lbt-app {
   --tw-lit: #a8ecd6;
   --tw-bulb: #dcfff3;
   --pill-line: rgba(155, 231, 207, 0.32);
-  --chat-bubble: #1f3d44;
-  --chat-mine-ink: #0e2b25;
 }
 html[data-lbt-theme="mint"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
   background: linear-gradient(155deg, #12293a 0%, #10222f 65%, #0d1c28 100%);
@@ -6203,8 +6199,6 @@ html[data-lbt-theme="sakura"] .lbt-app {
   --tw-lit: #ffc6d4;
   --tw-bulb: #ffe3ea;
   --pill-line: rgba(255, 191, 208, 0.34);
-  --chat-bubble: #43293a;
-  --chat-mine-ink: #3f1626;
 }
 html[data-lbt-theme="sakura"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
   background: linear-gradient(155deg, #2c1f36 0%, #251a2f 65%, #1f1628 100%);
@@ -6249,7 +6243,6 @@ html[data-lbt-theme="pixel"] .lbt .primary-button:active {
 }
 html[data-lbt-theme="pixel"] .lbt-app {
   --tw-lit: #ffd23f;
-  --chat-bubble: #2a2a48;
 }
 html[data-lbt-theme="pixel"] .lbt .tw-hand {
   filter: none;
@@ -6288,7 +6281,7 @@ html[data-lbt-theme="pixel"] .lbt .tw-decor-layer .decor-pixel {
 .lbt .decor { position: absolute; inset: 0; }
 
 /* 櫻花: petals drift down and sway */
-.lbt .petal {
+.lbt .decor-petal {
   position: absolute;
   top: -6%;
   left: var(--x);
@@ -6314,7 +6307,7 @@ html[data-lbt-theme="pixel"] .lbt .tw-decor-layer .decor-pixel {
 html[data-lbt-time="night"] .lbt .sk-bloom { filter: brightness(0.8); }
 
 /* 薄荷汽水: soda bubbles rise */
-.lbt .bubble {
+.lbt .decor-bubble {
   position: absolute;
   bottom: -4%;
   left: var(--x);
@@ -6342,7 +6335,7 @@ html[data-lbt-time="night"] .lbt .sk-bloom { filter: brightness(0.8); }
 .lbt .sm-label { fill: #dffbf2; font: 700 7px var(--mono); text-anchor: middle; letter-spacing: 1px; }
 
 /* 奶茶: warm lantern glows drift, steam from the cup */
-.lbt .glow {
+.lbt .decor-glow {
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -6377,7 +6370,7 @@ html[data-lbt-time="night"] .lbt .sk-bloom { filter: brightness(0.8); }
 }
 
 /* 像素小鎮: plus-shaped sparkles blink in steps, an arcade cabinet glows */
-.lbt .spark {
+.lbt .decor-spark {
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -6405,3 +6398,102 @@ html[data-lbt-time="night"] .lbt .sk-bloom { filter: brightness(0.8); }
 .lbt .ar-btn.b1 { fill: #ff5c8a; }
 .lbt .ar-btn.b2 { fill: #ffd23f; }
 .lbt .ar-btn.b3 { fill: #7bd389; }
+
+/* style packs beyond the home: waiting, chat and end follow the pack too */
+.lbt .waiting-card > .theme-sky,
+.lbt .end-card > .theme-sky {
+  position: absolute;
+  z-index: 0;
+}
+.lbt .stage-sky > .theme-sky { z-index: 1; }
+.lbt .bench-decor [class^="decor-"] { display: none; }
+html[data-lbt-theme="sakura"] .lbt .bench-decor .decor-sakura,
+html[data-lbt-theme="mint"] .lbt .bench-decor .decor-mint,
+html[data-lbt-theme="milktea"] .lbt .bench-decor .decor-milktea,
+html[data-lbt-theme="pixel"] .lbt .bench-decor .decor-pixel {
+  display: inline;
+}
+
+/* night and dusk: each pack tints the page, the cards and the chat sky */
+html[data-lbt-theme="milktea"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #1e171d;
+  --night-2: #2c2330;
+  --night-3: #3a2f38;
+}
+html[data-lbt-theme="milktea"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #271f29;
+  --chat-tile: #352a33;
+  --chat-bubble: #3d3036;
+  --chat-sky-a: #1d1520;
+  --chat-sky-b: #2a1f2a;
+  --chat-sky-c: #2c2330;
+  --chat-win: #f0b77a;
+  --chat-bench: #5a3e2e;
+  --chat-bench-2: #6b4a36;
+}
+html[data-lbt-theme="mint"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #0b1a21;
+  --night-2: #12303a;
+  --night-3: #1a3f4a;
+}
+html[data-lbt-theme="mint"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #102a33;
+  --chat-tile: #173843;
+  --chat-bubble: #1d4450;
+  --chat-sky-a: #0a1c26;
+  --chat-sky-b: #112b36;
+  --chat-sky-c: #12303a;
+  --chat-win: #a8ecd6;
+  --chat-bench: #2c4a48;
+  --chat-bench-2: #36595a;
+}
+html[data-lbt-theme="sakura"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #1b131f;
+  --night-2: #2d1f34;
+  --night-3: #3b2a43;
+}
+html[data-lbt-theme="sakura"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #281b2f;
+  --chat-tile: #36263d;
+  --chat-bubble: #432d47;
+  --chat-sky-a: #1c1224;
+  --chat-sky-b: #2a1b33;
+  --chat-sky-c: #2d1f34;
+  --chat-win: #ffc6d4;
+  --chat-bench: #5a3a4a;
+  --chat-bench-2: #6b4658;
+}
+html[data-lbt-theme="pixel"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #101026;
+  --night-2: #1e1e3a;
+  --night-3: #2a2a52;
+}
+html[data-lbt-theme="pixel"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #1a1a34;
+  --chat-tile: #26264a;
+  --chat-bubble: #2a2a52;
+  --chat-sky-a: #0e0e24;
+  --chat-sky-b: #191938;
+  --chat-sky-c: #1e1e3a;
+  --chat-win: #ffd23f;
+}
+/* day and dawn: the light cards keep their readable ink; only "my" bubble and plugs take the pack colour */
+html[data-lbt-theme="milktea"] .lbt-app { --chat-cable-on: #d9a26a; }
+html[data-lbt-theme="mint"] .lbt-app { --chat-cable-on: #74d6b8; }
+html[data-lbt-theme="sakura"] .lbt-app { --chat-cable-on: #ff9fb8; }
+html[data-lbt-theme="milktea"]:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt-app { --chat-mine: #f0cfa6; }
+html[data-lbt-theme="mint"]:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt-app { --chat-mine: #b9ecd9; }
+html[data-lbt-theme="sakura"]:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt-app { --chat-mine: #ffd0dc; }
+
+/* pixel: square cards and bubbles everywhere */
+html[data-lbt-theme="pixel"] .lbt :is(.waiting-card, .end-card, .chat-stage, .chat-main, .bubble, .composer-row textarea, .plug-panel, .topic-card) {
+  border-radius: 0 !important;
+}
+html[data-lbt-theme="pixel"] .lbt :is(.waiting-card, .end-card) {
+  border: 3px solid #0c0c18;
+  box-shadow: 6px 6px 0 #0c0c18;
+}
+/* phones: the bench stage is small, keep its countdown clear */
+@media (max-width: 610px) {
+  .lbt .bench-decor { display: none; }
+}
