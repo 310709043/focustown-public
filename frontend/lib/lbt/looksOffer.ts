@@ -7,7 +7,7 @@
  */
 import type { UnlockItem } from "./unlocks";
 
-export const LOOKS_PURCHASE_URL: string | null = null;
+export const LOOKS_PURCHASE_URL: string | null = "https://buymeacoffee.com/lowbatterytown/e/598282";
 export const LOOKS_ON_SALE = LOOKS_PURCHASE_URL !== null;
 
 export const LOOKS_OFFER = {

@@ -8,7 +8,8 @@ import { LOOKS_ON_SALE, useEffectiveLooks, useLooks } from "@/lib/lbt/looks";
 /**
  * 外觀: switch the paid looks this device owns (rain on the street, one
  * style pack) and, while they are on sale, a link to the others on /unlock.
- * Renders nothing for a visitor who owns none and when none are on sale.
+ * Renders nothing for a visitor who owns none and when none are on sale;
+ * on phones a visitor who owns none sees nothing either.
  * `place` picks the desktop copy (stage top line) or the phone copy (under
  * the hero text); CSS shows one.
  */
@@ -20,6 +21,8 @@ export function LooksMenu({ place, onSale = LOOKS_ON_SALE }: { place: "stage" | 
   const owns = ownsRain || ownedStyles.length > 0;
   if (!owns && !onSale) return null;
   if (!owns) {
+    // phones stay uncluttered: the offer link is desktop-only (the stage top line)
+    if (place === "phone") return null;
     return (
       <Link href="/unlock#looks" className={`looks-menu looks-${place} is-offer`}>
         {t("more")}
