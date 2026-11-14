@@ -96,3 +96,16 @@ export function StageSceneOffer({ onSale = POND_ON_SALE }: { onSale?: boolean })
     </span>
   );
 }
+
+/**
+ * 下雨的小鎮 preview. Not on sale yet, so it is reachable only in a local
+ * dev build with ?rain=1; production never shows it.
+ */
+export function useRainPreview(): boolean {
+  const [rain, setRain] = useState(false);
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    setRain(new URLSearchParams(window.location.search).get("rain") === "1");
+  }, []);
+  return rain;
+}

@@ -20,7 +20,8 @@ import { MusicVolume } from "./MusicControls";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
-import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useStageScene } from "./StageScene";
+import { RainSky } from "./RainScene";
+import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useRainPreview, useStageScene } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
 export function HomeView() {
@@ -40,6 +41,7 @@ export function HomeView() {
   const defaultNickname = t("home.nickname.default");
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
   const stage = useStageScene();
+  const rain = useRainPreview() && stage.scene === "town";
   const energyId = ENERGY_ID[energy];
 
   const start = () => {
@@ -58,11 +60,12 @@ export function HomeView() {
           in that order so the form comes before the extra cards. */}
       <div className="home-grid">
         <section
-          className={`main-stage${stage.scene === "pond" ? " is-pond" : ""}`}
+          className={`main-stage${stage.scene === "pond" ? " is-pond" : ""}${rain ? " is-rain" : ""}`}
           aria-labelledby="lbt-hero-title"
         >
           <StageSceneLayer scene={stage.scene} />
           <TownSky />
+          {rain ? <RainSky /> : null}
           <div className="stage-topline">
             <span className="eyebrow">{t("home.eyebrow")}</span>
             {/* One greeting per time of day; CSS shows the one matching <html data-lbt-time>. */}
@@ -95,7 +98,7 @@ export function HomeView() {
             <SkyTopicLine />
           </div>
 
-          <Townscape />
+          <Townscape rain={rain} />
           <SkyTopics />
         </section>
 
