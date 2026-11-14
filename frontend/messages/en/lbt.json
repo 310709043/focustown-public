@@ -171,7 +171,8 @@
       "extendPartnerAsked": "{name} plugged in and would like to stay a little longer."
     },
     "aside": {
-      "help": "Need someone to listen, or professional support? Find a helpline where you are at findahelpline.com."
+      "help": "Need someone to listen, or professional support? Find a helpline where you are at findahelpline.com.",
+      "helpShort": "Need help: findahelpline.com or your local emergency number"
     },
     "partnerLabelLive": "Streetlamp No. 07",
     "senderPartnerLive": "{name}",
@@ -378,13 +379,13 @@
           ]
         },
         {
-          "h": "Paid scene (koi pond)",
-          "pond": true,
+          "h": "Paid looks and unlock codes",
           "p": [
             "When you buy, Buy Me a Coffee handles your name, e-mail and payment details. The operator uses your e-mail only to send the unlock code, handle refunds and answer you; that correspondence stays in the operator's mailbox.",
             "Our database keeps only a hash of each code, its first four characters, the operator's note (such as a transaction ID), device usage counts, first activation and last use times, and the duration and expiry of promotional codes, never your e-mail or payment details. We keep this while the code is valid, to check that unlocks still hold.",
             "Once unlocked, your browser keeps a signed unlock token in localStorage (no personal data) and asks the server about once a day whether it still holds; clearing your browser data deletes it."
-          ]
+          ],
+          "paid": true
         },
         {
           "h": "Why",
@@ -468,6 +469,17 @@
             "Free promotional codes are separate from purchased codes. A six-month promotional term starts at the first successful activation and follows Taiwan's calendar; if the target month has no matching day, it ends on that month's last day. All devices using a code share its deadline; entering it again does not extend it. The scene returns to the street at expiry, without a charge. Existing purchased codes do not gain an expiry because of this promotion.",
             "Refunds: an unused code can be fully refunded within {pondRefundDays} days of purchase; after use, if it doesn't display properly on your device and we can't fix it, we refund it too. Write to the contact address on this page with your Buy Me a Coffee transaction ID. Once a refund or chargeback goes through, the code stops working and unlocked devices return to the street within about a day.",
             "The town is still in beta; if we ever stop offering the koi pond, we will announce it on the site first."
+          ]
+        },
+        {
+          "h": "Paid looks: rainy town and town styles",
+          "looks": true,
+          "p": [
+            "Rainy town and the four town styles (Milk tea, Mint soda, Sakura, Pixel town) are paid looks, each a one-off US${looksPrice} bought on Buy Me a Coffee; write the look you want when you pay. Priced in US dollars; your card issuer sets the exchange rate and fees. No renewal. Buy Me a Coffee handles the payment; we never see your card number.",
+            "Within {looksCodeHours} hours of payment the operator e-mails an unlock code to the address you gave Buy Me a Coffee. Enter it on the unlock page and that device can switch the look on or off under Looks on the home page; one code works on {looksDevices} devices.",
+            "Rainy town changes only the home street; a town style changes the colours and decorations of the home, waiting, chat and end screens. Neither changes matching, chats, extending or any other entitlement, and both are separate from the voluntary Light up the town support.",
+            "Refunds: an unused code can be fully refunded within {looksRefundDays} days of purchase; a used one too if it does not display properly on your device and we cannot fix it. E-mail the contact address on this page with your Buy Me a Coffee transaction number. Once a refund or chargeback goes through the code stops working and unlocked devices return to the original look within about a day.",
+            "The town is still in beta; if we stop offering a look we will announce it on the site in advance."
           ]
         },
         {
@@ -978,14 +990,16 @@
     "done": "The koi pond is unlocked. Go back home and pick “Koi pond” at the top right of the big frame.",
     "home": "Back home",
     "expires": "Your promotional scene lasts until {date} (Taiwan time). It then returns to the street; you will not be charged.",
-    "note": "An unlock code only unlocks the home scene; it changes nothing about chats or matching. We only remember on this device that it is unlocked. If you clear your browser data, enter the same code again (it counts as one more device).",
+    "note": "An unlock code only changes how the town looks; it changes nothing about matching, chats or any entitlement. We only remember on this device that it is unlocked. If you clear your browser data, enter the same code again (it counts as one more device).",
     "error": {
       "invalid_code": "That code isn't right or no longer works. Please check it and try again.",
       "code_used_up": "This code has already been used on {devices} devices.",
       "code_expired": "This promotional code has expired. You will not be charged.",
       "too_many": "Too many tries. Please try again in an hour.",
       "offline": "Can't reach the town right now. Please try again later."
-    }
+    },
+    "doneLooks": "Unlocked: {names}. Back on the home page, switch them under Looks.",
+    "labelAnother": "Another code?"
   },
   "jojo": {
     "title": "Want to chat with “你家貓咪會後空翻嗎” while you wait?",
@@ -996,5 +1010,62 @@
     "starting": "Connecting…",
     "label": "AI resident · fictional adult woman",
     "disclosure": "“你家貓咪會後空翻嗎” is a fictional AI character and cannot meet in person. Start with 7 minutes and leave anytime."
+  },
+  "looks": {
+    "title": "Looks",
+    "rain": "Rain",
+    "style": "Style",
+    "more": "More looks",
+    "styles": {
+      "original": "Original",
+      "milktea": "Milk tea",
+      "mint": "Mint soda",
+      "sakura": "Sakura",
+      "pixel": "Pixel town"
+    },
+    "rainName": "Rainy town"
+  },
+  "looksOffer": {
+    "title": "Rainy town and town styles",
+    "intro": "More paid looks, each a one-off purchase. Rainy town brings rain to the home street; a town style changes the colours and decorations of the whole town: the home, waiting, chat and end screens.",
+    "each": "US${price} each",
+    "items": {
+      "rain": {
+        "name": "Rainy town",
+        "text": "Overcast sky, two layers of rain, drops lit under the street lamp, a wet road with reflections and ripples. Works on phones too.",
+        "alt": "Rainy town: rain falls on the night street, drops glow under lamp 07 and the road reflects the light."
+      },
+      "milktea": {
+        "name": "Milk tea",
+        "text": "Caramel and cream, a warm violet night, and a steaming bubble tea on the street and beside the chat bench.",
+        "alt": "Milk tea style: a warm-toned town home page with a bubble tea by the lamp."
+      },
+      "mint": {
+        "name": "Mint soda",
+        "text": "Mint and pale teal, rising soda bubbles and a glowing soda machine by the road.",
+        "alt": "Mint soda style: a mint-green town home page with a soda machine by the road."
+      },
+      "sakura": {
+        "name": "Sakura",
+        "text": "Soft pinks, petals drifting down and a cherry tree in bloom by the lamp.",
+        "alt": "Sakura style: a pink town home page with falling petals and a cherry tree by the lamp."
+      },
+      "pixel": {
+        "name": "Pixel town",
+        "text": "Square corners, chunky borders, hard shadows, blinking pixel stars and an arcade cabinet by the road.",
+        "alt": "Pixel town style: a square-cornered, bold-bordered town home page with an arcade cabinet."
+      }
+    },
+    "factsTitle": "Before you buy",
+    "facts": {
+      "price": "Each look is a one-off US${price}, paid on Buy Me a Coffee. Priced in US dollars; your bank sets the exchange rate and fees. No renewal.",
+      "pick": "When you pay, write the look you want on Buy Me a Coffee (Rainy town, Milk tea, Mint soda, Sakura or Pixel town).",
+      "delivery": "Within {hours} hours of payment we e-mail the code to the address you gave Buy Me a Coffee.",
+      "devices": "One code works on {devices} devices, no sign-up. Switch between the looks you own under Looks on the home page.",
+      "scope": "They only change how the town looks, not matching, chats, extending or anything else, and they are separate from the voluntary Light up the town support.",
+      "refund": "An unused code can be fully refunded within {days} days of purchase; a used one too if it does not display properly on your device and we cannot help. A refunded code stops working."
+    },
+    "buy": "Buy on Buy Me a Coffee",
+    "terms": "Full purchase terms"
   }
 }

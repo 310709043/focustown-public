@@ -96,3 +96,4 @@ export function StageSceneOffer({ onSale = POND_ON_SALE }: { onSale?: boolean })
     </span>
   );
 }
+

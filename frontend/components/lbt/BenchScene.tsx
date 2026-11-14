@@ -2,6 +2,7 @@ import type { AvatarId } from "@/lib/lbt/avatars";
 import type { Face } from "@/lib/lbt/chatFaces";
 
 import { SceneBattery } from "./SceneBattery";
+import { ThemeBenchDecor } from "./ThemeDecor";
 
 /** The lamp's ring: r = 26, so a full window is this long. */
 const RING = 2 * Math.PI * 26;
@@ -43,6 +44,7 @@ export function BenchScene({
   selfPlugged,
   left,
   lastMinute,
+  decor = false,
 }: {
   partnerAvatar: AvatarId;
   selfAvatar: AvatarId;
@@ -55,6 +57,8 @@ export function BenchScene({
   /** Share of the window left, 0–1. */
   left: number;
   lastMinute: boolean;
+  /** A style pack's object beside the bench (ThemeDecor). */
+  decor?: boolean;
 }) {
   return (
     <svg className="bench-scene" viewBox="0 0 1344 260" aria-hidden="true" focusable="false">
@@ -170,6 +174,7 @@ export function BenchScene({
         </g>
       </g>
 
+      {decor ? <ThemeBenchDecor /> : null}
       <rect className="bs-bench" x="572" y="214" width="200" height="9" rx="4" />
       <rect className="bs-bench-back" x="580" y="204" width="184" height="6" rx="3" />
       <rect className="bs-leg" x="586" y="223" width="6" height="24" />

@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { GuideShell } from "@/components/lbt/GuideShell";
+import { LooksOffer } from "@/components/lbt/LooksOffer";
 import { PondOffer } from "@/components/lbt/PondOffer";
 import { UnlockForm } from "@/components/lbt/UnlockForm";
 
 type Params = Promise<{ locale: string }>;
 
 /**
- * The koi pond offer and the code form. Linked from the home stage only once
+ * The koi pond offer, the other paid looks (while on sale) and the code form. Linked from the home stage only once
  * the pond is on sale (lib/lbt/pond); kept out of search either way.
  */
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -24,6 +25,7 @@ export default async function UnlockPage({ params }: { params: Params }) {
     <GuideShell>
       <article className="unlock">
         <PondOffer />
+        <LooksOffer />
         <UnlockForm />
       </article>
     </GuideShell>

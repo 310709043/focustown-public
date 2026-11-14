@@ -13,7 +13,8 @@
  */
 import { InputError, cleanText } from "./rules";
 
-export const UNLOCK_ITEMS = ["koi-pond"] as const;
+/** Paid cosmetic extras. Keep in step with UnlockItem in frontend/lib/lbt/unlocks.ts. */
+export const UNLOCK_ITEMS = ["koi-pond", "rain-town", "style-milktea", "style-mint", "style-sakura", "style-pixel"] as const;
 export type UnlockItem = (typeof UNLOCK_ITEMS)[number];
 export const DEFAULT_MAX_DEVICES = 3;
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";

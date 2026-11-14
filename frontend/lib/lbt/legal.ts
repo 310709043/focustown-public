@@ -1,3 +1,4 @@
+import { LOOKS_OFFER, LOOKS_ON_SALE } from "./looksOffer";
 import { POND_OFFER, POND_ON_SALE } from "./pond";
 
 /**
@@ -28,6 +29,10 @@ const FACTS: Record<string, string> = {
   pondDevices: String(POND_OFFER.devices),
   pondCodeHours: String(POND_OFFER.codeHours),
   pondRefundDays: String(POND_OFFER.refundDays),
+  looksPrice: String(LOOKS_OFFER.priceUsd),
+  looksDevices: String(LOOKS_OFFER.devices),
+  looksCodeHours: String(LOOKS_OFFER.codeHours),
+  looksRefundDays: String(LOOKS_OFFER.refundDays),
 };
 
 /**
@@ -38,9 +43,24 @@ export function fillLegalFacts(text: string): string {
   return text.replace(/\{(\w+)\}/g, (match, key: string) => FACTS[key] ?? match);
 }
 
-/** Policy sections marked `pond` describe the paid koi pond and appear only while it is on sale. */
-export function policySections<T extends { pond?: boolean }>(sections: T[], pondOnSale: boolean = POND_ON_SALE): T[] {
-  return sections.filter((section) => !section.pond || pondOnSale);
+interface OnSale {
+  pond: boolean;
+  looks: boolean;
+}
+
+/**
+ * Sections about paid extras appear only while they are on sale: `pond` for
+ * the koi pond, `looks` for the rainy town and the styles, `paid` for
+ * either (how unlock codes and purchase data are handled).
+ */
+export function policySections<T extends { pond?: boolean; looks?: boolean; paid?: boolean }>(
+  sections: T[],
+  onSale: OnSale = { pond: POND_ON_SALE, looks: LOOKS_ON_SALE },
+): T[] {
+  return sections.filter(
+    (section) =>
+      (!section.pond || onSale.pond) && (!section.looks || onSale.looks) && (!section.paid || onSale.pond || onSale.looks),
+  );
 }
 
 export const POLICY_SLUGS = ["privacy", "terms", "guidelines"] as const;

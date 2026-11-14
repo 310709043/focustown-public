@@ -53,6 +53,14 @@ describe("admin", () => {
     expect(JSON.stringify(list)).not.toMatch(/code_hash|[A-Z2-9]{4}-[A-Z2-9]{4}/);
   });
 
+  test("each sellable look has its own codes: the rainy town and the four styles", async () => {
+    for (const item of ["rain-town", "style-milktea", "style-mint", "style-sakura", "style-pixel"]) {
+      const { codes } = (await (await make({ item, count: 1 })).json()) as { codes: string[] };
+      const body = (await (await redeem(codes[0])).json()) as { token: string; items: string[] };
+      expect([body.items, await verify(body.token)]).toEqual([[item], [item]]);
+    }
+  });
+
   test("rejects unknown items and silly counts", async () => {
     expect((await make({ item: "dragon", count: 1 })).status).toBe(422);
     expect((await make({ item: "koi-pond", count: 0 })).status).toBe(422);

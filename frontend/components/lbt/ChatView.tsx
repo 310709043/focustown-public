@@ -256,7 +256,10 @@ export function ChatView() {
             <PlugPanel />
             <SkyTopicSuggestion onUse={(word) => putInComposer(skyOpener(word))} />
             <div className="chat-foot">
-              <p className="aside-help">{t("chat.aside.help")}</p>
+              <p className="aside-help">
+                <span className="help-long">{t("chat.aside.help")}</span>
+                <span className="help-short">{t("chat.aside.helpShort")}</span>
+              </p>
               <p className="chat-privacy">{t("chat.privacy")}</p>
               <p className="chat-bottom-actions">
                 <ChimeToggle />

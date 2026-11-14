@@ -5,9 +5,12 @@ import { useTranslations } from "next-intl";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 
 import { TownSky } from "./Townscape";
+import { useEffectiveLooks } from "@/lib/lbt/looks";
+import { ThemeSkyDecor } from "./ThemeDecor";
 
 export function EndView() {
   const t = useTranslations("lbt.end");
+  const theme = useEffectiveLooks().style;
   const again = useLbtStore((s) => s.again);
   const goHome = useLbtStore((s) => s.goHome);
   const openModal = useLbtStore((s) => s.openModal);
@@ -17,6 +20,7 @@ export function EndView() {
     <main className="view end-view">
       <div className="end-card">
         <TownSky />
+        {theme ? <ThemeSkyDecor /> : null}
         {/* The night moon, or a sun by day (<html data-lbt-time>). */}
         <div className="end-moon" aria-hidden="true">
           <svg className="by-time t-night end-crescent" viewBox="0 0 40 40" focusable="false">

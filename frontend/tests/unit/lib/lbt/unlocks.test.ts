@@ -20,7 +20,10 @@ describe("redeem", () => {
     const fetcher = vi.fn(async () => reply(200, { token: "u1.a.b", items: ["koi-pond"] }));
     expect(await useUnlocks.getState().redeem("http://api", "abcd-efgh-jkmn", fetcher, NOW)).toBe("ok");
     expect(useUnlocks.getState().items).toEqual(["koi-pond"]);
-    expect(JSON.parse(window.localStorage.getItem("lbt-unlock")!)).toEqual({ token: "u1.a.b", items: ["koi-pond"], checkedAt: NOW, expiresAt: null });
+    expect(JSON.parse(window.localStorage.getItem("lbt-unlock")!)).toEqual({
+      entries: [{ token: "u1.a.b", items: ["koi-pond"], expiresAt: null }],
+      checkedAt: NOW,
+    });
     expect(fetcher).toHaveBeenCalledWith("http://api/api/v1/lbt/unlock", expect.objectContaining({ method: "POST", body: '{"code":"abcd-efgh-jkmn"}' }));
   });
 
@@ -32,6 +35,21 @@ describe("redeem", () => {
   ] as const)("a refusal becomes a plain outcome (%#)", async (res, outcome) => {
     expect(await useUnlocks.getState().redeem("http://api", "x", vi.fn(async () => res), NOW)).toBe(outcome);
     expect(useUnlocks.getState().items).toEqual([]);
+  });
+
+  test("a second code adds its look and keeps the first", async () => {
+    await useUnlocks.getState().redeem("http://api", "a", vi.fn(async () => reply(200, { token: "u1.pond", items: ["koi-pond"] })), NOW);
+    await useUnlocks.getState().redeem("http://api", "b", vi.fn(async () => reply(200, { token: "u1.rain", items: ["rain-town"] })), NOW);
+    expect(useUnlocks.getState().items).toEqual(["koi-pond", "rain-town"]);
+    const saved = JSON.parse(window.localStorage.getItem("lbt-unlock")!) as { entries: { token: string }[] };
+    expect(saved.entries.map((e) => e.token)).toEqual(["u1.pond", "u1.rain"]);
+  });
+
+  test("redeeming the same code again does not duplicate it", async () => {
+    const fetcher = vi.fn(async () => reply(200, { token: "u1.pond", items: ["koi-pond"] }));
+    await useUnlocks.getState().redeem("http://api", "a", fetcher, NOW);
+    await useUnlocks.getState().redeem("http://api", "a", fetcher, NOW);
+    expect((JSON.parse(window.localStorage.getItem("lbt-unlock")!) as { entries: unknown[] }).entries).toHaveLength(1);
   });
 
   test("no connection says so", async () => {
@@ -78,6 +96,27 @@ describe("load", () => {
     await useUnlocks.getState().load("http://api", vi.fn(async () => reply(200, { items: [] })), NOW);
     expect(useUnlocks.getState().items).toEqual([]);
     expect(window.localStorage.getItem("lbt-unlock")).toBeNull();
+  });
+
+  test("a refund of one code takes only that look away", async () => {
+    window.localStorage.setItem("lbt-unlock", JSON.stringify({
+      entries: [
+        { token: "u1.pond", items: ["koi-pond"], expiresAt: null },
+        { token: "u1.mint", items: ["style-mint"], expiresAt: null },
+      ],
+      checkedAt: NOW - 30 * 3_600_000,
+    }));
+    const fetcher = vi.fn(async (_url: string, init: RequestInit) =>
+      reply(200, { items: String(init.body).includes("u1.pond") ? ["koi-pond"] : [] }));
+    await useUnlocks.getState().load("http://api", fetcher as unknown as typeof fetch, NOW);
+    expect(useUnlocks.getState().items).toEqual(["koi-pond"]);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  test("an older single-code save still works", async () => {
+    save(NOW - 3_600_000);
+    await useUnlocks.getState().load("http://api", vi.fn(), NOW);
+    expect(useUnlocks.getState().items).toEqual(["koi-pond"]);
   });
 
   test("when the town cannot be reached, the device keeps its unlock", async () => {

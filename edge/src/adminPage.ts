@@ -286,9 +286,12 @@ function topicsSection(items) {
     el("div", {class:"actions"}, input, add, refresh), note, list);
 }
 
-const UNLOCK_ITEMS = {"koi-pond": "錦鯉池場景"};
-let unlockNote = "", unlockCount = "1", unlockDuration = "", unlockFresh = [];
+const UNLOCK_ITEMS = {"koi-pond": "錦鯉池場景", "rain-town": "下雨的小鎮", "style-milktea": "風格：奶茶", "style-mint": "風格：薄荷汽水", "style-sakura": "風格：櫻花", "style-pixel": "風格：像素小鎮"};
+let unlockItem = "koi-pond", unlockNote = "", unlockCount = "1", unlockDuration = "", unlockFresh = [];
 function unlocksSection(items) {
+  const item = el("select", {"aria-label":"商品"}, ...Object.entries(UNLOCK_ITEMS).map(([value, label]) => el("option", {value, text: label})));
+  item.value = unlockItem;
+  item.addEventListener("change", () => { unlockItem = item.value; });
   const duration = el("select", {"aria-label":"解鎖期限"},
     el("option", {value:"", text:"付費碼：無期限"}),
     el("option", {value:"6", text:"活動碼：首次啟用起六個月"}));
@@ -302,7 +305,7 @@ function unlocksSection(items) {
   const make = el("button", {class:"btn primary", type:"button", text:"產生解鎖碼", onclick: async (e) => {
     const btn = e.currentTarget; btn.disabled = true;
     try {
-      const r = await api("/api/v1/admin/lbt/unlocks", {method:"POST", body: JSON.stringify({item:"koi-pond", count: Number(unlockCount) || 1, note: unlockNote, durationMonths: unlockDuration === "6" ? 6 : null})});
+      const r = await api("/api/v1/admin/lbt/unlocks", {method:"POST", body: JSON.stringify({item: unlockItem, count: Number(unlockCount) || 1, note: unlockNote, durationMonths: unlockDuration === "6" ? 6 : null})});
       unlockFresh = r.codes; unlockNote = ""; await render();
     } catch { msg.textContent = "沒辦法產生：數量請填 1–50。"; btn.disabled = false; }
   }});
@@ -330,7 +333,7 @@ function unlocksSection(items) {
   return el("section", {"aria-label":"解鎖碼"},
     el("h2", {text:"解鎖碼"}),
     el("p", {class:"meta", text:"每組碼可在 3 台裝置使用，至 www.lowbatterytown.com/zh-TW/unlock 輸入。活動碼從首次啟用起算六個月，其他裝置共用同一到期日；到期不扣款。既有付費碼維持無期限。"}),
-    el("div", {class:"actions"}, duration, count, note, make), msg, ...(fresh ? [fresh] : []), list);
+    el("div", {class:"actions"}, item, duration, count, note, make), msg, ...(fresh ? [fresh] : []), list);
 }
 
 async function render() {

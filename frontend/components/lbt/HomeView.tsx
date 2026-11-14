@@ -11,15 +11,19 @@ import {
   NICKNAME_MAX,
   PREFERENCES,
 } from "@/lib/lbt/constants";
+import { useEffectiveLooks } from "@/lib/lbt/looks";
 import { normalizeNickname } from "@/lib/lbt/nickname";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
 import { onRadioGroupKeyDown } from "@/lib/lbt/useRadioArrowKeys";
 
 import { BatteryCharacter } from "./BatteryCharacter";
+import { LooksMenu } from "./LooksMenu";
 import { MusicVolume } from "./MusicControls";
 import { Notice } from "./Notice";
 import { TownCount } from "./TownCount";
 import { SkyTopicLine, SkyTopics } from "./SkyTopics";
+import { RainSky } from "./RainScene";
+import { ThemeSkyDecor } from "./ThemeDecor";
 import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useStageScene } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
@@ -40,6 +44,9 @@ export function HomeView() {
   const defaultNickname = t("home.nickname.default");
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
   const stage = useStageScene();
+  const looks = useEffectiveLooks();
+  const rain = looks.rain && stage.scene === "town";
+  const theme = looks.style;
   const energyId = ENERGY_ID[energy];
 
   const start = () => {
@@ -58,11 +65,13 @@ export function HomeView() {
           in that order so the form comes before the extra cards. */}
       <div className="home-grid">
         <section
-          className={`main-stage${stage.scene === "pond" ? " is-pond" : ""}`}
+          className={`main-stage${stage.scene === "pond" ? " is-pond" : ""}${rain ? " is-rain" : ""}`}
           aria-labelledby="lbt-hero-title"
         >
           <StageSceneLayer scene={stage.scene} />
           <TownSky />
+          {rain ? <RainSky /> : null}
+          {theme ? <ThemeSkyDecor /> : null}
           <div className="stage-topline">
             <span className="eyebrow">{t("home.eyebrow")}</span>
             {/* One greeting per time of day; CSS shows the one matching <html data-lbt-time>. */}
@@ -72,7 +81,10 @@ export function HomeView() {
               <span className="by-time t-dusk">{t("home.coordinateDusk")}</span>
               <span className="by-time t-night">{t("home.coordinate")}</span>
             </span>
-            {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : <StageSceneOffer />}
+            <span className="stage-controls">
+              <LooksMenu place="stage" />
+              {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : <StageSceneOffer />}
+            </span>
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">
@@ -93,9 +105,10 @@ export function HomeView() {
               {t("home.subtitleB")}
             </p>
             <SkyTopicLine />
+            <LooksMenu place="phone" />
           </div>
 
-          <Townscape />
+          <Townscape rain={rain} decor={theme !== null} />
           <SkyTopics />
         </section>
 

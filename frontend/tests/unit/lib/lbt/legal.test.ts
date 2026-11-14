@@ -7,6 +7,7 @@ import { expect, test } from "vitest";
 import zh from "@/messages/zh-TW/lbt.json";
 import en from "@/messages/en/lbt.json";
 import { fillLegalFacts, LBT_LEGAL, policySections } from "@/lib/lbt/legal";
+import { LOOKS_OFFER } from "@/lib/lbt/looksOffer";
 import { POND_OFFER, POND_ON_SALE, POND_PURCHASE_URL } from "@/lib/lbt/pond";
 
 test("fills every known placeholder from LBT_LEGAL", () => {
@@ -58,10 +59,19 @@ test("the koi pond facts come from POND_OFFER", () => {
   );
 });
 
-test("sections marked pond appear only while the pond is on sale", () => {
-  const sections = [{ h: "a" }, { h: "pond", pond: true }, { h: "b" }];
-  expect(policySections(sections, false).map((s) => s.h)).toEqual(["a", "b"]);
-  expect(policySections(sections, true).map((s) => s.h)).toEqual(["a", "pond", "b"]);
+test("sections about paid extras appear only while those are on sale", () => {
+  const sections = [{ h: "a" }, { h: "pond", pond: true }, { h: "looks", looks: true }, { h: "paid", paid: true }, { h: "b" }];
+  const shown = (pond: boolean, looks: boolean) => policySections(sections, { pond, looks }).map((s) => s.h);
+  expect(shown(false, false)).toEqual(["a", "b"]);
+  expect(shown(true, false)).toEqual(["a", "pond", "paid", "b"]);
+  expect(shown(false, true)).toEqual(["a", "looks", "paid", "b"]);
+  expect(shown(true, true)).toEqual(["a", "pond", "looks", "paid", "b"]);
+});
+
+test("the looks facts come from LOOKS_OFFER", () => {
+  expect(fillLegalFacts("{looksPrice}/{looksDevices}/{looksCodeHours}/{looksRefundDays}")).toBe(
+    `${LOOKS_OFFER.priceUsd}/${LOOKS_OFFER.devices}/${LOOKS_OFFER.codeHours}/${LOOKS_OFFER.refundDays}`,
+  );
 });
 
 test("the pond goes on sale only with a Buy Me a Coffee link", () => {
@@ -73,16 +83,21 @@ test.each([
   ["zh-TW", zh],
   ["en", en],
 ])("%s terms and privacy each describe the pond, with its numbers as placeholders", (_locale, messages) => {
-  for (const slug of ["terms", "privacy"] as const) {
-    const pond = messages.policy[slug].sections.filter((s) => "pond" in s && s.pond);
-    expect(pond).toHaveLength(1);
-  }
-  const terms = messages.policy.terms.sections
-    .filter((s) => "pond" in s && s.pond)
+  const flagged = (slug: "terms" | "privacy", flag: string) =>
+    messages.policy[slug].sections.filter((s) => flag in s && (s as Record<string, unknown>)[flag]);
+  // the terms have a pond section and a looks section; privacy one section for every paid extra
+  expect([flagged("terms", "pond").length, flagged("terms", "looks").length, flagged("privacy", "paid").length]).toEqual([1, 1, 1]);
+  const terms = flagged("terms", "pond")
     .flatMap((s) => s.p)
     .join("\n");
   for (const fact of ["{pondPrice}", "{pondDevices}", "{pondCodeHours}", "{pondRefundDays}"]) {
     expect(terms).toContain(fact);
+  }
+  const looks = flagged("terms", "looks")
+    .flatMap((s) => s.p)
+    .join("\n");
+  for (const fact of ["{looksPrice}", "{looksDevices}", "{looksCodeHours}", "{looksRefundDays}"]) {
+    expect(looks).toContain(fact);
   }
   expect(terms).not.toMatch(new RegExp(`\\b${POND_OFFER.priceUsd}\\b`));
 });

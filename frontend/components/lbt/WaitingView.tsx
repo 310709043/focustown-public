@@ -11,9 +11,12 @@ import { ChimeToggle } from "./ChimeToggle";
 import { Notice } from "./Notice";
 import { TownSky } from "./Townscape";
 import { JojoInvitation } from "./JojoInvitation";
+import { useEffectiveLooks } from "@/lib/lbt/looks";
+import { ThemeSkyDecor } from "./ThemeDecor";
 
 export function WaitingView() {
   const t = useTranslations("lbt");
+  const theme = useEffectiveLooks().style;
   const chimeOn = useChimeStore((s) => s.enabled);
   const energy = useLbtStore((s) => s.energy);
   const cancelWaiting = useLbtStore((s) => s.cancelWaiting);
@@ -41,6 +44,7 @@ export function WaitingView() {
     <main className="view waiting-view" aria-live="polite">
       <div className="waiting-card">
         <TownSky />
+        {theme ? <ThemeSkyDecor /> : null}
         <div className="waiting-lamp" aria-hidden="true">
           <span />
         </div>

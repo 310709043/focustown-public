@@ -5966,3 +5966,690 @@ html[data-lbt-time]:not([data-lbt-time="night"]) .lbt .bs-birds {
 @keyframes lbt-bx-snooze { 0%, 100% { transform: translateY(1.5px) scale(1, 0.99); } 50% { transform: translateY(1.5px) scale(1.012, 1.018); } }
 @keyframes lbt-bx-note { 0%, 55% { opacity: 0; transform: translate(0, 4px); } 65% { opacity: 1; } 100% { opacity: 0; transform: translate(4px, -8px); } }
 @keyframes lbt-bx-star { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 40% { opacity: 1; transform: scale(1) rotate(25deg); } 70% { opacity: 0; transform: scale(0.6) rotate(45deg); } }
+
+/* ---- 下雨的小鎮 (RainScene.tsx): a paid look for the street, preview only ---- */
+.lbt .main-stage {
+  --rain-veil: linear-gradient(180deg, rgba(18, 25, 40, 0.62) 0%, rgba(18, 25, 40, 0.28) 55%, rgba(18, 25, 40, 0.12) 100%);
+  --rain-near-op: 0.34;
+  --rain-far-op: 0.2;
+  --rain-ink: none;
+  --rain-glow: #f8d779;
+  --rain-wet: rgba(4, 8, 18, 0.32);
+  --rain-ripple: rgba(214, 224, 240, 0.55);
+}
+html[data-lbt-time="dusk"] .lbt .main-stage {
+  --rain-veil: linear-gradient(180deg, rgba(52, 44, 64, 0.58) 0%, rgba(52, 44, 64, 0.24) 60%, rgba(52, 44, 64, 0.1) 100%);
+  --rain-near-op: 0.3;
+  --rain-far-op: 0.18;
+}
+html[data-lbt-time="day"] .lbt .main-stage,
+html[data-lbt-time="dawn"] .lbt .main-stage {
+  --rain-veil: linear-gradient(180deg, rgba(96, 110, 126, 0.5) 0%, rgba(120, 132, 146, 0.26) 60%, rgba(120, 132, 146, 0.08) 100%);
+  --rain-near-op: 0.22;
+  --rain-far-op: 0.14;
+  --rain-ink: invert(1);
+  --rain-wet: rgba(30, 44, 66, 0.2);
+  --rain-ripple: rgba(40, 58, 86, 0.45);
+}
+.lbt .rain-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+/* thinner rain over the hero copy on the left, so the words stay easy to read */
+.lbt .rain-fall {
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.3) 34%, #000 58%);
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.3) 34%, #000 58%);
+}
+.lbt .rain-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--rain-veil);
+}
+.lbt .rain-fall {
+  position: absolute;
+  inset: -30% -20%;
+  transform: rotate(9deg);
+  background-repeat: repeat;
+  filter: var(--rain-ink);
+  animation: lbt-rain-near 0.5s linear infinite;
+}
+.lbt .rain-fall.near {
+  opacity: var(--rain-near-op);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='220'%3E%3Cg stroke='white' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M10 8v26M44 70v22M78 20v28M104 140v24M28 150v26M62 120v20M92 190v22'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 120px 220px;
+}
+.lbt .rain-fall.far {
+  opacity: var(--rain-far-op);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='130'%3E%3Cg stroke='white' stroke-width='0.8' stroke-linecap='round'%3E%3Cpath d='M6 4v13M30 46v11M52 14v14M64 88v12M18 96v13M40 112v10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 70px 130px;
+  animation-name: lbt-rain-far;
+  animation-duration: 0.8s;
+}
+@keyframes lbt-rain-near {
+  to { background-position: 0 220px; }
+}
+@keyframes lbt-rain-far {
+  to { background-position: 0 130px; }
+}
+/* overcast: no stars, plane or birds, a veiled sun and moon, more cloud */
+.lbt .main-stage.is-rain .sky-star,
+.lbt .main-stage.is-rain .sky-meteor,
+.lbt .main-stage.is-rain .sky-plane,
+.lbt .main-stage.is-rain .sky-birds {
+  display: none;
+}
+.lbt .main-stage.is-rain .sky-sun { opacity: calc(var(--sun-op) * 0.25); }
+.lbt .main-stage.is-rain .sky-moon,
+.lbt .main-stage.is-rain .sky-moon-glow { opacity: calc(var(--moon-op) * 0.3); }
+
+.lbt .tw-street.tw-rain-layer {
+  display: block;
+}
+html:not([data-lbt-week="weekend"]) .lbt .rain-we,
+html[data-lbt-week="weekend"] .lbt .rain-wd {
+  display: none;
+}
+.lbt .rain-wet { fill: var(--rain-wet); }
+.lbt .rain-lit path {
+  fill: none;
+  stroke: var(--rain-glow);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+.lbt .rain-lit {
+  opacity: calc(var(--tw-beam) * 4.2);
+  animation: lbt-rain-lit 0.62s linear infinite;
+}
+@keyframes lbt-rain-lit {
+  to { transform: translateY(112px); }
+}
+.lbt .rain-pool {
+  fill: var(--rain-glow);
+  opacity: calc(var(--tw-beam) * 1.5);
+  filter: blur(3px);
+}
+.lbt .rain-reflect {
+  opacity: calc(var(--tw-beam) * 3);
+  animation: lbt-rain-shimmer 1.6s ease-in-out infinite;
+}
+.lbt .rain-reflect.thin { animation-delay: 0.7s; }
+@keyframes lbt-rain-shimmer {
+  0%, 100% { opacity: calc(var(--tw-beam) * 3); }
+  50% { opacity: calc(var(--tw-beam) * 1.6); }
+}
+.lbt .rain-ripple {
+  fill: none;
+  stroke: var(--rain-ripple);
+  stroke-width: 0.8;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: lbt-rain-ripple 3.2s ease-out infinite;
+}
+@keyframes lbt-rain-ripple {
+  0% { transform: scale(0.2); opacity: 0.8; }
+  70% { opacity: 0.25; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+/* ---- 小鎮風格 (style packs): paid looks for the whole surface, preview only ----
+   <html data-lbt-theme="milktea|mint|sakura|pixel">. A pack recolours the
+   accents, the form card, the chat and the lit windows; town time still
+   decides sky, street and the light/dark copy colours. */
+html[data-lbt-theme] .lbt .selection-card {
+  background: var(--th-card, var(--paper));
+  color: var(--th-card-ink, var(--night));
+}
+html[data-lbt-theme] .lbt .energy-option,
+html[data-lbt-theme] .lbt .preference {
+  background: var(--th-chip, #f1eee9);
+  color: var(--th-card-ink, #25314b);
+  border-color: var(--th-chip-line, transparent);
+}
+html[data-lbt-theme] .lbt .energy-option.selected {
+  background: var(--th-chip-on, #e7edf1);
+  border-color: var(--th-strong, #1d2d4b);
+}
+html[data-lbt-theme] .lbt .preference.selected {
+  background: var(--th-strong, #23334e);
+  border-color: var(--th-strong, #23334e);
+  color: var(--th-card, var(--paper));
+}
+html[data-lbt-theme] .lbt .primary-button {
+  background: var(--th-button, var(--lamp));
+  color: var(--th-button-ink, #1f2b40);
+}
+html[data-lbt-theme] .lbt .primary-button:hover {
+  background: var(--th-button-hover, #ffe29b);
+}
+html[data-lbt-theme] .lbt .energy-option small,
+html[data-lbt-theme] .lbt .selection-heading span,
+html[data-lbt-theme] .lbt .preference-row > span {
+  color: var(--th-card-soft, #56637a);
+}
+
+/* 奶茶: warm caramel and cream */
+html[data-lbt-theme="milktea"] .lbt {
+  --lamp: #ecc08f;
+  --peach: #e9a37e;
+  --mint: #cdb79a;
+  --th-card: #fbf2e4;
+  --th-card-ink: #4a3426;
+  --th-card-soft: #8a6d58;
+  --th-chip: #f3e4cf;
+  --th-chip-on: #ecd6b8;
+  --th-strong: #6b4a36;
+  --th-button: #d9a26a;
+  --th-button-hover: #e7b884;
+  --th-button-ink: #3a2416;
+}
+html[data-lbt-theme="milktea"] .lbt-app {
+  --tw-lit: #f0b77a;
+  --tw-bulb: #ffd9a8;
+  --pill-line: rgba(236, 192, 143, 0.32);
+}
+html[data-lbt-theme="milktea"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
+  background: linear-gradient(155deg, #2b2230 0%, #241d29 65%, #1f1923 100%);
+}
+
+/* 薄荷汽水: mint and pale teal */
+html[data-lbt-theme="mint"] .lbt {
+  --lamp: #9be7cf;
+  --peach: #ffb3a7;
+  --mint: #9be7cf;
+  --th-card: #f1fbf7;
+  --th-card-ink: #173a34;
+  --th-card-soft: #4f7c73;
+  --th-chip: #e0f3ec;
+  --th-chip-on: #c9ece0;
+  --th-strong: #1f5a50;
+  --th-button: #74d6b8;
+  --th-button-hover: #93e2ca;
+  --th-button-ink: #0e2b25;
+}
+html[data-lbt-theme="mint"] .lbt-app {
+  --tw-lit: #a8ecd6;
+  --tw-bulb: #dcfff3;
+  --pill-line: rgba(155, 231, 207, 0.32);
+}
+html[data-lbt-theme="mint"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
+  background: linear-gradient(155deg, #12293a 0%, #10222f 65%, #0d1c28 100%);
+}
+
+/* 櫻花: soft pink */
+html[data-lbt-theme="sakura"] .lbt {
+  --lamp: #ffbfd0;
+  --peach: #ff9fb3;
+  --mint: #c6d9b5;
+  --th-card: #fff5f7;
+  --th-card-ink: #4a2a35;
+  --th-card-soft: #8e6372;
+  --th-chip: #fbe6ec;
+  --th-chip-on: #f7d3de;
+  --th-strong: #8a3f58;
+  --th-button: #ff9fb8;
+  --th-button-hover: #ffb8ca;
+  --th-button-ink: #3f1626;
+}
+html[data-lbt-theme="sakura"] .lbt-app {
+  --tw-lit: #ffc6d4;
+  --tw-bulb: #ffe3ea;
+  --pill-line: rgba(255, 191, 208, 0.34);
+}
+html[data-lbt-theme="sakura"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt .main-stage {
+  background: linear-gradient(155deg, #2c1f36 0%, #251a2f 65%, #1f1628 100%);
+}
+
+/* 像素小鎮: square corners, chunky borders, hard shadows */
+html[data-lbt-theme="pixel"] .lbt {
+  --lamp: #ffd23f;
+  --peach: #ff8a5c;
+  --mint: #7bd389;
+  --th-card: #fffbea;
+  --th-card-ink: #1b1b2f;
+  --th-card-soft: #4b4b66;
+  --th-chip: #fff3c4;
+  --th-chip-on: #ffe58a;
+  --th-chip-line: #1b1b2f;
+  --th-strong: #1b1b2f;
+  --th-button: #ffd23f;
+  --th-button-hover: #ffe27a;
+  --th-button-ink: #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt .main-stage,
+html[data-lbt-theme="pixel"] .lbt .selection-card,
+html[data-lbt-theme="pixel"] .lbt .side-card {
+  border-radius: 0;
+  border: 3px solid #0c0c18;
+  box-shadow: 6px 6px 0 #0c0c18;
+}
+html[data-lbt-theme="pixel"] .lbt .energy-option,
+html[data-lbt-theme="pixel"] .lbt .preference,
+html[data-lbt-theme="pixel"] .lbt .primary-button,
+html[data-lbt-theme="pixel"] .lbt .nickname-field input {
+  border-radius: 0;
+  border: 2px solid #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt .primary-button {
+  box-shadow: 4px 4px 0 #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt .primary-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 #1b1b2f;
+}
+html[data-lbt-theme="pixel"] .lbt-app {
+  --tw-lit: #ffd23f;
+}
+html[data-lbt-theme="pixel"] .lbt .tw-hand {
+  filter: none;
+}
+html[data-lbt-theme="milktea"] .lbt .side-card { background: #2c2330; }
+html[data-lbt-theme="mint"] .lbt .side-card { background: #12303a; }
+html[data-lbt-theme="sakura"] .lbt .side-card { background: #2d1f34; }
+html[data-lbt-theme="pixel"] .lbt .side-card { background: #1e1e3a; }
+
+/* ---- style-pack decorations (ThemeDecor.tsx): preview only ---- */
+.lbt .theme-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.lbt .decor,
+.lbt .tw-decor-layer [class^="decor-"] {
+  display: none;
+}
+html[data-lbt-theme="sakura"] .lbt .decor-sakura,
+html[data-lbt-theme="mint"] .lbt .decor-mint,
+html[data-lbt-theme="milktea"] .lbt .decor-milktea,
+html[data-lbt-theme="pixel"] .lbt .decor-pixel {
+  display: block;
+}
+html[data-lbt-theme="sakura"] .lbt .tw-decor-layer .decor-sakura,
+html[data-lbt-theme="mint"] .lbt .tw-decor-layer .decor-mint,
+html[data-lbt-theme="milktea"] .lbt .tw-decor-layer .decor-milktea,
+html[data-lbt-theme="pixel"] .lbt .tw-decor-layer .decor-pixel {
+  display: inline;
+}
+.lbt .tw-street.tw-decor-layer { display: block; }
+.lbt .decor { position: absolute; inset: 0; }
+
+/* 櫻花: petals drift down and sway */
+.lbt .decor-petal {
+  position: absolute;
+  top: -6%;
+  left: var(--x);
+  width: var(--s);
+  height: calc(var(--s) * 0.7);
+  border-radius: 80% 0 80% 0;
+  background: linear-gradient(135deg, #ffd6e0, #ff9fb8);
+  opacity: 0.85;
+  animation: lbt-petal var(--t) linear var(--d) infinite;
+}
+@keyframes lbt-petal {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(28px, 28vh) rotate(90deg); }
+  50% { transform: translate(-12px, 56vh) rotate(200deg); }
+  75% { transform: translate(24px, 84vh) rotate(290deg); }
+  100% { transform: translate(-6px, 112vh) rotate(380deg); }
+}
+.lbt .sk-trunk { fill: none; stroke: #5a3b40; stroke-width: 4; stroke-linecap: round; }
+.lbt .sk-bloom.b0 { fill: #ffb7c9; }
+.lbt .sk-bloom.b1 { fill: #ffc9d6; }
+.lbt .sk-bloom.b2 { fill: #f79ab3; }
+.lbt .sk-fallen { fill: #ffb7c9; opacity: 0.7; }
+html[data-lbt-time="night"] .lbt .sk-bloom { filter: brightness(0.8); }
+
+/* 薄荷汽水: soda bubbles rise */
+.lbt .decor-bubble {
+  position: absolute;
+  bottom: -4%;
+  left: var(--x);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  border: 1.5px solid rgba(178, 245, 224, 0.7);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), transparent 45%);
+  animation: lbt-bubble var(--t) ease-in var(--d) infinite;
+}
+@keyframes lbt-bubble {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.8; }
+  50% { transform: translate(10px, -55vh); }
+  90% { opacity: 0.6; }
+  100% { transform: translate(-6px, -110vh); opacity: 0; }
+}
+.lbt .sm-glow { fill: #9be7cf; opacity: 0.18; filter: blur(6px); }
+.lbt .sm-body { fill: #2f8f7e; }
+.lbt .sm-panel { fill: #dffbf2; }
+.lbt .sm-can.c0 { fill: #ff8fa3; }
+.lbt .sm-can.c1 { fill: #74d6b8; }
+.lbt .sm-can.c2 { fill: #ffd27a; }
+.lbt .sm-coin, .lbt .sm-slot { fill: #1b4f46; }
+.lbt .sm-label { fill: #dffbf2; font: 700 7px var(--mono); text-anchor: middle; letter-spacing: 1px; }
+
+/* 奶茶: warm lantern glows drift, steam from the cup */
+.lbt .decor-glow {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 196, 140, 0.45), transparent 70%);
+  animation: lbt-glow var(--t) ease-in-out var(--d) infinite alternate;
+}
+@keyframes lbt-glow {
+  from { transform: translate(0, 0); opacity: 0.35; }
+  to { transform: translate(24px, -14px); opacity: 0.9; }
+}
+.lbt .bt-cup { fill: rgba(255, 248, 236, 0.85); stroke: #8a6d58; stroke-width: 1; }
+.lbt .bt-tea { fill: #c8916a; }
+.lbt .bt-pearl { fill: #3b2418; }
+.lbt .bt-lid { fill: #f3e4cf; }
+.lbt .bt-straw { fill: #e9a37e; }
+.lbt .bt-label { fill: #fff6ea; font: 700 6.5px var(--body); text-anchor: middle; }
+.lbt .bt-steam {
+  fill: none;
+  stroke: rgba(255, 240, 222, 0.6);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  animation: lbt-steam 3s ease-in-out infinite;
+}
+.lbt .bt-steam.s2 { animation-delay: 1.4s; }
+@keyframes lbt-steam {
+  0% { transform: translateY(4px); opacity: 0; }
+  40% { opacity: 0.8; }
+  100% { transform: translateY(-8px); opacity: 0; }
+}
+
+/* 像素小鎮: plus-shaped sparkles blink in steps, an arcade cabinet glows */
+.lbt .decor-spark {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  background: #ffd23f;
+  box-shadow:
+    var(--s) 0 0 #ffd23f,
+    calc(var(--s) * -1) 0 0 #ffd23f,
+    0 var(--s) 0 #ffd23f,
+    0 calc(var(--s) * -1) 0 #ffd23f;
+  animation: lbt-spark var(--t) steps(2, jump-none) var(--d) infinite;
+}
+@keyframes lbt-spark {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+.lbt .ar-glow { fill: #ffd23f; opacity: 0.16; }
+.lbt .ar-body { fill: #3b2d7a; }
+.lbt .ar-top { fill: #ff5c8a; }
+.lbt .ar-screen { fill: #0c0c18; }
+.lbt .ar-pix.p1 { fill: #7bd389; animation: lbt-spark 1.2s steps(2, jump-none) infinite; }
+.lbt .ar-pix.p2 { fill: #ffd23f; animation: lbt-spark 1.2s steps(2, jump-none) 0.6s infinite; }
+.lbt .ar-deck { fill: #2a2060; }
+.lbt .ar-btn.b1 { fill: #ff5c8a; }
+.lbt .ar-btn.b2 { fill: #ffd23f; }
+.lbt .ar-btn.b3 { fill: #7bd389; }
+
+/* style packs beyond the home: waiting, chat and end follow the pack too */
+.lbt .waiting-card > .theme-sky,
+.lbt .end-card > .theme-sky {
+  position: absolute;
+  z-index: 0;
+}
+.lbt .stage-sky > .theme-sky { z-index: 1; }
+.lbt .bench-decor [class^="decor-"] { display: none; }
+html[data-lbt-theme="sakura"] .lbt .bench-decor .decor-sakura,
+html[data-lbt-theme="mint"] .lbt .bench-decor .decor-mint,
+html[data-lbt-theme="milktea"] .lbt .bench-decor .decor-milktea,
+html[data-lbt-theme="pixel"] .lbt .bench-decor .decor-pixel {
+  display: inline;
+}
+
+/* night and dusk: each pack tints the page, the cards and the chat sky */
+html[data-lbt-theme="milktea"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #1e171d;
+  --night-2: #2c2330;
+  --night-3: #3a2f38;
+}
+html[data-lbt-theme="milktea"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #271f29;
+  --chat-tile: #352a33;
+  --chat-bubble: #3d3036;
+  --chat-sky-a: #1d1520;
+  --chat-sky-b: #2a1f2a;
+  --chat-sky-c: #2c2330;
+  --chat-win: #f0b77a;
+  --chat-bench: #5a3e2e;
+  --chat-bench-2: #6b4a36;
+}
+html[data-lbt-theme="mint"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #0b1a21;
+  --night-2: #12303a;
+  --night-3: #1a3f4a;
+}
+html[data-lbt-theme="mint"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #102a33;
+  --chat-tile: #173843;
+  --chat-bubble: #1d4450;
+  --chat-sky-a: #0a1c26;
+  --chat-sky-b: #112b36;
+  --chat-sky-c: #12303a;
+  --chat-win: #a8ecd6;
+  --chat-bench: #2c4a48;
+  --chat-bench-2: #36595a;
+}
+html[data-lbt-theme="sakura"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #1b131f;
+  --night-2: #2d1f34;
+  --night-3: #3b2a43;
+}
+html[data-lbt-theme="sakura"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #281b2f;
+  --chat-tile: #36263d;
+  --chat-bubble: #432d47;
+  --chat-sky-a: #1c1224;
+  --chat-sky-b: #2a1b33;
+  --chat-sky-c: #2d1f34;
+  --chat-win: #ffc6d4;
+  --chat-bench: #5a3a4a;
+  --chat-bench-2: #6b4658;
+}
+html[data-lbt-theme="pixel"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt {
+  --night: #101026;
+  --night-2: #1e1e3a;
+  --night-3: #2a2a52;
+}
+html[data-lbt-theme="pixel"]:not([data-lbt-time="day"]):not([data-lbt-time="dawn"]) .lbt-app {
+  --chat-card-2: #1a1a34;
+  --chat-tile: #26264a;
+  --chat-bubble: #2a2a52;
+  --chat-sky-a: #0e0e24;
+  --chat-sky-b: #191938;
+  --chat-sky-c: #1e1e3a;
+  --chat-win: #ffd23f;
+}
+/* day and dawn: the light cards keep their readable ink; only "my" bubble and plugs take the pack colour */
+html[data-lbt-theme="milktea"] .lbt-app { --chat-cable-on: #d9a26a; }
+html[data-lbt-theme="mint"] .lbt-app { --chat-cable-on: #74d6b8; }
+html[data-lbt-theme="sakura"] .lbt-app { --chat-cable-on: #ff9fb8; }
+html[data-lbt-theme="milktea"]:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt-app { --chat-mine: #f0cfa6; }
+html[data-lbt-theme="mint"]:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt-app { --chat-mine: #b9ecd9; }
+html[data-lbt-theme="sakura"]:is([data-lbt-time="day"], [data-lbt-time="dawn"]) .lbt-app { --chat-mine: #ffd0dc; }
+
+/* pixel: square cards and bubbles everywhere */
+html[data-lbt-theme="pixel"] .lbt :is(.waiting-card, .end-card, .chat-stage, .chat-main, .bubble, .composer-row textarea, .plug-panel, .topic-card) {
+  border-radius: 0 !important;
+}
+html[data-lbt-theme="pixel"] .lbt :is(.waiting-card, .end-card) {
+  border: 3px solid #0c0c18;
+  box-shadow: 6px 6px 0 #0c0c18;
+}
+/* phones: the bench stage is small, keep its countdown clear */
+@media (max-width: 610px) {
+  .lbt .bench-decor { display: none; }
+}
+
+/* ---- 外觀 menu (LooksMenu.tsx): switch owned looks ---- */
+.lbt .stage-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.lbt .looks-menu {
+  position: relative;
+  font-size: 13px;
+}
+.lbt .looks-menu > summary,
+.lbt .looks-menu.is-offer {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--pill-line);
+  color: var(--hero-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lbt .looks-menu > summary::-webkit-details-marker { display: none; }
+.lbt .looks-menu > summary::before { content: "✦"; color: var(--hero-accent); }
+.lbt .looks-menu[open] > summary { color: var(--hero-ink); border-color: var(--hero-accent); }
+.lbt .looks-menu > summary:focus-visible,
+.lbt .looks-menu.is-offer:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+.lbt .looks-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 5;
+  min-width: 190px;
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--th-card, var(--paper));
+  color: var(--th-card-ink, var(--night));
+  box-shadow: 0 14px 34px rgba(8, 15, 29, 0.28);
+  text-align: left;
+}
+.lbt .looks-panel fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
+.lbt .looks-panel legend { font-size: 12px; color: var(--th-card-soft, #56637a); margin-bottom: 4px; }
+.lbt .looks-panel label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.lbt .looks-panel input { accent-color: var(--th-strong, #23334e); }
+.lbt .looks-more { font-size: 12px; text-decoration: underline; color: var(--th-card-soft, #56637a); }
+/* the stage copy sits in the top line on desktop; phones hide that line, so the phone copy shows under the hero text */
+.lbt .looks-phone { display: none; }
+@media (max-width: 959px), (max-height: 619px) {
+  .lbt .looks-stage { display: none; }
+  .lbt .looks-phone { display: block; margin-top: 12px; }
+  .lbt .looks-phone > summary { width: max-content; }
+  /* the compact stage clips overflow, so the phone panel opens in place */
+  .lbt .looks-phone .looks-panel { position: static; margin-top: 8px; max-width: 260px; }
+}
+html[data-lbt-theme="pixel"] .lbt .looks-panel,
+html[data-lbt-theme="pixel"] .lbt .looks-menu > summary { border-radius: 0; }
+/* an open 外觀 panel sits above the hero copy, the street and the sky carriers */
+.lbt .main-stage > .stage-topline:has(.looks-menu[open]),
+.lbt .main-stage > .hero-copy:has(.looks-menu[open]) {
+  z-index: 6;
+}
+
+/* ── /unlock: rainy town and the style packs (LooksOffer.tsx) ── */
+.lbt .policy .looks-offer { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--line); }
+.lbt .policy .looks-offer h3 { margin: 22px 0 6px; font-size: 16px; color: var(--lamp); }
+.lbt .policy .looks-grid {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.lbt .policy .looks-grid li {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--night-2);
+}
+.lbt .policy .looks-grid li::marker { content: none; }
+.lbt .policy .looks-grid img { display: block; width: 100%; height: auto; }
+.lbt .policy .looks-grid strong { padding: 8px 14px 0; font-size: 16px; }
+.lbt .policy .looks-grid span { padding: 0 14px; font-size: 13px; line-height: 1.6; color: var(--mist); }
+.lbt .policy .looks-grid em { padding: 4px 14px 0; font-style: normal; font-size: 13px; color: var(--lamp); }
+
+/* ── phones: a calmer, less crowded layout (≤610px) ──
+   Home: the three info cards under the form become compact rows.
+   Chat: the header drops its pills, the name tags and the plug panel slim
+   down and the safety lines shrink, so the messages get the room. The
+   crisis line and the report link stay in view (product rule). */
+@media (max-width: 610px) {
+  /* header: keep it to the brand and two small controls */
+  .lbt .topbar { gap: 8px; }
+  .lbt .topbar .brand svg,
+  .lbt .topbar .brand { max-width: 46vw; }
+  .lbt .topbar-actions { gap: 6px; }
+  .lbt .topbar-actions .prototype-pill { padding: 6px 10px; font-size: 13px; }
+  .lbt[data-view="chat"] .topbar-actions .support-pill,
+  .lbt[data-view="chat"] .topbar-actions .feedback-pill { display: none; }
+
+  /* home: form breathes less, info cards become short rows */
+  .lbt .selection-card { padding: 20px 18px 16px; }
+  .lbt .side-rail { gap: 12px; }
+  .lbt .side-card { padding: 18px 18px; border-radius: 20px; }
+  .lbt .battery-card {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    grid-template-areas: "top top" "art title" "art text";
+    column-gap: 14px;
+    align-items: center;
+  }
+  .lbt .battery-card .side-card-top { grid-area: top; margin-bottom: 6px; }
+  .lbt .side-card { min-height: 0; }
+  .lbt .home-grid > .side-rail .battery-card .battery-display { grid-area: art; zoom: 0.55; height: 170px; width: 150px; filter: none; }
+  .lbt .battery-card h2 { grid-area: title; font-size: 18px; margin: 0; align-self: end; }
+  .lbt .battery-card > p { grid-area: text; font-size: 14px; margin: 4px 0 0; align-self: start; }
+  .lbt .battery-card .battery-footnote { display: none; }
+  .lbt .home-grid > .side-rail .how-card ol { margin-top: 6px; }
+  .lbt .home-grid > .side-rail .how-card li { padding: 7px 0; min-height: 0; }
+  .lbt .home-grid > .side-rail .how-card li p { font-size: 15px; }
+  .lbt .support-card h3 { font-size: 17px; margin: 0 0 6px; }
+  .lbt .support-card p { font-size: 14px; margin: 0; }
+  .lbt .support-card .support-note { display: none; }
+
+  /* chat: name tags on one line each */
+  .lbt .bench-people { padding: 8px 14px 10px; gap: 4px 10px; }
+  .lbt .bench-people .small-label { font-size: 11px; }
+  .lbt .bench-people .tag-name { font-size: 17px; }
+  .lbt .bench-people .tag-details { font-size: 12px; }
+  /* chat: a slim plug panel */
+  .lbt .plug-panel { padding: 8px 14px 0; gap: 6px; }
+  .lbt .plug-panel .plug-chip { min-height: 38px; padding: 6px 10px; font-size: 14px; border-radius: 12px; }
+  /* the chat's opening line already explains plugging in */
+  .lbt .plug-panel .plug-hint { display: none; }
+  /* chat: composer and the safety lines, smaller and tighter */
+  .lbt .composer-row { gap: 8px; }
+  /* one short crisis line and the two actions on one row; the privacy
+     note is also in the report dialog */
+  .lbt .chat-foot { flex-direction: column; gap: 2px; padding-bottom: 10px; }
+  .lbt .chat-foot .aside-help { font-size: 12px; line-height: 1.5; margin: 0; }
+  .lbt .chat-foot .chat-privacy { display: none; }
+  .lbt .chat-foot .chat-bottom-actions { font-size: 12px; margin: 0; }
+}
+.lbt .aside-help .help-short { display: none; }
+@media (max-width: 610px) {
+  .lbt .aside-help .help-long { display: none; }
+  .lbt .aside-help .help-short { display: inline; }
+}
