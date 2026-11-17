@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { LbtAnalytics } from "@/components/analytics/LbtAnalytics";
 import { Link } from "@/i18n/routing";
 import { fillLegalFacts, LBT_LEGAL, POLICY_SLUGS, policySections, type PolicySlug } from "@/lib/lbt/legal";
 import { lbtFontVariables } from "@/lib/lbtFonts";
@@ -61,6 +62,7 @@ export async function PolicyPage({ locale, slug }: { locale: string; slug: Polic
               )}
             </section>
           ))}
+          {slug === "privacy" ? <LbtAnalytics track={false} /> : null}
           <p className="policy-contact">
             {t("contact")}
             <a href={`mailto:${LBT_LEGAL.contactEmail}`}>{LBT_LEGAL.contactEmail}</a>

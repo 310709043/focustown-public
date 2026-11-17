@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
+import { LbtAnalytics } from "@/components/analytics/LbtAnalytics";
 import { Link } from "@/i18n/routing";
 import { config } from "@/lib/config";
 import { STATUS_POLL_MS } from "@/lib/lbt/constants";
@@ -168,6 +169,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
         {view === "chat" ? <ChatView /> : null}
         {view === "end" ? <EndView /> : null}
 
+        {mode === "live" ? <LbtAnalytics active={view === "home"} /> : null}
         <footer className="footer">
           <span>{t("footer.left")}</span>
           <span>{storeMode === "demo" ? t("footer.right") : t("footer.rightLive")}</span>

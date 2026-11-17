@@ -1,8 +1,10 @@
+import { GOOGLE_TAG_ORIGIN } from "../analytics/lbtPageViews";
+
 /**
  * Content-Security-Policy for the LowBatteryTown pages. They need nothing
  * from the legacy Focus Town allowances (MediaPipe on jsDelivr, Google
  * Storage, YouTube embeds, AdSense, WASM), so none of those are here:
- * the chat API, our own files, and Cloudflare Web Analytics.
+ * the chat API, our own files, and the configured analytics providers.
  *
  * In production cloudflare-worker.mjs swaps `'unsafe-inline'` in
  * script-src for a per-request nonce stamped on every <script>.
@@ -15,20 +17,23 @@ export interface LbtCspOptions {
   prod: boolean;
   apiHttp: string;
   apiWs: string;
+  googleAnalytics?: boolean;
 }
 
-export function buildLbtCsp({ nonce, prod, apiHttp, apiWs }: LbtCspOptions): string {
+export function buildLbtCsp({ nonce, prod, apiHttp, apiWs, googleAnalytics }: LbtCspOptions): string {
   const scriptSrc = prod
     ? `'self' 'unsafe-inline' ${CF_ANALYTICS_SCRIPT}`
     : `'self' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline' ${CF_ANALYTICS_SCRIPT}`;
+  const googleScript = googleAnalytics ? ` ${GOOGLE_TAG_ORIGIN}` : "";
+  const googleMetrics = googleAnalytics ? `${googleScript} https://*.google-analytics.com` : "";
   return [
     "default-src 'self'",
-    `script-src ${scriptSrc}`,
+    `script-src ${scriptSrc}${googleScript}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    `img-src 'self' data: blob:${googleMetrics}`,
     "media-src 'self' blob:",
     "font-src 'self' data:",
-    `connect-src 'self' ${apiHttp} ${apiWs} ${CF_ANALYTICS_CONNECT}`,
+    `connect-src 'self' ${apiHttp} ${apiWs} ${CF_ANALYTICS_CONNECT}${googleMetrics}`,
     "worker-src 'self'",
     "manifest-src 'self'",
     "frame-src 'none'",

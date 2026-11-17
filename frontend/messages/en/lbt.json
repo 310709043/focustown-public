@@ -341,6 +341,9 @@
     "jojo_too_early": "Wait for a person for one minute before choosing AI chat.",
     "jojo_consent_required": "Please explicitly accept AI chat before starting."
   },
+  "analytics": {
+    "allow": "Allow Google Analytics to count page views"
+  },
   "policy": {
     "nav": {
       "privacy": "Privacy",
@@ -368,11 +371,11 @@
             "Anonymous guest code: issued to your browser when you enter, kept in the browser's localStorage and valid for {tokenHours} hours, so a refresh or dropped connection can rejoin your chat.",
             "Nickname, social battery and chat intent: shown to the person you are paired with.",
             "Messages and pairing profiles: temporarily stored during an active chat for reconnects. When either person leaves, the session expires or the reconnect window runs out, they are immediately deleted from application chat storage and cleared from browsers that receive the end event. Reports cannot be submitted after the chat ends.",
-            "IP address: used only for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
+            "IP address: the town's chat server uses it for abuse rate limits, as short-lived counters (about an hour at most), never stored with chat content.",
             "Reports: when someone reports a chat we keep that conversation, both nicknames/batteries/intents, the reason and any note for safety review, and delete them after {reportDays} days.",
             "Feedback box: the type, message, page and language you send from, and the reply e-mail if you choose to leave one. Used to improve the town and answer you; stored in our database and copied to the operator's Google Sheet (hosted by Google), and deleted after {feedbackDays} days.",
             "Technical logs: server error and access logs (which may include IP and time) for operations and debugging.",
-            "Usage statistics: we use Cloudflare Web Analytics to count anonymous browsing statistics, such as page views and loading speed. It sets no cookies, does not follow you across other sites and builds no personal profile.",
+            "Usage statistics: when configured, Cloudflare Web Analytics measures page views and loading speed without cookies. If you opt in, Google Analytics measures visits to the home and guide pages, referring sites and basic device information. It uses cookies on this site for up to 90 days to distinguish browsers. We do not send nicknames, messages, guest codes or URL query parameters to Google Analytics. Uncheck the option on this page to stop future Google Analytics measurement.",
             "Waiting alerts and chats with the operator: when someone has waited a while to be paired, the operator's phone gets a notice (via Telegram or Discord) with only the battery and chat intent they chose and how many seconds they have waited — no nickname, guest code, IP or message. The operator may then send you a chat invitation themselves; it always asks first, you can keep waiting for someone else, and you can leave any time after accepting.",
             "Safety review: an anonymous guest code can be suspended from matching for {suspensionHours} hours or {suspensionDays} days after report review. Restrictions expire; reasons, durations and revocation history are retained with report evidence for {reportDays} days. No device fingerprint or real-identity profile is created.",
             "AI resident “你家貓咪會後空翻嗎” (not currently offered; if it returns): this chat starts only after one minute of waiting and your explicit acceptance of a clearly labelled AI invitation. Up to the most recent 16 messages from this conversation are sent to Cloudflare Workers AI to generate replies. We do not use AI Gateway prompt logging or caching, train “你家貓咪會後空翻嗎” on your chats, or keep cross-session memory. The same end-of-chat deletion and report retention rules apply."

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { LbtAnalytics } from "@/components/analytics/LbtAnalytics";
 import { Wordmark } from "@/components/lbt/BrandMark";
 import { Link } from "@/i18n/routing";
 import { POLICY_SLUGS } from "@/lib/lbt/legal";
@@ -21,7 +22,10 @@ export async function GuideShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
         </header>
-        <main className="policy">{children}</main>
+        <main className="policy">
+          {children}
+          <LbtAnalytics />
+        </main>
       </div>
     </div>
   );
