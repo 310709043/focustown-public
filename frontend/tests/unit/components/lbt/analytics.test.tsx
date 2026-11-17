@@ -46,6 +46,14 @@ describe("LowBatteryTown Google Analytics", () => {
     fireEvent.click(consent);
     expect(consent).toBeChecked();
     expect(document.querySelectorAll(analyticsScript)).toHaveLength(1);
+    const commands = browser.lbtAnalyticsDataLayer?.map((args) => Array.from(args));
+    expect(commands?.[0]).toEqual(["set", expect.objectContaining({
+      page_location: `${window.location.origin}/zh-TW`,
+    })]);
+    expect(commands?.[1]).toEqual(["set", expect.objectContaining({
+      send_page_view: false,
+      allow_google_signals: false,
+    })]);
     expect(pageViews()).toEqual([["event", "page_view", expect.objectContaining({
       page_location: `${window.location.origin}/zh-TW`,
       send_to: "G-TEST123",

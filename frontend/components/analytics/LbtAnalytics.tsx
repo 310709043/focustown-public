@@ -64,13 +64,12 @@ function sendView(path: string) {
     page_referrer: analyticsReferrer(document.referrer),
     page_title: "LowBatteryTown",
   };
+  // Set the page context before the tag boots so its automatic events also
+  // use the sanitized URL and referrer.
+  queue("set", page);
 
   if (firstView) {
-    queue("consent", "default", INITIAL_CONSENT);
-    queue("consent", "update", { analytics_storage: "granted" });
-    queue("js", new Date());
-    queue("config", LBT_GA_ID, {
-      ...page,
+    queue("set", {
       send_page_view: false,
       allow_google_signals: false,
       allow_ad_personalization_signals: false,
@@ -79,13 +78,15 @@ function sendView(path: string) {
       cookie_expires: COOKIE_DAYS * 24 * 60 * 60,
       cookie_update: false,
     });
+    queue("consent", "default", INITIAL_CONSENT);
+    queue("consent", "update", { analytics_storage: "granted" });
+    queue("js", new Date());
+    queue("config", LBT_GA_ID, { send_page_view: false });
     const script = document.createElement("script");
     script.async = true;
     script.src = `${GOOGLE_TAG_ORIGIN}/gtag/js?id=${LBT_GA_ID}&l=${LAYER_NAME}`;
     script.referrerPolicy = "no-referrer";
     document.head.append(script);
-  } else {
-    queue("config", LBT_GA_ID, { ...page, update: true, send_page_view: false });
   }
   queue("event", "page_view", { ...page, send_to: LBT_GA_ID });
 }
