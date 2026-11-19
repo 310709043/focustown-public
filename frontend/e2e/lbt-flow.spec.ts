@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { LOOKS_ON_SALE, LOOKS_PURCHASE_URL } from "../lib/lbt/looksOffer";
 import { POND_ON_SALE } from "../lib/lbt/pond";
 
 /**
@@ -237,12 +238,27 @@ test.describe("Koi pond offer", () => {
     await expect(page.getByRole("heading", { level: 1, name: /錦鯉池/ })).toBeVisible();
     await expect(page.getByRole("img", { name: /錦鯉池場景/ })).toBeVisible();
     await expect(page.getByText(/US\$50/)).toBeVisible();
-    await expect(page.getByRole("link", { name: /到 Buy Me a Coffee 購買/ })).toHaveCount(POND_ON_SALE ? 1 : 0);
+    await expect(page.locator(".pond-offer").getByRole("link", { name: /到 Buy Me a Coffee 購買/ })).toHaveCount(POND_ON_SALE ? 1 : 0);
     await expect(page.getByRole("textbox", { name: "解鎖碼" })).toBeVisible();
     await page.goto("/zh-TW/policies/terms");
     await expect(page.getByRole("heading", { name: "付費場景：錦鯉池" })).toHaveCount(POND_ON_SALE ? 1 : 0);
     await page.goto(HOME);
     await expect(page.getByRole("heading", { name: /今天還剩/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /錦鯉池：付費場景/ })).toHaveCount(POND_ON_SALE ? 1 : 0);
+  });
+});
+
+test.describe("Looks offer", () => {
+  test("the unlock page sells the rainy town and the styles only with a link", async ({ page }) => {
+    await page.goto("/zh-TW/unlock");
+    const offer = page.locator("#looks");
+    await expect(offer).toHaveCount(LOOKS_ON_SALE ? 1 : 0);
+    if (LOOKS_ON_SALE) {
+      await expect(offer.getByRole("heading", { name: "下雨的小鎮與小鎮風格" })).toBeVisible();
+      await expect(offer.getByRole("link", { name: /到 Buy Me a Coffee 購買/ })).toHaveAttribute("href", LOOKS_PURCHASE_URL!);
+      await expect(offer.getByText(/每款 US\$3/).first()).toBeVisible();
+    }
+    await page.goto("/zh-TW/policies/terms");
+    await expect(page.getByRole("heading", { name: "付費外觀：下雨的小鎮與小鎮風格" })).toHaveCount(LOOKS_ON_SALE ? 1 : 0);
   });
 });
