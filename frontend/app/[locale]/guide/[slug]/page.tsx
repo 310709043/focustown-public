@@ -51,10 +51,12 @@ export default async function ArticlePage({ params }: { params: Params }) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "lbt" });
   const copy = t.raw(`articles.items.${slug}`) as ArticleCopy;
-  const url = `${SITE_URL}/${locale}/guide/${slug}`;
+  const path = `/guide/${slug}`;
+  const url = `${SITE_URL}/${locale}${path}`;
+  const heading = copy.heading ?? copy.title;
   const others = ARTICLES.filter((a) => a.slug !== slug);
   return (
-    <GuideShell>
+    <GuideShell alternatePath={path}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -63,7 +65,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
             "@graph": [
               {
                 "@type": "Article",
-                headline: copy.title,
+                headline: heading,
                 description: copy.description,
                 inLanguage: locale,
                 datePublished: article.published,
@@ -78,7 +80,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
                 itemListElement: [
                   { "@type": "ListItem", position: 1, name: BRAND, item: `${SITE_URL}/${locale}` },
                   { "@type": "ListItem", position: 2, name: t("articles.breadcrumb"), item: `${SITE_URL}/${locale}/guide` },
-                  { "@type": "ListItem", position: 3, name: copy.title, item: url },
+                  { "@type": "ListItem", position: 3, name: heading, item: url },
                 ],
               },
             ],
@@ -88,18 +90,16 @@ export default async function ArticlePage({ params }: { params: Params }) {
       <nav className="policy-crumbs" aria-label={t("articles.breadcrumb")}>
         <Link href="/guide">{t("articles.breadcrumb")}</Link>
       </nav>
-      <h1>{copy.title}</h1>
+      <h1>{heading}</h1>
       <p className="policy-meta">
         <time dateTime={article.updated}>{t("articles.updated", { date: article.updated })}</time>
       </p>
       <p className="policy-intro">{copy.intro}</p>
-      {copy.entryCta ? (
-        <p className="policy-contact">
-          <Link className="primary-button guide-entry-link" href="/#lbt-chat-entry">
-            {copy.entryCta} <span aria-hidden="true">↗</span>
-          </Link>
-        </p>
-      ) : null}
+      <p className="policy-contact">
+        <Link className="primary-button guide-entry-link" href="/#lbt-chat-entry" prefetch={false}>
+          {t("articles.cta")} <span aria-hidden="true">↗</span>
+        </Link>
+      </p>
       {copy.sections.map((section) => (
         <section key={section.h}>
           <h2>{section.h}</h2>
@@ -117,9 +117,6 @@ export default async function ArticlePage({ params }: { params: Params }) {
           </ul>
         </section>
       ) : null}
-      <p className="policy-contact">
-        <Link className="text-button" href="/">{t("articles.cta")} <span aria-hidden="true">↗</span></Link>
-      </p>
       <ArticleLinks title={t("articles.listTitle")} items={others.map(({ slug: s }) => ({ slug: s, label: t(`articles.items.${s}.nav`) }))} />
     </GuideShell>
   );
