@@ -43,7 +43,7 @@ export default async function GuidePage({ params }: { params: Params }) {
     a: fillLegalFacts(a),
   }));
   return (
-    <GuideShell>
+    <GuideShell alternatePath="/guide">
       {/* FAQPage mirrors the visible answers word for word. */}
       <script
         type="application/ld+json"
@@ -73,6 +73,11 @@ export default async function GuidePage({ params }: { params: Params }) {
       />
       <h1>{t("guide.title")}</h1>
       <p className="policy-intro">{t("guide.intro")}</p>
+      <p className="policy-contact">
+        <Link className="primary-button guide-entry-link" href="/#lbt-chat-entry" prefetch={false}>
+          {t("articles.cta")} <span aria-hidden="true">↗</span>
+        </Link>
+      </p>
       {questions.map(({ q, a }) => <section key={q}><h2>{q}</h2><p>{a}</p></section>)}
       <ArticleLinks
         title={t("articles.listTitle")}

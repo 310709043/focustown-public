@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Free Anonymous Chat, No Sign-up | LowBatteryTown",
-    "description": "Meet someone through free anonymous chat without a dating profile or registration. Start with 7 minutes, extend only if you both agree, and leave anytime. LowBatteryTown works on mobile and desktop. 18+.",
+    "description": "LowBatteryTown is free anonymous text chat for adults. Pick a nickname, match with a stranger, and start with 7 minutes. No account or download required. 18+.",
     "keywords": "LowBatteryTown,low social battery,social battery,anonymous chat,anonymous chat room,one-on-one chat,talk to a stranger,someone to talk to,low-pressure chat,no sign-up chat",
     "ogAlt": "LowBatteryTown: a deep-blue night town with street lamps and an expressive animated battery"
   },
@@ -23,8 +23,8 @@
     "kicker": "A town for people running low on battery",
     "titleTop": "How many bars",
     "titleEm": "are left today?",
-    "subtitleA": "No need to plan what to say. Pick how you feel right now,",
-    "subtitleB": "and sit for a while with someone who also wants a quiet chat.",
+    "subtitleA": "Free anonymous chat, with no sign-up.",
+    "subtitleB": "Talk one-on-one for 7 minutes to start.",
     "nickname": {
       "label": "What should we call you?",
       "hint": "Anonymous nickname, editable",
@@ -642,7 +642,8 @@
     "listTitle": "Further reading",
     "breadcrumb": "Town guide",
     "updated": "Updated {date}",
-    "cta": "Ready? Walk into the town",
+    "cta": "Try free anonymous chat (18+)",
+    "wootalkLink": "WooTalk alternative",
     "items": {
       "social-battery": {
         "nav": "What is a social battery?",
@@ -768,16 +769,16 @@
       },
       "wootalk-alternative": {
         "nav": "Looking for a WooTalk alternative?",
-        "title": "WooTalk Alternative: Free Chat, No Sign-Up | LowBatteryTown",
-        "description": "Try free, anonymous text chat with real people, ages 18+. Choose your social battery, then chat for 7 minutes after matching. Read how it works and the privacy rules.",
-        "entryCta": "Try free anonymous chat (18+)",
-        "intro": "Want a few words with a stranger without filling out a dating profile? If you are looking for a site like WooTalk, LowBatteryTown offers another option: show your current social battery and start with a 7-minute conversation. LowBatteryTown is independent and is not affiliated with, endorsed by, or operated by WooTalk.",
+        "title": "WooTalk Alternative for Anonymous Chat | LowBatteryTown",
+        "heading": "Looking for a WooTalk alternative? Try anonymous text chat",
+        "description": "Compare WooTalk’s shared keywords with 7-minute matching on LowBatteryTown. Try free one-on-one text chat with real people, no sign-up required. For adults 18+.",
+        "intro": "Looking for a site like WooTalk? LowBatteryTown offers anonymous one-on-one text chat for adults, without sign-up. Your first chat lasts up to 7 minutes. If you both want to continue, you can extend it. LowBatteryTown is independent and is not affiliated with WooTalk.",
         "sections": [
           {
-            "h": "Choose the kind of conversation you need",
+            "h": "How do WooTalk keywords and town matching differ?",
             "p": [
-              "When choosing an anonymous chat site, ask yourself: do you want to talk to a stranger or find someone through a shared topic? A long conversation or a short one before deciding? Read the rules on leaving, reporting and record retention too.",
-              "WooTalk’s official guide describes shared keywords that connect people using the same keyword. LowBatteryTown currently has no keyword matching. Instead, you choose your social battery and chat preference so the other person knows whether you want to reply slowly, listen or talk more."
+              "If you already have a keyword to share with a friend or want to find someone using the same topic, see WooTalk’s official keyword guide in the sources below.",
+              "For a short chat with a stranger, choose your social battery and chat preference in LowBatteryTown. Your match can see both and know if you want to reply slowly, listen, or talk more. LowBatteryTown currently has no keyword matching."
             ]
           },
           {

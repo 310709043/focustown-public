@@ -1,15 +1,16 @@
 import worker from "./.open-next/worker.js";
 import cspHashes from "./.open-next/csp-hashes.json";
 
-// Redirect before OpenNext handles images or Next.js routes.
+// Consolidate public URLs before OpenNext handles images or Next.js routes.
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.hostname === "lowbatterytown.com") {
+    const isApex = url.hostname === "lowbatterytown.com";
+    if (isApex || (url.hostname === "www.lowbatterytown.com" && url.protocol === "http:")) {
       url.protocol = "https:";
       url.hostname = "www.lowbatterytown.com";
       url.port = "";
-      return Response.redirect(url.toString(), 301);
+      return Response.redirect(url.toString(), isApex ? 301 : 308);
     }
     const response = await worker.fetch(request, env, ctx);
     const hashes = cspHashes[url.pathname.replace(/\/+$/, "")];

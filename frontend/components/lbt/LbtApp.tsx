@@ -175,7 +175,12 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
           {mode === "live" ? <LbtAnalytics active={view === "home"} /> : null}
           <nav className="footer-links" aria-label={t("footer.linksAria")}>
             <Link href="/guide">{t("guide.nav")}</Link>
-            {mode === "live" && view === "home" ? <Link href="/collaborate">{t("collaboration.nav")}</Link> : null}
+            {mode === "live" && view === "home" ? (
+              <>
+                <Link href="/guide/wootalk-alternative" prefetch={false}>{t("articles.wootalkLink")}</Link>
+                <Link href="/collaborate">{t("collaboration.nav")}</Link>
+              </>
+            ) : null}
             <Link href="/policies/privacy">{t("policy.nav.privacy")}</Link>
             <Link href="/policies/terms">{t("policy.nav.terms")}</Link>
             <Link href="/policies/guidelines">{t("policy.nav.guidelines")}</Link>
