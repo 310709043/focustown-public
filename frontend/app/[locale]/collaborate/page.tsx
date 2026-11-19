@@ -3,7 +3,6 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { GuideShell } from "@/components/lbt/GuideShell";
 import { routing } from "@/i18n/routing";
-import { LBT_LEGAL } from "@/lib/lbt/legal";
 import { BRAND } from "@/lib/lbt/site";
 
 type PageProps = { params: Promise<{ locale: string }> };
@@ -36,7 +35,7 @@ export default async function CollaboratePage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "lbt.collaboration" });
-  const email = LBT_LEGAL.contactEmail;
+  const email = "focustown1314@gmail.com";
   const contactLink = `mailto:${email}?subject=${encodeURIComponent(t("subject"))}`;
 
   return (
