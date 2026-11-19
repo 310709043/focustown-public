@@ -3,12 +3,15 @@
  * the numbers come from the legal facts, and the pages that touch hard nights
  * or strangers keep the crisis lines and the 18+ rule in view.
  */
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 import en from "@/messages/en/lbt.json";
 import zhTW from "@/messages/zh-TW/lbt.json";
 import { ARTICLE_SLUGS, type ArticleCopy, findArticle } from "@/lib/lbt/articles";
 import { fillLegalFacts } from "@/lib/lbt/legal";
+import { guideOgImage } from "@/lib/lbt/site";
 
 const bundles = [
   ["zh-TW", zhTW.articles.items as Record<string, ArticleCopy>],
@@ -50,6 +53,13 @@ describe("guide articles", () => {
       const body = text(items[slug]);
       expect(body).toContain("findahelpline.com");
       expect(body).toMatch(/18/);
+    }
+  });
+
+  test.each(bundles)("%s: the guide and every article have their own share image", (locale) => {
+    // Missing one? Run scripts/og-images.mjs (see its header).
+    for (const slug of ["guide", ...ARTICLE_SLUGS]) {
+      expect(existsSync(resolve(__dirname, "../../../../public", `.${guideOgImage(locale, slug)}`)), slug).toBe(true);
     }
   });
 });

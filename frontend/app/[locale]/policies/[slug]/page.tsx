@@ -39,6 +39,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       description,
       images: [{ url: "/brand/og-lbt.png", width: 1200, height: 630 }],
     },
+    // Also restated: otherwise the share card keeps the home page's title.
+    twitter: { card: "summary_large_image", title, description, images: ["/brand/og-lbt.png"] },
   };
 }
 

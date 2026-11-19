@@ -5,7 +5,7 @@ import { ArticleLinks, GuideShell } from "@/components/lbt/GuideShell";
 import { Link, routing } from "@/i18n/routing";
 import { ARTICLE_SLUGS } from "@/lib/lbt/articles";
 import { fillLegalFacts } from "@/lib/lbt/legal";
-import { BRAND, jsonLd, SITE_URL } from "@/lib/lbt/site";
+import { BRAND, guideOgImage, jsonLd, SITE_URL } from "@/lib/lbt/site";
 
 type Params = Promise<{ locale: string }>;
 
@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const title = t("title");
   const description = t("description");
   const path = `/${locale}/guide`;
+  const image = guideOgImage(locale, "guide");
   return {
     title,
     description,
@@ -27,9 +28,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     },
     openGraph: {
       type: "website", siteName: BRAND, url: path, title, description,
-      images: [{ url: "/brand/og-lbt.png", width: 1200, height: 630 }],
+      images: [{ url: image, width: 1200, height: 630, alt: title }],
     },
-    twitter: { card: "summary_large_image", title, description, images: ["/brand/og-lbt.png"] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 

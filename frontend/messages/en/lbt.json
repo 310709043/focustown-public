@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Free Anonymous Chat, No Sign-up | LowBatteryTown",
-    "description": "Meet someone through free anonymous chat without a dating profile or registration. Start with 7 minutes, extend only if you both agree, and leave anytime. LowBatteryTown works on mobile and desktop. 18+.",
+    "description": "Free anonymous one-on-one chat with a real person: no sign-up, no dating profile. Start with 7 minutes, extend only if you both agree, leave anytime. 18+.",
     "keywords": "LowBatteryTown,low social battery,social battery,anonymous chat,anonymous chat room,one-on-one chat,talk to a stranger,someone to talk to,low-pressure chat,no sign-up chat",
     "ogAlt": "LowBatteryTown: a deep-blue night town with street lamps and an expressive animated battery"
   },
@@ -932,6 +932,149 @@
               "What information am I comfortable sharing, and what will I keep private?",
               "Do I understand how leaving, reporting and record retention work?",
               "Do the actual features meet my expectations, beyond the name in a search result?"
+            ]
+          }
+        ]
+      },
+      "chat-topics": {
+        "nav": "What to talk about",
+        "title": "What to Talk About With a Stranger: Easy Conversation Openers",
+        "description": "Not sure what to say to a stranger? Easy openers, ways to keep a chat going, what not to ask yet, and how LowBatteryTown's sky topics can start a chat.",
+        "intro": "Right after you are matched and see the other person's nickname, there are often a few quiet seconds. An opener does not need to be clever: one simple, easy-to-answer line is enough. Here are some topics that rarely feel awkward, and ways to keep the conversation going.",
+        "entryCta": "Take a topic into a chat",
+        "sections": [
+          {
+            "h": "Your opener does not have to be perfect",
+            "p": [
+              "Say hello, then ask one small question that is easy to answer. It feels easier than saying a lot at once. If the other person replies slowly, that is fine: everyone types at their own pace.",
+              "If their social battery says “Nearly out”, they may reply more slowly or briefly today. There is no need to fill every silence."
+            ]
+          },
+          {
+            "h": "Easy conversation starters",
+            "li": [
+              "How has your day been? Anything small that went well?",
+              "What are you up to right now: just off work, in bed, on the bus?",
+              "What have you been listening to or watching lately?",
+              "What did you eat today? Any late-night snack to recommend?",
+              "What is the weather like where you are?",
+              "If tomorrow were suddenly a day off, what would you do?"
+            ]
+          },
+          {
+            "h": "Small ways to keep it going",
+            "li": [
+              "Ask open questions (“how”, “why”) rather than ones with a yes-or-no answer.",
+              "Pick up a detail they mentioned: “You said you worked late. Was today especially busy?”",
+              "Share a little about yourself too, so it is not just questions.",
+              "Out of ideas? Just say so: “I’m stuck. Your turn to ask me something?”"
+            ]
+          },
+          {
+            "h": "Leave these for later",
+            "li": [
+              "Real names, where someone lives, their school or workplace.",
+              "Looks, body or relationship status, unless they bring it up.",
+              "Phone numbers, LINE, Instagram or other contacts. If someone hurries you to another platform, pause."
+            ]
+          },
+          {
+            "h": "At LowBatteryTown, the sky brings you a topic",
+            "p": [
+              "LowBatteryTown is free, one-on-one anonymous chat with real people and no sign-up; the beta is for people aged 18 or older. A topic crosses the sky on the home page: a hot-air balloon at dawn, a plane banner by day, a kite at dusk, a rooftop neon sign at night; on phones it appears under the subtitle. Tap it to take it into your match, then press “Start with this” in the chat.",
+              "Each topic is labelled by where it comes from: a light question based on the previous day's public search trends in Taiwan, the town's pick for today, or one of the town's own questions. A chat lasts 7 minutes and continues only if you both extend."
+            ]
+          },
+          {
+            "h": "If a chat feels wrong, just leave",
+            "p": [
+              "You can say good night and leave at any time, and report harassment. The town is not counselling or an emergency service. If you need someone to really listen, find a helpline where you are at findahelpline.com, and if you are in immediate danger, call your local emergency number."
+            ]
+          }
+        ]
+      },
+      "feeling-down": {
+        "nav": "Feeling down, want to talk",
+        "title": "Feeling Down and Want to Talk? Who to Reach and What to Say",
+        "description": "Feeling low and want to talk? Look after yourself first, who to reach, what to say first and when to get help, plus a 7-minute anonymous chat with a real person.",
+        "intro": "When you feel down, sometimes you do not need advice, just someone to listen. Wanting to talk is not a weakness, and you do not need to have it all figured out before you start. Here are a few things to try.",
+        "sections": [
+          {
+            "h": "Look after yourself in the moment",
+            "li": [
+              "Drink some water, eat something, or get some fresh air by a window.",
+              "Write down how you feel. It does not have to be complete.",
+              "Step away for a while from the messages or feeds that keep upsetting you.",
+              "If you can, go for a short walk."
+            ]
+          },
+          {
+            "h": "Who can you talk to?",
+            "li": [
+              "A friend or family member you trust: “I’m not feeling great today” is enough to start.",
+              "If you need someone to really listen: find a free helpline where you are at findahelpline.com.",
+              "If you don’t want to worry anyone you know and just want a few words with someone: an anonymous chat with a stranger can help."
+            ]
+          },
+          {
+            "h": "What to say first",
+            "li": [
+              "“I’m feeling a bit low today. Could you listen for a while?”",
+              "“I don’t need advice, I just want someone to listen.”",
+              "“I don’t know where to start, so let me tell you about today.”"
+            ]
+          },
+          {
+            "h": "At LowBatteryTown, choose “Someone to listen”",
+            "p": [
+              "LowBatteryTown is free, one-on-one anonymous chat with real people and no sign-up; the beta is for people aged 18 or older. Choose a nickname, your social battery and how you want to chat. If you choose “Someone to listen”, the other person sees in the chat that you would rather be heard today.",
+              "A match needs another real person to be waiting, so it may not be instant. A chat lasts 7 minutes and continues only if you both extend; you can stop halfway and say good night at any time. Don’t share your name, phone number or social accounts."
+            ]
+          },
+          {
+            "h": "When to get more help",
+            "p": [
+              "If the low mood has lasted more than two weeks, or affects your sleep, eating, work or studies, talk to a doctor or a mental health professional.",
+              "The town is not counselling or an emergency service. If you are thinking about harming yourself or are in immediate danger, call your local emergency number now, or find a helpline at findahelpline.com."
+            ]
+          }
+        ]
+      },
+      "lonely": {
+        "nav": "Feeling lonely",
+        "title": "Feeling Lonely and Want Someone to Talk To? Things to Try",
+        "description": "Loneliness is common and not your fault. Small ways to connect, a low-effort way to talk to someone, and who to reach when it feels heavy.",
+        "intro": "Sometimes you feel lonely with people around you; sometimes it has just been a long time since you really talked to someone. Loneliness is common, and it does not mean you did anything wrong. Here are a few things to try when you are on your own.",
+        "sections": [
+          {
+            "h": "Small connections count",
+            "li": [
+              "Reply to a message you have been leaving for a while. A short hello is enough.",
+              "Spend some time where people are, such as a library, café or park.",
+              "Say an extra thank you or good morning to a shop assistant or neighbour.",
+              "Join an activity or group around something you enjoy; seeing the same people regularly makes it easier to get to know them."
+            ]
+          },
+          {
+            "h": "When you want to talk but have no energy for a relationship",
+            "p": [
+              "Sometimes you want to talk to someone but have no energy to keep up a relationship or fill in a dating profile. A short anonymous chat is one option: when it ends, it ends, and there are no messages to keep answering.",
+              "LowBatteryTown is free, one-on-one anonymous chat with real people and no sign-up; the beta is for people aged 18 or older. A chat lasts 7 minutes and continues only if you both extend. Links, e-mail addresses, @handles and phone numbers in the chat are hidden automatically."
+            ]
+          },
+          {
+            "h": "What an anonymous chat cannot do",
+            "li": [
+              "Chats in the town are short. There is no promise that someone is always there, or that you will click.",
+              "Lasting company still comes from friends, family or communities built over time.",
+              "Even if you get on well, don’t rush to swap personal details or meet."
+            ]
+          },
+          {
+            "h": "When loneliness feels heavy",
+            "p": [
+              "If loneliness has lasted a long time, or you cannot eat or sleep, or feel you cannot go on, talk to a doctor or a mental health professional. You can also find a helpline where you are at findahelpline.com.",
+              "The town is not counselling or an emergency service. If you are in immediate danger, call your local emergency number."
             ]
           }
         ]

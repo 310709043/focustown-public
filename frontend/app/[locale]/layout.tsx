@@ -13,6 +13,7 @@ import {
 import { CloudflareAnalytics } from "@/components/analytics/CloudflareAnalytics";
 import { DirectionSync } from "@/components/chrome/DirectionSync";
 import { routing, type Locale } from "@/i18n/routing";
+import { lbtClientMessages } from "@/lib/lbt/clientMessages";
 import { BRAND, BRAND_ALIASES, jsonLd, SITE_URL } from "@/lib/lbt/site";
 import { TOWN_TIME_BOOT } from "@/lib/lbt/townTime";
 
@@ -154,7 +155,7 @@ export default async function LocaleLayout({
         <script dangerouslySetInnerHTML={{ __html: TOWN_TIME_BOOT }} />
       </head>
       <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={lbtClientMessages(messages)}>
           {/* JSON-LD: the site and the organisation behind it (brand name + logo in results). */}
           <script
             type="application/ld+json"

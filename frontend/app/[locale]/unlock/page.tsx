@@ -15,7 +15,14 @@ type Params = Promise<{ locale: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "lbt.unlock" });
-  return { title: t("title"), robots: { index: false, follow: false } };
+  // Its own canonical and description, so the noindex page does not point at
+  // the home page or repeat the home page's search snippet.
+  return {
+    title: t("title"),
+    description: t("intro"),
+    alternates: { canonical: `/${locale}/unlock` },
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function UnlockPage({ params }: { params: Params }) {

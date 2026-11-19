@@ -6,7 +6,7 @@ import { ArticleLinks, GuideShell } from "@/components/lbt/GuideShell";
 import { Link, routing } from "@/i18n/routing";
 import { ARTICLES, type ArticleCopy, findArticle } from "@/lib/lbt/articles";
 import { fillLegalFacts } from "@/lib/lbt/legal";
-import { BRAND, jsonLd, SITE_URL } from "@/lib/lbt/site";
+import { BRAND, guideOgImage, jsonLd, SITE_URL } from "@/lib/lbt/site";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const title = t(`${slug}.title`);
   const description = t(`${slug}.description`);
   const path = `/${locale}/guide/${slug}`;
+  const image = guideOgImage(locale, slug);
   return {
     // The layout template would append the brand to an already long title.
     title: { absolute: title },
@@ -38,9 +39,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     openGraph: {
       type: "article", siteName: BRAND, url: path, title, description,
       publishedTime: article.published, modifiedTime: article.updated,
-      images: [{ url: "/brand/og-lbt.png", width: 1200, height: 630 }],
+      images: [{ url: image, width: 1200, height: 630, alt: title }],
     },
-    twitter: { card: "summary_large_image", title, description, images: ["/brand/og-lbt.png"] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -69,7 +70,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
                 datePublished: article.published,
                 dateModified: article.updated,
                 mainEntityOfPage: url,
-                image: `${SITE_URL}/brand/og-lbt.png`,
+                image: `${SITE_URL}${guideOgImage(locale, slug)}`,
                 author: { "@id": `${SITE_URL}/#org` },
                 publisher: { "@id": `${SITE_URL}/#org` },
               },
