@@ -27,7 +27,7 @@ const KNOWN = new Set([
 ]);
 
 /** Inline, dismissible notice for the store's current error code. */
-export function Notice() {
+export function Notice({ id }: { id?: string }) {
   const t = useTranslations("lbt.notice");
   const tModal = useTranslations("lbt.modal");
   const notice = useLbtStore((s) => s.notice);
@@ -35,7 +35,7 @@ export function Notice() {
   if (!notice) return null;
   return (
     <div className="lbt-notice" role="alert">
-      <span>{t(KNOWN.has(notice) ? notice : "generic")}</span>
+      <span id={id}>{t(KNOWN.has(notice) ? notice : "generic")}</span>
       <button type="button" onClick={dismiss} aria-label={tModal("close")}>
         ×
       </button>

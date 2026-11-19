@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Link } from "@/i18n/routing";
 
@@ -38,11 +38,13 @@ export function HomeView() {
   const openModal = useLbtStore((s) => s.openModal);
   const adult = useLbtStore((s) => s.adult);
   const setAdult = useLbtStore((s) => s.setAdult);
+  const ageRequired = useLbtStore((s) => s.notice === "age_required");
   const town = useLbtStore((s) => s.town);
   const closed = town !== null && !town.open;
 
   const defaultNickname = t("home.nickname.default");
   const [draft, setDraft] = useState(committedNickname || defaultNickname);
+  const adultInput = useRef<HTMLInputElement>(null);
   const stage = useStageScene();
   const looks = useEffectiveLooks();
   const rain = looks.rain && stage.scene === "town";
@@ -56,6 +58,7 @@ export function HomeView() {
       draft === defaultNickname ? draft : normalizeNickname(draft, defaultNickname);
     setDraft(nickname);
     startWaiting(nickname);
+    if (!adult) adultInput.current?.focus();
   };
 
   return (
@@ -102,17 +105,20 @@ export function HomeView() {
             <p className="hero-subtitle">
               {t("home.subtitleA")}
               <br className="desktop-break" />
-              {t("home.subtitleB")}
+              {" "}{t("home.subtitleB")}
             </p>
             <SkyTopicLine />
             <LooksMenu place="phone" />
+            <a className="home-entry-link text-button" href="#lbt-chat-entry">
+              {t("home.start")} <span aria-hidden="true">↓</span>
+            </a>
           </div>
 
           <Townscape rain={rain} decor={theme !== null} />
           <SkyTopics />
         </section>
 
-        <div className="selection-card">
+        <div className="selection-card" id="lbt-chat-entry" tabIndex={-1}>
           <div className="nickname-field">
             <label htmlFor="lbt-nickname">
               {t("home.nickname.label")}
@@ -192,11 +198,13 @@ export function HomeView() {
           </div>
           <label className="adult-check" htmlFor="lbt-adult">
             <input
+              ref={adultInput}
               id="lbt-adult"
               type="checkbox"
               checked={adult}
               onChange={(event) => setAdult(event.target.checked)}
-              aria-describedby="lbt-adult-hint"
+              aria-invalid={ageRequired || undefined}
+              aria-describedby={ageRequired ? "lbt-adult-hint lbt-adult-error" : "lbt-adult-hint"}
             />
             <span>{t("home.adult")}</span>
             <small id="lbt-adult-hint">
@@ -213,7 +221,7 @@ export function HomeView() {
               {t("home.closed", { hours: town?.hours ?? "" })}
             </p>
           ) : null}
-          <Notice />
+          <Notice id={ageRequired ? "lbt-adult-error" : undefined} />
           <button
             type="button"
             className="primary-button"

@@ -125,9 +125,10 @@ for (const locale of ["zh-TW", "en"]) {
     const entry = page.getByRole("link", {
       name: locale === "zh-TW" ? "試試免費匿名聊天（18+）" : "Try free anonymous chat (18+)",
     });
-    await expect(entry).toHaveAttribute("href", `/${locale}`);
+    await expect(entry).toHaveAttribute("href", `/${locale}#lbt-chat-entry`);
     await entry.click();
-    await expect(page).toHaveURL(new RegExp(`/${locale}$`));
+    await expect(page).toHaveURL(new RegExp(`/${locale}#lbt-chat-entry$`));
+    await expect(page.locator("#lbt-chat-entry")).toBeInViewport();
     await page.goto(`/${locale}/guide`);
     await expect(page.locator(`main a[href="${path}"]`)).toHaveCount(1);
   });

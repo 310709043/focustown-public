@@ -136,7 +136,7 @@
     "cancel": "Back to the street corner",
     "townNow": "{online} in town right now, {waiting} waiting.",
     "searching": "The town is finding someone who fits. Hang on a moment.",
-    "longWait": "A good meeting is worth a little wait. Keep this tab open; a soft chime will tell you when someone arrives.",
+    "longWait": "You haven’t been matched yet. Keep this tab open to keep waiting, or head back and try again later.",
     "offline": "Can't reach the town right now. Reconnecting…"
   },
   "chat": {
