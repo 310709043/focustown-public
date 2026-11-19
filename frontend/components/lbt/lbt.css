@@ -6549,7 +6549,7 @@ html[data-lbt-theme="pixel"] .lbt :is(.waiting-card, .end-card) {
 /* the stage copy sits in the top line on desktop; phones hide that line, so the phone copy shows under the hero text */
 .lbt .looks-phone { display: none; }
 @media (max-width: 959px), (max-height: 619px) {
-  .lbt .looks-stage { display: none; }
+  .lbt .looks-menu.looks-stage { display: none; }
   .lbt .looks-phone { display: block; margin-top: 12px; }
   .lbt .looks-phone > summary { width: max-content; }
   /* the compact stage clips overflow, so the phone panel opens in place */

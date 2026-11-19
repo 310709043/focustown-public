@@ -7,11 +7,11 @@
  */
 import type { UnlockItem } from "./unlocks";
 
-export const LOOKS_PURCHASE_URL: string | null = null;
+export const LOOKS_PURCHASE_URL: string | null = "https://buymeacoffee.com/lowbatterytown/e/598282";
 export const LOOKS_ON_SALE = LOOKS_PURCHASE_URL !== null;
 
 export const LOOKS_OFFER = {
-  /** Owner's price per look, 2026-11-14. */
+  /** Owner's price per look (set 2026-11-14, on sale from 2026-11-19). */
   priceUsd: 3,
   /** DEFAULT_MAX_DEVICES in edge/src/unlocks.ts. */
   devices: 3,
