@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 
 import { AchievementToastManager } from "@/components/achievements/AchievementToastManager";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
@@ -27,10 +27,21 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function LegacyLayout({ children }: { children: ReactNode }) {
+export default async function LegacyLayout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
   // The root layout sends only the LowBatteryTown messages to the browser;
   // the pixel-city pages read every legacy namespace, so they get the full set.
-  const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
+  // The locale comes from the URL: layouts render in parallel, so the root
+  // layout's setRequestLocale is not visible here and getLocale() would fall
+  // back to the default language.
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const messages = await getMessages({ locale });
   // The pixel-city fonts (and Noto Sans TC, about 1 MB of CJK slices) are
   // declared here, not in the root layout, so LowBatteryTown pages never
   // download them. `display: contents` keeps the wrapper out of layout.
