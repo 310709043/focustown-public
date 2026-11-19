@@ -23,6 +23,20 @@ describe("LowBatteryTown CSP", () => {
     expect(prod).not.toMatch(/jsdelivr|googleapis|youtube|googlesyndication|google-analytics|wasm-unsafe-eval/);
   });
 
+  it("allows the Google tag and analytics collection for analytics pages", () => {
+    const analytics = buildLbtCsp({
+      nonce: "n",
+      prod: true,
+      apiHttp: "https://api.lowbatterytown.com",
+      apiWs: "wss://api.lowbatterytown.com",
+      googleAnalytics: true,
+    });
+    expect(directive(analytics, "script-src")).toContain("https://www.googletagmanager.com");
+    expect(directive(analytics, "connect-src")).toContain("https://*.google-analytics.com");
+    expect(directive(analytics, "frame-src")).toBe("frame-src 'none'");
+    expect(analytics).not.toMatch(/doubleclick|googlesyndication/);
+  });
+
   it("forbids frames, plugins and framing", () => {
     expect([directive(prod, "frame-src"), directive(prod, "object-src"), directive(prod, "frame-ancestors")]).toEqual([
       "frame-src 'none'",

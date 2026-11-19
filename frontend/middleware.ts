@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 
 import { routing } from "./i18n/routing";
+import { LBT_GA_ID, lbtAnalyticsPath } from "./lib/analytics/lbtPageViews";
 import { buildLbtCsp, CF_ANALYTICS_CONNECT, CF_ANALYTICS_SCRIPT } from "./lib/security/lbtCsp";
 import { isLbtPublicRoute } from "./lib/security/lbtRoutes.mjs";
 
@@ -163,7 +164,13 @@ export function middleware(request: NextRequest) {
   // the allowances their camera, embeds and ads need.
   const lbt = isLbtPublicRoute(request.nextUrl.pathname);
   const csp = lbt
-    ? buildLbtCsp({ nonce, prod: isProd, apiHttp: apiOriginHttp, apiWs: apiOriginWs })
+    ? buildLbtCsp({
+        nonce,
+        prod: isProd,
+        apiHttp: apiOriginHttp,
+        apiWs: apiOriginWs,
+        googleAnalytics: Boolean(LBT_GA_ID && lbtAnalyticsPath(request.nextUrl.pathname)),
+      })
     : buildCsp(nonce);
 
   // Next.js stamps `nonce=` on its SSR-injected <script> tags ONLY when the

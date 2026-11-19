@@ -31,6 +31,7 @@ jobs:
       NEXT_PUBLIC_SITE_URL: https://www.lowbatterytown.com
       # Cloudflare Web Analytics site token (public; set as a repository variable). Empty = no beacon.
       NEXT_PUBLIC_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
+      NEXT_PUBLIC_LBT_GA_ID: ${{ vars.LBT_GA_ID }}
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v7

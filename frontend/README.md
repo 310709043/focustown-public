@@ -24,6 +24,13 @@ Changing `NEXT_PUBLIC_*` requires a
 rebuild. CSP is generated in `middleware.ts` and allows the configured HTTPS
 and WebSocket origins.
 
+For optional Google Analytics page views, set the public repository variable
+`LBT_GA_ID` to the production web stream's measurement ID. For a local build
+the matching variable is `NEXT_PUBLIC_LBT_GA_ID`. Turn off Enhanced Measurement
+on the stream. The tag loads after opt-in on the home and guide pages.
+Verify receipt in the property's Realtime report and use the stream name
+to distinguish production from the development stream.
+
 `pnpm cf:deploy` builds and deploys `lbt-web`. For CI, configure repository
 secrets `CLOUDFLARE_API_TOKEN` (Workers deployment and zone permissions for the
 custom domains) and `CLOUDFLARE_ACCOUNT_ID`. Secrets are never public env vars.
