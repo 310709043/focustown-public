@@ -244,6 +244,13 @@
   line-height: 1.9;
   margin: 24px 0 0;
 }
+.lbt .home-entry-link {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--hero-accent);
+}
 .lbt .selection-card {
   position: relative;
   z-index: 3;
@@ -2026,6 +2033,14 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.lbt .policy-contact .guide-entry-link {
+  display: inline-flex;
+  width: auto;
+  max-width: 100%;
+  padding: 8px 18px;
+  color: #1f2b40;
+  text-decoration: none;
+}
 @media (max-width: 610px) {
   .lbt .topbar:has(.policy-nav) {
     height: auto;
@@ -3562,8 +3577,9 @@ html[data-lbt-time="night"] .lbt .carrier-neon {
     padding-bottom: 0;
   }
   .lbt .home-grid > .main-stage .townscape {
-    aspect-ratio: 3.6;
-    margin: 8px -17px 0;
+    height: clamp(46px, 8svh, 72px);
+    aspect-ratio: auto;
+    margin: 4px -17px 0;
   }
   .lbt .sky-cloud,
   .lbt .sky-star,
@@ -4196,6 +4212,20 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
     bottom: calc(24.5cqw + 30px);
   }
   .lbt .carrier-neon::after {
+    display: none;
+  }
+}
+@container lbt-stage (340px < height <= 465px) {
+  .lbt .home-grid > .main-stage h1 {
+    font-size: clamp(35px, 12cqh, 52px);
+  }
+  .lbt .home-grid > .main-stage .hero-subtitle {
+    max-width: 44cqw;
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .lbt .home-grid > .main-stage .desktop-break {
     display: none;
   }
 }
@@ -6606,7 +6636,15 @@ html[data-lbt-theme="pixel"] .lbt .looks-menu > summary { border-radius: 0; }
   .lbt[data-view="chat"] .topbar-actions .feedback-pill { display: none; }
 
   /* home: form breathes less, info cards become short rows */
-  .lbt .selection-card { padding: 20px 18px 16px; }
+  .lbt .home-grid > .selection-card { padding: 14px; }
+  .lbt .home-grid > .selection-card .nickname-field {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+  .lbt .home-grid > .selection-card .preference-row {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
   .lbt .side-rail { gap: 12px; }
   .lbt .side-card { padding: 18px 18px; border-radius: 20px; }
   .lbt .battery-card {
@@ -6647,6 +6685,16 @@ html[data-lbt-theme="pixel"] .lbt .looks-menu > summary { border-radius: 0; }
   .lbt .chat-foot .aside-help { font-size: 12px; line-height: 1.5; margin: 0; }
   .lbt .chat-foot .chat-privacy { display: none; }
   .lbt .chat-foot .chat-bottom-actions { font-size: 12px; margin: 0; }
+}
+@media (max-width: 610px) and (max-height: 700px) {
+  .lbt .home-entry-link {
+    display: inline-flex;
+  }
+}
+@media (max-width: 610px) and (max-height: 900px) {
+  html[lang="en"] .lbt .home-entry-link {
+    display: inline-flex;
+  }
 }
 .lbt .aside-help .help-short { display: none; }
 @media (max-width: 610px) {

@@ -95,7 +95,9 @@ export default async function ArticlePage({ params }: { params: Params }) {
       <p className="policy-intro">{copy.intro}</p>
       {copy.entryCta ? (
         <p className="policy-contact">
-          <Link className="text-button" href="/">{copy.entryCta} <span aria-hidden="true">↗</span></Link>
+          <Link className="primary-button guide-entry-link" href="/#lbt-chat-entry">
+            {copy.entryCta} <span aria-hidden="true">↗</span>
+          </Link>
         </p>
       ) : null}
       {copy.sections.map((section) => (
