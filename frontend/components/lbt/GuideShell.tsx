@@ -8,8 +8,8 @@ import { POLICY_SLUGS } from "@/lib/lbt/legal";
 import { lbtFontVariables } from "@/lib/lbtFonts";
 import "@/components/lbt/lbt.css";
 
-/** Page chrome for the guide and its articles: brand home link, policy links, a reading column. */
-export async function GuideShell({ children }: { children: ReactNode }) {
+/** Shared reading layout with a brand home link and policy navigation. */
+export async function GuideShell({ children, showAnalytics = true }: { children: ReactNode; showAnalytics?: boolean }) {
   const t = await getTranslations("lbt");
   return (
     <div className={`lbt ${lbtFontVariables}`}>
@@ -24,7 +24,7 @@ export async function GuideShell({ children }: { children: ReactNode }) {
         </header>
         <main className="policy">
           {children}
-          <LbtAnalytics />
+          {showAnalytics ? <LbtAnalytics /> : null}
         </main>
       </div>
     </div>

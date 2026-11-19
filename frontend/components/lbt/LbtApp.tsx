@@ -173,8 +173,9 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
           <span>{t("footer.left")}</span>
           <span>{storeMode === "demo" ? t("footer.right") : t("footer.rightLive")}</span>
           {mode === "live" ? <LbtAnalytics active={view === "home"} /> : null}
-          <nav className="footer-links" aria-label={t("policy.nav.aria")}>
+          <nav className="footer-links" aria-label={t("footer.linksAria")}>
             <Link href="/guide">{t("guide.nav")}</Link>
+            {mode === "live" && view === "home" ? <Link href="/collaborate">{t("collaboration.nav")}</Link> : null}
             <Link href="/policies/privacy">{t("policy.nav.privacy")}</Link>
             <Link href="/policies/terms">{t("policy.nav.terms")}</Link>
             <Link href="/policies/guidelines">{t("policy.nav.guidelines")}</Link>

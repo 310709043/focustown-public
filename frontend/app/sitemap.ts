@@ -5,12 +5,13 @@ import { ARTICLES } from "@/lib/lbt/articles";
 import { LBT_LEGAL, POLICY_SLUGS } from "@/lib/lbt/legal";
 import { CONTENT_UPDATED, SITE_URL } from "@/lib/lbt/site";
 
-// Only the LowBatteryTown home, its guide and articles, and its policies are indexed. The original
+// Only the LowBatteryTown public pages are indexed. The original
 // Focus Town routes (town, awards, legal, sign-in) and /demo are served with
 // `noindex` — see app/[locale]/(legacy)/layout.tsx — so they stay out too.
 const pages = [
   { path: "", priority: 1.0, changeFrequency: "weekly" as const, lastModified: CONTENT_UPDATED },
   { path: "/guide", priority: 0.7, changeFrequency: "monthly" as const, lastModified: CONTENT_UPDATED },
+  { path: "/collaborate", priority: 0.4, changeFrequency: "monthly" as const, lastModified: "2026-11-20" },
   ...ARTICLES.map((article) => ({
     path: `/guide/${article.slug}`,
     priority: 0.6,

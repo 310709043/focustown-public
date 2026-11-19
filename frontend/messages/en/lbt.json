@@ -317,7 +317,20 @@
   "footer": {
     "left": "LowBatteryTown · also known as LowBattery",
     "right": "Prototype demo: matching and messages are simulated and not connected to real people.",
-    "rightLive": "Beta: please be kind. You can say good night or report at any time."
+    "rightLive": "Beta: please be kind. You can say good night or report at any time.",
+    "linksAria": "LowBatteryTown site links"
+  },
+  "collaboration": {
+    "nav": "Join the team",
+    "title": "Build LowBatteryTown with us",
+    "description": "LowBatteryTown is looking for development partners. Learn how profit sharing works and get in touch.",
+    "intro": "I'm building LowBatteryTown on my own. If you'd like to make anonymous chat feel a little more comfortable, I'd love to hear from you. Frontend, backend, and product design are all welcome.",
+    "termsTitle": "How the partnership works",
+    "terms": "This is a development partnership with no fixed salary. Profit sharing starts six months after the town becomes profitable and follows the percentages agreed in writing before work begins. Distributions depend on there being profits available to share.",
+    "agreement": "Before we start, we'll agree in writing on what each of us will work on, our shares, when profitability starts, how profits are calculated and paid out, and what happens if one of us leaves.",
+    "contactTitle": "Interested? Get in touch",
+    "contact": "Tell me a little about yourself and what you'd like to work on together. Feel free to include a portfolio or GitHub link.",
+    "subject": "LowBatteryTown development partnership"
   },
   "notice": {
     "closed": "The lamps aren't lit yet. Please come back during open hours.",
