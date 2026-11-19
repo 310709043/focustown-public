@@ -169,10 +169,10 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
         {view === "chat" ? <ChatView /> : null}
         {view === "end" ? <EndView /> : null}
 
-        {mode === "live" ? <LbtAnalytics active={view === "home"} /> : null}
         <footer className="footer">
           <span>{t("footer.left")}</span>
           <span>{storeMode === "demo" ? t("footer.right") : t("footer.rightLive")}</span>
+          {mode === "live" ? <LbtAnalytics active={view === "home"} /> : null}
           <nav className="footer-links" aria-label={t("policy.nav.aria")}>
             <Link href="/guide">{t("guide.nav")}</Link>
             <Link href="/policies/privacy">{t("policy.nav.privacy")}</Link>
