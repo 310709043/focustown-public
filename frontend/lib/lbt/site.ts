@@ -15,6 +15,15 @@ export const BRAND_ALIASES = [BRAND_ZH, "LowBattery", "低電量", "Low"];
 /** Date the homepage and guide last changed in substance (sitemap lastmod). */
 export const CONTENT_UPDATED = "2026-11-20";
 
+/**
+ * Share image of the guide (`slug` "guide") or one of its articles, drawn by
+ * scripts/og-images.mjs with the page's title. Site-relative; metadataBase
+ * makes it absolute in the meta tags.
+ */
+export function guideOgImage(locale: string, slug: string): string {
+  return `/lbt/og/${locale}/${slug}.jpg`;
+}
+
 /** JSON for an inline <script type="application/ld+json">, safe against `</script>`. */
 export function jsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");

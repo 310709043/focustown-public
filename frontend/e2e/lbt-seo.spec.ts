@@ -99,6 +99,27 @@ for (const locale of ["zh-TW", "en"]) {
     expect((await request.get(`/${locale}/guide/not-an-article`)).status()).toBe(404);
   });
 
+  test(`${locale}: conversation guides have their own share image and stay truthful`, async ({ page, request }) => {
+    for (const slug of ["chat-topics", "feeling-down", "lonely"]) {
+      const path = `/${locale}/guide/${slug}`;
+      await page.goto(path);
+      await expect(page.locator("main h1")).toHaveCount(1);
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}${path}`);
+      await expect(page.locator("main")).toContainText("findahelpline.com");
+      await expect(page.locator("main")).toContainText("18");
+      const image = `${origin}/lbt/og/${locale}/${slug}.jpg`;
+      await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", image);
+      await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", image);
+      const picture = await request.get(`/lbt/og/${locale}/${slug}.jpg`);
+      expect(picture.status()).toBe(200);
+      expect(picture.headers()["content-type"]).toContain("image/jpeg");
+      const graphs = (await page.locator('script[type="application/ld+json"]').allTextContents())
+        .flatMap((entry) => JSON.parse(entry)["@graph"] ?? []);
+      expect(graphs.find((entry) => entry["@type"] === "Article").image).toBe(image);
+      expect(await (await request.get("/sitemap.xml")).text()).toContain(`${origin}${path}`);
+    }
+  });
+
   test(`${locale}: WooTalk guide is discoverable and clearly independent`, async ({ page, request }) => {
     const path = `/${locale}/guide/wootalk-alternative`;
     const response = await request.get(path);
