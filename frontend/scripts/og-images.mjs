@@ -1,6 +1,7 @@
 /**
  * Share images for the guide and its articles (public/lbt/og/<locale>/<slug>.jpg,
- * 1200 x 630): the night sky of og-lbt.png with the page's title. Run after
+ * 1200 x 630): the night sky of og-lbt.png with the page's headline (`heading`,
+ * else `title`). Run after
  * adding an article or changing a title:
  *
  *   npm pack @fontsource/noto-sans-tc@5 && tar xzf fontsource-noto-sans-tc-*.tgz
@@ -63,7 +64,7 @@ const p = await ctx.newPage();
 const only = process.argv.slice(2).filter((a, i, all) => a !== "--fonts" && all[i - 1] !== "--fonts")[0];
 for (const locale of ["zh-TW", "en"]) {
   const m = JSON.parse(readFileSync(F + "/messages/" + locale + "/lbt.json", "utf8"));
-  const items = { guide: m.guide.title, ...Object.fromEntries(Object.entries(m.articles.items).map(([k, v]) => [k, v.title])) };
+  const items = { guide: m.guide.title, ...Object.fromEntries(Object.entries(m.articles.items).map(([k, v]) => [k, v.heading ?? v.title])) };
   mkdirSync(F + "/public/lbt/og/" + locale, { recursive: true });
   for (const [slug, title] of Object.entries(items)) {
     if (only && only !== slug) continue;

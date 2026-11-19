@@ -12,8 +12,8 @@ export const BRAND_ZH = "低電量小鎮";
 /** Owner-approved short names, also explained in the public chat guide. */
 export const BRAND_ALIASES = [BRAND_ZH, "LowBattery", "低電量", "Low"];
 
-/** Date the indexed pages last changed in substance (sitemap lastmod). */
-export const CONTENT_UPDATED = "2026-11-19";
+/** Date the homepage and guide last changed in substance (sitemap lastmod). */
+export const CONTENT_UPDATED = "2026-11-20";
 
 /**
  * Share image of the guide (`slug` "guide") or one of its articles, drawn by

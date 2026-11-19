@@ -143,6 +143,13 @@ for (const locale of ["zh-TW", "en"]) {
     const article = graphs.find((entry) => entry["@type"] === "Article");
     expect(article.mainEntityOfPage).toBe(`${origin}${path}`);
     expect(article.headline).toBe(await page.locator("main h1").textContent());
+    const alternateLocale = locale === "en" ? "zh-TW" : "en";
+    const alternatePath = `/${alternateLocale}/guide/wootalk-alternative`;
+    const alternate = page.locator(`header a[hreflang="${alternateLocale}"]`);
+    await expect(alternate).toHaveAttribute("href", alternatePath);
+    await alternate.click();
+    await expect(page).toHaveURL(new RegExp(`${alternatePath}$`));
+    await page.goto(path);
     const entry = page.getByRole("link", {
       name: locale === "zh-TW" ? "試試免費匿名聊天（18+）" : "Try free anonymous chat (18+)",
     });
@@ -150,6 +157,7 @@ for (const locale of ["zh-TW", "en"]) {
     await entry.click();
     await expect(page).toHaveURL(new RegExp(`/${locale}#lbt-chat-entry$`));
     await expect(page.locator("#lbt-chat-entry")).toBeInViewport();
+    await expect(page.locator(`footer a[href="${path}"]`)).toBeVisible();
     await page.goto(`/${locale}/guide`);
     await expect(page.locator(`main a[href="${path}"]`)).toHaveCount(1);
   });
@@ -158,6 +166,7 @@ for (const locale of ["zh-TW", "en"]) {
 test("home links to the guide and demo stays out of search", async ({ page, request }) => {
   await page.goto("/zh-TW");
   await expect(page.locator('footer a[href="/zh-TW/guide"]')).toHaveCount(1);
+  await expect(page.locator(".hero-subtitle")).toContainText("免費匿名聊天室，不用註冊");
   await expect(page.locator('meta[name="description"]')).not.toHaveAttribute("content", /模擬|互動原型/);
   const homeData = (await page.locator('script[type="application/ld+json"]').allTextContents()).join("");
   expect(homeData).toContain('"WebApplication"');

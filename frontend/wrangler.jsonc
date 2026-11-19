@@ -6,6 +6,8 @@
   "main": "cloudflare-worker.mjs",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
+  // Keep local preview requests on localhost instead of the production route.
+  "dev": { "host": "localhost" },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",

@@ -7,7 +7,7 @@ LowBatteryTown (低電量小鎮) pairs two real, anonymous people for one short,
 ## Key facts
 
 - Free, no sign-up, anonymous; nickname is editable. 18+ (self-declared, enforced server-side).
-- Real people only — no bots and no fake head counts. A clearly labelled scripted demo (模擬對象) lives at /demo.
+- Standard matching pairs real people. Public online counts reflect real people.
 - Works in mobile and desktop browsers. Available in Traditional Chinese (zh-TW) and English (en).
 - Not medical or crisis help: the chat and report dialog point to a universal helpline finder (findahelpline.com) and "your local emergency number".
 - Reports end the chat, are reviewed, and block that pair for 24 hours.

@@ -18,8 +18,10 @@ describe("lbtClientMessages", () => {
     expect(Object.keys(picked).sort()).toEqual(["errors", "lbt"]);
   });
 
-  test("drops the articles, the policy sections and the guide answers", () => {
-    expect(picked.lbt.articles).toBeUndefined();
+  test("drops the article bodies, the policy sections and the guide answers", () => {
+    const { items: _items, ...labels } = en.articles;
+    expect(picked.lbt.articles).toEqual(labels);
+    expect(labels).toHaveProperty("wootalkLink");
     expect(picked.lbt.policy).toEqual({ nav: en.policy.nav });
     expect(picked.lbt.guide).toEqual({ nav: en.guide.nav });
   });
