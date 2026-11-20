@@ -164,6 +164,56 @@ test.describe("LowBatteryTown chat (simulated)", () => {
   });
 });
 
+test.describe("LowBatteryTown compact touch screens", () => {
+  test.use({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
+
+  test("keeps the English wait controls on the first screen", async ({ page }) => {
+    await page.goto("/en/demo?time=night");
+    await page.getByRole("checkbox", { name: /I am 18 or older/ }).check();
+    await page.getByRole("button", { name: /Walk into town/ }).click();
+
+    const cancel = page.getByRole("button", { name: "Back to the street corner" });
+    await expect(cancel).toBeInViewport({ ratio: 1 });
+    await expect(page.locator(".waiting-controls .chime-toggle")).toBeInViewport({ ratio: 1 });
+    await cancel.click();
+    await expect(page.locator(".home-view")).toBeVisible();
+  });
+
+  test("leaves focus on the partner and keeps the composer above the touch keyboard", async ({ page }) => {
+    await enterChat(page);
+    const composer = page.getByLabel("輸入訊息");
+    const send = page.getByRole("button", { name: "送出訊息" });
+    await expect(page.locator(".partner-profile h1")).toBeFocused();
+    await composer.fill("哈囉");
+
+    // Headless Chrome has no system keyboard. Simulate the browser resizing
+    // the visual viewport while keeping the layout viewport unchanged.
+    await page.evaluate(() => {
+      const viewport = window.visualViewport!;
+      Object.defineProperty(viewport, "height", { configurable: true, value: 300 });
+      Object.defineProperty(viewport, "offsetTop", { configurable: true, value: 16 });
+      viewport.dispatchEvent(new Event("resize"));
+    });
+    await expect(page.locator(".chat-view")).toHaveAttribute("data-keyboard-open", "");
+    const viewBottom = 316;
+    for (const button of [send, page.getByRole("button", { name: /說聲晚安/ })]) {
+      const bottom = await button.evaluate((element) => element.getBoundingClientRect().bottom);
+      expect(bottom).toBeLessThanOrEqual(viewBottom);
+    }
+    await send.click();
+    await expect(page.locator(".message.me .bubble")).toHaveText("哈囉");
+
+    await page.evaluate(() => {
+      const viewport = window.visualViewport!;
+      Reflect.deleteProperty(viewport, "height");
+      Reflect.deleteProperty(viewport, "offsetTop");
+      viewport.dispatchEvent(new Event("resize"));
+    });
+    await expect(page.locator(".chat-view")).not.toHaveAttribute("data-keyboard-open", "");
+    await expect(page.locator(".topbar")).toBeVisible();
+  });
+});
+
 test.describe("LowBatteryTown music", () => {
   test("the battery starts and stops the music; the header switch follows", async ({ page }) => {
     await page.goto(HOME);
