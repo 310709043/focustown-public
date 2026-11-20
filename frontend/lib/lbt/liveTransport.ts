@@ -21,6 +21,7 @@ const END_REASONS: readonly EndReason[] = [
   "timeout",
   "partner_disconnected",
   "reported",
+  "blocked",
   "suspended",
 ];
 
@@ -152,6 +153,7 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
 
   let listener: TransportListener | null = null;
   let socket: MinimalSocket | null = null;
+  let conversationId: string | null = null;
   let running = false;
   let attempt = 0;
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -254,7 +256,14 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
         return;
       }
       const event = mapServerFrame(frame, now());
-      if (event?.type === "ended" || event?.type === "idle") outbox.length = 0;
+      if (event?.type === "matched") {
+        const id = (frame as Record<string, unknown>).conversation_id;
+        conversationId = typeof id === "string" ? id : null;
+      }
+      if (event?.type === "ended" || event?.type === "idle") {
+        outbox.length = 0;
+        conversationId = null;
+      }
       if (event) emit(event);
     };
     ws.onerror = () => {
@@ -262,7 +271,10 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     };
     ws.onclose = (ev) => {
       clearInterval(heartbeatTimer);
-      if (socket === ws) socket = null;
+      if (socket === ws) {
+        socket = null;
+        conversationId = null;
+      }
       if (!running) return;
       emit({ type: "connection", state: "connecting" });
       scheduleOffline();
@@ -308,9 +320,11 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
     const data = JSON.stringify(frame);
     if (socket && socket.readyState === OPEN) {
       socket.send(data);
+      return true;
     } else if (queue && outbox.length < OUTBOX_MAX) {
       outbox.push(data);
     }
+    return false;
   }
 
   return {
@@ -356,6 +370,8 @@ export function createLiveTransport(options: LiveTransportOptions): LbtTransport
       outbox.length = 0;
       send({ type: "leave" }, { queue: true });
     },
+    block: () => conversationId !== null &&
+      send({ type: "block", conversation_id: conversationId }, { queue: false }),
     async report(reason: ReportReason, note: string) {
       const token = await guestToken();
       const res = await fetcher(`${api}/api/v1/lbt/reports`, {

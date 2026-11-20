@@ -266,6 +266,9 @@ export function ChatView() {
                 <button type="button" onClick={() => openModal({ type: "report" })}>
                   {t("chat.report")}
                 </button>
+                <button type="button" onClick={() => openModal({ type: "block" })}>
+                  {t("chat.block")}
+                </button>
               </p>
             </div>
           </aside>

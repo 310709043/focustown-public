@@ -23,6 +23,7 @@ const KNOWN = new Set([
   "invalid_preference",
   "wait_interrupted",
   "report_failed",
+  "block_failed",
   "guest_suspended",
 ]);
 

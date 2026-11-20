@@ -14,7 +14,7 @@ import { JojoInvitation } from "./JojoInvitation";
 import { useEffectiveLooks } from "@/lib/lbt/looks";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
-export function WaitingView() {
+export function WaitingView({ android = false }: { android?: boolean }) {
   const t = useTranslations("lbt");
   const theme = useEffectiveLooks().style;
   const chimeOn = useChimeStore((s) => s.enabled);
@@ -102,7 +102,7 @@ export function WaitingView() {
             </div>
           </section>
         ) : null}
-        {mode === "live" ? <JojoInvitation key={jojoAvailableAt} /> : null}
+        {mode === "live" && !android ? <JojoInvitation key={jojoAvailableAt} /> : null}
         <Notice />
         <div className="waiting-progress">
           <span />

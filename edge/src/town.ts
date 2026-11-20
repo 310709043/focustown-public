@@ -436,6 +436,16 @@ export class Town {
     await this.close(c, { [guestId]: "left", [partnerOf(c, guestId)]: "partner_left" });
   }
 
+  async block(guestId: string, conversationId: unknown) {
+    const c = await this.require(guestId);
+    if (c.id !== conversationId) throw new InputError("no_conversation");
+    const partner = partnerOf(c, guestId);
+    await this.store.blockPair(guestId, partner, this.deps.now() + this.cfg.blockMs);
+    if ((await this.store.conversationIdOf(guestId)) === c.id) {
+      await this.close(c, { [guestId]: "blocked", [partner]: "partner_left" });
+    }
+  }
+
   async report(guestId: string, reason: string, note: unknown): Promise<string> {
     if (!(REPORT_REASONS as readonly string[]).includes(reason)) throw new InputError("invalid_reason");
     if (!this.deps.saveReport) throw new Error("report storage not wired");

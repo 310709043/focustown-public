@@ -88,6 +88,7 @@ interface LbtActions {
   again: () => void;
   goHome: () => void;
   leave: () => void;
+  block: () => void;
   sendMessage: (raw: string) => boolean;
   notifyTyping: () => void;
   extend: () => void;
@@ -445,6 +446,12 @@ export const useLbtStore = create<LbtState>()((set, get) => {
       if (get().view !== "chat") return;
       transport?.leave();
       toEnd("left");
+    },
+
+    block() {
+      if (get().view !== "chat") return;
+      const sent = transport?.block?.();
+      set({ modal: null, notice: sent ? null : "block_failed" });
     },
 
     sendMessage(raw) {

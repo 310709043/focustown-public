@@ -27,7 +27,7 @@ import { ThemeSkyDecor } from "./ThemeDecor";
 import { StageSceneLayer, StageSceneOffer, StageSceneToggle, useStageScene } from "./StageScene";
 import { TownSky, Townscape } from "./Townscape";
 
-export function HomeView() {
+export function HomeView({ android = false }: { android?: boolean }) {
   const t = useTranslations("lbt");
   const energy = useLbtStore((s) => s.energy);
   const preference = useLbtStore((s) => s.preference);
@@ -47,8 +47,10 @@ export function HomeView() {
   const adultInput = useRef<HTMLInputElement>(null);
   const stage = useStageScene();
   const looks = useEffectiveLooks();
-  const rain = looks.rain && stage.scene === "town";
-  const theme = looks.style;
+  const scene = android ? "town" : stage.scene;
+  const rain = !android && looks.rain && scene === "town";
+  const theme = android ? null : looks.style;
+  const policyRoot = android ? "/android/policies" : "/policies";
   const energyId = ENERGY_ID[energy];
 
   const start = () => {
@@ -68,10 +70,10 @@ export function HomeView() {
           in that order so the form comes before the extra cards. */}
       <div className="home-grid">
         <section
-          className={`main-stage${stage.scene === "pond" ? " is-pond" : ""}${rain ? " is-rain" : ""}`}
+          className={`main-stage${scene === "pond" ? " is-pond" : ""}${rain ? " is-rain" : ""}`}
           aria-labelledby="lbt-hero-title"
         >
-          <StageSceneLayer scene={stage.scene} />
+          <StageSceneLayer scene={scene} />
           <TownSky />
           {rain ? <RainSky /> : null}
           {theme ? <ThemeSkyDecor /> : null}
@@ -84,10 +86,12 @@ export function HomeView() {
               <span className="by-time t-dusk">{t("home.coordinateDusk")}</span>
               <span className="by-time t-night">{t("home.coordinate")}</span>
             </span>
-            <span className="stage-controls">
-              <LooksMenu place="stage" />
-              {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : <StageSceneOffer />}
-            </span>
+            {!android ? (
+              <span className="stage-controls">
+                <LooksMenu place="stage" />
+                {stage.enabled ? <StageSceneToggle scene={stage.scene} setScene={stage.setScene} /> : <StageSceneOffer />}
+              </span>
+            ) : null}
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">
@@ -108,7 +112,7 @@ export function HomeView() {
               {" "}{t("home.subtitleB")}
             </p>
             <SkyTopicLine />
-            <LooksMenu place="phone" />
+            {!android ? <LooksMenu place="phone" /> : null}
             <a className="home-entry-link text-button" href="#lbt-chat-entry">
               {t("home.start")} <span aria-hidden="true">↓</span>
             </a>
@@ -210,9 +214,9 @@ export function HomeView() {
             <small id="lbt-adult-hint">
               {t("home.adultHint")}{" "}
               {t.rich("home.adultHintPolicies", {
-                terms: (chunks) => <Link href="/policies/terms">{chunks}</Link>,
-                guidelines: (chunks) => <Link href="/policies/guidelines">{chunks}</Link>,
-                privacy: (chunks) => <Link href="/policies/privacy">{chunks}</Link>,
+                terms: (chunks) => <Link href={`${policyRoot}/terms`}>{chunks}</Link>,
+                guidelines: (chunks) => <Link href={`${policyRoot}/guidelines`}>{chunks}</Link>,
+                privacy: (chunks) => <Link href={`${policyRoot}/privacy`}>{chunks}</Link>,
               })}
             </small>
           </label>
@@ -265,7 +269,7 @@ export function HomeView() {
           </div>
           {/* Its own card, so the rules card (and the whole info row) keeps
               its height and the stage above is not squeezed. */}
-          <div className="side-card support-card support-invitation">
+          {!android ? <div className="side-card support-card support-invitation">
             <h3>{t("home.side.supportTitle")}</h3>
             <p>{t("home.side.supportBody")}</p>
             <button
@@ -276,7 +280,7 @@ export function HomeView() {
               {t("home.side.support")} <span aria-hidden="true">↗</span>
             </button>
             <p className="support-note">{t("home.side.supportNote")}</p>
-          </div>
+          </div> : null}
         </aside>
       </div>
     </main>

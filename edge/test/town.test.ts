@@ -324,6 +324,37 @@ describe("leaving", () => {
   });
 });
 
+describe("blocking", () => {
+  test("deletes the chat and blocks the pair without filing a report", async () => {
+    const conversationId = await pair();
+    await town.sendMessage("g_a", "ordinary message");
+
+    await town.block("g_a", conversationId);
+
+    expect(frames("g_a", "lbt.ended")).toEqual([{ type: "lbt.ended", reason: "blocked" }]);
+    expect(frames("g_b", "lbt.ended")).toEqual([{ type: "lbt.ended", reason: "partner_left" }]);
+    expect(await store.getConversation(conversationId)).toBeNull();
+    expect(await store.transcript(conversationId)).toEqual([]);
+    expect(reports).toEqual([]);
+    expect(await store.blockedFor("g_a", now)).toEqual(new Set(["g_b"]));
+
+    await town.join("g_a", LISTEN, true);
+    await town.join("g_b", STORY, true);
+    expect(await store.activeConversationIds()).toEqual([]);
+  });
+
+  test("does not affect a newer conversation when the requested chat has already ended", async () => {
+    const oldId = await pair();
+    await town.leave("g_a");
+    const newId = await pair();
+    expect(newId).not.toBe(oldId);
+
+    await expectCode(town.block("g_a", oldId), "no_conversation");
+    expect(await store.conversationIdOf("g_a")).toBe(newId);
+    expect(await store.blockedFor("g_a", now)).toEqual(new Set());
+  });
+});
+
 describe("reports", () => {
   test("snapshot the transcript with roles", async () => {
     await pair();

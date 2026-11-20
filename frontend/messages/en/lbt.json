@@ -160,6 +160,7 @@
     "send": "Send message",
     "privacy": "Chats are cleared when they end. Submit reports before leaving.",
     "report": "Report conversation",
+    "block": "Block person",
     "system": {
       "met": "You sat down on the bench under the lamp. 7 minutes to start; plug in together to stay longer.",
       "energyShown": "Your status is shown: {energy}. {pace}",
@@ -231,6 +232,7 @@
       "timeout": "Time's up. This conversation ends here for now.",
       "partner_disconnected": "They left town, so the conversation has ended.",
       "reported": "Thank you for telling us. We'll review the conversation, and you won't be paired again.",
+      "blocked": "You blocked the other person, and the conversation was cleared.",
       "unknown": "This conversation has ended.",
       "suspended": "Matching has been suspended for this anonymous guest code, and this chat has ended."
     }
@@ -238,6 +240,13 @@
   "modal": {
     "close": "Close",
     "gotIt": "Got it",
+    "block": {
+      "eyebrow": "Chat safety",
+      "title": "Block and leave?",
+      "confirm": "Block and leave",
+      "body": "This ends and deletes the conversation. Your anonymous guest codes will not be matched again for {hours} hours. If you want us to review the conversation, use Report conversation before leaving.",
+      "bodyDemo": "This ends the demo conversation. No real person is blocked or reported."
+    },
     "about": {
       "eyebrow": "Town guide",
       "title": "Just sit for a while.",
@@ -346,6 +355,7 @@
     "invalid_preference": "Please choose how you'd like to chat again.",
     "wait_interrupted": "The connection dropped and the wait was cancelled. You can walk in again.",
     "report_failed": "The report didn't go through. Check your connection and try again.",
+    "block_failed": "The block didn't go through. Reconnect and try again.",
     "generic": "Something went wrong. Please try again.",
     "invite_unavailable": "The invitation has ended. You can keep waiting.",
     "guest_suspended": "Matching is temporarily suspended for this anonymous guest code. You can join again when the restriction expires.",
@@ -529,6 +539,14 @@
           ]
         },
         {
+          "h": "Child safety",
+          "p": [
+            "LowBatteryTown prohibits all child sexual abuse and exploitation, including grooming, sexual extortion, and sharing, soliciting, or directing users to child sexual abuse material.",
+            "Use Report conversation during a chat. After the chat ends, use the in-app feedback box or the contact email below. Describe the concern without forwarding illegal material.",
+            "We review reports, take action against offending anonymous guest codes, remove violating content under our control, and make reports to the appropriate authorities as required by applicable law."
+          ]
+        },
+        {
           "h": "Keep personal details out",
           "p": [
             "Don't ask for or share phone numbers, addresses, schools, workplaces or social accounts. Links, e-mails, @handles and phone numbers are masked automatically."
@@ -549,7 +567,7 @@
         {
           "h": "Leave when it doesn't feel right",
           "p": [
-            "You can say good night any time. Reporting ends the chat at once, you won't be paired again for {pairBlockHours} hours, and the conversation is kept for review."
+            "You can say good night any time. Blocking ends and clears the chat and prevents your guest codes from matching again for {pairBlockHours} hours. If you want us to review the conversation, report it before leaving."
           ]
         },
         {

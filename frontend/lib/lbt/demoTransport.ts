@@ -147,6 +147,12 @@ export function createDemoTransport(options: DemoTransportOptions = {}): LbtTran
       clearAll();
       if (wasInChat) emit({ type: "ended", reason: "left" });
     },
+    block() {
+      if (!inChat) return false;
+      clearAll();
+      emit({ type: "ended", reason: "blocked" });
+      return true;
+    },
     async report() {
       return "simulated";
     },
