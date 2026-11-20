@@ -60,6 +60,8 @@ export interface LbtTransport {
   typing(): void;
   extend(): void;
   leave(): void;
+  /** Ends the active conversation and blocks that peer. True if sent. */
+  block?(): boolean;
   /** "sent" when a report was filed; "simulated" when nothing was sent. */
   report(reason: ReportReason, note: string): Promise<"sent" | "simulated">;
   /** Current town status, or null when there is no honest number to show. */

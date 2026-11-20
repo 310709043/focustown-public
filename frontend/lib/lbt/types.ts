@@ -31,6 +31,7 @@ export type EndReason =
   | "timeout"
   | "partner_disconnected"
   | "reported"
+  | "blocked"
   | "suspended";
 
 export type ReportReason =
@@ -72,6 +73,7 @@ export type LbtModal =
   | { type: "about" }
   | { type: "support" }
   | { type: "report" }
+  | { type: "block" }
   | { type: "feedback" }
   | { type: "timeUp" };
 

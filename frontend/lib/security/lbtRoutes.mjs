@@ -4,6 +4,6 @@
  * Plain .mjs so the build script can import it too.
  */
 export const LBT_PUBLIC_ROUTE =
-  /^\/(zh-TW|en)(\/(demo|unlock|collaborate|guide(\/[^/]+)?|policies\/(privacy|terms|guidelines)))?\/?$/;
+  /^\/(zh-TW|en)(\/(demo|unlock|collaborate|guide(\/[^/]+)?|android(\/policies\/(privacy|terms|guidelines))?|policies\/(privacy|terms|guidelines)))?\/?$/;
 
 export const isLbtPublicRoute = (pathname) => LBT_PUBLIC_ROUTE.test(pathname);

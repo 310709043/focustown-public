@@ -21,22 +21,23 @@ interface Section {
 }
 
 /** Privacy policy, terms and community guidelines for LowBatteryTown. */
-export async function PolicyPage({ locale, slug }: { locale: string; slug: PolicySlug }) {
+export async function PolicyPage({ locale, slug, android = false }: { locale: string; slug: PolicySlug; android?: boolean }) {
   const t = await getTranslations({ locale, namespace: "lbt.policy" });
-  const sections = policySections(t.raw(`${slug}.sections`) as Section[]);
+  const appPath = android ? "/android" : "";
+  const sections = policySections(t.raw(`${slug}.sections`) as Section[], android ? { pond: false, looks: false } : undefined);
 
   return (
     <div className={`lbt ${lbtFontVariables}`}>
       <div className="site-shell">
         <header className="topbar">
-          <Link className="brand" href="/" aria-label={t("nav.home")}>
+          <Link className="brand" href={appPath || "/"} aria-label={t("nav.home")}>
             <Wordmark />
           </Link>
           <nav className="policy-nav" aria-label={t("nav.aria")}>
             {POLICY_SLUGS.map((s) => (
               <Link
                 key={s}
-                href={`/policies/${s}`}
+                href={`${appPath}/policies/${s}`}
                 aria-current={s === slug ? "page" : undefined}
               >
                 {t(`nav.${s}`)}
@@ -62,12 +63,12 @@ export async function PolicyPage({ locale, slug }: { locale: string; slug: Polic
               )}
             </section>
           ))}
-          {slug === "privacy" ? <LbtAnalytics track={false} /> : null}
+          {slug === "privacy" && !android ? <LbtAnalytics track={false} /> : null}
           <p className="policy-contact">
             {t("contact")}
             <a href={`mailto:${LBT_LEGAL.contactEmail}`}>{LBT_LEGAL.contactEmail}</a>
           </p>
-          <Link className="text-button" href="/">
+          <Link className="text-button" href={appPath || "/"}>
             {t("nav.home")} <span aria-hidden="true">↗</span>
           </Link>
         </main>

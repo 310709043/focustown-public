@@ -8,7 +8,7 @@ import { TownSky } from "./Townscape";
 import { useEffectiveLooks } from "@/lib/lbt/looks";
 import { ThemeSkyDecor } from "./ThemeDecor";
 
-export function EndView() {
+export function EndView({ android = false }: { android?: boolean }) {
   const t = useTranslations("lbt.end");
   const theme = useEffectiveLooks().style;
   const again = useLbtStore((s) => s.again);
@@ -53,13 +53,15 @@ export function EndView() {
           <button type="button" className="secondary-button" onClick={goHome}>
             {t("home")}
           </button>
-          <button
-            type="button"
-            className="end-support-button"
-            onClick={() => openModal({ type: "support" })}
-          >
-            {t("support")}
-          </button>
+          {!android ? (
+            <button
+              type="button"
+              className="end-support-button"
+              onClick={() => openModal({ type: "support" })}
+            >
+              {t("support")}
+            </button>
+          ) : null}
         </div>
       </div>
     </main>

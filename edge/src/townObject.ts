@@ -266,6 +266,8 @@ export class TownObject extends DurableObject<Env> {
         return this.town.extend(guestId);
       case "leave":
         return this.town.leave(guestId);
+      case "block":
+        return this.town.block(guestId, frame.conversation_id);
       default:
         return undefined;
     }

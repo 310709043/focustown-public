@@ -11,10 +11,10 @@ test.skip(!process.env.PLAYWRIGHT_REAL_STACK, "needs the real backend stack");
 
 const HOME = "/zh-TW";
 
-async function visitor(browser: Browser) {
+async function visitor(browser: Browser, path = HOME) {
   const context = await browser.newContext();
   const page = await context.newPage();
-  await page.goto(HOME);
+  await page.goto(path);
   return page;
 }
 
@@ -34,6 +34,32 @@ async function walkIn(
 // Close even a failed test's sockets before the next scenario enters the town.
 test.afterEach(async ({ browser }) => {
   await Promise.allSettled(browser.contexts().map(context => context.close()));
+});
+
+test("an Android visitor can block a web visitor and the pair stays apart", async ({ browser }) => {
+  const android = await visitor(browser, "/zh-TW/android");
+  const web = await visitor(browser);
+  await walkIn(android, "阿橘", /快沒電了/, "有人聽我說");
+  await walkIn(web, "阿樹", /還有一點/, "聽聽別人的故事");
+
+  await expect(android.locator(".partner-profile h1")).toContainText("阿樹", { timeout: 10_000 });
+  await expect(web.locator(".partner-profile h1")).toContainText("阿橘");
+  await web.getByLabel("輸入訊息").fill("哈囉");
+  await web.getByRole("button", { name: "送出訊息" }).click();
+  await expect(android.locator(".message.other .bubble")).toHaveText("哈囉");
+
+  await android.getByRole("button", { name: "封鎖對方", exact: true }).click();
+  await android.getByRole("dialog", { name: "封鎖並離開？" })
+    .getByRole("button", { name: "封鎖並離開" }).click();
+  await expect(android.getByText("你已封鎖對方，這段對話已清除。")).toBeVisible();
+  await expect(web.getByText("對方說了晚安。")).toBeVisible();
+  await expect(android.locator(".message")).toHaveCount(0);
+  await expect(web.locator(".message")).toHaveCount(0);
+
+  await android.getByRole("button", { name: /再遇見一個人/ }).click();
+  await web.getByRole("button", { name: /再遇見一個人/ }).click();
+  await expect(android.locator(".waiting-view")).toBeVisible();
+  await expect(web.locator(".waiting-view")).toBeVisible();
 });
 
 test("two visitors are paired, chat, extend together and report", async ({ browser }) => {

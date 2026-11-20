@@ -36,6 +36,8 @@ function defaultTransport(mode: LbtMode): LbtTransport {
 
 interface LbtAppProps {
   fontClassName?: string;
+  /** Free Google Play surface. The same transport and matching queue serve both. */
+  android?: boolean;
   /** `live` (default) pairs real people via the backend; `demo` runs the labelled script. */
   mode?: LbtMode;
   /** Override the transport (tests, the static prototype build). */
@@ -47,7 +49,7 @@ interface LbtAppProps {
  * is matched by the backend; in demo mode the partner is a labelled script.
  * Payments stay off until approved checkout links exist.
  */
-export function LbtApp({ fontClassName = "", mode = "live", createTransport }: LbtAppProps) {
+export function LbtApp({ fontClassName = "", mode = "live", android = false, createTransport }: LbtAppProps) {
   const t = useTranslations("lbt");
   const view = useLbtStore((s) => s.view);
   const storeMode = useLbtStore((s) => s.mode);
@@ -127,7 +129,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
         <header className="topbar">
           <Link
             className="brand"
-            href="/"
+            href={android ? "/android" : "/"}
             aria-label={t("brand.homeAria")}
             onClick={(event) => {
               event.preventDefault();
@@ -137,13 +139,15 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
             <Wordmark />
           </Link>
           <div className="topbar-actions">
-            <button
-              type="button"
-              className="prototype-pill support-pill"
-              onClick={() => openModal({ type: "support" })}
-            >
-              <span aria-hidden="true">🪫</span> {t("topbar.support")}
-            </button>
+            {!android ? (
+              <button
+                type="button"
+                className="prototype-pill support-pill"
+                onClick={() => openModal({ type: "support" })}
+              >
+                <span aria-hidden="true">🪫</span> {t("topbar.support")}
+              </button>
+            ) : null}
             <button
               type="button"
               className="prototype-pill feedback-pill"
@@ -164,26 +168,26 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
           </div>
         </header>
 
-        {view === "home" ? <HomeView /> : null}
-        {view === "waiting" ? <WaitingView /> : null}
+        {view === "home" ? <HomeView android={android} /> : null}
+        {view === "waiting" ? <WaitingView android={android} /> : null}
         {view === "chat" ? <ChatView /> : null}
-        {view === "end" ? <EndView /> : null}
+        {view === "end" ? <EndView android={android} /> : null}
 
         <footer className="footer">
           <span>{t("footer.left")}</span>
           <span>{storeMode === "demo" ? t("footer.right") : t("footer.rightLive")}</span>
-          {mode === "live" ? <LbtAnalytics active={view === "home"} /> : null}
+          {mode === "live" && !android ? <LbtAnalytics active={view === "home"} /> : null}
           <nav className="footer-links" aria-label={t("footer.linksAria")}>
-            <Link href="/guide">{t("guide.nav")}</Link>
-            {mode === "live" && view === "home" ? (
+            {!android ? <Link href="/guide">{t("guide.nav")}</Link> : null}
+            {!android && mode === "live" && view === "home" ? (
               <>
                 <Link href="/guide/wootalk-alternative" prefetch={false}>{t("articles.wootalkLink")}</Link>
                 <Link href="/collaborate">{t("collaboration.nav")}</Link>
               </>
             ) : null}
-            <Link href="/policies/privacy">{t("policy.nav.privacy")}</Link>
-            <Link href="/policies/terms">{t("policy.nav.terms")}</Link>
-            <Link href="/policies/guidelines">{t("policy.nav.guidelines")}</Link>
+            <Link href={android ? "/android/policies/privacy" : "/policies/privacy"}>{t("policy.nav.privacy")}</Link>
+            <Link href={android ? "/android/policies/terms" : "/policies/terms"}>{t("policy.nav.terms")}</Link>
+            <Link href={android ? "/android/policies/guidelines" : "/policies/guidelines"}>{t("policy.nav.guidelines")}</Link>
           </nav>
           <button
             type="button"
@@ -194,7 +198,7 @@ export function LbtApp({ fontClassName = "", mode = "live", createTransport }: L
           </button>
         </footer>
       </div>
-      <ModalHost />
+      <ModalHost android={android} />
     </div>
   );
 }
