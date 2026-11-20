@@ -51,6 +51,7 @@ export function ChatView() {
   const openModal = useLbtStore((s) => s.openModal);
 
   const [draft, setDraft] = useState("");
+  const viewRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +60,56 @@ export function ChatView() {
   const timeUp = remaining === 0;
 
   useEffect(() => {
-    inputRef.current?.focus();
+    if (window.matchMedia?.("(pointer: coarse)").matches) {
+      viewRef.current?.querySelector("h1")?.focus({ preventScroll: true });
+    } else {
+      inputRef.current?.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    const view = viewRef.current;
+    const viewport = window.visualViewport;
+    const phone = window.matchMedia?.("(max-width: 610px) and (pointer: coarse)");
+    if (!view || !viewport || !phone) return;
+
+    const resetViewport = () => {
+      delete view.dataset.keyboardOpen;
+      view.style.removeProperty("--lbt-chat-viewport-height");
+      view.style.removeProperty("--lbt-chat-viewport-top");
+    };
+
+    const fitViewport = () => {
+      // Mobile keyboards can reduce only the visual viewport. Leave pinch zoom
+      // and ordinary browser toolbar resizing under the browser's control.
+      const wasOpen = view.dataset.keyboardOpen !== undefined;
+      const typing = document.activeElement === inputRef.current;
+      const keyboardOpen = (typing || wasOpen) && phone.matches && viewport.scale === 1 &&
+        window.innerHeight - viewport.height > 120;
+
+      if (!keyboardOpen) {
+        if (wasOpen) resetViewport();
+        return;
+      }
+
+      const messages = messagesRef.current;
+      const atLatest = messages &&
+        messages.scrollHeight - messages.scrollTop - messages.clientHeight < 16;
+      view.dataset.keyboardOpen = "";
+      view.style.setProperty("--lbt-chat-viewport-height", `${Math.floor(viewport.height)}px`);
+      view.style.setProperty("--lbt-chat-viewport-top", `${Math.max(0, viewport.offsetTop)}px`);
+      if (atLatest) messages.scrollTop = messages.scrollHeight;
+    };
+
+    viewport.addEventListener("resize", fitViewport);
+    viewport.addEventListener("scroll", fitViewport);
+    phone.addEventListener("change", fitViewport);
+    return () => {
+      viewport.removeEventListener("resize", fitViewport);
+      viewport.removeEventListener("scroll", fitViewport);
+      phone.removeEventListener("change", fitViewport);
+      resetViewport();
+    };
   }, []);
 
   useEffect(() => {
@@ -125,7 +175,7 @@ export function ChatView() {
   };
 
   return (
-    <main className="view chat-view">
+    <main className="view chat-view" ref={viewRef}>
       <section className="chat-main" aria-label={t("chat.mainAria")}>
         <ChatStage />
 
@@ -234,6 +284,7 @@ export function ChatView() {
                   value={draft}
                   maxLength={MESSAGE_MAX}
                   autoComplete="off"
+                  enterKeyHint="send"
                   disabled={timeUp}
                   placeholder={timeUp ? t("chat.composerTimeUp") : t("chat.composerPlaceholder")}
                   onChange={(event) => {
