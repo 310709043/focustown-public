@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.lowbatterytown.android",
+      "sha256_cert_fingerprints": [
+        "D1:22:9A:5A:04:DF:93:24:0B:36:ED:FE:A8:75:40:DB:95:66:6C:4B:0B:F3:F8:2D:4B:2F:12:94:27:BE:EF:09"
+      ]
+    }
+  }
+]
