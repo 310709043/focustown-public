@@ -1,11 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, type AnimationEvent } from "react";
 
 import { config } from "@/lib/config";
 import { useLbtStore } from "@/lib/lbt/sessionStore";
-import { currentSkyTopic, useSkyTopics, type SkyTopic } from "@/lib/lbt/skyTopics";
+import { currentSkyTopic, localizeSkyTopic, useSkyTopics, type SkyTopic } from "@/lib/lbt/skyTopics";
 
 /** On phones (no carriers) and under reduced motion, words change on a timer instead. */
 const TIMER_MS = 7000;
@@ -13,13 +13,14 @@ const TIMER_MS = 7000;
 const LONG_AT = 8;
 
 function useSkyTopic(): SkyTopic {
+  const locale = useLocale();
   const mode = useLbtStore((s) => s.mode);
   const load = useSkyTopics((s) => s.load);
   const topic = useSkyTopics(currentSkyTopic);
   useEffect(() => {
     void load(mode, config.apiBaseUrl);
   }, [load, mode]);
-  return topic;
+  return localizeSkyTopic(topic, locale);
 }
 
 /** Tap a sky topic: keep it for the chat, and say so. */
