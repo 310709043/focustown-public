@@ -71,6 +71,16 @@ export function WaitingView({ android = false }: { android?: boolean }) {
             {t("waiting.offline")}
           </p>
         ) : null}
+        <div className="waiting-progress" aria-hidden="true">
+          <span />
+        </div>
+        <div className="waiting-controls">
+          <button type="button" className="text-button" onClick={cancelWaiting}>
+            {t("waiting.cancel")}
+          </button>
+          <ChimeToggle />
+        </div>
+        <p className="waiting-cue">{t(chimeOn ? "cues.waitingOn" : "cues.waitingOff")}</p>
         {longWait && mode === "live" ? (
           <p className="waiting-long">{t("waiting.longWait")}</p>
         ) : null}
@@ -104,15 +114,6 @@ export function WaitingView({ android = false }: { android?: boolean }) {
         ) : null}
         {mode === "live" && !android ? <JojoInvitation key={jojoAvailableAt} /> : null}
         <Notice />
-        <div className="waiting-progress">
-          <span />
-        </div>
-        <p className="waiting-cue">
-          {t(chimeOn ? "cues.waitingOn" : "cues.waitingOff")} <ChimeToggle />
-        </p>
-        <button type="button" className="text-button" onClick={cancelWaiting}>
-          {t("waiting.cancel")}
-        </button>
       </div>
     </main>
   );

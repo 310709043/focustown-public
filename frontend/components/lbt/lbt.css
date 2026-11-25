@@ -3946,7 +3946,6 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
     height: auto;
     min-height: 100%;
   }
-  .lbt .waiting-view,
   .lbt .end-view {
     flex: none;
     height: calc(100dvh - 58px);
@@ -4614,24 +4613,34 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
   outline: 2px solid var(--lamp);
   outline-offset: 3px;
 }
-.lbt .waiting-cue {
+.lbt .waiting-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 12px;
+}
+.lbt .waiting-controls :is(.text-button, .chime-toggle) {
+  min-height: 44px;
+}
+.lbt .waiting-card > .waiting-cue {
   max-width: 30em;
-  margin: 0 auto clamp(8px, 1.8vh, 16px);
+  margin: 4px auto 12px;
   font-size: 12px;
   line-height: 1.7;
   color: var(--mist);
 }
-.lbt .waiting-cue .chime-toggle {
+.lbt .waiting-controls .chime-toggle {
   color: var(--lamp);
 }
 :is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-cue {
   color: var(--hero-soft);
 }
-:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-cue .chime-toggle {
+:is([data-lbt-time="day"], [data-lbt-time="dusk"], [data-lbt-time="dawn"]) .lbt.lbt-app .waiting-controls .chime-toggle {
   color: var(--hero-accent);
 }
 @media (max-height: 640px) {
-  .lbt .waiting-cue {
+  .lbt .waiting-card > .waiting-cue {
     font-size: 11px;
     line-height: 1.5;
   }
@@ -4691,6 +4700,16 @@ html[data-lbt-time] .lbt .waiting-card .sky-moon {
     margin-bottom: 8px;
     transform: scale(0.8);
   }
+  .lbt .waiting-card {
+    max-height: none;
+    overflow: hidden;
+  }
+}
+@media (max-width: 610px) and (max-height: 640px) {
+  .lbt .waiting-card { padding-block: 18px; }
+  html[lang="en"] .lbt .waiting-card h1 { font-size: clamp(24px, 4.5vh, 32px); }
+  .lbt .waiting-lamp { height: 56px; }
+  .lbt .waiting-progress { margin-block: 12px 4px; }
 }
 
 /* ── Stage scene: koi pond (preview, components/lbt/KoiPond.tsx) ─────────
@@ -6730,6 +6749,47 @@ html[data-lbt-theme="pixel"] .lbt .looks-menu > summary { border-radius: 0; }
   .lbt .chat-foot .aside-help { font-size: 12px; line-height: 1.5; margin: 0; }
   .lbt .chat-foot .chat-privacy { display: none; }
   .lbt .chat-foot .chat-bottom-actions { font-size: 12px; margin: 0; }
+  .lbt .chat-bottom-actions button { min-height: 28px; }
+}
+
+@media (max-width: 430px) {
+  .lbt .site-shell:has(> .home-view) .wordmark {
+    font-size: clamp(14px, 4.15vw, 18px);
+  }
+  .lbt .site-shell:has(> .home-view) .topbar-actions .prototype-pill {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+}
+
+/* Move the room into the part of the screen above the touch keyboard. Keep
+   the timer, leave button and safety links usable in the shorter room. */
+.lbt .chat-view[data-keyboard-open] {
+  position: fixed;
+  inset: var(--lbt-chat-viewport-top) 0 auto;
+  height: var(--lbt-chat-viewport-height);
+  padding: 4px 8px;
+  z-index: 6;
+}
+.lbt .site-shell:has(> .chat-view[data-keyboard-open]) > .topbar {
+  visibility: hidden;
+}
+.lbt .chat-view[data-keyboard-open] .chat-main { overflow-y: auto; }
+.lbt .chat-view[data-keyboard-open] .chat-body {
+  grid-template-rows: minmax(48px, 1fr) auto auto auto;
+}
+.lbt .chat-view[data-keyboard-open] .chat-stage { --s: 0.2; }
+.lbt .chat-view[data-keyboard-open] :is(.bench-scene, .stage-timer-label) { display: none; }
+.lbt .chat-view[data-keyboard-open] .stage-timer { top: 10px; }
+.lbt .chat-view[data-keyboard-open] .leave-button { top: 4px; min-height: 44px; }
+.lbt .chat-view[data-keyboard-open] .bench-people { padding: 4px 10px; }
+.lbt .chat-view[data-keyboard-open] .chat-messages { padding-block: 4px; }
+.lbt .chat-view[data-keyboard-open] .plug-panel { padding: 2px 10px 0; }
+.lbt .chat-view[data-keyboard-open] .chat-bottom { padding: 4px 10px; }
+.lbt .chat-view[data-keyboard-open] .chat-foot { padding: 0 10px 4px; }
+.lbt .chat-view[data-keyboard-open] .topic-card {
+  max-height: 100px;
+  overflow: auto;
 }
 @media (max-width: 610px) and (max-height: 700px) {
   .lbt .home-entry-link {
